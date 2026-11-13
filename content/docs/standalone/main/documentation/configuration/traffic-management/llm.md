@@ -14,7 +14,49 @@ For more information on connecting to LLM providers, see [LLM consumption]({{< l
 |`defaults`| Configure default values for settings in the request. For example, `temperature: 0.7`.             |
 |`overrides`| Configure override values for settings in the request.                                             |
 |`prompts`| Append or prepend additional prompts to requests.                                                  |
-|`routes`| Control the type of LLM request, such as OpenAI Completions, Anthropic Messages, or Embeddings. |
+|`routes`| Control the LLM request type, such as OpenAI Completions, OpenAI Decisions, Anthropic Messages, or Embeddings. |
 |`promptGuard`| Authorize requests based on their prompts.                                                         |
 |`modelAliases`| Configure aliases for model names.                                                                 |
-|`promptCaching`| Configure automatic caching controls in requests.                                                  |
+|`promptCaching`| Add prompt-cache markers to requests automatically. See [Prompt caching](#prompt-caching).          |
+
+## Prompt caching {#prompt-caching}
+
+The `promptCaching` policy adds prompt-cache markers to requests, so that the provider can reuse a cached prompt prefix. It works with Anthropic, with Claude models on Vertex AI, and with Claude 3 and later and Nova models on Amazon Bedrock.
+
+Set `promptCaching` on a model in `llm.models`, or in the `policies.ai` block of a route or AI backend.
+
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+llm:
+  models:
+  - name: "anthropic/*"
+    provider: anthropic
+    params:
+      apiKey: "$ANTHROPIC_API_KEY"
+    transformation:
+      model: llmRequest.model.stripPrefix("anthropic/")
+    promptCaching:
+      cacheTools: true
+```
+
+`promptCaching: {}` uses the defaults: `cacheSystem: true`, `cacheMessages: true`, `cacheTools: false`, and `minTokens: 1024`.
+
+- `cacheSystem` marks the system prompt. `cacheMessages` marks the last message before the current turn. To move that marker further back, set `cacheMessageOffset`. `cacheTools` marks the last tool definition.
+- `minTokens` applies only to the system prompt. Agentgateway estimates the token count as the word count times 1.3.
+- If a request already has prompt-cache markers, the policy adds none.
+- For Bedrock Nova models, the policy ignores `cacheTools`, because Nova does not accept cache points on tool definitions.
+
+## Model resolution order {#llm-model-resolution-standalone}
+
+The model that reaches the provider is resolved before provider-specific routes, request formats, token-count behavior, and response conversion are selected. Resolution starts with the client request model. If you set the provider `model` field, such as `provider.openAI.model`, that value replaces it. Then the `defaults`, `overrides`, and `transformations` policies apply, followed by `modelAliases`. When the client sends the model in the URL path, such as in a native Bedrock, Vertex AI, or Gemini request, a transformation that changes `model` rewrites the model ID in the path instead of adding a `model` field to the request body. The final resolved model is used for provider-specific behavior, such as Azure Foundry Claude routing, Bedrock endpoint selection, and Vertex Gemini path selection.
+
+A request must have a model after resolution. If the client request omits `model`, set the provider `model` field, or supply one with a `defaults`, `overrides`, or `transformations` policy.
+
+> [!NOTE]
+> This order applies to AI backends. With the simplified `llm.models` configuration, the request must include `model`, because agentgateway uses it to select the model. A request without `model` fails with a `400` and the `missing_model` error code, even when the model sets `params.model`.
+
+## Passthrough and endpoint detection {#llm-passthrough-precedence}
+
+With the simplified `llm.models` configuration, agentgateway uses the request path to decide how to handle a request. A request to a known endpoint, such as `/v1/chat/completions` or `/v1/messages`, is converted to the format of the provider. A request to a native Bedrock path, such as `/model/{modelId}/converse`, is passed through to Bedrock, and the token usage is still recorded.
+
+The `passthrough` setting on a model takes precedence over this detection. When a model sets `passthrough`, every request to that model is passed through, including requests to known endpoints. For example, if a Bedrock model sets `passthrough: detect`, a `/v1/chat/completions` request is forwarded to Bedrock unchanged instead of being converted to a Converse request. The two passthrough modes differ in what still applies. With `detect`, agentgateway still applies model transformations and records token usage when it can read it from the response, but does not apply guardrails. With `opaque`, no LLM policies apply. Set `passthrough` only on models whose clients send requests in the native format of the provider. For more information, see [Passthrough]({{< link-hextra path="/documentation/llm/api-types/passthrough/" >}}).

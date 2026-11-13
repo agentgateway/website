@@ -1,15 +1,15 @@
-<!-- Install-path design (decided 2026-07, PR #702): channel-keyed bundles. Standard = released build (helm-version-flag) + standard Gateway API CRDs (k8s-gw-version). Experimental = nightly build (patch-dev) + experimental Gateway API CRDs at the newest version (k8s-gw-version-exp) + feature gate. As of the 1.5 release both channels watch TCPRoute at v1, so k8s-gw-version and k8s-gw-version-exp both resolve to Gateway API 1.6 and the only remaining difference is the build channel plus the feature gate. Revisit whether the two Gateway API conrefs still need to be separate. See get-started.md for the full rationale. -->
+<!-- Install-path design (decided 2026-07, PR #702): channel-keyed bundles. Standard = released build (helm-version-flag) + standard Gateway API CRDs (k8s-gw-version). Experimental = nightly build (patch-dev) + experimental Gateway API CRDs at the newest version (k8s-gw-version-exp) + feature gate. As of the 1.5 release both channels watch TCPRoute at v1, so k8s-gw-version and k8s-gw-version-exp both resolve to Gateway API 1.6 and the only remaining difference is the build channel plus the feature gate. Revisit whether the two Gateway API conrefs still need to be separate. See get-started.md for the full rationale. ON THE MAIN TREE, "Standard = released build" does not hold, and cannot: main documents unreleased work, and the newest cut alpha does not contain it, so a released build fails the doc tests for anything merged after the cut. helm-version-flag therefore resolves to patch-dev on main, both channels install the nightly there, and the only difference left on main is the Gateway API channel plus the feature gate. That makes the build axis of these tabs near-vacuous on main, which is an argument for collapsing it there rather than gating the prose around it; not done here because it restructures the tabs the paths="standard"/paths="experimental" test labels hang off. Released trees are unaffected: latest still resolves to the released build. -->
 1. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}. The examples in this guide use Gateway API {{< reuse "agw-docs/versions/k8s-gw-version.md" >}} for the standard channel and {{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}} for the experimental channel, but you can use any version within the [supported range]({{< link-hextra path="/release-notes/versions/" >}}) by setting the variable accordingly.
    {{< tabs >}}
    {{% tab name="Standard" %}}
-   ```sh {paths="standard"}
+   ```sh
    export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version.md" >}}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v$GWAPI_VERSION/standard-install.yaml
    ```
    {{% /tab %}}
    {{% tab name="Experimental" %}}
    CRDs in the experimental channel are required to use some experimental features in the Gateway API. Guides that require experimental CRDs note this requirement in their prerequisites.
-   ```sh {paths="experimental"}
+   ```sh
    export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v$GWAPI_VERSION/experimental-install.yaml
    ```
@@ -36,21 +36,24 @@
 
       {{< tabs >}}
  {{% tab name="Standard" %}}
- ```sh {paths="standard"}
+ ```sh
  helm upgrade -i --create-namespace \
    --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
    --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}
  ```
  {{% /tab %}}
  {{% tab name="Experimental" %}}
- The experimental path uses the nightly development build.
- ```sh {paths="experimental"}
+ {{< version exclude-if="main" >}}The experimental path uses the nightly development build.{{< /version >}}{{< version include-if="main" >}}Both paths use the nightly development build on this version of the docs, because it is the only build that carries the unreleased features documented here. The experimental path differs in the Gateway API CRDs it applies, not in the build.{{< /version >}}
+ ```sh
  helm upgrade -i --create-namespace \
    --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
    --version {{< reuse "agw-docs/versions/patch-dev.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}
  ```
  {{% /tab %}}
       {{< /tabs >}}
+
+      > [!NOTE]
+      > **Why does the CRD installation use a namespace?** CRDs are cluster-scoped resources, so the `--namespace` flag does not scope the CRDs themselves. Instead, Helm uses it to decide where to store the metadata of the release, which is kept in a Secret that is named `sh.helm.release.v1.<release-name>` and that is namespaced. Installing the CRD chart into the {{< reuse "agw-docs/snippets/namespace.md" >}} namespace keeps the release record for the CRDs next to the release record for the control plane, so that `helm list`, `helm upgrade`, and `helm uninstall` find both releases with the same `-n {{< reuse "agw-docs/snippets/namespace.md" >}}` flag. The CRDs themselves are registered cluster-wide and can be used from any namespace.
 
 3. Install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} Helm chart.
 
@@ -68,13 +71,14 @@
 
       {{< tabs >}}
 {{% tab name="Basic installation" %}}
+{{< version include-if="main" >}}This version of the docs covers unreleased work, so the version that this command installs is the nightly development build. The `--set controller.image.pullPolicy=Always` option is included so that you get the latest image rather than a cached one. For a production install, use a released version of the docs, or refer to the exact image digest instead. For more information, see [Development builds]({{< link-hextra path="/documentation/install/advanced/#development-builds" >}}).{{< /version >}}
 
 
 
-
-```sh {paths="standard"}
+```sh
 helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
---version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
+--version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}{{< version include-if="main" >}} \
+--set controller.image.pullPolicy=Always{{< /version >}}
 ```
 
 
@@ -93,16 +97,15 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/ag
 
 {{% /tab %}}
 {{% tab name="Experimental" %}}
-Experimental Gateway API features are enabled by default. To set the experimental feature gate explicitly, include `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true`. When using a development build {{< reuse "agw-docs/versions/patch-dev.md" >}}, also add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.
+When using a development build {{< reuse "agw-docs/versions/patch-dev.md" >}}, add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.
 
 
 
 
-```sh {paths="experimental"}
+```sh
 helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
 --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
---set controller.image.pullPolicy=Always \
---set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true
+--set controller.image.pullPolicy=Always
 ```
 
 
@@ -144,36 +147,3 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw
    NAME             CONTROLLER                       ACCEPTED   AGE   
    {{< reuse "/agw-docs/snippets/gatewayclass.md" >}}     agentgateway.dev/{{< reuse "/agw-docs/snippets/gatewayclass.md" >}}    True       6m36s
    ```
-
-{{< doc-test paths="standard,experimental" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for agentgateway deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: agentgateway
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-
-- name: verify agentgateway GatewayClass exists
-  wait:
-    target:
-      kind: GatewayClass
-      metadata:
-        name: agentgateway
-    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}

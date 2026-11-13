@@ -11,7 +11,7 @@ Start from what the upstream expects, not from what the client sends.
 | A fixed API key or token | **Static key** | A value that you configure, or a Secret or file that you control |
 | The credential that the client already sent | **Passthrough** | The incoming request |
 | A token issued by AWS, Azure, or Google Cloud | **Cloud provider credentials** | The cloud provider, in exchange for the gateway's own identity |
-| A GitHub Copilot token | **Cloud provider credentials** | The environment of the gateway process |
+| A GitHub Copilot token | **Cloud provider credentials** | {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}A Kubernetes Secret, or local token discovery in standalone mode{{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}Local token discovery in standalone mode{{< /version >}} |
 | A JWT signed by your private key, fresh on every request | **Signed JWT** | The gateway signs one per request from a key that you supply |
 | A narrower token, derived from the client's credential at one authorization server | **OAuth token exchange** | An authorization server, in exchange for the client credential |
 | A token from an authorization server that did not authenticate the user | **Cross App Access** | Two authorization servers, across a trust boundary |
@@ -25,7 +25,9 @@ The families in more detail:
 * **OAuth token exchange.** Narrows or re-scopes the client's credential. Use it when the client identity should reach the backend, but not the client's original token, and when one authorization server can issue the new token.
 * **Cross App Access.** Token exchange across a trust boundary, using the OAuth Identity Assertion Authorization Grant. The identity provider that authenticated the user and the authorization server that guards the resource are different parties, so the gateway performs two exchanges and holds a client registration at each. For a single-leg exchange, use OAuth token exchange instead.
 
-Two methods are not available everywhere. GitHub Copilot works in the standalone binary only, and Signed JWT arrived in 1.5.x. For the full matrix, see [Method availability](#method-availability-and-field-differences).
+Availability and configuration vary by mode and version. For example, Signed JWT arrived in 1.5.x. For the full matrix, see [Method availability](#method-availability-and-field-differences).
+
+{{% conditional-text include-if="kubernetes" %}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}To use [GitHub Copilot]({{< link-hextra path="/documentation/security/backend-authn/providers/copilot/" >}}) in Kubernetes, store the token in a Secret and reference it from the backend with `policies.auth.secretRef`.{{< /version >}}{{% /conditional-text %}}
 
 ## Combine methods
 

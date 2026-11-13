@@ -1,0 +1,10 @@
+---
+title: Datadog
+description: Export agentgateway metrics and LLM traces to Datadog.
+weight: 30
+aliases:
+  - ../../../documentation/observability/traces/configs/datadog/
+---
+
+{{< reuse "agw-docs/pages/observability/traces/configs/datadog.md" >}}
+

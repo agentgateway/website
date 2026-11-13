@@ -21,6 +21,10 @@ Google Cloud Model Armor guardrails are model-agnostic and can be applied to any
    ```sh
    gcloud model-armor templates list --location=<location>
    ```
+5. Get a [Gemini API key](https://aistudio.google.com/apikey) and save it in the `GEMINI_API_KEY` environment variable. The example configuration reads the key from this variable.
+   ```sh
+   export GEMINI_API_KEY=<your-api-key>
+   ```
 
 ## Configure Google Model Armor
 
@@ -28,14 +32,14 @@ Configure the `guardrails` field under `llm.models[]` in your agentgateway confi
 
 ```yaml
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
-    provider: openAI
+    provider: gemini
     params:
-      model: gemini-1.5-flash
-      apiKey: "$GOOGLE_API_KEY"
+      model: gemini-2.5-flash
+      apiKey: "$GEMINI_API_KEY"
     guardrails:
       request:
       - googleModelArmor:
@@ -64,11 +68,32 @@ EOF
 | `location` | The region where the Model Armor template is deployed. Defaults to `us-central1`. |
 | `policies.backendAuth.gcp` | GCP authentication configuration. Agentgateway uses the credentials available in the environment, such as Application Default Credentials. |
 
+## Guard scope {#scope}
+
+By default, a request guard sends Model Armor the system prompt, message text, and tool call results. A response guard sends only response message text.
+
+Set `scope` to change which text the guard sends. This example excludes tool call results from the request guard.
+
+```yaml
+guardrails:
+  request:
+  - scope: [systemPrompt, messages]
+    googleModelArmor:
+      templateId: <your-template-id>
+      projectId: <your-project-id>
+      location: <location>
+      policies:
+        backendAuth:
+          gcp: {}
+```
+
+If no text is in scope, the guard skips the call to Model Armor. For supported values and restrictions, see [Guard scope]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#scope" >}}).
+
 ## Test the guardrail
 
 ```sh
-curl "localhost:4000/v1beta/openai/chat/completions" -H content-type:application/json  -d '{
-  "model": "",
+curl "localhost:4000/v1/chat/completions" -H content-type:application/json  -d '{
+  "model": "gemini-2.5-flash",
   "messages": [
    {"role": "user", "content": "I want to harm myself"}
  ]

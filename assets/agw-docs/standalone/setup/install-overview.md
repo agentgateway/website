@@ -12,6 +12,18 @@ Review the following table to choose the method that fits your environment.
 
 All three methods run agentgateway in standalone mode, where your configuration file is the source of truth. If you want a managed Kubernetes deployment with a control plane, Gateway API support, and dynamic Kubernetes resources instead, see [Kubernetes control plane]({{< link-hextra path="/documentation/setup/install/kubernetes/" >}}).
 
+## Plan for a database
+
+Although you can route traffic without a database, many features such as LLM analytics, logs, and API key budgets require a database. You also need a database to store configuration changes outside the agentgateway configuration file. For the full list of features, see [Database]({{< link-hextra path="/documentation/setup/database/" >}}).
+
+Choose a database setup for your installation method.
+
+| Method | Database by default | What to do |
+| --- | --- | --- |
+| Binary | A SQLite file next to the generated configuration file. | If you pass your own configuration file with `-f`, add `config.database.url`. |
+| Docker | A SQLite file in the mounted directory when you use a generated configuration file. | If you mount your own configuration file, add `config.database.url` and mount a writable directory for SQLite. |
+| Helm | None. | To use database features, deploy PostgreSQL before installing the chart. Follow [Set up a database]({{< link-hextra path="/documentation/setup/install/helm/#database" >}}). |
+
 ## Install on a cloud provider
 
 None of the installation methods change on a cloud provider, because agentgateway runs the same proxy and reads the same configuration file everywhere. What changes is which container runtime starts the process, how the process gets an identity, and where its configuration file comes from. For those provider-specific steps, and for the configuration that reaches a provider's managed model service without an API key, see the following guides.

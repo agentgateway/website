@@ -2,17 +2,17 @@
 title: MCP authorization
 weight: 40
 description: Control access to MCP tools and resources with CEL-based authorization rules
-test: skip
 ---
 
 MCP authorization controls which tools, prompts, and resources a client can reach, by using [CEL expressions]({{< link-hextra path="/reference/cel" >}}) that evaluate against MCP method invocations rather than against an HTTP request.
 
-For the policy reference, including rule syntax, the CEL variables available at request time and in access logs, role-based access with JWT claims, and per-target rules, see [MCP authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}}).
+For the policy reference, including rule syntax, the CEL variables available at request time and in access logs, role-based access with JWT claims, and per-target rules, see [MCP authorization]({{< link-hextra path="/documentation/configuration/security/authorization/mcp-authz" >}}).
 
 ## Related
 
 {{< cards >}}
   {{< card path="/documentation/mcp/mcp-authn" title="MCP authentication" subtitle="Validate tokens so that authorization rules can match on JWT claims." >}}
+  {{< card path="/documentation/mcp/guardrails/about" title="MCP guardrails" subtitle="Compare MCP authorization with guardrail processors and target conditions." >}}
   {{< card path="/documentation/mcp/mcp-target-policies" title="MCP target policies" subtitle="Review the other policies that you can scope to an individual target." >}}
   {{< card path="/documentation/mcp/mcp-observability" title="MCP observability" subtitle="Log tool calls and their arguments after a request completes." >}}
   {{< card path="/reference/cel" title="CEL reference" subtitle="Look up the full list of supported variables and functions." >}}

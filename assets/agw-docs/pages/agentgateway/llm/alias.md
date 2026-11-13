@@ -2,7 +2,11 @@ Configure global or provider-specific aliases for your models to refer to your m
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
 > [!NOTE]
-> **Model-centric alternative**: The experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API aliases models by design, so it has no `modelAliases` field. Each resource publishes a client-facing name and rewrites it to the provider's name with a `model` transformation. For more information, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
+> **Model-centric alternative**: The {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}experimental {{< /version >}}`{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API uses a `model` transformation to map a client-facing name to the provider's model name. It has no `modelAliases` field. See [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
+{{< /version >}}
 {{< /version >}}
 
 
@@ -16,7 +20,7 @@ Configure global or provider-specific aliases for your models to refer to your m
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}} 
    metadata:
      name: openai
@@ -210,3 +214,4 @@ Configure global or provider-specific aliases for your models to refer to your m
 
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
+```

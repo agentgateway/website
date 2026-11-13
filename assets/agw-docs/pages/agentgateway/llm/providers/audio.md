@@ -1,4 +1,4 @@
-Configure self-hosted audio models like [Voxtral Small](https://huggingface.co/mistralai/Voxtral-Small-24B-2507) through {{< reuse "agw-docs/snippets/agentgateway.md" >}}. Audio models expose endpoints like `/v1/audio/transcriptions` and `/v1/models` that are handled via `Passthrough` routing — agentgateway forwards the request and response without parsing or modifying the payload.
+Configure self-hosted audio models like [Voxtral Small](https://huggingface.co/mistralai/Voxtral-Small-24B-2507) through {{< reuse "agw-docs/snippets/agentgateway.md" >}}. Audio models expose endpoints like `/v1/audio/transcriptions` and `/v1/models` that are handled via `Passthrough` routing, where agentgateway forwards the request and response without parsing or modifying the payload.
 
 ## Before you begin
 
@@ -17,7 +17,7 @@ Deploy the audio model inside your cluster (e.g., Voxtral Small via vLLM) and ex
 
 1. Deploy Voxtral Small using the official vLLM OpenAI-compatible image.
 
-   ```yaml {paths="audio-deploy"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -106,7 +106,7 @@ You should see a JSON response listing the model.
 
 Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource with `policies.ai.routes` to forward audio endpoints via `Passthrough` processing.
 
-```yaml {paths="audio-backend"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -147,7 +147,7 @@ EOF
 
 Create an HTTPRoute that routes traffic to the audio backend.
 
-```yaml {paths="audio-route"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute

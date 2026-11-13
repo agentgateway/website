@@ -11,7 +11,7 @@ spec:
   rawConfig:
     config: 
       tracing:
-        otlpEndpoint: http://jaeger-collector.jaeger.svc.cluster.local:4317
+        otlpEndpoint: http://jaeger.tracing.svc.cluster.local:4317
         otlpProtocol: grpc
         randomSampling: true
         fields:

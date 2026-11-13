@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Config for tests/ui-tabs-f.spec.ts: the "UI" tabs of the standalone observability guides
+# (traces, access logs, the Langfuse, LangSmith, and Phoenix integrations) and of the UI setup
+# guides "Secure the UI" and "Expose the UI". Each capture opens a drawer in Settings >
+# Observability, Settings > UI, or Traffic > Gateways, fills it with the guide's values, and
+# NEVER saves, so this file is never rewritten and no OTLP collector, OIDC issuer, or LLM
+# provider has to exist.
+#
+# - gateways + ui: the ui-gateway on 4001 that "Serve the UI on its own gateway" creates, already
+#   selected as the UI's public gateway, which is where the secure and expose guides start.
+# - routes: the LLM route that the Langfuse, LangSmith, and Phoenix guides start agentgateway with.
+gateways:
+  default:
+    port: 3000
+  ui-gateway:
+    port: 4001
+ui:
+  gateways: [ui-gateway]
+routes:
+- backends:
+  - ai:
+      name: openai
+      provider:
+        openAI:
+          model: gpt-4o-mini
+  policies:
+    backendAuth:
+      key: "sk-placeholder-not-a-real-key"

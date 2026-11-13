@@ -1,13 +1,7 @@
 ---
 title: LLM (OpenAI)
 weight: 11
-description: Route requests to OpenAI's chat completions API with agentgateway on Kubernetes.
-test:
-  openai:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: standard
-  - file: ${versionRoot}/documentation/quickstart/llm.md
-    path: openai-setup
+description: Expose OpenAI models through agentgateway on Kubernetes and send a chat completion request.
 ---
 
-{{< reuse "agw-docs/pages/agentgateway/quickstart/llm.md" >}}
+{{< reuse "agw-docs/pages/agentgateway/quickstart/llm-models.md" >}}

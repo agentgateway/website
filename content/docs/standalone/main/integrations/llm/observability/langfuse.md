@@ -35,15 +35,74 @@ Sign up at [langfuse.com](https://langfuse.com/) and get your API keys.
 
 ## Configuration
 
-Langfuse accepts OpenTelemetry traces directly. Configure agentgateway to export traces directly to your Langfuse deployment:
+Langfuse accepts OpenTelemetry traces directly. Configure agentgateway to export traces directly to your Langfuse deployment.
 
+Set the credentials that the tracing policy sends in its `Authorization` header. Export the variable in the environment that starts agentgateway. In `file` storage mode, the UI checks environment variable references when you save, so a save from the UI fails if agentgateway does not have the variable.
+
+```bash
+export LANGFUSE_AUTH_HEADER="$(printf '%s' '<your-public-key>:<your-secret-key>' | base64 | tr -d '\n')"
+```
+
+You can configure tracing in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+
+1. Create a configuration that routes LLM traffic, and start agentgateway.
+   ```yaml
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+   gateways:
+     default:
+       port: 3000
+   routes:
+   - backends:
+     - ai:
+         name: openai
+         provider:
+           openAI:
+             model: gpt-4o-mini
+     policies:
+       backendAuth:
+         key: "$OPENAI_API_KEY"
+   EOF
+   ```
+   ```sh
+   agentgateway -f config.yaml
+   ```
+2. Open the **Settings** > **Observability** page, such as [http://localhost:15000/ui/settings/observability](http://localhost:15000/ui/settings/observability), and click the **Tracing** card.
+3. In the **Tracing** drawer, configure the following fields.
+   1. **Host**: Enter `cloud.langfuse.com:443`. For a self-hosted instance, enter your Langfuse hostname and port.
+   2. **Backend policies**: Enter the following YAML to enable TLS and set the authentication header.
+      ```yaml
+      backendTLS: {}
+      requestHeaderModifier:
+        set:
+          Authorization: "Basic ${LANGFUSE_AUTH_HEADER}"
+      ```
+      In `hybrid` storage mode, agentgateway stores the policies exactly as you enter them and does not expand environment variable references. If you enter the reference, agentgateway sends the literal text `Basic ${LANGFUSE_AUTH_HEADER}` to Langfuse. Enter the encoded credentials in place of the reference, such as the output of `echo "$LANGFUSE_AUTH_HEADER"`, or configure tracing in your configuration file as shown in the **Config file** tab.
+   3. **Protocol**: Select **HTTP**, and enter `/api/public/otel/v1/traces` for the **Path**.
+   4. **Random sampling**: Enter `true`.
+
+   {{< reuse-image src="img/ui-tracing-langfuse.png" srcDark="img/ui-tracing-langfuse-dark.png" alt="Tracing drawer with the host cloud.langfuse.com:443, backend policies that set backendTLS and an Authorization header, the HTTP protocol, and the Langfuse traces path" >}}
+
+4. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-config:
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+frontendPolicies:
   tracing:
-    otlpEndpoint: https://cloud.langfuse.com/api/public/otel
+    host: cloud.langfuse.com:443
+    protocol: http
+    path: /api/public/otel/v1/traces
     randomSampling: true
-
+    policies:
+      backendTLS: {}
+      requestHeaderModifier:
+        set:
+          Authorization: "Basic ${LANGFUSE_AUTH_HEADER}"
 gateways:
   default:
     port: 3000
@@ -58,28 +117,14 @@ routes:
     backendAuth:
       key: "$OPENAI_API_KEY"
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Authentication
 
-Langfuse Cloud requires Basic Authentication for direct OTLP export. To authenticate, set the `OTEL_EXPORTER_OTLP_HEADERS` environment variable with your Langfuse API credentials:
+The tracing policy sends the `LANGFUSE_AUTH_HEADER` credentials in its `Authorization` header. The policy selects OTLP over HTTP, enables backend TLS, and uses the full trace ingestion path from the [Langfuse OpenTelemetry guide](https://langfuse.com/integrations/native/opentelemetry).
 
-```bash
-# Base64-encode your Langfuse public key and secret key
-export OTEL_EXPORTER_OTLP_HEADERS="Authorization=Basic $(echo -n 'your-public-key:your-secret-key' | base64)"
-
-# Also set the protocol to HTTP/protobuf (Langfuse Cloud requires HTTP, not gRPC)
-export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-```
-
-If you're using a self-hosted Langfuse instance that doesn't require authentication, you can omit the `OTEL_EXPORTER_OTLP_HEADERS` variable and point directly to your instance:
-
-```yaml
-# For self-hosted Langfuse
-config:
-  tracing:
-    otlpEndpoint: http://localhost:4317  # or your self-hosted instance URL
-    randomSampling: true
-```
+For a self-hosted instance, replace `host` with your Langfuse hostname and port, and keep the `/api/public/otel/v1/traces` path and authentication header. Remove `backendTLS` only if the destination serves plain HTTP.
 
 ## Docker Compose example
 
@@ -96,46 +141,11 @@ services:
       - ./config.yaml:/config.yaml:ro
     command: ["-f", "/config.yaml"]
     environment:
-      - OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic ${LANGFUSE_AUTH_HEADER}
-      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - LANGFUSE_AUTH_HEADER=${LANGFUSE_AUTH_HEADER}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
 ```
 
-For **self-hosted Langfuse**, you can point agentgateway directly to your instance:
-
-```yaml
-version: '3'
-services:
-  agentgateway:
-    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:latest
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./config.yaml:/config.yaml:ro
-    command: ["-f", "/config.yaml"]
-
-  langfuse:
-    image: langfuse/langfuse:latest
-    ports:
-      - "3001:3000"
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/langfuse
-      - NEXTAUTH_SECRET=your-secret
-      - NEXTAUTH_URL=http://localhost:3001
-    depends_on:
-      - db
-
-  db:
-    image: postgres:15
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=langfuse
-    volumes:
-      - langfuse-db:/var/lib/postgresql/data
-
-volumes:
-  langfuse-db:
-```
+For self-hosted Langfuse, use your existing instance and ensure that the agentgateway container can reach its hostname.
 
 ## Learn more
 

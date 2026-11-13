@@ -7,7 +7,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 ## In-cluster service host rewrites
 
 1. Create an HTTPRoute resource for the httpbin app that uses the `URLRewrite` filter to rewrite the hostname of the request. In this example, all incoming requests on the `rewrite.example` domain are rewritten to the `www.example.com` host.
-   ```yaml {paths="host-rewrite"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -78,59 +78,12 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    }
    ```
 
-{{< doc-test paths="host-rewrite" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for httpbin-rewrite HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-rewrite
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="host-rewrite" >}}
-for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: rewrite.example" && break
-  sleep 2
-done
-{{< /doc-test >}}
-
-{{< doc-test paths="host-rewrite" >}}
-YAMLTest -f - <<'EOF'
-- name: host rewrite - rewrite.example rewrites host header to www.example.com
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /headers
-    method: GET
-    headers:
-      host: "rewrite.example"
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.headers.Host[0]"
-        comparator: equals
-        value: "www.example.com"
-EOF
-{{< /doc-test >}}
-
 ## External service host rewrites
 
 1. Create an {{< reuse "/agw-docs/snippets/backend.md" >}} that represents your external service. The following example creates an {{< reuse "/agw-docs/snippets/backend.md" >}} for the `httpbin.org` domain. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "/agw-docs/snippets/backend.md" >}}
    metadata:
      name: httpbin
@@ -211,6 +164,169 @@ EOF
    }   
    ```
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+## Backend-specific host rewrites
+
+When a rule splits traffic between backends that expect different hosts, rewrite the host for one backend only. To do so, add the `URLRewrite` filter to the `backendRefs` entry of that backend instead of to the rule. Requests to the other backends in the rule keep their original host.
+
+1. Create an HTTPRoute that splits traffic on the `backend-host-rewrite.example` domain between the in-cluster httpbin app and the `httpbin.org` {{< reuse "/agw-docs/snippets/backend.md" >}} that you created in the [external service](#external-service-host-rewrites) section. Only the requests to `httpbin.org` are rewritten to the `httpbin.org` host.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: backend-host-rewrite
+     namespace: httpbin
+   spec:
+     parentRefs:
+     - name: agentgateway-proxy
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     hostnames:
+       - backend-host-rewrite.example
+     rules:
+       - backendRefs:
+           - name: httpbin
+             port: 8000
+             weight: 50
+           - name: httpbin
+             kind: {{< reuse "/agw-docs/snippets/backend.md" >}}
+             group: agentgateway.dev
+             weight: 50
+             filters:
+               - type: URLRewrite
+                 urlRewrite:
+                   hostname: "httpbin.org"
+   EOF
+   ```
+
+   |Setting|Description|
+   |--|--|
+   |`spec.rules.backendRefs.weight`| The share of requests that each backend gets. In this example, each backend gets half of the requests. |
+   |`spec.rules.backendRefs.filters.type`| The filter that applies only to the requests that the gateway forwards to this backend. In this example, the `URLRewrite` filter is used. The in-cluster httpbin backend has no filter, so its requests keep the `backend-host-rewrite.example` host. |
+   |`spec.rules.backendRefs.filters.urlRewrite.hostname`| The hostname that you want to rewrite to for the requests that the gateway forwards to this backend. |
+
+2. Send six requests to the `backend-host-rewrite.example` domain, and print the `Host` header that each backend received. Verify that the requests to the in-cluster httpbin app keep the `backend-host-rewrite.example` host, and that the requests to `httpbin.org` have the `httpbin.org` host.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   for i in $(seq 1 6); do
+     curl -s http://$INGRESS_GW_ADDRESS:80/headers -H "host: backend-host-rewrite.example" | jq -c '.headers.Host'
+   done
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   for i in $(seq 1 6); do
+     curl -s localhost:8080/headers -H "host: backend-host-rewrite.example" | jq -c '.headers.Host'
+   done
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output: The in-cluster httpbin app returns the host as a list, and `httpbin.org` returns it as a string. Because the gateway splits the traffic by weight, the order of your output differs.
+   ```console
+   ["backend-host-rewrite.example"]
+   "httpbin.org"
+   "httpbin.org"
+   ["backend-host-rewrite.example"]
+   "httpbin.org"
+   ["backend-host-rewrite.example"]
+   ```
+{{< /version >}}
+
+## Set the host with a transformation
+
+For an {{< reuse "/agw-docs/snippets/backend.md" >}} that uses a hostname, such as a static backend or an MCP target, agentgateway automatically sets the `Host` header to the hostname of the backend. This automatic host rewrite runs after transformations. If a transformation policy sets the `:authority` or `Host` header, the automatic host rewrite replaces that value, even though the policy status shows `Attached`. To keep the value from the transformation, turn off the automatic host rewrite for the route by setting `hostRewrite.mode` to `None`. This setting is also required when the transformation is in the `spec.backend` section of a policy that targets the {{< reuse "/agw-docs/snippets/backend.md" >}}.
+
+Kubernetes Service backends do not get an automatic host rewrite by default, so a transformation can set their `Host` header without this setting. If you explicitly set `hostRewrite.mode` to `Auto`, agentgateway also rewrites the host for a Kubernetes Service backend, to the hostname of the Service. The `URLRewrite` filter in the previous sections also turns off the automatic host rewrite.
+
+1. Create an {{< reuse "/agw-docs/snippets/backend.md" >}} that reaches the in-cluster httpbin app by its hostname.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "/agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: httpbin-static
+     namespace: httpbin
+   spec:
+     static:
+       host: httpbin.httpbin.svc.cluster.local
+       port: 8000
+   EOF
+   ```
+
+2. Create an HTTPRoute that matches traffic on the `transform-host.example` domain and forwards it to the {{< reuse "/agw-docs/snippets/backend.md" >}}.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: transform-host
+     namespace: httpbin
+   spec:
+     parentRefs:
+     - name: agentgateway-proxy
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     hostnames:
+       - transform-host.example
+     rules:
+       - backendRefs:
+         - name: httpbin-static
+           kind: {{< reuse "/agw-docs/snippets/backend.md" >}}
+           group: agentgateway.dev
+   EOF
+   ```
+
+3. Create an {{< reuse "/agw-docs/snippets/policy.md" >}} that sets the `:authority` header with a transformation and turns off the automatic host rewrite for the route.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "/agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: transform-host
+     namespace: httpbin
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: transform-host
+     traffic:
+       hostRewrite:
+         mode: None
+       transformation:
+         request:
+           set:
+           - name: ":authority"
+             value: '"transformed.example"'
+   EOF
+   ```
+
+   |Setting|Description|
+   |--|--|
+   |`spec.traffic.hostRewrite.mode`| Set to `None` so that the automatic host rewrite does not replace the `:authority` header from the transformation. If you leave this setting out, the backend gets the `httpbin.httpbin.svc.cluster.local` host. This setting applies to the whole route. Other hostname-based backends on the same route also lose the automatic host rewrite, so they get the host that the client sent, unless a transformation sets the host for them. |
+   |`spec.traffic.transformation.request.set`| The `:authority` header to set on the request. The value is a CEL expression, so a fixed string needs quotes. |
+
+4. Send a request to the `transform-host.example` domain. Verify that the httpbin app receives the `transformed.example` host.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -s http://$INGRESS_GW_ADDRESS:80/headers -H "host: transform-host.example" | jq -c '.headers.Host'
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -s localhost:8080/headers -H "host: transform-host.example" | jq -c '.headers.Host'
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+   ```console
+   ["transformed.example"]
+   ```
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
@@ -219,6 +335,22 @@ EOF
 kubectl delete httproute httpbin-rewrite -n httpbin
 kubectl delete httproute backend-rewrite -n httpbin
 kubectl delete {{< reuse "/agw-docs/snippets/backend.md" >}} httpbin -n httpbin
+```
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+If you created the backend-specific host rewrite, delete its HTTPRoute.
+
+```sh
+kubectl delete httproute backend-host-rewrite -n httpbin
+```
+{{< /version >}}
+
+If you set the host with a transformation, delete its resources.
+
+```sh
+kubectl delete {{< reuse "/agw-docs/snippets/policy.md" >}} transform-host -n httpbin
+kubectl delete httproute transform-host -n httpbin
+kubectl delete {{< reuse "/agw-docs/snippets/backend.md" >}} httpbin-static -n httpbin
 ```
 
 

@@ -22,7 +22,7 @@ You can find it here: [https://github.com/christian-posta/agent-governance-agw](
 
 ---
 
-AI agents [are not like microservices](https://blog.christianposta.com/difference-between-microservices-and-ai-agents/). An agent's intent is "interpreted" and explores its way to a solution for a goal. When agentgateway sits on the request path to other agents, MCP tools, or APIs as a policy enforcement point (PEP), we are one step closer to coralling this emergent behavior with policy and guardrails.
+AI agents [are not like microservices](https://blog.christianposta.com/difference-between-microservices-and-ai-agents/). An agent's intent is "interpreted" and explores its way to a solution for a goal. When agentgateway sits on the request path to other agents, MCP tools, or APIs as a policy enforcement point (PEP), we are one step closer to corralling this emergent behavior with policy and guardrails.
 
 Typical policy decision systems ([think things like OPA](https://www.openpolicyagent.org)) are good at evaluating a number of signals and making policy decisions. Think "attribute based access control". They are stateless, take some "context" to evaluate (subject, roles, the resource being accessed, the action being taken) and return a deterministic allow/deny decision.
 

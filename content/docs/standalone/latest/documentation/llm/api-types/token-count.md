@@ -2,7 +2,6 @@
 title: Token count
 weight: 60
 description: Count tokens through agentgateway using the Anthropic Messages token-count API.
-test: skip
 ---
 
 The Anthropic token-count API (`/v1/messages/count_tokens`) estimates the number of input tokens in an Anthropic Messages request before sending it to a model.
@@ -16,7 +15,7 @@ Agentgateway supports the Anthropic Messages token-count endpoint with the `anth
 In the simplified `llm` configuration, agentgateway automatically maps `/v1/messages/count_tokens` requests to the `anthropicTokenCount` route type, so no explicit route configuration is required.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -28,7 +27,7 @@ llm:
 To configure the route type explicitly, use the `gateways` and `routes` format and set the `anthropicTokenCount` route type in the `policies.ai.routes` map. Most configurations also map `/v1/messages` to the `messages` route type for the actual model request.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 4000

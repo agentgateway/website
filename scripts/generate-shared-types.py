@@ -23,6 +23,10 @@ class FieldInfo:
     description: str
     required: bool = False
     validation: list = field(default_factory=list)
+    # True for an embedded struct tagged `json:",inline"`. These are
+    # placeholders that expand_embedded_fields() replaces with the embedded
+    # type's own fields, the way crd-ref-docs renders them.
+    embedded: bool = False
 
 
 @dataclass
@@ -82,6 +86,19 @@ def extract_validation_annotations(lines: list[str], end_line: int) -> list[str]
     return validations
 
 
+def format_validation_rule(rule: str) -> str:
+    """Wrap a validation rule in a Markdown codespan.
+
+    Uses a fence one backtick longer than the longest backtick run in the
+    rule, padded with spaces, so a rule that contains backticks still renders.
+    """
+    longest = max((len(run) for run in re.findall(r"`+", rule)), default=0)
+    fence = "`" * (longest + 1)
+    if longest:
+        return f"{fence} {rule} {fence}"
+    return f"{fence}{rule}{fence}"
+
+
 def parse_struct_fields(content: str, struct_start: int, struct_end: int, lines: list[str]) -> list[FieldInfo]:
     """Parse fields from a struct definition."""
     fields = []
@@ -113,19 +130,54 @@ def parse_struct_fields(content: str, struct_start: int, struct_end: int, lines:
         re.MULTILINE
     )
     
-    # Also handle embedded structs: FieldName `json:",inline"`
+    # Also handle embedded structs: TypeName `json:",inline"`
+    # (optionally a pointer or package-qualified, for example *pkg.TypeName)
     embedded_pattern = re.compile(
-        r'^\s*(\w+)\s+`json:"([^"]+)"',
+        r'^[ \t]*(\*?(?:\w+\.)?\w+)[ \t]+`json:"([^"]*)"',
         re.MULTILINE
     )
-    
-    for match in field_pattern.finditer(field_content):
+
+    # Collect both kinds of field with their position, so embedded fields
+    # keep their place in the struct when they are expanded later.
+    matches = [(m.start(), "field", m) for m in field_pattern.finditer(field_content)]
+    matches += [(m.start(), "embedded", m) for m in embedded_pattern.finditer(field_content)]
+    matches.sort(key=lambda x: x[0])
+
+    for _, kind, match in matches:
+        if kind == "embedded":
+            embedded_type = match.group(1)
+            json_tag = match.group(2)
+            json_name = json_tag.split(",")[0]
+            if json_name == "-":
+                continue  # json:"-" means the field is never serialized
+            if json_name:
+                # An embedded struct with its own JSON name is a regular,
+                # nested field rather than an inline one.
+                fields.append(FieldInfo(
+                    name=embedded_type.lstrip("*").split(".")[-1],
+                    go_type=embedded_type,
+                    json_name=json_name,
+                    description="",
+                    required="omitempty" not in json_tag,
+                ))
+            else:
+                fields.append(FieldInfo(
+                    name=embedded_type.lstrip("*").split(".")[-1],
+                    go_type=embedded_type,
+                    json_name="",
+                    description="",
+                    embedded=True,
+                ))
+            continue
+
         field_name = match.group(1)
         field_type = match.group(2).strip()
         json_tag = match.group(3)
         
         # Parse json tag
         json_parts = json_tag.split(",")
+        if json_parts[0] == "-":
+            continue  # json:"-" means the field is never serialized
         json_name = json_parts[0] if json_parts[0] else field_name
         required = "omitempty" not in json_tag
         
@@ -220,6 +272,48 @@ def parse_go_file(filepath: Path, source: str = "", is_enterprise: bool = False)
             ))
     
     return types
+
+
+def expand_embedded_fields(all_types: list[TypeInfo]) -> None:
+    """Replace inline embedded structs with the embedded type's fields.
+
+    Runs after every file is parsed, because the embedded type is often
+    defined in a different file from the type that embeds it. Prefers a
+    definition from the same source directory, then any definition with the
+    same name. Embedded types that are not in the parsed sources (for
+    example metav1.TypeMeta) are dropped, as they were before.
+    """
+    by_name: dict[str, list[TypeInfo]] = {}
+    for t in all_types:
+        if t.kind == "struct":
+            by_name.setdefault(t.name, []).append(t)
+
+    def resolve(type_name: str, source: str) -> Optional[TypeInfo]:
+        candidates = by_name.get(type_name, [])
+        for c in candidates:
+            if c.source == source:
+                return c
+        return candidates[0] if candidates else None
+
+    def expanded(t: TypeInfo, stack: tuple[str, ...]) -> list[FieldInfo]:
+        result = []
+        for f in t.fields:
+            if not f.embedded:
+                result.append(f)
+                continue
+            inner_name = f.go_type.lstrip("*").split(".")[-1]
+            inner = resolve(inner_name, t.source)
+            if inner is None:
+                print(f"INFO: {t.name}: embedded type {f.go_type} not found in sources; skipping its fields")
+                continue
+            if inner.name in stack:
+                continue  # guard against embedding cycles
+            result.extend(expanded(inner, stack + (inner.name,)))
+        return result
+
+    for t in all_types:
+        if t.kind == "struct" and any(f.embedded for f in t.fields):
+            t.fields = expanded(t, (t.name,))
 
 
 def format_go_type_as_link(go_type: str) -> str:
@@ -324,7 +418,10 @@ def generate_markdown(types: list[TypeInfo], referenced_types: set[str]) -> str:
         if type_info.validation:
             output.append("**Validation:**")
             for v in type_info.validation:
-                output.append(f"- {v}")
+                # Render each rule as a codespan so Markdown extensions leave
+                # it alone. Otherwise CEL regexes like '^https?://[^/?#]+$'
+                # turn into superscript and quotes become typographic.
+                output.append(f"- {format_validation_rule(v)}")
             output.append("")
         
         if type_info.fields:
@@ -458,7 +555,11 @@ def main():
                 all_types.extend(types)
                 if types:
                     print(f"INFO: Parsed {dir_name}/{go_file.name}: found {len(types)} types")
-    
+
+    # Pull the fields of inline embedded structs (for example
+    # PolicyBackendEndpoint's backendRef and url) into the embedding type.
+    expand_embedded_fields(all_types)
+
     # Find all broken links in the document
     broken_links = find_all_broken_links(doc_file)
     print(f"INFO: Found {len(broken_links)} broken links: {broken_links}")

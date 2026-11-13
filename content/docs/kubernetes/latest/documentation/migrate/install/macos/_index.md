@@ -1,6 +1,6 @@
 ---
 title: "macOS installation"
-description: Install ingress2gateway on macOS systems
+description: Install ingress2gateway on macOS systems.
 weight: 10
 ---
 
@@ -9,7 +9,7 @@ weight: 10
 1. Set the environment variables.
 
     ```bash
-    VERSION=v0.4.0
+    VERSION=v0.5.0
     OS=Darwin
     # One of arm64|x86_64
     ARCH=arm64
@@ -37,10 +37,10 @@ weight: 10
     grep -F "  ingress2gateway_${OS}_${ARCH}.tar.gz" checksums.txt | shasum -a 256 --check
     ```
 
-    If valid, the output is:
+    If valid, the output names the tarball and ends in `OK`, such as:
 
-    ```bash
-    ingress2gateway_$OS_$ARCH.tar.gz: OK
+    ```console
+    ingress2gateway_Darwin_arm64.tar.gz: OK
     ```
 
 4. Extract the tarball.

@@ -2,7 +2,6 @@
 title: LLM playground
 weight: 85
 description: Send a test chat completion through the gateway in the agentgateway UI.
-test: skip
 ---
 
 Use the built-in LLM playground in the agentgateway UI to send a chat completion request through your configured LLM provider. The playground sends a real request through the gateway, so you can confirm that your provider, model, and policies work before you point an application at agentgateway.
@@ -27,7 +26,7 @@ Use the built-in LLM playground in the agentgateway UI to send a chat completion
 
 3. If you see a **Browser access is not allowed** notice, click **Apply CORS** so the playground can call the LLM listener from the UI.
 
-4. In the **Model** list, select a model. If your configuration uses a wildcard (`*`) model, enter a specific model name in the **Specific model** field, such as `gpt-4o-mini`.
+4. In the **Model** list, select a model. If several models share a match pattern, such as `*`, the list shows the label and details that distinguish each model. If your configuration uses a wildcard model, enter a specific model name in the **Specific model** field, such as `gpt-4o-mini`. If the selected model uses exact header matches, the playground sends those headers with the test request.
 
 5. Optional: Expand **System prompt** to review or change the system prompt.
 
@@ -37,6 +36,14 @@ Use the built-in LLM playground in the agentgateway UI to send a chat completion
 
    {{< reuse-image-light src="img/ui-llm-playground.png" >}}
    {{< reuse-image-dark srcDark="img/ui-llm-playground-dark.png" >}}
+
+## Authentication behavior
+
+The LLM and MCP playgrounds omit browser credentials, including cookies and HTTP basic authentication, when sending requests to the gateway.
+
+For a bearer token in the LLM playground, select a saved key from **Virtual API key**. Alternatively, select **Raw value** and enter the token in **Raw API key**. The playground sends it in an `Authorization: Bearer` header.
+
+In the MCP playground, expand **Authorization header** and enter the token in **Bearer token**.
 
 ## Next steps
 

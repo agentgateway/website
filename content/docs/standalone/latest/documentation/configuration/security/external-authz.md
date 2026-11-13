@@ -2,19 +2,11 @@
 title: External authorization
 weight: 20
 description: Delegate authorization decisions to external services like OPA.
-test:
-  external-authz:
-  - file: ${versionRoot}/documentation/configuration/security/external-authz.md
-    path: external-authz
 ---
 
 Attaches to: {{< badge content="Listener" path="/documentation/configuration/listeners/">}} {{< badge content="Route" path="/documentation/configuration/routes/">}} {{< badge content="Backend" path="/documentation/configuration/backends/">}}
 
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
-
-{{< doc-test paths="external-authz" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
 
 When {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} decisions need to be made out-of-process, use an external authorization policy.
 This policy has agentgateway send the request to an external server, such as [Open Policy Agent](https://www.openpolicyagent.org/docs/envoy) which decides whether the request is allowed or denied.
@@ -30,10 +22,43 @@ Agentgateway is API-compatible with the Envoy External Authorization gRPC servic
 
 When an ExtAuthz server returns header modifications, agentgateway uses `insert` instead of `append` for response headers. This ensures headers are properly set rather than potentially duplicated.
 
+By default, gRPC external authorization calls time out after 2 seconds. To use a different timeout, set `policies.http.requestTimeout`.
+
+You can configure gRPC external authorization in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same `extAuthz` policy as the **Simplified (LLM)** example in the **Config file** tab.
+
+1. Create a configuration with an LLM model, but no external authorization policy. You add the policy in the UI.
+   ```yaml
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+   ```
+2. Start agentgateway with this configuration.
+3. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **External authz** tile.
+4. In the **Target** section, replace the default **Host** with `localhost:9000`.
+5. In the **Authorization behavior** section, keep **gRPC** for the **Protocol** and **Deny** for the **Failure mode**.
+6. Optional: In the **gRPC details** section, add the metadata to send to the authorization service. In **Metadata**, enter `dev.agentgateway.jwt` as the key and `{"claims": jwt}` as the CEL expression, and click **Add**.
+
+   {{< reuse-image src="img/ui-llm-policy-ext-authz-grpc.png" srcDark="img/ui-llm-policy-ext-authz-grpc-dark.png" alt="External authorization drawer with the gRPC details and the dev.agentgateway.jwt metadata entry" >}}
+
+7. Click **Save policy**.
+
+You can also add an external authorization policy in **MCP** > **Policies**, or in the **Route policies** section of a route in **Traffic** > **Routes**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     extAuthz:
@@ -53,7 +78,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -74,7 +99,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -93,78 +118,8 @@ routes:
 ```
 {{< /tab >}}
 {{< /tabs >}}
-
-{{< doc-test paths="external-authz" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The gRPC extAuthz policy example config is accepted by agentgateway in all
-#     three configuration forms: routing-based (gateways), simplified LLM
-#     (llm.policies), and simplified MCP (mcp.policies).
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That authorization decisions are actually enforced at runtime — requires a
-#     running external authorization service the page omits.
-#   * The bare `extAuthz:` snippets later on the page are focused fragments
-#     (no `gateways:`), so they are not tested.
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- policies:
-    extAuthz:
-      host: localhost:9000
-      protocol:
-        grpc:
-          # Optional: metadata to send to the external authorization service
-          # The value is a CEL expression
-          metadata:
-            dev.agentgateway.jwt: '{"claims": jwt}'
-  backends:
-  - host: localhost:8080
-EOF
-agentgateway -f config.yaml --validate-only
-
-cat <<'EOF' > config-llm.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  policies:
-    extAuthz:
-      host: localhost:9000
-      protocol:
-        grpc:
-          # Optional: metadata to send to the external authorization service
-          # The value is a CEL expression
-          metadata:
-            dev.agentgateway.jwt: '{"claims": jwt}'
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-EOF
-agentgateway -f config-llm.yaml --validate-only
-
-cat <<'EOF' > config-mcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  port: 3000
-  policies:
-    extAuthz:
-      host: localhost:9000
-      protocol:
-        grpc:
-          # Optional: metadata to send to the external authorization service
-          # The value is a CEL expression
-          metadata:
-            dev.agentgateway.jwt: '{"claims": jwt}'
-  targets:
-  - name: everything
-    stdio:
-      cmd: npx
-      args: ["@modelcontextprotocol/server-everything"]
-EOF
-agentgateway -f config-mcp.yaml --validate-only
-{{< /doc-test >}}
+{{% /tab %}}
+{{< /tabs >}}
 
 The remaining examples in this section show only the `extAuthz` policy. Attach each one to a listener, route, or backend as needed.
 
@@ -208,15 +163,34 @@ extAuthz:
 HTTP External Authorization allows sending plain HTTP requests to an authorization service.
 If the service returns a 2xx status code, the request is allowed. Otherwise, it is denied.
 
+By default, HTTP external authorization calls time out after 2 seconds. To use a different timeout, set `policies.http.requestTimeout`.
+
 Example configuration: For the full set of options, see the [configuration reference]({{< link-hextra path="/reference/configuration" >}}).
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **External authz** policy drawer, such as in **LLM** > **Policies**.
+2. In the **Target** section, enter `localhost:9000` for the **Host**.
+3. In the **Authorization behavior** section, select **HTTP** for the **Protocol**.
+4. In **Include request headers**, enter `cookie`, and click **Add**. By default, only the `Authorization` header is included.
+
+   {{< reuse-image src="img/ui-llm-policy-ext-authz-http.png" srcDark="img/ui-llm-policy-ext-authz-http-dark.png" alt="External authorization drawer with the HTTP protocol and the cookie request header" >}}
+
+5. In the **HTTP details** section, enter `"/auth" + request.path` for the **Path expression**. This expression sends the authorization request to `/auth/<original request path>`.
+6. In **Include response headers**, enter `x-auth-request-user`, and click **Add**. This step is optional. It passes the user from the authorization response to the upstream service.
+
+   {{< reuse-image src="img/ui-llm-policy-ext-authz-http-details.png" srcDark="img/ui-llm-policy-ext-authz-http-details-dark.png" alt="External authorization drawer with the HTTP path expression and the x-auth-request-user response header" >}}
+
+7. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 extAuthz:
   host: localhost:9000
+  includeRequestHeaders:
+    # By default, only the Authorization header is included.
+    - cookie
   protocol:
-    includeRequestHeaders:
-      # By default, only the Authorization header is included.
-      - cookie
     http:
       # We send to /auth/<original request path>.
       path: |
@@ -226,6 +200,8 @@ extAuthz:
       # This is not required, and is just an example
       - x-auth-request-user
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 For advanced cases, configure settings for the request to the authorization service, as well as the response from the authorization service.
 For example, configure `redirect` to redirect users to a sign-in page, and `metadata` to extract information from the authorization response to include in logs. Review the following table for more advanced options.
@@ -240,7 +216,7 @@ For example, configure `redirect` to redirect users to a sign-in page, and `meta
 |`includeRequestHeaders`|Specific headers to include in the authorization request.<br>If unset, the gRPC protocol sends all request headers. The HTTP protocol sends only 'Authorization'.|
 |`includeRequestBody`|Options for including the request body in the authorization request|
 |`includeRequestBody.maxRequestBytes`|Maximum size of request body to buffer (default: 8192)|
-|`includeRequestBody.allowPartialMessage`|If true, send partial body when max_request_bytes is reached|
+|`includeRequestBody.allowPartialMessage`|If true, send partial body when the body exceeds `maxRequestBytes`|
 
 ## Backend connection policies
 
@@ -266,7 +242,7 @@ extAuthz:
 |-------|-------------|
 | `policies.backendTLS` | TLS settings for the connection to the authorization service. Use `root` to specify a CA cert, `hostname` to override the SNI hostname, `insecure: true` to skip certificate verification (not recommended for production). |
 | `policies.backendAuth` | Credentials to authenticate to the authorization service. Supports `key` (API key from file or inline), `gcp`, `aws`, and `azure` auth. |
-| `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). |
+| `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). If unset, external authorization calls time out after 2 seconds for both the gRPC and HTTP protocols. |
 | `policies.tcp.connectTimeout` | Connection timeout as a duration string, such as `3s`. |
 
 ## Backend-level external authorization
@@ -287,28 +263,6 @@ routes:
           grpc: {}
 ```
 
-{{< doc-test paths="external-authz" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The backend-level extAuthz policy example config is accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That backend-level authorization is actually enforced at runtime —
-#     requires a running external authorization service the page omits.
-cat <<'EOF' > config2.yaml
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - host: localhost:8080
-    policies:
-      extAuthz:
-        host: localhost:9000
-        protocol:
-          grpc: {}
-EOF
-agentgateway -f config2.yaml --validate-only
-{{< /doc-test >}}
-
 ## Conditional execution
 
 To choose between multiple external authorization servers based on the request, use the `conditional` field. For example, you can send admin paths to a stricter authorization server and route every other request to a standard one. For details, see [Conditional policies]({{< link-hextra path="/documentation/configuration/policies/conditional-policies" >}}).
@@ -328,7 +282,7 @@ Configure connection-level authorization under the `frontendPolicies.networkExtA
 > The `networkExtAuthz` policy calls the authorization service over HTTP only, so you must set `protocol.http` explicitly. The `protocol` field defaults to `grpc`, which means that a configuration that omits it fails to start with `frontendPolicies.networkExtAuthz only supports protocol.http`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   networkExtAuthz:
     host: localhost:9000
@@ -346,7 +300,7 @@ routes:
 Because the policy runs before protocol handling, it also applies to a gateway that carries non-HTTP traffic.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   networkExtAuthz:
     host: localhost:9000

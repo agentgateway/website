@@ -5,7 +5,7 @@ Agentgateway reads a configuration file at startup, and that file alone is enoug
 You set the database in the `config.database` field of your configuration file. Because the field is in the `config` section, agentgateway applies it at startup only, so a change to it takes effect after a restart.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   database:
     url: sqlite://./data.db
@@ -51,6 +51,16 @@ SQLite writes to a file, so agentgateway needs a writable directory for it. Post
 > [!WARNING]
 > Do not point more than one agentgateway instance at the same SQLite file. Give each instance its own file instead, or use PostgreSQL. With one file for each instance, the **Analytics** page shows the traffic of the instance that you are connected to, not the traffic of the whole deployment.
 
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+#### Encrypt PostgreSQL connections with TLS {#postgres-tls}
+
+To control TLS for PostgreSQL, add the `sslmode` parameter to the URL. By default, agentgateway encrypts the connection when the server supports TLS, but it does not verify the server certificate. To verify the certificate and the hostname, set `sslmode=verify-full`. Agentgateway then checks the certificate against the trusted root certificates of the operating system. For a server certificate from a private certificate authority (CA), also set `sslrootcert` to the path of the CA certificate. Otherwise, agentgateway fails to start with an `invalid peer certificate: UnknownIssuer` error.
+
+```txt
+postgres://user:password@host:5432/dbname?sslmode=verify-full&sslrootcert=/config/ca.crt
+```
+{{% /version %}}
+
 ## Before you begin
 
 [Install agentgateway]({{< link-hextra path="/documentation/setup/install/" >}}) as a binary, a Docker container, or a Kubernetes Deployment with Helm.
@@ -87,7 +97,7 @@ When you start agentgateway with no configuration file, the generated configurat
 2. Review the generated configuration. The `config.database.url` field points at a SQLite file next to the configuration file. The following example is the file that a container generates. The binary generates the same file, with the absolute path of your user config directory in the URL.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      database:
        url: sqlite:///config/data.db
@@ -111,7 +121,7 @@ A configuration file that you write yourself has no database until you add one. 
    The path is relative to the directory that you start agentgateway from.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      database:
        url: sqlite://./data.db
@@ -133,7 +143,7 @@ A configuration file that you write yourself has no database until you add one. 
    Point the URL at a directory that you mount into the container. The example uses a `/data` path, because a mount of a single configuration file leaves no writable directory for the SQLite file.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      database:
        url: sqlite:///data/data.db
@@ -184,144 +194,13 @@ A configuration file that you write yourself has no database until you add one. 
 > [!IMPORTANT]
 > If agentgateway cannot create the SQLite file, the process exits with `failed to initialize request log database`. In a container, this error usually means that the directory in the URL is not mounted, or that the mount is read-only. Point the URL at a directory that agentgateway can write to, and mount that directory into the container.
 
-{{< doc-test paths="standalone-database" >}}
-# WHAT THIS TEST VALIDATES:
-#   * Without config.database, the admin API rejects an analytics query with a 500 -- the
-#     "request log database is not configured" behavior that the About section describes.
-#   * Adding config.database.url and restarting makes the same query succeed, which is the
-#     "Add a database to your own configuration file" procedure for the binary.
-#   * The binary accepts the documented sqlite:// URL form and creates the database file.
-#   * The Logs page's API (/api/logs/search) follows the same rule as the Analytics API.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The Docker tabs -- external dependency: standalone doc tests run the binary, not containers.
-#   * The Helm sections -- external dependency: they need a cluster, the chart, and PostgreSQL.
-#   * The generated-configuration section -- requires config the page omits: it starts
-#     agentgateway with no -f, which writes into the user config directory.
-#   * The Verify section's LLM request and the Analytics page contents -- external dependency:
-#     an LLM provider key.
-#   * The hybrid-storage and API key budget rows of the features table -- different layer:
-#     those failures are startup errors covered by the Configuration storage and Budget limits pages.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-# Baseline: a config file with no config.database section.
-cat > config-nodb.yaml <<'NODB'
-config:
-  adminAddr: localhost:15000
-gateways:
-  default:
-    port: 4000
-ui:
-  gateways: default
-NODB
-agentgateway -f config-nodb.yaml --validate-only
-stop_gateway() {
-  [ -n "${AGW_PID:-}" ] || return 0
-  kill "$AGW_PID" 2>/dev/null || true
-  wait "$AGW_PID" 2>/dev/null || true
-  AGW_PID=""
-}
-trap stop_gateway EXIT
-agentgateway -f config-nodb.yaml > agw-nodb.log 2>&1 &
-AGW_PID=$!
-sleep 4
-{{< /doc-test >}}
-
-{{< doc-test paths="standalone-database" >}}
-YAMLTest -f - <<'NODBTEST'
-- name: Analytics API rejects the query when no database is configured
-  http:
-    url: "http://localhost:15000"
-    path: /api/logs/analytics/summary
-    method: POST
-    headers:
-      content-type: application/json
-    body: |
-      {}
-  source:
-    type: local
-  expect:
-    statusCode: 500
-  retries: 3
-- name: Logs API rejects the query when no database is configured
-  http:
-    url: "http://localhost:15000"
-    path: /api/logs/search
-    method: POST
-    headers:
-      content-type: application/json
-    body: |
-      {}
-  source:
-    type: local
-  expect:
-    statusCode: 500
-NODBTEST
-{{< /doc-test >}}
-
-{{< doc-test paths="standalone-database" >}}
-# Add config.database.url, then restart, which is what the procedure tells the reader to do.
-stop_gateway
-cat > config-db.yaml <<'WITHDB'
-config:
-  adminAddr: localhost:15000
-  database:
-    url: sqlite://./data.db
-gateways:
-  default:
-    port: 4000
-ui:
-  gateways: default
-WITHDB
-agentgateway -f config-db.yaml --validate-only
-agentgateway -f config-db.yaml > agw-db.log 2>&1 &
-AGW_PID=$!
-sleep 4
-if [ ! -f ./data.db ]; then
-  echo "FAIL: agentgateway did not create the SQLite database file at ./data.db"
-  exit 1
-fi
-{{< /doc-test >}}
-
-{{< doc-test paths="standalone-database" >}}
-YAMLTest -f - <<'WITHDBTEST'
-- name: Analytics API answers the query when a database is configured
-  http:
-    url: "http://localhost:15000"
-    path: /api/logs/analytics/summary
-    method: POST
-    headers:
-      content-type: application/json
-    body: |
-      {}
-  source:
-    type: local
-  expect:
-    statusCode: 200
-  retries: 3
-- name: Logs API answers the query when a database is configured
-  http:
-    url: "http://localhost:15000"
-    path: /api/logs/search
-    method: POST
-    headers:
-      content-type: application/json
-    body: |
-      {}
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-    - path: "$.logs"
-      comparator: exists
-      value: ""
-WITHDBTEST
-{{< /doc-test >}}
-
 ## Helm {#helm}
 
-The Helm chart renders your configuration into a ConfigMap and mounts it read-only, and the chart sets no database for you. As a result, a default installation starts with no database, and the **Analytics** and **Logs** pages report `request log database is not configured`.
+The Helm chart mounts your configuration as a read-only ConfigMap. The chart does not install a database. Without a database, the **Analytics** and **Logs** pages report `request log database is not configured`.
 
-To add a database, choose one of the following options.
+For a new installation, follow [Set up a database]({{< link-hextra path="/documentation/setup/install/helm/#database" >}}) in the Helm installation guide.
+
+For an existing installation, choose one of the following options.
 
 | Option | Storage mode | Use it when |
 | --- | --- | --- |
@@ -405,18 +284,30 @@ In the default `readonly` mode, the chart sets the storage mode and nothing else
 
 ### Add PostgreSQL in database mode {#helm-postgres}
 
-The chart's `database` mode sets both `config.database.url` and `config.storage.mode: hybrid` for you. One PostgreSQL instance then serves the request log, the configuration overlay, and API key budgets.
+The chart's `database` mode sets both `config.database.url` and `config.storage.mode: hybrid` for you. One PostgreSQL instance then serves the request log, the configuration overlay, and API key budgets.{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} If you do not set an MCP session key, agentgateway also generates one and stores it in the `agw_config_resources` table. Every replica then encrypts session IDs with the same key. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).{{< /version >}}
 
-1. Deploy PostgreSQL. For the example manifests, see [Deploy PostgreSQL]({{< link-hextra path="/documentation/setup/storage/#deploy-postgresql" >}}).
+Deploy PostgreSQL in the namespace of your agentgateway release. For production, use a managed PostgreSQL service or an operator that handles backups and failover. The following steps deploy one PostgreSQL instance for testing.
 
-2. Create a values file that sets the mode and the connection URL.
+{{< reuse "agw-docs/standalone/helm-postgres-deploy.md" >}}
+
+Then, switch the release to `database` mode.
+
+1. Create a values file with the mode, connection URL, and password environment variable.
+
+   The `extraEnv` value loads `POSTGRES_PASSWORD` from the Secret. At startup, the proxy replaces `${POSTGRES_PASSWORD}` in the URL with that environment variable's value. The ConfigMap contains the reference instead of the password.
 
    ```yaml
    cat <<'EOF' > values.yaml
    mode: database
    database:
      postgres:
-       url: postgres://agw:password@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+       url: postgres://agw:${POSTGRES_PASSWORD}@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+   extraEnv:
+   - name: POSTGRES_PASSWORD
+     valueFrom:
+       secretKeyRef:
+         name: agentgateway-postgres
+         key: POSTGRES_PASSWORD
    config:
      gateways:
        default:
@@ -432,28 +323,29 @@ The chart's `database` mode sets both `config.database.url` and `config.storage.
    > [!NOTE]
    > Do not set `config.config.database` in `database` mode. The chart derives the field from the `mode` and `database.postgres.url` values, and overwrites anything that you set for it yourself.
 
-3. Upgrade the release with your values file.
+2. Upgrade the release with your values file.
 
    {{< reuse "agw-docs/standalone/helm-upgrade-command.md" >}}
 
-4. Confirm that the tables exist. Agentgateway creates them on the first startup.
+3. Confirm that the tables exist. Agentgateway creates them on the first startup.
 
    ```sh
    kubectl exec -n {{< reuse "agw-docs/snippets/namespace.md" >}} deploy/postgres \
      -- psql -U agw -d agw -c '\dt'
    ```
 
-   Example output: The `request_logs` and `request_log_payloads` tables hold the data for the **Analytics** page, `budget_usage` holds API key budgets, and `agw_config_resources` holds the configuration that you save in the UI.
+   Expect the following tables, including `request_logs` for LLM logs and `agw_config_resources` for UI configuration changes:
 
    ```txt
-                  List of relations
-    Schema |         Name         | Type  | Owner
-   --------+----------------------+-------+-------
-    public | agw_config_resources | table | agw
-    public | budget_usage         | table | agw
-    public | request_log_payloads | table | agw
-    public | request_logs         | table | agw
-   (4 rows)
+                          List of relations
+    Schema |                 Name                 | Type  | Owner
+   --------+--------------------------------------+-------+-------
+    public | _agentgateway_request_log_migrations | table | agw
+    public | agw_config_resources                 | table | agw
+    public | budget_usage                         | table | agw
+    public | request_log_payloads                 | table | agw
+    public | request_logs                         | table | agw
+   (5 rows)
    ```
 
 ## Verify that agentgateway records requests {#verify}
@@ -518,6 +410,40 @@ Agentgateway records LLM requests only, so send a request to an LLM model to con
 
 4. Open the **LLM** > **Analytics** page in the UI, such as <http://localhost:15000/ui/llm/analytics>. The request appears in the chart and in the breakdown. For more information about the controls on the page, see [Cost dashboard]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/" >}}).
 
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+## Verify database logging with agctl {#agctl}
+
+After you send the LLM request in [Verify that agentgateway records requests](#verify), use agctl to confirm that agentgateway stored the request. First, [install agctl and connect it to your gateway]({{< link-hextra path="/documentation/operations/config-resources/#connect" >}}). For a Helm installation, keep the port-forward to the admin address running.
+
+1. List the recorded requests.
+
+   ```sh
+   agctl standalone logs --limit 10
+   ```
+
+   Example output:
+
+   ```text
+   TIME                 STATUS  DURATION  PROVIDER  MODEL        TOKENS(IN/OUT)  COST       ID
+   2026-10-20 15:57:26  200     26ms      openai    gpt-4o-mini  10/9            $0.000007  01a15ae3-e0db-7096-9132-9f7b45a0238a
+   ```
+
+2. Summarize the recorded traffic.
+
+   ```sh
+   agctl standalone analytics --since 1h
+   ```
+
+   Example output:
+
+   ```text
+   REQUESTS  ERRORS  TOKENS  COST       AVG TTFT  TOK/S  CACHE HIT
+   1         0       19      $0.000007  -         -      0.0%
+   ```
+
+Agentgateway writes to the database asynchronously. An empty result can mean that agentgateway did not store the request yet. If the CLI reports that no database is configured, connect the gateway to a database and restart it, as described earlier on this page. For filters and request details, see [View LLM request logs with agctl]({{< link-hextra path="/documentation/observability/access-logs/view/#cli" >}}).
+{{< /version >}}
+
 <!--TODO troubleshooting
 
 ## Troubleshooting
@@ -538,10 +464,10 @@ The configuration that agentgateway loaded has no `config.database` field and no
 
 **How to fix it**
 
-Add a database for your installation method, then restart agentgateway. See [Binary and Docker](#binary-docker) or [Helm](#helm). To confirm which configuration agentgateway loaded, review the effective configuration.
+Add a database for your installation method, then restart agentgateway. See [Binary and Docker](#binary-docker) or [Helm](#helm). To confirm which configuration agentgateway loaded, review the configuration dump on the admin address.
 
 ```sh
-curl -s http://localhost:15000/api/config/effective | jq '.config.database'
+curl -s http://localhost:15000/config_dump | jq '.config.database'
 ```
 
 ### The Analytics page is empty after a request {#troubleshoot-empty}

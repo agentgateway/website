@@ -67,14 +67,112 @@ A model catalog is JSON with the following high-level structure. Field names are
 ```
 {{% /version %}}
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+For page-billed document models, set `perPage` instead of token rates. The following example charges `$0.005` for each page that the Mistral OCR model processes. The provider id must match the provider that serves the model, such as `mistral` for the native Mistral provider.
+
+```json
+{
+  "providers": {
+    "mistral": {
+      "models": {
+        "mistral-ocr-latest": {
+          "rates": { "perPage": "0.005" }
+        }
+      }
+    }
+  }
+}
+```
+{{% /version %}}
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+For audio models that bill by duration, set `perAudioMinute`. The following example charges `$0.006` for each minute of audio that the OpenAI `whisper-1` model transcribes or translates.
+
+```json
+{
+  "providers": {
+    "openai": {
+      "models": {
+        "whisper-1": {
+          "rates": { "perAudioMinute": "0.006" }
+        }
+      }
+    }
+  }
+}
+```
+{{% /version %}}
+
 Key points:
 
 - Lookups are by **provider id** (such as `openai`, `anthropic`, or `gcp.gemini`) and **model name** (such as `gpt-4o-mini`).
 - Rates are **strings** (exact decimals), in **USD per 1,000,000 tokens**.
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}- `perPage` is **USD per page** for document or OCR models that report page usage, not USD per 1,000,000 tokens.{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}- `perAudioMinute` is **USD per minute of audio** for transcription and translation models that report the audio duration, not USD per 1,000,000 tokens.{{< /version >}}
 - If a rate is omitted, that token type is not priced for the model.
 - `tiers[]` is optional. Each tier selects alternate `rates` when the request context length is **over** the tier's `contextOver` value. Tiers must be ordered by strictly increasing `contextOver`.
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}- Set `serviceTier` to `standard`, `flex`, `priority`, or `reserved` to select rates by served tier. Omit it to match any tier. Omit `contextOver` to apply the rule from zero context tokens. See [Service tiers](#service-tiers) for tier detection.
+- Within each `serviceTier` group, `contextOver` values must strictly increase. Entries without `serviceTier` form a separate group. Different groups can reuse `contextOver` values.
+- A `serviceTier` tier overlays the rates for the request's context length. A rate that the `serviceTier` tier omits falls back to the standard rate for that context length.{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}- To price prompt-cache writes with an extended time to live (TTL) separately, add a `cacheWriteDetails` map beside `cacheWrite` in a model's `rates` or a tier's `rates`. The keys are `1h` for Anthropic 1-hour writes and `12h` for OpenAI 12-hour writes, such as `"cacheWriteDetails": {"1h": "10"}`. Writes for a TTL that you omit use the `cacheWrite` rate. For more information, see [Cache writes by TTL](#cache-write-details).{{< /version >}}
 {{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
-- `tags[]` is optional. Tags describe a model instead of pricing it, so a model entry can carry tags with no rates at all. For more information, see [Model tags](#model-tags).
+- `tags[]` is optional. Tags describe a model instead of pricing it, so a model entry can carry tags with no rates at all.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,2.2.x" >}} For more information, see [Model tags](#model-tags).{{< /version >}}
+{{% /version %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+- A model entry can also carry descriptive metadata. Use `name` for the display name. Use `status` for `alpha`, `beta`, or `deprecated`. If `status` is omitted, the model is generally available.
+- Use `released` for a `YYYY-MM-DD` or `YYYY-MM` release date.
+- Use `limits` for token limits and `modalities` for accepted input and output types.
+- Use `capabilities` for supported features. In `capabilities`, omitted fields are unknown.
+- Use `reasoning` for accepted reasoning controls.
+
+For example, the following model entry carries pricing and descriptive metadata:
+
+```json
+{
+  "rates": { "input": "1", "output": "5", "cacheRead": "0.1" },
+  "name": "Claude Haiku 4.5",
+  "released": "2025-10-15",
+  "limits": {
+    "context": 200000,
+    "output": 64000
+  },
+  "modalities": {
+    "input": ["text", "image", "pdf"],
+    "output": ["text"]
+  },
+  "capabilities": {
+    "reasoning": true,
+    "structuredOutput": true,
+    "toolCall": true,
+    "temperature": true
+  },
+  "reasoning": {
+    "budgetTokens": {
+      "min": 1024
+    }
+  }
+}
+```
+{{% /version %}}
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+The following example adds a Flex tier that applies from zero context tokens, plus a second Flex tier for requests over 200,000 context tokens:
+
+```json
+{
+  "tiers": [
+    {
+      "serviceTier": "flex",
+      "rates": { "input": "1.0", "output": "6", "cacheRead": "0.1" }
+    },
+    {
+      "contextOver": 200000,
+      "serviceTier": "flex",
+      "rates": { "input": "2.0", "output": "9", "cacheRead": "0.2" }
+    }
+  ]
+}
+```
 {{% /version %}}
 
 The following minimal example prices two OpenAI models and one tiered Gemini model:

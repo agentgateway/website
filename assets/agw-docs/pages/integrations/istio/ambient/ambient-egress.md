@@ -139,7 +139,7 @@ metadata:
   annotations:
     agentgateway.dev/internal-ports: "80"
 spec:
-  gatewayClassName: agentgateway
+  gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
   infrastructure:
     parametersRef:
       group: agentgateway.dev
@@ -349,9 +349,9 @@ Start with these baseline changes:
 
 Then apply egress workflows that are especially useful for meshed agents:
 
-1. Centralized credential injection for upstream AI providers, such as [OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn-oauth/" >}}), [Cross App Access]({{< link-hextra path="/documentation/security/backend-authn-cross-app-access/" >}}), or [JWT signing]({{< link-hextra path="/documentation/security/backend-authn-jwt-sign/" >}}).
+1. Centralized credential injection for upstream AI providers, such as [OAuth token exchange]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/" >}}), [Cross App Access]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/cross-app-access/" >}}), or [JWT signing]({{< link-hextra path="/documentation/security/backend-authn/jwt-sign/" >}}).
   This keeps provider credentials out of agent workloads and enforces one controlled identity path at egress.
-2. Route-level authentication and authorization, such as [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) and [authorization policies]({{< link-hextra path="/documentation/security/authorization/" >}}).
+2. Route-level authentication and authorization, such as {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/security/extauth/jwt/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}){{< /version >}} and [authorization policies]({{< link-hextra path="/documentation/security/authorization/" >}}).
   This lets you decide which agents and users can call which external providers before traffic leaves the cluster.
 3. AI safety and spend controls, such as [guardrails]({{< link-hextra path="/documentation/llm/guardrails/" >}}) and [token-based rate limits]({{< link-hextra path="/documentation/llm/rate-limit/" >}}).
   This reduces prompt injection risk, blocks sensitive content patterns, and prevents runaway token spend.

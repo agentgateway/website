@@ -33,36 +33,6 @@ The MCP endpoint is available at `http://localhost:8080/mcp/mcp`.
 > [!NOTE]
 > The path `/mcp/mcp` assumes the default HTTPRoute path prefix of `/mcp` from the [Static MCP guide]({{< link-hextra path="/documentation/mcp/static-mcp" >}}). If you configured a different path in your HTTPRoute, adjust accordingly.
 
-{{< doc-test paths="mcp-clients-k8s" >}}
-for i in $(seq 1 60); do
-  RESP=$(curl -s --max-time 5 -X POST "http://${INGRESS_GW_ADDRESS}:80/mcp/mcp" \
-    -H "Accept: application/json, text/event-stream" \
-    -H "Content-Type: application/json" \
-    -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}')
-  if echo "$RESP" | grep -q "protocolVersion"; then break; fi
-  sleep 2
-done
-{{< /doc-test >}}
-
-{{< doc-test paths="mcp-clients-k8s" >}}
-YAMLTest -f - <<'EOF'
-- name: verify MCP initialize through gateway
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /mcp/mcp
-    method: POST
-    headers:
-      Content-Type: application/json
-      Accept: application/json, text/event-stream
-    body: '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}'
-  source:
-    type: local
-  retries: 1
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
-
 ## Connect your IDE
 
 Use the MCP endpoint URL from the previous step to configure your IDE. Replace `<MCP_URL>` with your endpoint, such as `http://localhost:8080/mcp/mcp` for port-forward setups.
@@ -70,6 +40,7 @@ Use the MCP endpoint URL from the previous step to configure your IDE. Replace `
 > [!NOTE]
 > **Multiplexed tool names**: If your agentgateway backend routes to more than one [Virtual MCP]({{< link-hextra path="/documentation/mcp/virtual" >}}) target, agentgateway namespaces each tool and prompt name with its target name by default, for example `mcp-server-everything_echo`. When you add a second target, tools in your client's tool list might get new names because of this prefixing. Control it with the `prefixMode` field on the MCP backend; see [Virtual MCP]({{< link-hextra path="/documentation/mcp/virtual" >}}) for the available modes.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,2.2.x" >}}
 {{< cards >}}
   {{< card link="claude-desktop/" title="Claude Desktop" subtitle="Connect Claude Desktop" >}}
   {{< card link="claude-code/" title="Claude Code" subtitle="Connect the Claude Code CLI" >}}
@@ -77,6 +48,7 @@ Use the MCP endpoint URL from the previous step to configure your IDE. Replace `
   {{< card link="vscode/" title="VS Code (GitHub Copilot)" subtitle="Connect VS Code and GitHub Copilot" >}}
   {{< card link="devin/" title="Devin Desktop" subtitle="Connect Devin Desktop (formerly Windsurf)" >}}
 {{< /cards >}}
+{{< /version >}}
 
 ## Authentication
 

@@ -9,16 +9,21 @@ Configure [Cursor](https://cursor.com/), the AI code editor, to route requests t
 
 ## Example agentgateway configuration
 
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  port: 3000
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-```
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+You can configure agentgateway in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+{{< reuse "agw-docs/standalone/llm/clients/ui-openai-port-3000.md" >}}
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/cursor-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/cursor-config.md" >}}
+{{% /version %}}
 
 ## Configure Cursor
 
@@ -28,10 +33,10 @@ llm:
 
 2. Navigate to the **Models** tab.
 
-3. Enable **Override OpenAI Base URL** and enter your agentgateway address.
+3. Enable **Override OpenAI Base URL** and enter your agentgateway address with the `/v1` path. Cursor adds `/chat/completions` to it. Without `/v1`, agentgateway does not recognize the request as a chat completion and passes it through to the provider unchanged.
 
    ```
-   http://localhost:3000
+   http://localhost:3000/v1
    ```
 
    > [!NOTE]

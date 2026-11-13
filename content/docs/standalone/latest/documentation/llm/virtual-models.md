@@ -1,72 +1,16 @@
 ---
 title: Virtual models
 weight: 47
-description: Configure virtual models with weighted, failover, and conditional routing in simplified LLM mode.
-test:
-  virtual-models:
-  - file: ${versionRoot}/documentation/llm/virtual-models.md
-    path: virtual-models
+description: Configure virtual models with weighted, failover, conditional, and callout routing in simplified LLM mode.
 ---
-
-{{< doc-test paths="virtual-models" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * All three example configs are accepted by agentgateway (--validate-only),
-#     covering `llm.virtualModels[].routing.weighted.targets[].weight`,
-#     `routing.failover.targets[].priority`, `llm.models[].health.eviction`,
-#     and `routing.conditional.targets[].when`.
-#   * "Public and internal models": with each config loaded, the served model list
-#     contains the virtual model and any `visibility: public` model, and omits every
-#     `visibility: internal` model. This turns the prose description of `public` and
-#     `internal` into an observable assertion:
-#       - weighted    -> gpt-4o-public, smart      (2 internal targets hidden)
-#       - failover    -> resilient                 (all 3 targets are internal)
-#       - conditional -> openai-public, adaptive   (2 internal targets hidden)
-#     The failover case is the clearest: every target is internal, so only the
-#     virtual entrypoint is exposed.
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That traffic is actually split 90/10 by `weight` - external dependency;
-#     observing the split needs many live completions against OpenAI.
-#   * That failover moves to a lower `priority` target after `health.eviction`
-#     removes the primary, and that same-priority targets are load balanced by
-#     health and latency - external dependency; triggering a real upstream
-#     failure needs live providers.
-#   * That `when` expressions select a target by request header - requires
-#     config/traffic the page omits; the page shows no request example, and
-#     confirming which internal target served a response needs a live provider
-#     call.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-
-# The example configs read API keys from the environment. --validate-only and the
-# model listing still resolve env vars, so placeholders are enough here.
-export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"
-export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-test}"
-
-# Assert that a config serves exactly the expected client-facing models, which is
-# what `visibility: public` / `internal` controls.
-assert_models() {
-  local cfg="$1" expected="$2"
-  agentgateway -f "$cfg" &
-  local pid=$!
-  sleep 3
-  local served
-  served=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -cr '[.data[].id] | sort')
-  kill $pid 2>/dev/null
-  wait $pid 2>/dev/null
-  if [ "$served" != "$expected" ]; then
-    echo "FAIL: $cfg should serve $expected but served $served"
-    exit 1
-  fi
-  echo "✓ $cfg serves $expected (internal targets are not exposed)"
-}
-{{< /doc-test >}}
 
 Virtual models let you publish one client-facing model name and route requests across one or more internal target models.
 
 Use `llm.virtualModels[]` to define the virtual entrypoint and `llm.models[]` as the concrete upstream targets.
+
+To see which target served a request, check the access log or the trace span. The `agw.ai.original_model` attribute records the virtual model name that the client sent, and `gen_ai.request.model` records the model that the selected target sends to the provider. For more information, see [Generative AI attributes]({{< link-hextra path="/documentation/observability/traces/attribute-reference/#generative-ai-attributes-llm" >}}).
+
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
 
 ## Public and internal models
 
@@ -74,6 +18,8 @@ Use `llm.models[].visibility` to control whether a model is directly exposed to 
 
 - `public`: The model can be requested directly by clients and can also be used as a virtual model target.
 - `internal`: The model is intended for internal routing targets and is not exposed as a direct client model.
+
+The model drawer in the UI has no field for `visibility`. To set it in the UI, open the model, click the **Raw** icon (`<>`) in the drawer header, and add the `visibility` field to the YAML. When you edit a model in the form, the UI keeps the `visibility` value that the model already has.
 
 ## Route selection modes
 
@@ -84,6 +30,50 @@ The routing targets in a virtual model point to concrete `llm.models[]` entries.
 
 Use `routing.weighted.targets` to split traffic between targets with `weight`.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Start agentgateway with the target models. The model drawer has no `visibility` field, so this configuration sets it for you.
+
+   ```sh
+   cat <<'EOF' > config.yaml
+   llm:
+     models:
+     - name: gpt-4o-public
+       visibility: public
+       provider: openAI
+       params:
+         model: gpt-4o
+         apiKey: "$OPENAI_API_KEY"
+     - name: gpt-4o-primary
+       visibility: internal
+       provider: openAI
+       params:
+         model: gpt-4o
+         apiKey: "$OPENAI_API_KEY"
+     - name: gpt-4o-fallback
+       visibility: internal
+       provider: openAI
+       params:
+         model: gpt-4o-mini
+         apiKey: "$OPENAI_API_KEY"
+   EOF
+   agentgateway -f config.yaml
+   ```
+
+2. Open **LLM** > **Models** in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models), and click **Add virtual model**.
+3. Enter `smart` for the **Virtual model name**.
+4. For the **Routing strategy**, keep **Weighted**.
+5. In the **Weighted targets** section, configure the targets.
+   1. In the target row that the UI adds, select `gpt-4o-primary` from the **Model** dropdown, and enter `90` for the **Weight**.
+   2. Click **Add target**. In the new target row, select `gpt-4o-fallback` from the **Model** dropdown, and enter `10` for the **Weight**.
+
+   {{< reuse-image src="img/ui-llm-virtual-model-weighted.png" srcDark="img/ui-llm-virtual-model-weighted-dark.png" alt="Add virtual model drawer for the smart virtual model with gpt-4o-primary weighted 90 and gpt-4o-fallback weighted 10" >}}
+
+6. Click **Save virtual model**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 llm:
   models:
@@ -105,7 +95,6 @@ llm:
     params:
       model: gpt-4o-mini
       apiKey: "$OPENAI_API_KEY"
-
   virtualModels:
   - name: smart
     routing:
@@ -116,47 +105,12 @@ llm:
         - model: gpt-4o-fallback
           weight: 10
 ```
-
-{{< doc-test paths="virtual-models" >}}
-cat <<'EOF' > config-weighted.yaml
-llm:
-  models:
-  - name: gpt-4o-public
-    visibility: public
-    provider: openAI
-    params:
-      model: gpt-4o
-      apiKey: "$OPENAI_API_KEY"
-  - name: gpt-4o-primary
-    visibility: internal
-    provider: openAI
-    params:
-      model: gpt-4o
-      apiKey: "$OPENAI_API_KEY"
-  - name: gpt-4o-fallback
-    visibility: internal
-    provider: openAI
-    params:
-      model: gpt-4o-mini
-      apiKey: "$OPENAI_API_KEY"
-
-  virtualModels:
-  - name: smart
-    routing:
-      weighted:
-        targets:
-        - model: gpt-4o-primary
-          weight: 90
-        - model: gpt-4o-fallback
-          weight: 10
-EOF
-agentgateway -f config-weighted.yaml --validate-only
-assert_models config-weighted.yaml '["gpt-4o-public","smart"]'
-{{< /doc-test >}}
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Failover routing
 
-Use failover (also called automatic fallback) to keep serving when a primary model fails or becomes unavailable. Configure `routing.failover.targets` with `priority` on the virtual model, and configure `health.eviction` on the concrete target models so unhealthy backends can leave the active set.
+Use failover (also called automatic fallback) to keep serving when a primary model fails or becomes unavailable. Configure `routing.failover.targets` with `priority` on the virtual model. When a virtual model has more than one priority group, agentgateway enables default eviction for target models that do not set their own `health` policy, so unhealthy backends can leave the active set.
 
 Failover has two levels of grouping:
 
@@ -171,16 +125,15 @@ Configure health on the concrete `llm.models[]` entries that the virtual model t
 
 | Setting | What it does |
 | -- | -- |
-| No `health` policy | Unhealthy responses (by default, `5xx` or connection failures) still lower the endpoint health score used for within-group load balancing. Endpoints are never evicted, so traffic never fails over to the next priority. |
-| `health` without `eviction` | Same score-based weighting within a group. Eviction (and thus cross-priority failover) happens only when agentgateway can derive an eviction duration from elsewhere: `backoff` on a retry policy, or a `Retry-After` header on a 429 that is classified as unhealthy. |
-| `health.eviction` | Removes an unhealthy endpoint from the active set for a backoff period. When every endpoint in a priority group is evicted, later requests use the next priority. |
+| No `health` policy | The default unhealthy classifier covers `5xx` responses, server-side gRPC failures (`UNKNOWN`, `DEADLINE_EXCEEDED`, `INTERNAL`, `UNAVAILABLE`, and `DATA_LOSS`), and connection failures. When the virtual model has more than one priority group, these failures use default eviction: a single unhealthy response evicts the endpoint for `3s`, and each repeated eviction lasts longer. Traffic fails over to the next priority. |
+| `health` without `eviction` | Setting `health` replaces the default eviction instead of adding to it. You can use `health.unhealthyExpression` to classify additional responses, such as `429`, as unhealthy. Without an `eviction` block, the endpoint is evicted only when a retry policy's `backoff`, or a `Retry-After` header on a response that is classified as unhealthy, supplies an eviction duration. To keep the default eviction settings, add `eviction: {}`. |
+| `health.eviction` | Override how long an unhealthy endpoint leaves the active set, and which thresholds trigger eviction. When every endpoint in a priority group is evicted, later requests use the next priority. |
 
-> [!WARNING]
-> Setting `routing.failover` alone does **not** switch to a lower-priority target after errors. You must set `health.eviction` on the primary (and typically backup) concrete models. Without eviction, requests keep hitting the highest-priority group forever.
+You do not need a `health` policy for basic failover on server errors or connection failures. To classify rate-limit responses, tune eviction timing, or change eviction thresholds, add a health policy that includes an `eviction` configuration.
 
 Useful `health` fields:
 
-- `unhealthyExpression`: Optional CEL expression; `true` marks the response unhealthy. When unset, any `5xx`, non-zero gRPC status, or connection failure is unhealthy.
+- `unhealthyExpression`: Optional CEL expression; `true` marks the response unhealthy. When unset, any `5xx`, server-side gRPC failure, or connection failure is unhealthy.
 - `eviction.duration`: Base time to keep an endpoint evicted. When you omit `duration`, agentgateway uses the `Retry-After` value from a 429 response, then the `backoff` from a retry policy, and then a default of `3s`. Repeated evictions use multiplicative backoff, with no upper bound.
 - `eviction.consecutiveFailures`: Unhealthy responses required before eviction. When this and `healthThreshold` are both unset, a single unhealthy response can evict.
 - `eviction.healthThreshold`: Evict when the endpoint health score (0.0–1.0) is below this value. Either this or `consecutiveFailures` can trigger eviction when both are set.
@@ -188,6 +141,62 @@ Useful `health` fields:
 
 Failover is driven by eviction of the active set, not by rewriting a single in-flight request to another target. The request that triggers eviction still fails unless you also configure retries so a later attempt can re-select a provider after eviction.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Start agentgateway with the target models and their health policies.
+
+   ```sh
+   cat <<'EOF' > config.yaml
+   llm:
+     models:
+     - name: claude-primary
+       visibility: internal
+       provider: anthropic
+       params:
+         model: claude-sonnet-4-0
+         apiKey: "$ANTHROPIC_API_KEY"
+       health:
+         eviction:
+           consecutiveFailures: 1
+           duration: 60s
+     - name: claude-backup-a
+       visibility: internal
+       provider: anthropic
+       params:
+         model: claude-3-5-haiku-20241022
+         apiKey: "$ANTHROPIC_API_KEY"
+       health:
+         eviction:
+           consecutiveFailures: 1
+           duration: 60s
+     - name: claude-backup-b
+       visibility: internal
+       provider: anthropic
+       params:
+         model: claude-3-5-haiku-20241022
+         apiKey: "$ANTHROPIC_API_KEY"
+       health:
+         eviction:
+           consecutiveFailures: 1
+           duration: 60s
+   EOF
+   agentgateway -f config.yaml
+   ```
+
+   To edit a health policy in the UI instead, open the model, and expand **Advanced** > **Model policies** > **Health**. The section has fields for the **Unhealthy expression**, **Eviction duration**, **Consecutive failures**, **Health threshold**, and **Restore health**.
+
+2. Open **LLM** > **Models**, and click **Add virtual model**.
+3. Enter `resilient` for the **Virtual model name**.
+4. For the **Routing strategy**, select **Failover**.
+5. In the **First attempt** group, select `claude-primary` from the **Model** dropdown. The UI writes this group as `priority: 0`.
+6. Click **Add fallback group**. In the new group, select `claude-backup-a`.
+7. In the same group, click **Add target**, and select `claude-backup-b`. Both targets in this group get `priority: 1`.
+
+   {{< reuse-image src="img/ui-llm-virtual-model-failover.png" srcDark="img/ui-llm-virtual-model-failover-dark.png" alt="Add virtual model drawer for the resilient virtual model with claude-primary as the first attempt and claude-backup-a and claude-backup-b as the fallback group" >}}
+
+8. Click **Save virtual model**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 llm:
   models:
@@ -221,7 +230,6 @@ llm:
       eviction:
         consecutiveFailures: 1
         duration: 60s
-
   virtualModels:
   - name: resilient
     routing:
@@ -234,6 +242,8 @@ llm:
         - model: claude-backup-b
           priority: 1
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 In this example:
 
@@ -242,61 +252,56 @@ In this example:
 3. Later requests fail over to the `priority: 1` group and load balance between `claude-backup-a` and `claude-backup-b` by health and latency.
 4. Within that backup group, a degraded target is weighted down; the other backup continues to receive more traffic until the degraded target recovers or is also evicted.
 
-{{< doc-test paths="virtual-models" >}}
-cat <<'EOF' > config-failover.yaml
-llm:
-  models:
-  - name: claude-primary
-    visibility: internal
-    provider: anthropic
-    params:
-      model: claude-sonnet-4-0
-      apiKey: "$ANTHROPIC_API_KEY"
-    health:
-      eviction:
-        consecutiveFailures: 1
-        duration: 60s
-  - name: claude-backup-a
-    visibility: internal
-    provider: anthropic
-    params:
-      model: claude-3-5-haiku-20241022
-      apiKey: "$ANTHROPIC_API_KEY"
-    health:
-      eviction:
-        consecutiveFailures: 1
-        duration: 60s
-  - name: claude-backup-b
-    visibility: internal
-    provider: anthropic
-    params:
-      model: claude-3-5-haiku-20241022
-      apiKey: "$ANTHROPIC_API_KEY"
-    health:
-      eviction:
-        consecutiveFailures: 1
-        duration: 60s
-
-  virtualModels:
-  - name: resilient
-    routing:
-      failover:
-        targets:
-        - model: claude-primary
-          priority: 0
-        - model: claude-backup-a
-          priority: 1
-        - model: claude-backup-b
-          priority: 1
-EOF
-agentgateway -f config-failover.yaml --validate-only
-assert_models config-failover.yaml '["resilient"]'
-{{< /doc-test >}}
-
 ### Conditional routing
 
 Use `routing.conditional.targets` and `when` expressions to select targets by request context.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Start agentgateway with the target models.
+
+   ```sh
+   cat <<'EOF' > config.yaml
+   llm:
+     models:
+     - name: openai-public
+       visibility: public
+       provider: openAI
+       params:
+         model: gpt-4o-mini
+         apiKey: "$OPENAI_API_KEY"
+     - name: openai-fast
+       visibility: internal
+       provider: openAI
+       params:
+         model: gpt-4o-mini
+         apiKey: "$OPENAI_API_KEY"
+     - name: openai-smart
+       visibility: internal
+       provider: openAI
+       params:
+         model: gpt-4o
+         apiKey: "$OPENAI_API_KEY"
+   EOF
+   agentgateway -f config.yaml
+   ```
+
+2. Open **LLM** > **Models**, and click **Add virtual model**.
+3. Enter `adaptive` for the **Virtual model name**.
+4. For the **Routing strategy**, select **Conditional**. The UI adds a **Rule 1** card and a **Fallback** card, each with a **Condition** and a **Target model**.
+5. In **Rule 1**, replace the **Condition** with `request.headers["x-tier"] == "free"`, and select `openai-fast` as the **Target model**.
+
+   {{< reuse-image src="img/ui-llm-virtual-model-conditional.png" srcDark="img/ui-llm-virtual-model-conditional-dark.png" alt="Add virtual model drawer for the adaptive virtual model with rule 1 that sends x-tier free requests to openai-fast" >}}
+
+6. In the **Fallback** card, enter `request.headers["x-tier"] == "pro"` as the **Condition**, and select `openai-smart` as the **Target model**. With a condition, the card becomes **Rule 2**.
+
+   {{< reuse-image src="img/ui-llm-virtual-model-conditional-rule-2.png" srcDark="img/ui-llm-virtual-model-conditional-rule-2-dark.png" alt="Add virtual model drawer scrolled to rule 2, which sends x-tier pro requests to openai-smart" >}}
+
+7. Click **Save virtual model**.
+
+To send requests that match no condition to a default model, leave the **Condition** of the last card empty. Only the last card can omit a condition.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 llm:
   models:
@@ -318,7 +323,6 @@ llm:
     params:
       model: gpt-4o
       apiKey: "$OPENAI_API_KEY"
-
   virtualModels:
   - name: adaptive
     routing:
@@ -329,43 +333,74 @@ llm:
         - model: openai-smart
           when: request.headers["x-tier"] == "pro"
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
-{{< doc-test paths="virtual-models" >}}
-cat <<'EOF' > config-conditional.yaml
+### Callout routing {#callout-routing}
+
+Use `routing.callout` to send each request to an external HTTP service that selects the target model. Use callout routing when the routing decision depends on logic outside the configuration, such as a service that scores the complexity of the prompt or tracks the state of an agent session.
+
+Each request to the virtual model triggers a `POST` request to the callout service, which must return a `2xx` response with a JSON body. The callout request carries a `content-type` header and only the headers that you set in `headers`. Client request headers, such as `Authorization` or a session header, are not forwarded. The `transformation` expressions read that response from the `callout` CEL variable. `callout.body` is the decoded JSON body and `callout.headers` holds the response headers. The `model` expression selects the target. The other `transformation` keys set fields in the request body before the request goes to the selected model.
+
+```yaml
 llm:
   models:
-  - name: openai-public
-    visibility: public
-    provider: openAI
-    params:
-      model: gpt-4o-mini
-      apiKey: "$OPENAI_API_KEY"
-  - name: openai-fast
+  - name: gpt-5.6-luna
     visibility: internal
     provider: openAI
     params:
-      model: gpt-4o-mini
       apiKey: "$OPENAI_API_KEY"
-  - name: openai-smart
+  - name: gpt-5.6-terra
     visibility: internal
     provider: openAI
     params:
-      model: gpt-4o
       apiKey: "$OPENAI_API_KEY"
 
   virtualModels:
-  - name: adaptive
+  - name: auto
     routing:
-      conditional:
-        targets:
-        - model: openai-fast
-          when: request.headers["x-tier"] == "free"
-        - model: openai-smart
-          when: request.headers["x-tier"] == "pro"
-EOF
-agentgateway -f config-conditional.yaml --validate-only
-assert_models config-conditional.yaml '["adaptive","openai-public"]'
-{{< /doc-test >}}
+      callout:
+        host: http://127.0.0.1:8000/route
+        body: '{"messages": llmRequest.messages}'
+        transformation:
+          model: callout.body.model
+          reasoning_effort: callout.body.reasoning_effort
+        failureMode:
+          fallback: gpt-5.6-luna
+        cache:
+          key:
+          - request.headers["x-session-id"]
+          ttl: 10m
+```
+
+In this example, a client requests the `auto` virtual model. The callout service at `http://127.0.0.1:8000/route` receives the request messages and returns a body such as `{"model": "gpt-5.6-terra", "reasoning_effort": "medium"}`. The request goes to `gpt-5.6-terra` with `reasoning_effort` set to `medium`. Requests with the same `x-session-id` header reuse the first response for 10 minutes, so the session stays on one model.
+
+The request goes to the fallback model `gpt-5.6-luna` when one of the following happens:
+
+- The callout service cannot be reached, or does not respond within the timeout.
+- The response status is not `2xx`, or the response body is not JSON.
+- The `model` expression fails or does not return a string.
+- The selected model does not match an entry in `llm.models[]`.
+
+The fallback model gets the request without the `transformation` changes.
+
+Use the following fields to configure callout routing:
+
+| Field | Description |
+| -- | -- |
+| `host` | The callout service, as a URL that can include the request path, such as `https://router.example.com/v1/route`. An `https` URL turns on TLS. Without a path, the request goes to `/`. |
+| `backend` | Instead of `host`, a backend from the top-level `backends` list, written as `/<name>`, such as `/router`. A bare name such as `router` fails every callout with a `service not found` error. |
+| `name` and `port` | Instead of `host`, a service from the top-level `services` list and the port to call, set directly on `callout`. |
+| `policies` | Optional backend policies for the connection to the callout service, such as TLS, authentication, and timeouts. The default request timeout is 10 seconds. |
+| `body` | Optional CEL expression that builds the callout request body. A string or bytes value is sent as is, and any other value is sent as JSON. If you omit `body`, the callout service receives the original request body. |
+| `headers` | Optional map of headers to set on the callout request. Each value is a CEL expression, so quote a literal string twice, such as `'"Bearer router-token"'`. To pass a client header to the callout service, read it from the request, such as `x-session-id: request.headers["x-session-id"]`. If an expression fails, such as when the client did not send that header, the header is left out. Keys can also be the `:path`, `:method`, and `:authority` pseudo-headers. A `backend` or service target has no path, so set `":path": '"/v1/route"'` to call a path other than `/`. |
+| `transformation` | Required map of request body fields to CEL expressions that read `callout`. The `model` key is required. The other keys override fields in the request body. If a key's expression fails, such as when the response does not contain the field, that field is removed from the request. The keys apply only to requests that carry the model in a JSON body. |
+| `failureMode` | Optional. The default, `failClosed`, rejects the request with a `503` response and the `virtual_model_callout_failed` error code. Set `fallback` to the name of an `llm.models[]` entry to route to that model instead. The configuration is rejected if the fallback model does not exist. |
+| `cache` | Optional cache for callout responses. `key` is a list of CEL expressions that make up the cache key. If a key expression fails, such as when the header is missing, the response is not cached. `ttl` is a duration such as `10m`, or a CEL expression that can read `callout` and returns a duration or a timestamp. `maxEntries` sets the maximum number of cached responses. On a cache hit, `transformation` runs against the cached response. |
+
+For complete examples that include a callout service, see [`llm-callout-jev`](https://github.com/agentgateway/agentgateway/tree/v1.7.0/examples/llm-callout-jev) and [`llm-callout-switchyard`](https://github.com/agentgateway/agentgateway/tree/v1.7.0/examples/llm-callout-switchyard) in the agentgateway repository.
 
 > [!NOTE]
 > For reusable provider defaults in simplified mode, see [Multiple LLM providers]({{< link-hextra path="/integrations/llm/providers/multiple-llms/" >}}).
+
+To inspect or update virtual models and their target models on a running gateway from the command line, see [Manage config resources with agctl]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).

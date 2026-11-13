@@ -1,8 +1,5 @@
 Route to a Model Context Protocol (MCP) server dynamically by using a label selector. This way, unlike a static backend, you can update the backing MCP server without having to update the Backend resource. For more information, see the [About MCP]({{< link-hextra path="/documentation/mcp/about" >}}) topic.
 
-> [!WARNING]
-> Note that only streamable HTTP is currently supported for label selectors. If you need to use an SSE listener, use a [static MCP Backend]({{< link-hextra path="/documentation/mcp/static-mcp/">}}).
-
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
@@ -12,10 +9,10 @@ Route to a Model Context Protocol (MCP) server dynamically by using a label sele
 Deploy an MCP server that you want {{< reuse "agw-docs/snippets/agentgateway.md" >}} to proxy traffic to. The following example sets up an MCP server that provides various utility tools.
 
 1. Create an MCP server (`mcp-server`) that provides various utility tools. Notice the following details about the Service:
-   * `appProtocol: agentgateway.dev/mcp` (required): Configure your service to use the MCP protocol. This way, the agentgateway proxy uses the MCP protocol when connecting to the service.
+   * `appProtocol` (required): Configure your service to use the MCP protocol, so that the agentgateway proxy uses MCP when it connects to the service. Set `agentgateway.dev/mcp` for the Streamable HTTP transport, as in this example, or `agentgateway.dev/mcp-sse` for the SSE transport.
    * `agentgateway.dev/mcp-path` annotation (optional): The default values are `/sse` for the SSE protocol or `/mcp` for the Streamable HTTP protocol. If you need to change the path of the MCP target endpoint, set this annotation on the Service.
 
-   ```yaml {paths="dynamic-mcp"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -59,30 +56,11 @@ Deploy an MCP server that you want {{< reuse "agw-docs/snippets/agentgateway.md"
    EOF
    ```
 
-   {{< doc-test paths="dynamic-mcp" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for mcp-server-everything deployment to be ready
-     wait:
-       target:
-         kind: Deployment
-         metadata:
-           namespace: default
-           name: mcp-server-everything
-       jsonPath: "$.status.availableReplicas"
-       jsonPathExpectation:
-         comparator: greaterThan
-         value: 0
-       polling:
-         timeoutSeconds: 120
-         intervalSeconds: 5
-   EOF
-   {{< /doc-test >}}
-
 2. Create a {{< reuse "agw-docs/snippets/backend.md" >}} for your MCP server that uses label selectors to select the MCP server.
    
-   ```yaml {paths="dynamic-mcp"}
+   ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: mcp-backend
@@ -103,7 +81,7 @@ Deploy an MCP server that you want {{< reuse "agw-docs/snippets/agentgateway.md"
 Create an HTTPRoute resource that routes to the Backend that you created in the previous step.
 
 
-```yaml {paths="dynamic-mcp"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -118,7 +96,7 @@ spec:
   rules:
   - backendRefs:
       - name: mcp-backend
-        group: agentgateway.dev
+        group: {{< reuse "agw-docs/snippets/group.md" >}}
         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
     matches:
     - path:
@@ -126,53 +104,6 @@ spec:
         value: /mcp
 EOF
 ```
-
-{{< doc-test paths="dynamic-mcp" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for mcp HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: default
-        name: mcp
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="dynamic-mcp" >}}
-for i in $(seq 1 90); do
-  STATUS=$(curl -s --max-time 5 -o /dev/null -w "%{http_code}" -X POST "http://${INGRESS_GW_ADDRESS}:80/mcp" -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}' 2>/dev/null)
-  if [ "$STATUS" = "200" ]; then break; fi
-  sleep 2
-done
-{{< /doc-test >}}
-
-{{< doc-test paths="dynamic-mcp" >}}
-YAMLTest -f - <<'EOF'
-- name: MCP endpoint accepts initialize request
-  retries: 3
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /mcp
-    method: POST
-    headers:
-      content-type: application/json
-      accept: "application/json, text/event-stream"
-    body: |
-      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
 
 
 ## Step 3: Verify the connection {#verify}
@@ -219,7 +150,7 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="dynamic-mcp"}
+```sh
 kubectl delete Deployment mcp-server-everything
 kubectl delete Service mcp-server-everything
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} mcp-backend

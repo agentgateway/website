@@ -1,6 +1,4 @@
-Use {{< reuse "agw-docs/snippets/kgateway.md" >}} with the Kubernetes Gateway
-API Inference Extension to route requests to Large Language Model (LLM)
-workloads in your Kubernetes environment.
+Use {{< reuse "agw-docs/snippets/kgateway.md" >}} with the [Kubernetes Gateway API Inference Extension](https://gateway-api-inference-extension.sigs.k8s.io/) and [llm-d Router](https://github.com/llm-d/llm-d-router) to route inference requests to Large Language Model (LLM) workloads in your Kubernetes environment.
 
 The Gateway API Inference Extension defines the `InferencePool` API and the
 protocol between gateways and endpoint pickers. The
@@ -15,7 +13,7 @@ For more information, see the following resources.
   {{< card link="https://gateway-api-inference-extension.sigs.k8s.io/" title="Gateway API Inference Extension">}}
   {{< card link="https://llm-d.ai/docs/infrastructure/gateway" title="llm-d gateway infrastructure">}}
   {{< card link="https://llm-d.ai/docs/infrastructure/gateway/agentgateway" title="llm-d with agentgateway">}}
-  {{< card link="https://agentgateway.dev/docs/standalone/main/documentation/inference/" title="Standalone inference routing" >}}
+  {{< card link="https://agentgateway.dev/docs/standalone/latest/documentation/llm/inference/" title="Standalone inference routing" >}}
 {{< /cards >}}
 
 ## About {#about}
@@ -114,7 +112,7 @@ Inference Extension CRDs, agentgateway, and the llm-d Router in Gateway mode.
      https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
 
    kubectl apply -f \
-     https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/download/v1.5.0/manifests.yaml
+     https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/download/v{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}1.6.2{{< /version >}}{{< version include-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}1.5.0{{< /version >}}/manifests.yaml
    ```
 
 3. Install agentgateway with Inference Extension support.
@@ -214,3 +212,52 @@ Inference Extension CRDs, agentgateway, and the llm-d Router in Gateway mode.
    ```
 
    The response has an HTTP `200 OK` status.
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+
+## Raise the endpoint picker timeout {#epp-timeout}
+
+By default, agentgateway waits up to 10 seconds for the EPP to respond to a request. If the EPP holds a request longer, such as when EPP flow control queues the request, agentgateway returns a `500` response with the `external processing failed` message. The `FailOpen` failure mode does not apply in this case, because the EPP is reachable.
+
+To raise the limit, apply an {{< reuse "agw-docs/snippets/policy.md" >}} that targets the EPP Service, which the `endpointPickerRef` field of the InferencePool names. The policy attaches to every Gateway that routes to the InferencePool.
+
+1. Create the policy for the EPP Service from the quickstart.
+
+   ```yaml
+   kubectl apply -f - <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: epp-timeout
+     namespace: default
+   spec:
+     targetRefs:
+       - group: ""
+         kind: Service
+         name: vllm-qwen3-32b-epp
+     backend:
+       http:
+         requestTimeout: 60s
+   EOF
+   ```
+
+   | Setting | Description |
+   | -- | -- |
+   | `targetRefs` | The EPP Service. The llm-d Router Gateway chart names it after the Helm release, with an `-epp` suffix. Create the policy in the same namespace as the InferencePool. |
+   | `backend.http.requestTimeout` | The maximum time to wait for the EPP to respond. The request timeout of the HTTPRoute still limits the whole request. The llm-d Router Gateway chart sets that timeout to `300s`. |
+
+2. Verify that the policy is accepted and attached to the Gateway.
+
+   ```bash
+   kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} epp-timeout -n default \
+     -o jsonpath='{range .status.ancestors[*]}{.ancestorRef.name}{"\n"}{range .conditions[*]}  {.type}={.status} {.message}{"\n"}{end}{end}'
+   ```
+
+   Example output:
+
+   ```
+   inference-gateway
+     Accepted=True Policy accepted
+     Attached=True Attached to all targets
+   ```
+{{< /version >}}

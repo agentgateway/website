@@ -2,7 +2,6 @@
 title: Inference routing
 weight: 10
 description: Route AI inference requests to LLM workloads using the Kubernetes Gateway API Inference Extension.
-test: skip
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/inference.md" >}}
@@ -62,7 +61,7 @@ spec:
         type: PathPrefix
         value: /v1/chat/completions
     backendRefs:
-    - group: agentgateway.dev
+    - group: {{< reuse "agw-docs/snippets/group.md" >}}
       kind: {{< reuse "agw-docs/snippets/backend.md" >}}
       name: qwen-inferencepool
     timeouts:
@@ -99,12 +98,12 @@ For more custom provider examples, see
 [Custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}}).
 
 To route requests to multiple InferencePools based on the request body `model`
-field, see [Multiple inference pools]({{< link-hextra path="/documentation/llm/multiple-inference-pools/" >}}).
+field, see [Multiple inference pools]({{< link-hextra path="/documentation/llm/inference/multiple-inference-pools/" >}}).
 
 > [!NOTE]
 > Most users can keep the default llm-d Router OpenAI parser and send
 > OpenAI-compatible requests, such as `/v1/chat/completions`. If clients send a
 > different request format, configure the
-> [EPP](https://llm-d.ai/docs/architecture/core/router) parser, such as
+> [EPP](https://llm-d.ai/docs/architecture/router) parser, such as
 > `router.epp.parser`, for that client-facing format. For parser options, see the
 > [llm-d Router parser docs](https://github.com/llm-d/llm-d-router/blob/main/pkg/epp/framework/plugins/requesthandling/parsers/README.md).

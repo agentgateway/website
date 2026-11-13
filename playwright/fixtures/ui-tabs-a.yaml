@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Config for tests/ui-tabs-a.spec.ts: the "UI" tabs of the standalone security, transformation,
+# and rate limit guides. Each capture opens a policy drawer in LLM > Policies or MCP > Policies
+# (or the gpt-4 model's edit drawer), fills it with the guide's values, and NEVER saves, so this
+# file is never rewritten and no JWKS, OIDC issuer, or ext authz server has to exist.
+#
+# - llm.models: "*" is the model every LLM guide starts from; gpt-4 is the model the
+#   http-authz "LLM authorization" tab edits.
+# - mcp.targets: an MCP target so MCP > Policies has a listener to attach to. The UI image is
+#   distroless and cannot exec the guides' stdio server, so the target is a placeholder HTTP
+#   endpoint that is never contacted by these captures.
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "sk-placeholder-not-a-real-key"
+  - name: gpt-4
+    provider: openAI
+    params:
+      model: gpt-4o
+      apiKey: "sk-placeholder-not-a-real-key"
+mcp:
+  port: 3000
+  targets:
+  - name: everything
+    mcp:
+      host: http://everything.example.com:3001/mcp

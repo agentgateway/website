@@ -1,4 +1,4 @@
-Deploy [LibreChat](https://github.com/danny-avila/LibreChat) in Kubernetes and route its LLM traffic through agentgateway to centralize credentials and apply policies across all chats.
+Deploy [LibreChat](https://github.com/LibreChat-AI/LibreChat) in Kubernetes and route its LLM traffic through agentgateway to centralize credentials and apply policies across all chats.
 
 ## Before you begin
 

@@ -15,7 +15,7 @@ Deploy multiple Model Context Protocol (MCP) servers that you want agentgateway 
 
 1. Create an MCP server (`mcp-server-everything`) that provides various utility tools. Notice that the Service uses the `appProtocol: agentgateway.dev/mcp` setting. This way, {{< reuse "agw-docs/snippets/kgateway.md" >}} configures the agentgateway proxy to look for an equivalent {{< reuse "agw-docs/snippets/backend.md" >}} resource.
 
-   ```yaml {paths="virtual-mcp"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -67,7 +67,7 @@ Deploy multiple Model Context Protocol (MCP) servers that you want agentgateway 
 
 2. Create another MCP server workload with a website fetcher tool.
 
-   ```yaml {paths="virtual-mcp"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -103,44 +103,11 @@ Deploy multiple Model Context Protocol (MCP) servers that you want agentgateway 
    EOF
    ```
 
-{{< doc-test paths="virtual-mcp" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for mcp-server-everything deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: default
-        name: mcp-server-everything
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-- name: wait for mcp-website-fetcher deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: default
-        name: mcp-website-fetcher
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
 3. Create an {{< reuse "agw-docs/snippets/backend.md" >}} that selects both MCP servers that you created.
 
-   ```yaml {paths="virtual-mcp"}
+   ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: mcp
@@ -173,6 +140,7 @@ EOF
    > ```
    >
    > With `FailOpen`, if one MCP server is down, the gateway still serves tools from the remaining healthy servers. If all targets fail, the gateway returns an error.
+   > {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}`FailOpen` does not skip a target that rejects the client's token. If a target's [token exchange]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/" >}}) rejects an expired token, any call that reaches that target, including `tools/list`, returns the `401` so that the client can refresh the token and retry.{{< /version >}}
 
    > [!NOTE]
    > **Tool name prefixing**: When multiplexing, agentgateway namespaces tool and prompt names with the target name so that identical names from different servers do not collide. Resource URIs always retain target routing information and are unaffected. Control this behavior with the `prefixMode` field on the {{< reuse "agw-docs/snippets/backend.md" >}}:
@@ -189,12 +157,16 @@ EOF
    >       ...
    > ```
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+If two or more targets resolve to the same MCP target name, only one target is kept and the others are dropped with an error. The target to keep is chosen in the following order: a static target always wins over a selected Service. Among selected Services, a Service in the same namespace as the {{< reuse "agw-docs/snippets/backend.md" >}} wins, then a Service without the `agentgateway.dev/mcp-target-name` annotation, then the oldest Service. If the Services have the same age, the namespace and Service name break the tie. For how selector target names are generated, see [Target conditions]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}).
+{{< /version >}}
+
 ## Step 2: Route with agentgateway {#agentgateway}
 
 Route to the federated MCP servers with agentgateway.
 
 1. Create an HTTPRoute resource that routes to the {{< reuse "agw-docs/snippets/backend.md" >}} that you created in the previous step.
-   ```yaml {paths="virtual-mcp"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -207,7 +179,7 @@ Route to the federated MCP servers with agentgateway.
      rules:
        - backendRefs:
          - name: mcp
-           group: agentgateway.dev
+           group: {{< reuse "agw-docs/snippets/group.md" >}}
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
          matches:
          - path:
@@ -215,55 +187,6 @@ Route to the federated MCP servers with agentgateway.
              value: /mcp
    EOF
    ```
-
-{{< doc-test paths="virtual-mcp" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for mcp HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: default
-        name: mcp
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="virtual-mcp" >}}
-for i in $(seq 1 60); do
-  code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "http://${INGRESS_GW_ADDRESS}:80/mcp" || true)
-  case "${code}" in
-    5*|"") sleep 2 ;;
-    *) break ;;
-  esac
-done
-{{< /doc-test >}}
-
-{{< doc-test paths="virtual-mcp" >}}
-YAMLTest -f - <<'EOF'
-- name: MCP endpoint accepts initialize request
-  retries: 30
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /mcp
-    method: POST
-    headers:
-      content-type: application/json
-      accept: "application/json, text/event-stream"
-    body: |
-      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
 
 2. Check that the HTTPRoute is `Accepted`, selects the Gateway, and includes backend rules for the {{< reuse "agw-docs/snippets/backend.md" >}} that you created.
 
@@ -367,12 +290,19 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
    * **Test the `mcp-server-everything-3001_echo` tool**: Click **List Tools** and select the `echo` tool. In the **Message** field, enter any string, such as `Hello world`, and click **Run Tool**. Verify that your string is echoed back. 
    * **Test the `mcp-website-fetcher_fetch` tool**: Click **List Tools** and select the `fetch` tool. In the **url** field, enter a website URL, such as `https://lipsum.com/`, and click **Run Tool**.
    
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+{{< reuse "agw-docs/pages/agentgateway/mcp/virtual-target-conditions.md" >}}
+{{< /version >}}
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+{{< reuse "agw-docs/pages/agentgateway/mcp/virtual-capabilities.md" >}}
+{{< /version >}}
 
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="virtual-mcp"}
+```sh
 kubectl delete Deployment mcp-server-everything mcp-website-fetcher
 kubectl delete Service mcp-server-everything mcp-website-fetcher
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} mcp

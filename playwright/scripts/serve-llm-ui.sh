@@ -16,7 +16,8 @@ UI_PORT="${UI_HOST_PORT:-15100}"
 LLM_PORT=3030          # must match llm.port in fixtures/llm-config.yaml
 MOCK_PORT=8088         # must match hostOverride in fixtures/llm-config.yaml
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-CFG_DIR="$ROOT/.agw-runtime"
+# AGW_RUNTIME_DIR moves the mounted config dir outside the repo, as in serve-fixture-ui.sh.
+CFG_DIR="${AGW_RUNTIME_DIR:-$ROOT}/.agw-runtime"
 
 mkdir -p "$CFG_DIR"
 cp "$ROOT/fixtures/llm-config.yaml" "$CFG_DIR/config.yaml"

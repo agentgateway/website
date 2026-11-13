@@ -22,7 +22,7 @@ Configure the `guardrails` field under `llm.models[]` in your agentgateway confi
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -45,15 +45,15 @@ llm:
 ```
 {{< /tab >}}
 {{< tab name="llm-prompt-guard example" >}}
-The following routing-based configuration is from the [`llm-prompt-guard` example](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-prompt-guard) in the agentgateway repository.
+The following routing-based configuration is from the [`llm-prompt-guard` example](https://github.com/agentgateway/agentgateway/tree/v1.7.0/examples/llm-prompt-guard) in the agentgateway repository.
 
-{{% github-yaml url="https://agentgateway.dev/examples/llm-prompt-guard/azure-content-safety-config.yaml" %}}
+{{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/llm-prompt-guard/azure-content-safety-config.yaml" %}}
 {{< /tab >}}
 {{< /tabs >}}
 
 | Setting | Description |
 | -- | -- |
-| `action` | Whether to enforce the verdict of the guard. Use `reject` to block flagged content or `audit` to record the verdict and forward the content unchanged. Defaults to `reject`. For more information, see [Audit mode](../overview/#audit). |
+| `action` | Whether to enforce the verdict of the guard. Use `reject` to block flagged content, or `audit` to record the verdict and forward the content unchanged. Defaults to `reject`. For more information, see [Audit mode](../overview/#audit). |
 | `endpoint` | The Azure AI Content Safety endpoint hostname, such as `<resource-name>.cognitiveservices.azure.com`. |
 | `analyzeText` | Analyze text for the harmful content categories hate, self-harm, sexual, and violence, and for blocklist matches. |
 | `analyzeText.severityThreshold` | The severity level from `0` to `6` at or above which content is blocked. Defaults to `2`. |
@@ -77,6 +77,25 @@ To authenticate with explicit credentials instead of the environment, add a `pol
               client_id: <client-id>
               client_secret: $AZURE_CLIENT_SECRET
 ```
+
+## Guard scope {#scope}
+
+By default, a request guard sends Azure AI Content Safety the system prompt, message text, and tool call results. A response guard sends only response message text. Both `analyzeText` and `detectJailbreak` check the same text.
+
+Set `scope` to change which text the guard sends. This example excludes tool call results from the request guard.
+
+```yaml
+guardrails:
+  request:
+  - scope: [systemPrompt, messages]
+    azureContentSafety:
+      endpoint: <resource-name>.cognitiveservices.azure.com
+      analyzeText:
+        severityThreshold: 2
+      detectJailbreak: {}
+```
+
+If no text is in scope, the guard skips the call to Azure AI Content Safety. For supported values and restrictions, see [Guard scope]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#scope" >}}).
 
 ## Test the guardrail
 

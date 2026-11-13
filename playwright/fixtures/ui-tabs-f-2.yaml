@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Config for tests/ui-tabs-f-2.spec.ts: the "UI" tab of "Serve the UI on its own gateway"
+# (setup/ui/gateway-ui). The UI is still on the default gateway, as in a generated config, and
+# the ui-gateway on 4001 from the guide's first step already exists. The capture selects
+# ui-gateway in Settings > UI and NEVER saves, so this file is never rewritten.
+gateways:
+  default:
+    port: 3000
+  ui-gateway:
+    port: 4001
+ui:
+  gateways: [default]

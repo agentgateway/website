@@ -45,7 +45,7 @@ permissions:
 jobs:
   setup:
     name: Setup and validate
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.build_matrix.outputs.matrix }}
     steps:
@@ -54,6 +54,16 @@ jobs:
         with:
           path: website
           fetch-depth: 1
+
+      # Both jobs import PyYAML. Pin the interpreter instead of relying on
+      # what the runner image's system Python happens to ship.
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Python deps
+        run: pip install pyyaml
 
       - name: Build version matrix
         id: build_matrix
@@ -153,7 +163,7 @@ jobs:
 
   api-docs:
     name: Generate API docs (${{ matrix.link_version }})
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: setup
     strategy:
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
@@ -176,6 +186,14 @@ jobs:
           repository: agentgateway/agentgateway
           path: agentgateway
           ref: ${{ matrix.ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install Python deps
+        run: pip install pyyaml
 
       - name: Setup Go for docs generation
         uses: actions/setup-go@v6
@@ -281,6 +299,39 @@ jobs:
           KGATEWAY_DIR="agentgateway" \
           python3 website/scripts/generate-agctl-ref.py
 
+      # A released version is generated from a TAG, so its agentgateway.dev links are frozen
+      # at release day and a page move afterwards leaves them resolving only via a 301.
+      # Resolving through static/_redirects writes out the current path instead.
+      #
+      # The source comments are fixed separately, by the check-doc-links workflow in
+      # agentgateway itself. That cannot help here, because a tag cannot be amended, so a
+      # source fix only reaches published docs at the next release. This step covers the gap.
+      #
+      # --version additionally repoints links at the version being generated rather than the
+      # "latest" the source comments hardcode. A no-op for any version whose content tree
+      # does not exist yet, and it reports what it skipped.
+      #
+      # generate-ref-docs.py normalizes its own Helm and metrics output, so this step covers
+      # what the other generators emit.
+      - name: Normalize generated doc links
+        working-directory: website
+        run: |
+          LINK_VERSION="${{ matrix.link_version }}"
+          TARGETS=()
+          API_FILE="assets/agw-docs/pages/reference/api/api-${LINK_VERSION}.md"
+          [ -f "$API_FILE" ] && TARGETS+=("$API_FILE")
+          AGCTL_DIR="assets/agw-docs/pages/reference/agctl/${LINK_VERSION}"
+          if [ -d "$AGCTL_DIR" ]; then
+            while IFS= read -r f; do TARGETS+=("$f"); done < <(find "$AGCTL_DIR" -name '*.md')
+          fi
+
+          if [ ${#TARGETS[@]} -eq 0 ]; then
+            echo "No generated reference files to normalize for ${LINK_VERSION}"
+            exit 0
+          fi
+
+          python3 scripts/normalize_doc_links.py --version "${LINK_VERSION}" "${TARGETS[@]}"
+
       - name: Build rendered docs for kubespec index
         working-directory: website
         run: hugo --config hugo.yaml
@@ -288,7 +339,10 @@ jobs:
       - name: Generate kubespec widget HTMLs
         run: |
           LINK_VERSION="${{ matrix.link_version }}"
-          CRD_DIR="${GITHUB_WORKSPACE}/agentgateway/controller/install/helm/agentgateway-crds/templates"
+          # agentgateway#4319 moved the CRD YAMLs from templates/ to
+          # files/crds/. Releases cut before that change still use templates/.
+          CRD_DIR="${GITHUB_WORKSPACE}/agentgateway/controller/install/helm/agentgateway-crds/files/crds"
+          [ -d "$CRD_DIR" ] || CRD_DIR="${GITHUB_WORKSPACE}/agentgateway/controller/install/helm/agentgateway-crds/templates"
           DOCS_KEY_FILE="${RUNNER_TEMP}/${LINK_VERSION}-keys.json"
           RENDERED_DOCS_DIR="${GITHUB_WORKSPACE}/website/public/docs/kubernetes/${LINK_VERSION}"
           TARGET_DIR="${GITHUB_WORKSPACE}/website/assets/agw-docs/pages/reference/api/${LINK_VERSION}"
@@ -322,6 +376,10 @@ jobs:
           go test ./...
           go run render.go -title "Configuration schema" "$CONFIG_SCHEMA" \
             > "${TARGET_DIR}/config-schema.html"
+          # The standalone content adapter links the schema explorer to the agentgateway
+          # ref that this widget came from. A release copies this directory into the frozen
+          # version, so the ref travels with the widget.
+          echo "${{ matrix.ref }}" > "${TARGET_DIR}/source-ref.txt"
 
       - name: Generate CEL context widget HTML
         run: |
@@ -337,6 +395,10 @@ jobs:
   
           echo "CEL widget HTML generated successfully:"
           ls -la "${TARGET_DIR}/cel-context.html"
+
+          # The standalone content adapter builds the CEL context page from this copy, so
+          # each version renders the schema of its own agentgateway ref instead of main.
+          cp "$CEL_SCHEMA" "${TARGET_DIR}/cel.json"
 
       # Create PR: uses the default GITHUB_TOKEN (contents: write + pull-requests: write from
       # the permissions block at the top of this file). See that block for the CI implications.

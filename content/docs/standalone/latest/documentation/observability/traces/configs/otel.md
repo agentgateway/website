@@ -3,7 +3,7 @@ title: OpenTelemetry Collector (OTel)
 weight: 10
 description: Route agentgateway traces through an OpenTelemetry Collector to fan out to multiple backends or apply processing pipelines.
 aliases:
-  - /docs/standalone/latest/integrations/observability/opentelemetry/
+  - ../../../../integrations/observability/opentelemetry/
 ---
 
 The [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) is a vendor-agnostic proxy that receives, processes, and exports telemetry data. For production deployments, routing agentgateway traces through a collector lets you fan out to multiple backends, apply processing pipelines such as batching or filtering, and swap backends without changing your agentgateway configuration.
@@ -37,7 +37,7 @@ Run the OTel Collector as a Docker container on the same host as agentgateway an
          processors: [batch]
          exporters: [debug]
    ```
-   Replace the `debug` exporter with the exporter for your tracing backend. For a full example that exports to Jaeger, see the [otel-collector-config.yaml](https://agentgateway.dev/examples/mcp-telemetry/otel-collector-config.yaml) file.
+   Replace the `debug` exporter with the exporter for your tracing backend. For a full example that exports to Jaeger, see the [otel-collector-config.yaml](https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/mcp-telemetry/otel-collector-config.yaml) file.
 
 2. Start the OTel Collector container and mount your config file.
    ```sh
@@ -49,12 +49,15 @@ Run the OTel Collector as a Docker container on the same host as agentgateway an
 
 3. Configure agentgateway to send traces to the collector.
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      tracing:
        host: localhost:4317
        randomSampling: true
    ```
+
+   > [!NOTE]
+   > {{< reuse "agw-docs/standalone/observability/docker-collector-host.md" >}}
 
 4. When you are done, remove the OTel Collector container.
    ```sh
@@ -93,7 +96,7 @@ Deploy the OTel Collector into your cluster by using the OpenTelemetry Helm char
            processors: [batch]
            exporters: [debug]
    ```
-   Replace the `debug` exporter with the exporter for your tracing backend. For a full example that exports to Jaeger, see the [otel-collector-config.yaml](https://agentgateway.dev/examples/mcp-telemetry/otel-collector-config.yaml) file.
+   Replace the `debug` exporter with the exporter for your tracing backend. For a full example that exports to Jaeger, see the [otel-collector-config.yaml](https://raw.githubusercontent.com/agentgateway/agentgateway/v1.7.0/examples/mcp-telemetry/otel-collector-config.yaml) file.
 
 3. Install the OTel Collector chart.
    ```sh

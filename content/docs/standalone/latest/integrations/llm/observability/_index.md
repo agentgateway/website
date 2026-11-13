@@ -1,8 +1,7 @@
 ---
 title: Observability
 weight: 40
-description: Send LLM telemetry to Axiom, Braintrust, Langfuse, LangSmith, and other observability platforms.
-test: skip
+description: Send LLM telemetry to Axiom, Braintrust, Datadog, Langfuse, LangSmith, and other observability platforms.
 ---
 
 Agentgateway can send LLM telemetry to specialized observability platforms for prompt logging, cost tracking, audit trail, and performance monitoring.
@@ -22,10 +21,11 @@ Agentgateway exports LLM telemetry via OpenTelemetry, which can be forwarded to 
 Enable OpenTelemetry tracing with LLM-specific attributes.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-config:
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+frontendPolicies:
   tracing:
-    otlpEndpoint: http://localhost:4317
+    host: localhost:4317
+    protocol: grpc
     randomSampling: true
 
 gateways:
@@ -47,7 +47,7 @@ Agentgateway automatically includes these LLM-specific trace attributes:
 
 | Attribute | Description |
 |-----------|-------------|
-| `gen_ai.operation.name` | Operation type (chat, completion, embedding) |
+| `gen_ai.operation.name` | Operation type, such as `chat` or `embeddings`. For all values, see [Operation names]({{< link-hextra path="/documentation/observability/traces/attribute-reference/#operation-names" >}}) |
 | `gen_ai.request.model` | Requested model name |
 | `gen_ai.response.model` | Actual model used |
 | `gen_ai.usage.input_tokens` | Input token count, including the tokens read from or written to the prompt cache. See [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}). |
@@ -55,4 +55,4 @@ Agentgateway automatically includes these LLM-specific trace attributes:
 | `gen_ai.provider.name` | LLM provider (openai, anthropic, etc.) |
 
 For complete metrics, traces, and a dashboard, see the
-[Datadog observability guide]({{< link-hextra path="/documentation/observability/traces/configs/datadog/" >}}).
+[Datadog observability guide]({{< link-hextra path="/integrations/llm/observability/datadog/" >}}).

@@ -10,7 +10,7 @@ Agentgateway always reads a configuration file at startup. To control how config
 Set the mode in the `config.storage.mode` field of your configuration file. The mode values are `file`, `hybrid`, and `readOnly`, which are the literal values that the field accepts. Because the field is in the `config` section, agentgateway applies it at startup only, so a change to it takes effect after a restart.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   storage:
     mode: hybrid          # file, hybrid, or readOnly
@@ -29,7 +29,7 @@ Review the following table to understand this configuration.
 | --- | --- | --- |
 | `file` (default) | Agentgateway writes the resource into your configuration file, adding the section if the file does not have one yet. | No |
 | `hybrid` | Agentgateway keeps your configuration file as a read-only baseline and stores the resource in the database. At read time, it merges the stored resources over the baseline. | Yes |
-| `readOnly` | Agentgateway rejects the write with a `403` response and the message `UI is configured as read-only`. | No |
+| `readOnly` | Agentgateway rejects the write with a `403` response and the message `UI is configured as read-only`. The same applies to **Refresh base costs** on the **LLM Costs** page. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). | No |
 
 In `hybrid` mode, agentgateway never writes back to your configuration file. Instead, it stores the resource in the database that you configure in the UI or API, and layers it over the file value when it reads the configuration. Note that you can only update certain resources through the UI or API. For more information, see [What the database stores](#what-the-database-stores).
 
@@ -46,6 +46,10 @@ The database holds only the resource types in the following table. Everything el
 | MCP | Targets, policies, and settings |
 | Traffic | Gateways, routes, and TCP routes |
 | UI | Policies and the model catalog |
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+Besides these resources, the database holds the MCP session key that agentgateway generates when you do not set one, so every instance that shares the database encrypts session IDs with the same key. The key is not a configuration resource, so the UI and the config resource API do not show it. Anyone with read access to the database can read the key. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
+{{< /version >}}
 
 The overlay only adds resources. It does not replace a resource that your configuration file already defines. For example, in `hybrid` mode you can add a gateway in the UI, and agentgateway serves it alongside the gateways in your file. But if the resource that you store has the same name as one in your file, agentgateway rejects the write with a `409` response.
 
@@ -119,7 +123,7 @@ Use `file` mode when you want the UI to save your changes into the same configur
 3. Review your configuration file. Agentgateway added the server, and created the `mcp` section because the file did not have one.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 4000
@@ -135,21 +139,29 @@ Use `file` mode when you want the UI to save your changes into the same configur
    > [!NOTE]
    > If you enabled MCP in the UI, the `mcp` section also has a `port` field, because **Enable** writes the capability's default port along with the empty `targets` list.
 
-Agentgateway preserves the schema comment at the top of the file, and reloads the file after it writes to it.
+Agentgateway preserves the schema comment at the top of the file, and reloads the file after it writes to it.{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} Agentgateway edits the file in place, so it also keeps your other comments.{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} If agentgateway cannot edit the file in place, it rewrites the whole file, and those comments are lost.{{< /version >}}
 
 > [!IMPORTANT]
 > In this mode the UI is a writer of your configuration file, not only a reader. If you keep your configuration in version control, or if you generate it from another tool, use `readOnly` or `hybrid` mode so that a UI edit cannot overwrite it.
 
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+Agentgateway also writes to your configuration file at startup when you do not set an MCP session key. It generates a key and saves it in the `config.session.key` field, with a comment that marks the key as generated. The UI and the `/api/config` admin endpoint show your configuration file as it is, including the key and any other secrets in the file. For more information, see [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}). To keep the key out of your file, set the `SESSION_KEY` environment variable. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
+{{< /version >}}
+
 ### `hybrid` mode {#binary-hybrid}
 
 Use `hybrid` mode when you want the configuration file to stay exactly as you wrote it, and UI edits to persist somewhere else. Agentgateway accepts a `postgres://` or `postgresql://` URL for PostgreSQL, and treats any other value as a SQLite database path.
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+{{< reuse "agw-docs/snippets/standalone-hybrid-env-expansion.md" >}}
+{{< /version >}}
 
 1. Set the storage mode and a database URL in your configuration file. A generated configuration already has the `database` field, which points at a SQLite file next to the configuration file. In that case, you add only the `storage` field.
 
    The example also adds an empty `mcp` section. In `hybrid` mode agentgateway treats your file as a read-only baseline, so the UI cannot add a section to it, only resources within a section that already exists. For more information, see [Sections must exist in the file](#sections-must-exist).
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      storage:
        mode: hybrid
@@ -238,7 +250,7 @@ Use `hybrid` mode when you want the configuration file to stay exactly as you wr
    Example output:
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      storage:
        mode: hybrid
@@ -284,7 +296,7 @@ Use `readOnly` mode when your configuration file is the only source of truth and
 1. Set the mode in your configuration file.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      storage:
        mode: readOnly
@@ -376,75 +388,9 @@ config:
 
 ### Deploy PostgreSQL {#deploy-postgresql}
 
-For a production deployment, use a managed PostgreSQL instance or an operator that handles backups and failover. The following example deploys a single instance for testing.
+Deploy PostgreSQL in the namespace of your agentgateway release. For production, use a managed PostgreSQL service or an operator that handles backups and failover. The following steps deploy one PostgreSQL instance for testing.
 
-> [!WARNING]
-> This example stores the database on an `emptyDir` volume, so the data exists only for the lifetime of the PostgreSQL pod. If that pod restarts or is rescheduled, the configuration that you saved in the UI is lost, and agentgateway falls back to the ConfigMap baseline. For anything beyond testing, back the database with a PersistentVolumeClaim, or use a managed PostgreSQL instance.
-
-1. Create a Secret for the database credentials. The following example creates the `agw` user with a `password` password.
-
-   ```sh
-   kubectl create secret generic agentgateway-postgres \
-     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --from-literal=POSTGRES_USER=agw \
-     --from-literal=POSTGRES_PASSWORD='password' \
-     --from-literal=POSTGRES_DB=agw
-   ```
-
-2. Deploy PostgreSQL.
-
-   ```sh
-   kubectl apply -n {{< reuse "agw-docs/snippets/namespace.md" >}} -f - <<'EOF'
-   apiVersion: apps/v1
-   kind: Deployment
-   metadata:
-     name: postgres
-   spec:
-     replicas: 1
-     selector:
-       matchLabels:
-         app: postgres
-     template:
-       metadata:
-         labels:
-           app: postgres
-       spec:
-         containers:
-         - name: postgres
-           image: postgres:{{< reuse "agw-docs/versions/postgres.md" >}}
-           envFrom:
-           - secretRef:
-               name: agentgateway-postgres
-           env:
-           - name: PGDATA
-             value: /var/lib/postgresql/data/pgdata
-           ports:
-           - containerPort: 5432
-           volumeMounts:
-           - name: data
-             mountPath: /var/lib/postgresql/data
-         volumes:
-         - name: data
-           emptyDir: {}
-   ---
-   apiVersion: v1
-   kind: Service
-   metadata:
-     name: postgres
-   spec:
-     selector:
-       app: postgres
-     ports:
-     - port: 5432
-       targetPort: 5432
-   EOF
-   ```
-
-3. Verify that PostgreSQL is running.
-
-   ```sh
-   kubectl rollout status deploy/postgres -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-   ```
+{{< reuse "agw-docs/standalone/helm-postgres-deploy.md" >}}
 
 ### Switch to database mode
 
@@ -459,7 +405,13 @@ For a production deployment, use a managed PostgreSQL instance or an operator th
    mode: database
    database:
      postgres:
-       url: postgres://agw:password@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+       url: postgres://agw:${POSTGRES_PASSWORD}@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+   extraEnv:
+   - name: POSTGRES_PASSWORD
+     valueFrom:
+       secretKeyRef:
+         name: agentgateway-postgres
+         key: POSTGRES_PASSWORD
    EOF
    ```
    {{% /tab %}}
@@ -471,7 +423,13 @@ For a production deployment, use a managed PostgreSQL instance or an operator th
    mode: database
    database:
      postgres:
-       url: postgres://agw:password@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+       url: postgres://agw:${POSTGRES_PASSWORD}@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+   extraEnv:
+   - name: POSTGRES_PASSWORD
+     valueFrom:
+       secretKeyRef:
+         name: agentgateway-postgres
+         key: POSTGRES_PASSWORD
    config:
      gateways:
        default:
@@ -495,8 +453,11 @@ For a production deployment, use a managed PostgreSQL instance or an operator th
    {{% /tab %}}
    {{< /tabs >}}
 
-   > [!NOTE]
-   > The chart rejects a `database.postgres.url` value that does not begin with `postgres://` or `postgresql://`, and rejects the value entirely when `mode` is `readonly`. The URL is rendered into the ConfigMap, so use a database user with only the privileges that agentgateway needs.
+   | Setting | Description |
+   | --- | --- |
+   | `mode` | Set to `database`. The chart rejects `database.postgres.url` in `readonly` mode. |
+   | `database.postgres.url` | Must start with `postgres://` or `postgresql://`. The `${POSTGRES_PASSWORD}` reference keeps the password out of the ConfigMap. Startup logs contain the resolved URL, including the password. Limit access to proxy logs and use a database user with only the required privileges. |
+   | `extraEnv` | Loads `POSTGRES_PASSWORD` from the PostgreSQL Secret. The proxy resolves the password reference at startup. |
 
 2. Upgrade the release with your values file.
 
@@ -616,7 +577,13 @@ Both storage modes support running more than one agentgateway proxy pod. In `rea
    mode: database
    database:
      postgres:
-       url: postgres://agw:password@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+       url: postgres://agw:${POSTGRES_PASSWORD}@postgres.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:5432/agw
+   extraEnv:
+   - name: POSTGRES_PASSWORD
+     valueFrom:
+       secretKeyRef:
+         name: agentgateway-postgres
+         key: POSTGRES_PASSWORD
    config:
      gateways:
        default:
@@ -645,6 +612,39 @@ Both storage modes support running more than one agentgateway proxy pod. In `rea
    kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
      -l app.kubernetes.io/name={{< reuse "agw-docs/standalone/helm-standalone-chart-name.md" >}}
    ```
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+## Manage stored resources with agctl {#agctl}
+
+You can run the same resource operations as the API examples on this page with `agctl standalone`. [Install agctl]({{< link-hextra path="/documentation/operations/agctl/" >}}) and [connect it]({{< link-hextra path="/documentation/operations/config-resources/#connect" >}}) to the API address of your installation. For Helm, keep the port-forward to the admin address running.
+
+1. Create an MCP target resource. Replace the example host with the URL of your MCP server.
+
+   ```sh
+   cat <<'EOF' > target.yaml
+   kind: mcp.target
+   value:
+     name: cli-target
+     mcp:
+       host: http://example.com/mcp
+   EOF
+   agctl standalone apply -f target.yaml
+   ```
+
+2. Verify the stored resource.
+
+   ```sh
+   agctl standalone get mcp.target cli-target -o yaml
+   ```
+
+3. Remove the target when you finish testing.
+
+   ```sh
+   agctl standalone delete mcp.target cli-target
+   ```
+
+For where the CLI writes and what it lists in each storage mode, see [Storage behavior]({{< link-hextra path="/documentation/operations/config-resources/#storage-behavior" >}}).
+{{< /version >}}
 
 ## Cleanup
 
@@ -682,10 +682,10 @@ Both storage modes support running more than one agentgateway proxy pod. In `rea
      --set mode=readonly
    ```
 
-3. Delete PostgreSQL and its Secret.
+3. Delete PostgreSQL, its data, and its Secret.
 
    ```sh
-   kubectl delete deploy/postgres svc/postgres secret/agentgateway-postgres \
+   kubectl delete deploy/postgres svc/postgres pvc/postgres-data secret/agentgateway-postgres \
      -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 {{% /tab %}}

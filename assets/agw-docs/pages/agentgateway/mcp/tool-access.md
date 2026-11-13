@@ -27,6 +27,11 @@ sequenceDiagram
    * `'jwt.sub == "alice" && mcp.tool.name == "add_issue_comment"'`: JWT tokens with the `sub=alice` claim can access the `add_issue_comment` tool. Access to all other tools is denied. 
 6. The MCP server returns the tools that were authorized to access. 
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+> [!NOTE]
+> MCP authorization filters tool lists after each target responds. Agentgateway still contacts targets whose tools are all hidden. Use a [target condition]({{< link-hextra path="/documentation/mcp/virtual/#target-conditions" >}}) to exclude a target before contacting it. See [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}) to compare the options.
+{{< /version >}}
+
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup" >}}).
@@ -124,7 +129,7 @@ sequenceDiagram
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
-       - group: agentgateway.dev
+       - group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
          name: github-mcp-backend
      backend:
@@ -178,8 +183,10 @@ sequenceDiagram
       Example output: 
       ```console
       Failed to call tool search_repositories: Streamable HTTP error: 
-      Error POSTing to endpoint: {"jsonrpc":"2.0","id":2,"error":{"code":-32603,"message":"failed to send message: unauthorized tool call"}}
+      Error POSTing to endpoint: {"jsonrpc":"2.0","id":2,"error":{...}}
       ```
+
+      {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The JSON-RPC error has the code `-32602` and the message `Unknown tool: search_repositories`.{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The JSON-RPC error has the code `-32602` and the message `unknown resource`, which is the same message as for a tool that does not exist. The proxy logs record the reason, such as `mcp: authorization denied for tool: search_repositories`.{{< /version >}}
    
    3. Try to access the `get_me` took with Bob's JWT token. Verify that the request fails, because the token does not have the `sub=alice` claim. 
       ```sh
@@ -196,9 +203,10 @@ sequenceDiagram
       Example output: 
       ```console
       Failed to call tool search_repositories: Streamable HTTP error: 
-      Error POSTing to endpoint: {"jsonrpc":"2.0","id":2,"error":{"code":-32603,"message":
-      "failed to send message: unauthorized tool call"}}
+      Error POSTing to endpoint: {"jsonrpc":"2.0","id":2,"error":{...}}
       ```
+
+      {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The JSON-RPC error has the code `-32602` and the message `Unknown tool: search_repositories`.{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The JSON-RPC error has the code `-32602` and the message `unknown resource`, which is the same message as for a tool that does not exist. The proxy logs record the reason, such as `mcp: authorization denied for tool: search_repositories`.{{< /version >}}
    {{% /tab %}}
    {{% tab name="UI" %}}
    1. Go to the MCP inspector tool, and re-connect with Alice's token. From the **Tools** tab, click **Clear**. Then click **List Tools**. Verify that you can now only see the `get_me` tool that you authorized in your {{< reuse "agw-docs/snippets/policy.md" >}}. 

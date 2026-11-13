@@ -7,7 +7,8 @@
 | Requests | Requests (by Status) | The request rate grouped by HTTP response status. |
 | Requests | Requests (by Reason) | The request rate grouped by the response reason. |
 | LLM | Token Consumption | The rate of tokens that LLM requests consume, grouped by token type, model, and gateway. |
-| LLM | Time To First Token | The time that it takes the LLM provider to return the first token of a response. |
+| LLM | Time To First Token | The time that it takes the LLM provider to return the first token of a response. |{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+| LLM | Inter-Chunk Latency | The median time between consecutive streamed output chunks. |{{< /version >}}
 | LLM | Request Time | The total duration of LLM requests. |
 | LLM | Tokens Per Second | The rate at which the LLM provider returns output tokens. |
 | MCP | MCP Calls (by method) | The rate of MCP requests grouped by JSON-RPC method. |

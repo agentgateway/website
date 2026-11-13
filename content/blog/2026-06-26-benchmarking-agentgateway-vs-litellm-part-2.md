@@ -125,6 +125,8 @@ Like the first benchmark, this test intentionally isolates proxy overhead by usi
 
 However, if you're building high-throughput AI infrastructure, serving many concurrent requests, or simply want a lightweight local gateway to manage all of your LLM providers, proxy efficiency matters. In this benchmark, agentgateway consistently delivered lower latency while using substantially fewer CPU and memory resources.
 
+Ready to switch? To convert an existing LiteLLM proxy configuration into an agentgateway configuration, see [Migrate from LiteLLM](/docs/standalone/latest/documentation/configuration/import/).
+
 I later revisited this comparison with [LiteLLM's Rust mode](/blog/2026-08-13-benchmarking-agentgateway-vs-litellm-rust-mode/).
 
 The complete benchmark scripts and raw results are available in the GitHub [repository](https://github.com/linsun/litellm-agw-perf) if you'd like to reproduce the numbers yourself.

@@ -51,9 +51,7 @@ Install {{< reuse "/agw-docs/snippets/kgateway.md" >}} by using Flux. The follow
    > [!NOTE]
    > If you need to use an experimental feature such as TCPRoutes, reconcile the experimental channel by setting `sparseCheckout: [config/crd/experimental]` on the `GitRepository` and `path: ./config/crd/experimental` on the `Kustomization`. For more information, see [Experimental features in Gateway API]({{< link-hextra path="/release-notes/versions/#experimental-features">}}).
 
-2. Create the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace and the `OCIRepository` and `HelmRelease` resources that install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} CRD and control plane charts into it. You might also need the following values:
-   * **Development builds**: `controller.image.pullPolicy=Always` to ensure you get the latest image.
-   * **Experimental Gateway API features**: `controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true` to set the feature gate for experimental features such as TCPRoutes explicitly. This setting is enabled by default.
+2. Create the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace and the `OCIRepository` and `HelmRelease` resources that install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} CRD and control plane charts into it. For development builds, you might also need to set `controller.image.pullPolicy=Always` to ensure you get the latest image.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -121,8 +119,6 @@ Install {{< reuse "/agw-docs/snippets/kgateway.md" >}} by using Flux. The follow
        controller:
          image:
            pullPolicy: Always
-         extraEnv:
-           AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES: "true"
    EOF
    ```
 

@@ -5,6 +5,9 @@
 > [!WARNING]
 > When you use API keys, your services are only as secure as the API keys. Storing and rotating the API key securely is up to the user.
 
+> [!TIP]
+> For LLM traffic, give clients virtual keys and keep provider keys in the cluster. The proxy replaces each virtual key with the provider key before forwarding the request. For more information, see [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
+
 ## API key auth in agentgateway
 
 The agentgateway proxy comes with built-in API key auth support via the {{< reuse "agw-docs/snippets/policy.md" >}} resource. To secure your services with API keys, first provide your agentgateway proxy with your API keys in the form of Kubernetes secrets. Then in the {{< reuse "agw-docs/snippets/policy.md" >}} resource, you refer to the secrets in one of two ways.
@@ -33,7 +36,7 @@ sequenceDiagram
 
     AGW->>AGW: API key auth check:<br/>No API key found
 
-    AGW-->>C: 401 Unauthorized<br/>"no API Key found"
+    AGW-->>C: 401 Unauthorized{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}<br/>"authentication failed"{{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}<br/>"no API Key found"{{< /version >}}
 
     Note over C,Backend: Retry with API key
 
@@ -202,10 +205,10 @@ After you apply the policy, verify that API key authentication is enforced.
    ...
    < HTTP/1.1 401 Unauthorized
    HTTP/1.1 401 Unauthorized
-
-   api key authentication failure: no API Key found%
    ...
    ```
+
+   {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The response body names the reason, such as `api key authentication failure: no API Key found`.{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The response body says only `authentication failed`. The proxy logs record the reason, such as `api key authentication failure: no API Key found`.{{< /version >}}
 
 2. Repeat the request. This time, you provide a valid API key in the `Authorization` header. Verify that the request now succeeds.
    {{< tabs >}}

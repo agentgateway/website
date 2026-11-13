@@ -44,7 +44,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `provider` _[LLMProvider](#llmprovider)_ | Configuration for how to reach the configured LLM<br />provider. |  | ExactlyOneOf: [openai azureopenai azure anthropic gemini vertexai bedrock custom] <br />Optional: \{\} <br /> |
+| `provider` _[LLMProvider](#llmprovider)_ | Configuration for how to reach the configured LLM<br />provider. |  | ExactlyOneOf: [openai azureopenai azure anthropic gemini vertexai bedrock custom copilot] <br />Optional: \{\} <br /> |
 | `groups` _[PriorityGroup](#prioritygroup) array_ | Groups in priority order, where each group<br />defines a set of LLM providers. The priority determines the priority of<br />the backend endpoints chosen.<br />Note: provider names must be unique across all providers in all priority<br />groups. Backend policies may target a specific provider by name using<br />`targetRefs[].sectionName`.<br />Example configuration with two priority groups:<br />	groups:<br />	- providers:<br />	  - azureopenai:<br />	      deploymentName: gpt-4o-mini<br />	      apiVersion: 2024-02-15-preview<br />	      endpoint: ai-gateway.openai.azure.com<br />	- providers:<br />	  - azureopenai:<br />	      deploymentName: gpt-4o-mini-2<br />	      apiVersion: 2024-02-15-preview<br />	      endpoint: ai-gateway-2.openai.azure.com<br />	     policies:<br />	       auth:<br />	         secretRef:<br />	           name: azure-secret |  | MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
 
@@ -149,7 +149,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `mode` _[APIKeyAuthenticationMode](#apikeyauthenticationmode)_ | Validation mode for API key authentication. | Strict | Optional: \{\} <br /> |
+| `mode` _[APIKeyAuthenticationMode](#apikeyauthenticationmode)_ | Validation mode for API key authentication. Defaults to `Strict`. |  | Optional: \{\} <br /> |
 | `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Credential source, defaulting to a Kubernetes<br />`Secret`, storing a set of API keys. If many keys are needed,<br />`secretSelector` or `configMapSelector` can be used instead.<br />Note that ConfigMap-backed API keys only support `keyHash`.<br />Each entry in the credential data represents one API key. The key is an<br />arbitrary identifier. The value can either be:<br />* A string representing the API key.<br />* A JSON object with `key` or `keyHash`, plus optional `metadata`.<br />  `key` contains the API key. `keyHash` contains a hashed API key in<br />  `sha256:<hex>` format. `metadata` contains arbitrary JSON metadata<br />  associated with the key, which may be used by other policies. For<br />  example, you may write an authorization policy allowing<br />  `apiKey.group == 'sales'`.<br />Example:<br />	apiVersion: v1<br />	kind: Secret<br />	metadata:<br />	  name: api-key<br />	stringData:<br />	  client1: \|<br />	    \{<br />	      "key": "k-123",<br />	      "metadata": \{<br />	        "group": "sales",<br />	        "created_at": "2024-10-01T12:00:00Z"<br />	      \}<br />	    \}<br />	  client2: "k-456"<br />	  client3: \|<br />	    \{<br />	      "keyHash": "sha256:efa299afb8c12a36e47a790cbbf929caa06d13285950410463fb759af17d0dad",<br />	      "metadata": \{<br />	        "group": "engineering"<br />	      \}<br />	    \} |  | Optional: \{\} <br /> |
 | `secretSelector` _[SecretSelector](#secretselector)_ | Selects multiple Kubernetes `Secret` resources<br />containing API keys. It is Secret-only; use `secretRef` for other<br />credential kinds. If the same key is defined in multiple secrets, the<br />behavior is undefined.<br />Each entry in the `Secret` data represents one API key. The key is an<br />arbitrary identifier. The value can either be:<br />* A string representing the API key.<br />* A JSON object with `key` or `keyHash`, plus optional `metadata`.<br />  `key` contains the API key. `keyHash` contains a hashed API key in<br />  `sha256:<hex>` format. `metadata` contains arbitrary JSON metadata<br />  associated with the key, which may be used by other policies. For<br />  example, you may write an authorization policy allowing<br />  `apiKey.group == 'sales'`.<br />Example:<br />	apiVersion: v1<br />	kind: Secret<br />	metadata:<br />	  name: api-key<br />	stringData:<br />	  client1: \|<br />	    \{<br />	      "key": "k-123",<br />	      "metadata": \{<br />	        "group": "sales",<br />	        "created_at": "2024-10-01T12:00:00Z"<br />	      \}<br />	    \}<br />	  client2: "k-456" |  | Optional: \{\} <br /> |
 | `configMapSelector` _[ConfigMapSelector](#configmapselector)_ | Selects multiple Kubernetes `ConfigMap` resources<br />containing API keys. It is ConfigMap-only; use `secretRef` or<br />`secretSelector` for Secret-backed credentials. If the same key is<br />defined in multiple ConfigMaps, the behavior is undefined.<br />Because ConfigMaps are not confidential, every entry sourced from a<br />ConfigMap must use `keyHash`; a raw `key` value is rejected.<br />Each entry in the `ConfigMap` data represents one API key. The key is<br />an arbitrary identifier. The value must be a JSON object with<br />`keyHash`, plus optional `metadata`. `keyHash` contains a hashed API<br />key in `sha256:<hex>` format. `metadata` contains arbitrary JSON<br />metadata associated with the key, which may be used by other<br />policies. For example, you may write an authorization policy allowing<br />`apiKey.group == 'sales'`.<br />Example:<br />	apiVersion: v1<br />	kind: ConfigMap<br />	metadata:<br />	  name: api-key<br />	data:<br />	  client1: \|<br />	    \{<br />	      "keyHash": "sha256:efa299afb8c12a36e47a790cbbf929caa06d13285950410463fb759af17d0dad",<br />	      "metadata": \{<br />	        "group": "sales"<br />	      \}<br />	    \} |  | Optional: \{\} <br /> |
@@ -407,15 +407,15 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `parentRefs` _[ParentReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#parentreference) array_ | Parent resources to which this model attaches. Supported parent kinds are<br />Gateway, ListenerSet, and HTTPRoute.<br />A Gateway or ListenerSet parent attaches the model directly to its<br />listeners. An HTTPRoute parent attaches the model to the referenced rule;<br />sectionName selects a named rule, or the HTTPRoute must contain exactly<br />one rule when sectionName is omitted. The selected rule must use exactly<br />one AgentgatewayModel backend with name "*". If the rule has path matches,<br />they must use PathPrefix matching. |  | MaxItems: 16 <br />MinItems: 1 <br />Required: \{\} <br /> |
 | `match` _[ModelMatch](#modelmatch)_ | Conditions for selecting this model from client requests. |  | Optional: \{\} <br /> |
-| `visibility` _[ModelVisibility](#modelvisibility)_ | Controls whether clients can request this model directly. Internal models<br />can only be selected by virtual models. Defaults to Public. | Public | Optional: \{\} <br /> |
+| `visibility` _[ModelVisibility](#modelvisibility)_ | Controls whether clients can request this model directly. Internal models<br />can only be selected by virtual models. Defaults to Public. |  | Optional: \{\} <br /> |
 | `provider` _[ModelProvider](#modelprovider)_ | Provider serving this concrete model. Provider-specific configuration is<br />set by the corresponding field below when needed. |  | Optional: \{\} <br /> |
 | `azure` _[AzureSettings](#azuresettings)_ | Provider-specific settings for Azure AI. |  | Optional: \{\} <br /> |
 | `vertexai` _[VertexAISettings](#vertexaisettings)_ | Provider-specific settings for Vertex AI. |  | Optional: \{\} <br /> |
 | `bedrock` _[BedrockSettings](#bedrocksettings)_ | Provider-specific settings for Amazon Bedrock. |  | Optional: \{\} <br /> |
 | `custom` _[CustomProviderSettings](#customprovidersettings)_ | Provider-specific settings for a custom provider. |  | Optional: \{\} <br /> |
-| `baseURL` _[LongString](#longstring)_ | BaseURL overrides the provider address and base path prefix. It must use the<br />http or https scheme. Backend policies may override the default TLS<br />configuration. Query parameters, fragments, and user info are not supported.<br />The URL path is the upstream base path and defaults to / when omitted.<br />Provider-specific endpoint paths are appended to this base path.<br />For example, https://api.openai.com/v1 sends completions to /v1/chat/completions,<br />while https://api.openai.com sends them to /chat/completions. |  | Format: uri <br />MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `baseURL` _[LongString](#longstring)_ | BaseURL overrides the provider address and base path prefix. It must use the<br />http or https scheme. Backend policies may override the default TLS<br />configuration. Query parameters, fragments, and user info are not supported.<br />The URL path is the upstream base path and defaults to / when omitted.<br />Provider-specific endpoint paths are appended to this base path.<br />For example, `https://api.openai.com/v1` sends completions to `/v1/chat/completions`,<br />while `https://api.openai.com` sends them to `/chat/completions`. |  | Format: uri <br />MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `policies` _[ModelPolicies](#modelpolicies)_ | Policies applied to this concrete model. |  | Optional: \{\} <br /> |
-| `virtualModel` _[VirtualModel](#virtualmodel)_ | Request-time routing among concrete AgentgatewayModel resources. |  | ExactlyOneOf: [weighted failover conditional] <br />Optional: \{\} <br /> |
+| `virtualModel` _[VirtualModel](#virtualmodel)_ | Request-time routing among concrete AgentgatewayModel resources. |  | ExactlyOneOf: [weighted failover conditional callout] <br />Optional: \{\} <br /> |
 
 
 #### AgentgatewayModelStatus
@@ -706,7 +706,9 @@ Configures CEL-based authorization.
 
 
 _Appears in:_
+- [BackendFull](#backendfull)
 - [BackendMCP](#backendmcp)
+- [BackendWithAI](#backendwithai)
 - [Frontend](#frontend)
 - [ModelPolicies](#modelpolicies)
 - [Traffic](#traffic)
@@ -714,7 +716,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `policy` _[AuthorizationPolicy](#authorizationpolicy)_ | The authorization rule to evaluate.<br />* `Allow`: any matching allow rule allows the request.<br />* `Require`: every require rule must match for the request to be allowed.<br />* `Deny`: any matching deny rule denies the request.<br />`Deny` is not recommended because expression failures fail to deny; prefer<br />`Allow` or `Require`. If used, design expressions defensively against evaluation errors.<br />If at least one `Allow` rule is configured, requests are denied unless at<br />least one allow rule matches. |  | Required: \{\} <br /> |
-| `action` _[AuthorizationPolicyAction](#authorizationpolicyaction)_ | The effect of this rule when it matches.<br />If unspecified, defaults to `Allow`.<br />`Require` rules are cumulative: all require rules must match. | Allow | Optional: \{\} <br /> |
+| `action` _[AuthorizationPolicyAction](#authorizationpolicyaction)_ | The effect of this rule when it matches.<br />If unspecified, defaults to `Allow`.<br />`Require` rules are cumulative: all require rules must match. |  | Optional: \{\} <br /> |
 
 
 #### AuthorizationCookieLocation
@@ -911,6 +913,7 @@ _Appears in:_
 | `sessionName` _string_ | SessionName is a custom session name (RoleSessionName) for CloudTrail and<br />Cost & Usage Report attribution. If unset, AWS generates a random name. |  | Pattern: `^[\w+=,.@-]\{2,64\}$` <br />Optional: \{\} <br /> |
 | `sessionNameExpression` _[CELExpression](#celexpression)_ | SessionNameExpression is a CEL expression evaluated against each request<br />to produce the session name (RoleSessionName), for example `jwt.sub` or<br />`request.headers["x-team"]`. If the expression does not produce a valid<br />session name at request time, the request is rejected. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `tags` _[AwsSessionTag](#awssessiontag) array_ | Session tags passed to STS AssumeRole for cost attribution in the AWS Cost<br />& Usage Report, once activated. STS allows at most 50 per role session. |  | MaxItems: 50 <br />Optional: \{\} <br /> |
+| `externalId` _string_ | ExternalID is set when the role's trust policy requires sts:ExternalId. |  | MaxLength: 1224 <br />MinLength: 2 <br />Pattern: `^[\w+=,.@:/-]+$` <br />Optional: \{\} <br /> |
 
 
 #### AwsAuth
@@ -1127,7 +1130,7 @@ _Appears in:_
 | `transformations` _[FieldTransformation](#fieldtransformation) array_ | CEL transformations to compute and set fields in the request body.<br />The expression result overwrites any existing value for that field.<br />This has a higher priority than `overrides` if both are set for the same<br />key. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `finalTransformations` _[FieldTransformation](#fieldtransformation) array_ | CEL transformations to compute and set fields in the request body.<br />The expression result overwrites any existing value for that field.<br />This has a higher priority than `overrides` if both are set for the same<br />key.<br />Those transformations are applied after the request is converted to the provider's format, so they can be used to set provider-specific fields. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `modelAliases` _object (keys:string, values:string)_ | Maps friendly model names to actual provider model names.<br />Example: `\{"fast": "gpt-3.5-turbo", "smart": "gpt-4-turbo"\}`.<br />Note: This field is only applicable when using the agentgateway data plane. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
-| `promptCaching` _[PromptCachingConfig](#promptcachingconfig)_ | Automatic prompt caching for supported<br />providers, currently AWS Bedrock.<br />Reduces API costs by caching static content like system prompts and tool definitions.<br />Only applicable for Bedrock Claude 3+ and Nova models. |  | Optional: \{\} <br /> |
+| `promptCaching` _[PromptCachingConfig](#promptcachingconfig)_ | Automatic prompt caching for supported providers: Anthropic, Anthropic<br />models on Vertex AI, and AWS Bedrock (Claude 3+ and Nova models).<br />Reduces API costs by caching static content like system prompts and tool definitions.<br />Cache marks sent by the client take precedence: if a request already has any,<br />the policy adds none. |  | Optional: \{\} <br /> |
 | `routes` _object (keys:string, values:[RouteType](#routetype))_ | Rules for identifying the type of traffic to handle.<br />The keys are URL path suffixes matched using ends-with comparison, for<br />example `"/v1/chat/completions"`.<br />The special `*` wildcard matches any path.<br />If not specified, all traffic defaults to `completions` type. |  | Optional: \{\} <br /> |
 
 
@@ -1153,11 +1156,11 @@ _Appears in:_
 | `aws` _[AwsAuth](#awsauth)_ | Explicit AWS authentication method for the backend.<br />When omitted, default AWS SDK credential discovery is used. |  | Optional: \{\} <br /> |
 | `azure` _[AzureAuth](#azureauth)_ | Azure authentication method for the backend. |  | AtMostOneOf: [secretRef managedIdentity workloadIdentity] <br />Optional: \{\} <br /> |
 | `gcp` _[GcpAuth](#gcpauth)_ | Google authentication method for the backend.<br />When omitted, default Google credential discovery is used. |  | Optional: \{\} <br /> |
-| `oauthTokenExchange` _[OAuthTokenExchange](#oauthtokenexchange)_ | OAuth 2.0 token exchange (RFC 8693) / jwt-bearer (RFC 7523) authentication. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
-| `crossAppAccess` _[CrossAppAccessAuth](#crossappaccessauth)_ | Cross App Access (Identity Assertion / ID-JAG) authentication. |  | Optional: \{\} <br /> |
+| `oauthTokenExchange` _[OAuthTokenExchange](#oauthtokenexchange)_ | OAuth 2.0 token exchange (RFC 8693) / jwt-bearer (RFC 7523) authentication.<br />If this configuration is invalid, requests using it are rejected. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
+| `crossAppAccess` _[CrossAppAccessAuth](#crossappaccessauth)_ | Cross App Access (Identity Assertion / ID-JAG) authentication.<br />If this configuration is invalid, requests using it are rejected. |  | Optional: \{\} <br /> |
 | `jwtSign` _[JwtSignAuth](#jwtsignauth)_ | Signs a short-lived JWT with a private key on each request and sends it<br />to the backend, for upstreams that require per-request keypair JWTs<br />(e.g. the Snowflake SQL API) rather than a static credential. |  | Optional: \{\} <br /> |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where backend credentials are inserted.<br />If omitted, credentials are written to the `Authorization` header with the `Bearer ` prefix.<br />This applies to `key`, `secretRef`, and `passthrough`. Entries in `credentials` carry their own location. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
-| `credentials` _[BackendAuthCredential](#backendauthcredential) array_ | Credentials is a list of additional credentials to inject on the<br />backend request. Each entry resolves a Secret key and writes its value<br />to the entry's location. `credentials` is independent of the primary<br />`key`/`secretRef`/`passthrough` mechanism and may be set on its own or<br />alongside it. |  | MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `credentials` _[BackendAuthCredential](#backendauthcredential) array_ | Credentials is a list of additional credentials to inject on the backend<br />request. Each entry writes its value to the entry's location.<br />`credentials` is independent of the primary `key`/`secretRef`/`passthrough`<br />mechanism and may be set on its own or alongside it. |  | ExactlyOneOf: [secretRef gcp] <br />MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
 
 #### BackendAuthCredential
@@ -1167,7 +1170,8 @@ _Appears in:_
 BackendAuthCredential specifies one additional credential to inject on the
 backend request.
 
-
+_Validation:_
+- ExactlyOneOf: [secretRef gcp]
 
 _Appears in:_
 - [BackendAuth](#backendauth)
@@ -1176,7 +1180,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where the credential is inserted on the backend request. |  | ExactlyOneOf: [header queryParameter cookie] <br />Required: \{\} <br /> |
-| `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | SecretRef references a Kubernetes Secret holding the credential value, and<br />optionally overrides the key read from it. Defaults to `Authorization`,<br />matching the key convention used by the top-level `secretRef`. |  | Required: \{\} <br /> |
+| `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | SecretRef references a Kubernetes Secret holding the credential value, and<br />optionally overrides the key read from it. Defaults to `Authorization`,<br />matching the key convention used by the top-level `secretRef`. |  | Optional: \{\} <br /> |
+| `gcp` _[GcpAuth](#gcpauth)_ | Fetches a Google Cloud access or ID token and writes it to `location`. |  | Optional: \{\} <br /> |
 
 
 #### BackendAuthPassthrough
@@ -1227,7 +1232,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `duration` _[Duration](#duration)_ | Base time a backend should be evicted after being marked unhealthy.<br />Subsequent evictions use multiplicative backoff (duration * times_evicted).<br />If all endpoints are evicted, the load balancer falls back to returning evicted endpoints<br />rather than failing entirely.<br />If unset, defaults to `3s`. | 3s | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
+| `duration` _[Duration](#duration)_ | Base time a backend should be evicted after being marked unhealthy.<br />Subsequent evictions use multiplicative backoff (duration * times_evicted).<br />If all endpoints are evicted, the load balancer falls back to returning evicted endpoints<br />rather than failing entirely.<br />If unset, defaults to `3s`. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 | `restoreHealth` _integer_ | Health score from 0 to 100 assigned to a backend when it returns from eviction.<br />For gradual recovery, set below 100; for full recovery immediately, set 100.<br />If unset, the backend resumes with the health it had when evicted. |  | Maximum: 100 <br />Minimum: 0 <br />Optional: \{\} <br /> |
 | `consecutiveFailures` _integer_ | Number of consecutive unhealthy responses required before the backend is evicted.<br />For example, a value of 5 means the backend must receive 5 unhealthy responses in a row before being evicted.<br />When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.<br />When neither is set, a single unhealthy response can trigger eviction. |  | Minimum: 0 <br />Optional: \{\} <br /> |
 | `healthThreshold` _integer_ | EWMA health score threshold, from 0 to 100. When set, a backend is evicted<br />only if its computed health drops below this value after an unhealthy<br />response (e.g. 50 evicts when EWMA health falls below 50%). Unlike<br />consecutiveFailures, this sliding-window average lets a single success delay<br />eviction. If both are set, either condition evicts; if neither, a single<br />unhealthy response evicts. |  | Maximum: 100 <br />Minimum: 0 <br />Optional: \{\} <br /> |
@@ -1252,6 +1257,7 @@ _Appears in:_
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
 | `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | AtMostOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange crossAppAccess jwtSign] <br />Optional: \{\} <br /> |
+| `authorization` _[Authorization](#authorization)_ | Authorization rules that clients must satisfy after this backend is selected.<br />Unlike traffic authorization, this policy is evaluated against the request<br />associated with the selected destination backend. |  | Optional: \{\} <br /> |
 | `sessionAffinity` _[SessionAffinity](#sessionaffinity)_ | Configures best-effort session affinity using an existing request attribute.<br />For AI backends, this applies across the backend's provider groups and must not<br />be configured on an individual provider. |  | Optional: \{\} <br /> |
 | `ai` _[BackendAI](#backendai)_ | Settings for AI workloads. This is only applicable when<br />connecting to a `Backend` of type `ai`. |  | Optional: \{\} <br /> |
 | `mcp` _[BackendMCP](#backendmcp)_ | Settings for MCP workloads. This is only applicable when<br />connecting to a `Backend` of type `mcp`. |  | Optional: \{\} <br /> |
@@ -1298,7 +1304,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `authorization` _[Authorization](#authorization)_ | MCP backend authorization. Unlike authorization at the HTTP level, which rejects<br />unauthorized requests with a `403` error, this policy works at the<br />`MCPBackend` level.<br />List operations, such as `list_tools`, will have each item evaluated.<br />Items that do not meet the rule will be filtered.<br />Get or call operations, such as `call_tool`, will evaluate the specific<br />item and reject requests that do not meet the rule. |  | Optional: \{\} <br /> |
 | `authentication` _[MCPAuthentication](#mcpauthentication)_ | MCP backend-specific authentication rules.<br />This field is deprecated; prefer to use traffic policy `jwtAuthentication.mcp`, which ensures authentication runs before<br />other policies such as transformation and rate limiting. |  | Optional: \{\} <br /> |
-| `guardrails` _[MCPGuardrails](#mcpguardrails)_ | `guardrails` routes selected JSON-RPC methods through a remote policy server. |  | Optional: \{\} <br /> |
+| `guardrails` _[MCPGuardrails](#mcpguardrails)_ | Remote and in-process CEL policy processors for MCP requests and responses. |  | Optional: \{\} <br /> |
 
 
 #### BackendSimple
@@ -1367,7 +1373,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `certificateSource` _[BackendTLSCertificateSource](#backendtlscertificatesource)_ | Source for the gateway's client identity and trust roots (`Inline` default, or `SPIFFE`). | Inline | Optional: \{\} <br /> |
+| `certificateSource` _[BackendTLSCertificateSource](#backendtlscertificatesource)_ | Source for the gateway's client identity and trust roots (`Inline` default, or `SPIFFE`). |  | Optional: \{\} <br /> |
 | `mtlsCertificateRef` _[LocalSecretObjectRef](#localsecretobjectref) array_ | Enables mutual TLS to the backend using `tls.key` and `tls.crt` from the<br />referenced credential source (defaulting to a Kubernetes `Secret`). An<br />optional `ca.cert`, if present, verifies the server certificate, but<br />`caCertificateRefs` takes priority. If unspecified, no client certificate<br />is used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
 | `caCertificateRefs` _[LocalCACertificateRef](#localcacertificateref) array_ | CA certificate source to use to verify the server certificate. Omitted kind<br />and `ConfigMap` select a ConfigMap; `Secret` selects a Secret. The bundle is<br />read from the `ca.crt` key unless `key` names a different one. If unset, the<br />system's trusted certificates are used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
 | `insecureSkipVerify` _[InsecureTLSMode](#insecuretlsmode)_ | Originates TLS but skips verification of the backend's certificate<br />WARNING: insecure; only use if the risks are understood<br />Modes:<br />* `All` disables all TLS verification<br />* `Hostname` trusts the CA certificate but ignores hostname/SAN mismatches.<br />  Still insecure; prefer `verifySubjectAltNames` where possible. |  | Optional: \{\} <br /> |
@@ -1418,7 +1424,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
 | `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
-| `mode` _[BackendTunnelMode](#backendtunnelmode)_ | How requests are sent through the proxy.<br />Defaults to `Auto`. | Auto | Optional: \{\} <br /> |
+| `mode` _[BackendTunnelMode](#backendtunnelmode)_ | How requests are sent through the proxy.<br />Defaults to `Auto`. |  | Optional: \{\} <br /> |
 
 
 #### BackendTunnelMode
@@ -1456,6 +1462,7 @@ _Appears in:_
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
 | `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | AtMostOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange crossAppAccess jwtSign] <br />Optional: \{\} <br /> |
+| `authorization` _[Authorization](#authorization)_ | Authorization rules that clients must satisfy after this AI provider is selected. |  | Optional: \{\} <br /> |
 | `ai` _[BackendAI](#backendai)_ | Settings for AI workloads. This is only applicable when<br />connecting to a `Backend` of type `ai`. |  | Optional: \{\} <br /> |
 | `transformation` _[Transformation](#transformation)_ | Mutates and transforms requests and responses sent to and from the backend. |  | Optional: \{\} <br /> |
 | `health` _[Health](#health)_ | Settings for passive and active health checking. |  | Optional: \{\} <br /> |
@@ -1475,7 +1482,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `mode` _[BasicAuthenticationMode](#basicauthenticationmode)_ | Validation mode for basic authentication. | Strict | Optional: \{\} <br /> |
+| `mode` _[BasicAuthenticationMode](#basicauthenticationmode)_ | Validation mode for basic authentication. Defaults to `Strict`. |  | Optional: \{\} <br /> |
 | `realm` _string_ | `realm` value to return in the `WWW-Authenticate`<br />header for failed authentication requests. If unset, `Restricted` will<br />be used. |  | Optional: \{\} <br /> |
 | `users` _string array_ | Inline list of username and password pairs that will<br />be accepted. Each entry represents one line of the `htpasswd` format:<br />https://httpd.apache.org/docs/2.4/programs/htpasswd.html.<br />Note: passwords should be the hash of the password, not the raw password. Use the `htpasswd` or similar commands<br />to generate a hash. MD5, bcrypt, crypt, and SHA-1 are supported.<br />Example:<br />	users:<br />	- "user1:$apr1$ivPt0D4C$DmRhnewfHRSrb3DQC.WHC."<br />	- "user2:$2y$05$r3J4d3VepzFkedkd/q1vI.pBYIpSqjfN0qOARV3ScUHysatnS0cL2" |  | MaxItems: 256 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Credential source, defaulting to a Kubernetes<br />`Secret`, storing the `.htaccess` file. When using the default Secret<br />resolver, the `Secret` must have a key named `.htaccess` by default;<br />override via `secretRef.key`. The value should contain the complete<br />`.htaccess` file.<br />Note: passwords should be the hash of the password, not the raw password. Use the `htpasswd` or similar commands<br />to generate a hash. MD5, bcrypt, crypt, and SHA-1 are supported.<br />Example:<br />	apiVersion: v1<br />	kind: Secret<br />	metadata:<br />	  name: basic-auth<br />	stringData:<br />	  .htaccess: \|<br />	    alice:$apr1$3zSE0Abt$IuETi4l5yO87MuOrbSE4V.<br />	    bob:$apr1$Ukb5LgRD$EPY2lIfY.A54jzLELNIId/ |  | Optional: \{\} <br /> |
@@ -1513,9 +1520,30 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `region` _string_ | AWS region to use for the backend.<br />Defaults to `us-east-1` if not specified. | us-east-1 | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-z0-9-]+$` <br />Optional: \{\} <br /> |
+| `region` _string_ | AWS region to use for the backend.<br />Defaults to `us-east-1` if not specified. |  | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-z0-9-]+$` <br />Optional: \{\} <br /> |
 | `guardrail` _[AWSGuardrailConfig](#awsguardrailconfig)_ | Guardrail policy to use for the backend. See<br /><https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html>.<br />If not specified, the AWS Guardrail policy will not be used. |  | Optional: \{\} <br /> |
+| `endpointPreference` _[BedrockEndpointPreference](#bedrockendpointpreference)_ | EndpointPreference selects which Bedrock API surface to prefer.<br />Defaults to `RuntimePreferred`, preferring runtime over mantle.<br />Decides which endpoint to pick mainly based on the catalog tags<br />`mantle` and `runtime`. |  | Optional: \{\} <br /> |
 | `model` _[ShortString](#shortstring)_ | Model name override, such as `gpt-4o-mini`.<br />If unset, the model name is taken from the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+
+
+#### BedrockEndpointPreference
+
+_Underlying type:_ _string_
+
+BedrockEndpointPreference selects the Bedrock API endpoint preference.
+
+
+
+_Appears in:_
+- [BedrockConfig](#bedrockconfig)
+- [BedrockSettings](#bedrocksettings)
+
+| Field | Description |
+| --- | --- |
+| `RuntimePreferred` | BedrockEndpointPreferenceRuntimePreferred uses Runtime by default and routes to<br />Mantle only for models the catalog tags `mantle` but not `runtime`. This is the default.<br /> |
+| `MantlePreferred` | BedrockEndpointPreferenceMantlePreferred uses Mantle by default and routes to<br />Runtime only for models the catalog tags `runtime` but not `mantle`.<br /> |
+| `MantleOnly` | BedrockEndpointPreferenceMantleOnly always uses the Mantle endpoint, regardless of catalog tags.<br /> |
+| `RuntimeOnly` | BedrockEndpointPreferenceRuntimeOnly always uses the Runtime endpoint, regardless of catalog tags.<br /> |
 
 
 #### BedrockGuardrails
@@ -1532,10 +1560,11 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
+| `failureMode` _[FailureMode](#failuremode)_ | Behavior when the provider is unavailable or returns an error.<br />`FailOpen` allows the request to continue; `FailClosed` (default) rejects it. |  | Optional: \{\} <br /> |
 | `identifier` _[ShortString](#shortstring)_ | Identifier of the Guardrail policy to use for the backend. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `version` _[ShortString](#shortstring)_ | Version of the Guardrail policy to use for the backend. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `region` _[ShortString](#shortstring)_ | AWS region where the guardrail is deployed, for example<br />`us-west-2`). |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether the guardrail's verdict is enforced or only<br />observed. `Reject` (the default) enforces the guardrail: a blocked<br />assessment rejects the request/response and an anonymized assessment masks<br />the matched content. `Audit` runs the guardrail in observe mode: it is<br />invoked and its assessment recorded (metrics + structured log), but the<br />request/response is never blocked or masked. | Reject | Optional: \{\} <br /> |
+| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether the guardrail's verdict is enforced or only<br />observed. `Reject` (the default) enforces the guardrail: a blocked<br />assessment rejects the request/response and an anonymized assessment masks<br />the matched content. `Audit` runs the guardrail in observe mode: it is<br />invoked and its assessment recorded (metrics + structured log), but the<br />request/response is never blocked or masked. |  | Optional: \{\} <br /> |
 | `policies` _[BedrockGuardrailsPolicy](#bedrockguardrailspolicy)_ | Policies for communicating with AWS Bedrock Guardrails. |  | Optional: \{\} <br /> |
 
 
@@ -1593,8 +1622,9 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `region` _string_ | AWS region to use for the backend.<br />Defaults to `us-east-1` if not specified. | us-east-1 | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-z0-9-]+$` <br />Optional: \{\} <br /> |
+| `region` _string_ | AWS region to use for the backend.<br />Defaults to `us-east-1` if not specified. |  | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-z0-9-]+$` <br />Optional: \{\} <br /> |
 | `guardrail` _[AWSGuardrailConfig](#awsguardrailconfig)_ | Guardrail policy to use for the backend. See<br /><https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html>.<br />If not specified, the AWS Guardrail policy will not be used. |  | Optional: \{\} <br /> |
+| `endpointPreference` _[BedrockEndpointPreference](#bedrockendpointpreference)_ | EndpointPreference selects which Bedrock API surface to prefer.<br />Defaults to `RuntimePreferred`, preferring runtime over mantle.<br />Decides which endpoint to pick mainly based on the catalog tags<br />`mantle` and `runtime`. |  | Optional: \{\} <br /> |
 
 
 #### BodySendMode
@@ -1710,6 +1740,8 @@ _Appears in:_
 - [AuthorizationPolicy](#authorizationpolicy)
 - [AwsAssumeRole](#awsassumerole)
 - [AwsSessionTag](#awssessiontag)
+- [CalloutCache](#calloutcache)
+- [CalloutModelRouting](#calloutmodelrouting)
 - [ConditionalModelTarget](#conditionalmodeltarget)
 - [Delay](#delay)
 - [DirectResponse](#directresponse)
@@ -1725,7 +1757,9 @@ _Appears in:_
 - [HeaderTransformation](#headertransformation)
 - [Health](#health)
 - [LocalRateLimit](#localratelimit)
+- [MCPGuardrailsExpression](#mcpguardrailsexpression)
 - [MCPGuardrailsRemote](#mcpguardrailsremote)
+- [McpTargetSelector](#mcptargetselector)
 - [NamespacedMetadataContext](#namespacedmetadatacontext)
 - [OAuthTokenExchange](#oauthtokenexchange)
 - [OtlpAccessLog](#otlpaccesslog)
@@ -1771,6 +1805,47 @@ _Appears in:_
 | `additionalOrigins` _[ShortString](#shortstring) array_ | Additional source origins that will be<br />allowed in addition to the destination origin. The `Origin` consists of<br />a scheme and a host, with an optional port, and takes the form<br />`<scheme>://<host>(:<port>)`. |  | MaxItems: 16 <br />MaxLength: 256 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
+#### CalloutCache
+
+
+
+
+
+
+
+_Appears in:_
+- [CalloutModelRouting](#calloutmodelrouting)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `key` _[CELExpression](#celexpression) array_ | Ordered list of CEL expressions evaluated against the request to<br />construct the cache key. |  | MaxItems: 16 <br />MaxLength: 16384 <br />MinItems: 1 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `ttl` _[CELExpression](#celexpression)_ | Duration string, such as `5m`, or a CEL expression that returns the<br />duration that a cached callout response may be reused, or a timestamp<br />when it expires. The expression is evaluated with `callout` available,<br />before `transformation` is applied. |  | MaxLength: 16384 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `maxEntries` _integer_ | Maximum number of callout responses to keep in the cache. If unset, this<br />defaults to 10000. |  | Minimum: 1 <br />Optional: \{\} <br /> |
+
+
+#### CalloutModelRouting
+
+
+
+
+
+_Validation:_
+- ExactlyOneOf: [backendRef url]
+
+_Appears in:_
+- [VirtualModel](#virtualmodel)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
+| `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
+| `headers` _object (keys:string, values:[CELExpression](#celexpression))_ | Headers to set on the callout request, computed from CEL expressions.<br />Keys may be header names or the `:path`, `:method`, and `:authority`<br />pseudo-headers. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
+| `body` _[CELExpression](#celexpression)_ | CEL expression that computes the callout request body. Strings and bytes<br />are used directly; other values are JSON-encoded. If unset, the original<br />request body is forwarded. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `transformation` _object (keys:string, values:[CELExpression](#celexpression))_ | CEL expressions that compute request payload fields from the callout<br />response, overriding existing values. `callout.headers` holds the response<br />headers and `callout.body` the decoded JSON response body. `model` is<br />required and selects the concrete model name, which is matched against the<br />effective match.model of models attached to the same listener. |  | MaxProperties: 64 <br />MinProperties: 1 <br />Required: \{\} <br /> |
+| `fallback` _[ModelTargetReference](#modeltargetreference)_ | Model used when the callout fails, returns a non-2xx or non-JSON<br />response, or selects an unknown model. `transformation` is not applied to<br />the fallback. If unset, the request is rejected. |  | Optional: \{\} <br /> |
+| `cache` _[CalloutCache](#calloutcache)_ | Reuse callout responses using CEL expressions as the cache key. On a cache<br />hit, `transformation` is evaluated against the cached response. Keying on<br />a session identifier makes routing sticky for that session. |  | Optional: \{\} <br /> |
+
+
 #### CipherSuite
 
 _Underlying type:_ _string_
@@ -1795,6 +1870,75 @@ _Appears in:_
 | `TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256` |  |
 
 
+#### Compression
+
+
+
+
+
+
+
+_Appears in:_
+- [Traffic](#traffic)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `response` _[CompressionResponse](#compressionresponse)_ | Compression applied to responses sent to the client. |  | Optional: \{\} <br /> |
+| `request` _[CompressionRequest](#compressionrequest)_ | Compression applied to requests received from the client. |  | Optional: \{\} <br /> |
+
+
+#### CompressionAlgorithm
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [RequestDecompression](#requestdecompression)
+- [ResponseCompression](#responsecompression)
+
+| Field | Description |
+| --- | --- |
+| `Gzip` |  |
+| `Brotli` |  |
+| `Deflate` |  |
+| `Zstd` |  |
+
+
+#### CompressionRequest
+
+
+
+
+
+
+
+_Appears in:_
+- [Compression](#compression)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `decompress` _[RequestDecompression](#requestdecompression)_ | Decompresses request bodies before route-level body-aware policies (rate limiting,<br />ext_proc, transformations) run and before forwarding to the backend. Authentication,<br />authorization and gateway-phase policies run first and observe the encoded body. |  | Optional: \{\} <br /> |
+
+
+#### CompressionResponse
+
+
+
+
+
+
+
+_Appears in:_
+- [Compression](#compression)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `compress` _[ResponseCompression](#responsecompression)_ | Compresses response bodies when the client advertises support in Accept-Encoding.<br />Only textual content types (JSON, HTML, CSS, JavaScript, XML, plain text, SVG) with a known<br />length of at least 32 bytes are compressed, so streamed responses are sent as-is.<br />Responses that are already encoded, partial (`Content-Range`), or marked `no-transform`<br />are never compressed. |  | Optional: \{\} <br /> |
+
+
 #### ConditionalModelRouting
 
 
@@ -1808,7 +1952,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `targets` _[ConditionalModelTarget](#conditionalmodeltarget) array_ | Concrete model targets evaluated in order. The first matching condition is<br />selected. One final target may omit when to act as the fallback. |  | MaxItems: 64 <br />MinItems: 1 <br />Required: \{\} <br /> |
+| `targets` _[ConditionalModelTarget](#conditionalmodeltarget) array_ | Model targets evaluated in order. The first matching condition is<br />selected. One final target may omit when to act as the fallback. Targets<br />may be concrete or virtual models. |  | MaxItems: 64 <br />MinItems: 1 <br />Required: \{\} <br /> |
 
 
 #### ConditionalModelTarget
@@ -1824,7 +1968,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `modelRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core)_ | Same-namespace AgentgatewayModel resource selected by this target. |  | Required: \{\} <br /> |
+| `modelRef` _[ModelObjectReference](#modelobjectreference)_ | Same-namespace model resource selected by this target. |  | Required: \{\} <br /> |
 | `model` _[LongString](#longstring)_ | Concrete model name selected through the referenced model. It is required<br />when modelRef points to a wildcard match.model. When omitted, the referenced<br />model's exact effective match.model is used. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `when` _[CELExpression](#celexpression)_ | CEL expression that must evaluate to true for this target to be selected.<br />Omit only on the final fallback target. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
@@ -1853,19 +1997,39 @@ _Appears in:_
 
 _Underlying type:_ _string_
 
-Which category of request content a prompt guard inspects.
+Which category of request or response content a prompt guard inspects.
+Encrypted payloads are excluded. Signed response payloads are scanned but
+a mask that would change them rejects the response instead.
 
 
 
 _Appears in:_
 - [PromptguardRequest](#promptguardrequest)
+- [PromptguardResponse](#promptguardresponse)
 
 | Field | Description |
 | --- | --- |
 | `SystemPrompt` | The system/developer prompt.<br /> |
-| `Messages` | Regular user/assistant message text.<br /> |
-| `ToolOutput` | Tool call results fed back to the model.<br /> |
+| `Messages` | Regular user/assistant message text, including plaintext reasoning.<br /> |
+| `ToolOutput` | Tool call results, including results from serverside tools.<br /> |
 | `ToolInput` | Tool call arguments, usually produced by the model.<br /> |
+
+
+#### CopilotConfig
+
+
+
+Settings for the GitHub Copilot LLM provider.
+
+
+
+_Appears in:_
+- [LLMProvider](#llmprovider)
+- [NamedLLMProvider](#namedllmprovider)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `model` _[ShortString](#shortstring)_ | Model name override.<br />If unset, the model name is taken from the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### CrossAppAccessAuth
@@ -1985,8 +2149,9 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `message` _string_ | Custom response message to return to the client. If not specified, defaults to<br />`The request was rejected due to inappropriate content`. | The request was rejected due to inappropriate content | Optional: \{\} <br /> |
-| `statusCode` _integer_ | Status code to return to the client. Defaults to 403. | 403 | Maximum: 599 <br />Minimum: 200 <br />Optional: \{\} <br /> |
+| `message` _string_ | Custom response message to return to the client. If not specified, defaults to<br />`The request was rejected due to inappropriate content`. |  | Optional: \{\} <br /> |
+| `statusCode` _integer_ | Status code to return to the client. Defaults to 403. |  | Maximum: 599 <br />Minimum: 200 <br />Optional: \{\} <br /> |
+| `headers` _HTTPHeader array_ | Headers to include in the rejection response. |  | Optional: \{\} <br /> |
 
 
 #### Delay
@@ -2311,7 +2476,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `modelRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core)_ | Same-namespace AgentgatewayModel resource selected by this target. |  | Required: \{\} <br /> |
+| `modelRef` _[ModelObjectReference](#modelobjectreference)_ | Same-namespace model resource selected by this target. |  | Required: \{\} <br /> |
 | `model` _[LongString](#longstring)_ | Concrete model name selected through the referenced model. It is required<br />when modelRef points to a wildcard match.model. When omitted, the referenced<br />model's exact effective match.model is used. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `priority` _integer_ | Priority of this target. Lower values are preferred. Targets at the same<br />priority are selected using a score that considers health and latency. The<br />next priority is used only when every target at this priority is degraded.<br />Configure policies.health on concrete target models to customize<br />degradation and eviction behavior. |  | Maximum: 1e+06 <br />Minimum: 0 <br />Required: \{\} <br /> |
 
@@ -2325,14 +2490,17 @@ _Underlying type:_ _string_
 
 
 _Appears in:_
+- [BedrockGuardrails](#bedrockguardrails)
 - [BufferBody](#bufferbody)
 - [ExtAuth](#extauth)
 - [ExtAuthOrConditional](#extauthorconditional)
 - [ExtProc](#extproc)
 - [ExtProcOrConditional](#extprocorconditional)
 - [GlobalRateLimit](#globalratelimit)
+- [GoogleModelArmor](#googlemodelarmor)
 - [MCPBackend](#mcpbackend)
 - [MCPGuardrailsRemote](#mcpguardrailsremote)
+- [OpenAIModeration](#openaimoderation)
 - [Webhook](#webhook)
 
 | Field | Description |
@@ -2492,6 +2660,27 @@ _Appears in:_
 | `http2KeepaliveTimeout` _[Duration](#duration)_ | Time to wait for a response to an `HTTP/2` keepalive ping before the connection is closed.<br />Only applies when `http2KeepaliveInterval` is set. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 | `maxConnectionDuration` _[Duration](#duration)_ | Maximum time a connection is allowed to remain open.<br />After this duration, the connection is gracefully closed after the current in-flight request completes.<br />Useful for ensuring even traffic distribution behind load balancers during scaling events. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 | `maxConcurrentRequests` _integer_ | Maximum number of in-flight HTTP requests across this gateway/port.<br />This includes HTTP/1 requests and HTTP/2 streams. Requests over the limit<br />are rejected immediately with a 503 response. Unset means unlimited. |  | Minimum: 1 <br />Optional: \{\} <br /> |
+| `normalize` _[FrontendHTTPNormalize](#frontendhttpnormalize) array_ | `normalize` defines path normalization rules applied before route matching.<br />The normalized path is used for routing, policies and the upstream request;<br />access logs keep the original path. Rules are applied in a fixed order<br />regardless of how they are listed: percent-decoding, then `MergeSlash`,<br />then `DotSegment`.<br />Malformed percent-encoding and `%00` are rejected with 400 whenever any rule<br />other than `MergeSlash` is set.<br />`MergeSlash` collapses repeated slashes into one, treating `\` as `/`.<br />`DotSegment` resolves `.` and `..` segments, treating `%2E` as `.`, `\` as `/`,<br />and ignoring parameters on dot segments (`..;x`).<br />`DecodeUnreserved` decodes percent-encoded unreserved characters (`A-Z a-z 0-9 - . _ ~`).<br />`RejectEscapedSlash` rejects requests whose path contains `%2F` or `%5C` with 400.<br />`UnescapeSlash` decodes `%2F` and `%5C` into `/`. |  | MaxItems: 5 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+
+
+#### FrontendHTTPNormalize
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [FrontendHTTP](#frontendhttp)
+
+| Field | Description |
+| --- | --- |
+| `MergeSlash` |  |
+| `DotSegment` |  |
+| `DecodeUnreserved` |  |
+| `RejectEscapedSlash` |  |
+| `UnescapeSlash` |  |
 
 
 #### FrontendProxyProtocol
@@ -2507,8 +2696,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `version` _[ProxyProtocolVersion](#proxyprotocolversion)_ | PROXY protocol version to accept.<br />If unset, this defaults to `V2`. | V2 | Optional: \{\} <br /> |
-| `mode` _[ProxyProtocolMode](#proxyprotocolmode)_ | Whether PROXY headers are required or optional.<br />If unset, this defaults to `Strict`. | Strict | Optional: \{\} <br /> |
+| `version` _[ProxyProtocolVersion](#proxyprotocolversion)_ | PROXY protocol version to accept.<br />If unset, this defaults to `V2`. |  | Optional: \{\} <br /> |
+| `mode` _[ProxyProtocolMode](#proxyprotocolmode)_ | Whether PROXY headers are required or optional.<br />If unset, this defaults to `Strict`. |  | Optional: \{\} <br /> |
 
 
 #### FrontendTCP
@@ -2559,6 +2748,7 @@ Google Cloud authentication settings.
 
 _Appears in:_
 - [BackendAuth](#backendauth)
+- [BackendAuthCredential](#backendauthcredential)
 - [GoogleModelArmorAuth](#googlemodelarmorauth)
 - [ModelBackendAuth](#modelbackendauth)
 
@@ -2639,10 +2829,11 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
+| `failureMode` _[FailureMode](#failuremode)_ | Behavior when the provider is unavailable or returns an error.<br />`FailOpen` allows the request to continue; `FailClosed` (default) rejects it. |  | Optional: \{\} <br /> |
 | `templateId` _[ShortString](#shortstring)_ | Template ID for Google Model Armor. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `projectId` _[ShortString](#shortstring)_ | Google Cloud project ID. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `location` _[ShortString](#shortstring)_ | Google Cloud location, for example `us-central1`.<br />Defaults to `us-central1` if not specified. | us-central1 | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
-| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether flagged content is rejected or only observed.<br />`Reject` (the default) rejects flagged content; `Audit` records the<br />would-be rejection without blocking. | Reject | Optional: \{\} <br /> |
+| `location` _[ShortString](#shortstring)_ | Google Cloud location, for example `us-central1`.<br />Defaults to `us-central1` if not specified. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether flagged content is rejected or only observed.<br />`Reject` (the default) rejects flagged content; `Audit` records the<br />would-be rejection without blocking. |  | Optional: \{\} <br /> |
 | `policies` _[GoogleModelArmorPolicy](#googlemodelarmorpolicy)_ | Policies for communicating with Google Model Armor. |  | Optional: \{\} <br /> |
 
 
@@ -2947,7 +3138,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `mode` _[JWTAuthenticationMode](#jwtauthenticationmode)_ | Validation mode for JWT authentication. | Strict | Optional: \{\} <br /> |
+| `mode` _[JWTAuthenticationMode](#jwtauthenticationmode)_ | Validation mode for JWT authentication. Defaults to `Strict`. |  | Optional: \{\} <br /> |
 | `providers` _[JWTProvider](#jwtprovider) array_ |  |  | MaxItems: 64 <br />MinItems: 1 <br />Required: \{\} <br /> |
 | `location` _[AuthorizationExtractionLocation](#authorizationextractionlocation)_ | Where JWT credentials are read from.<br />If omitted, credentials are read from the `Authorization` header with the `Bearer ` prefix. |  | ExactlyOneOf: [header queryParameter cookie expression] <br />Optional: \{\} <br /> |
 | `preserveToken` _boolean_ | Keeps a successfully validated JWT in its original location. By default, the gateway removes<br />the JWT after validation. When the token only needs to be forwarded to the selected backend,<br />prefer `backendAuth.passthrough` so it is not exposed to other policies in the request path. |  | Optional: \{\} <br /> |
@@ -3173,7 +3364,7 @@ _Appears in:_
 Large language model provider that the backend routes requests to.
 
 _Validation:_
-- ExactlyOneOf: [openai azureopenai azure anthropic gemini vertexai bedrock custom]
+- ExactlyOneOf: [openai azureopenai azure anthropic gemini vertexai bedrock custom copilot]
 
 _Appears in:_
 - [AIBackend](#aibackend)
@@ -3182,6 +3373,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `openai` _[OpenAIConfig](#openaiconfig)_ | OpenAI provider settings. |  | Optional: \{\} <br /> |
+| `copilot` _[CopilotConfig](#copilotconfig)_ | GitHub Copilot provider settings. |  | Optional: \{\} <br /> |
 | `azureopenai` _[AzureOpenAIConfig](#azureopenaiconfig)_ | Azure OpenAI provider settings. |  | Optional: \{\} <br /> |
 | `azure` _[AzureConfig](#azureconfig)_ | Azure provider with resource-based configuration.<br />Supports both Azure OpenAI and Azure AI Foundry resource types. |  | Optional: \{\} <br /> |
 | `anthropic` _[AnthropicConfig](#anthropicconfig)_ | Anthropic provider settings. |  | Optional: \{\} <br /> |
@@ -3209,8 +3401,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `group` _string_ | API group of the referenced resource. For example, `gateway.networking.k8s.io`.<br />When unspecified or empty string, core API group is inferred. |  | MaxLength: 253 <br />Pattern: `^$\|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Optional: \{\} <br /> |
-| `kind` _string_ | Kind of the referenced resource. For example, `Service`.<br />Defaults to "Service" when not specified. | Service | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$` <br />Optional: \{\} <br /> |
+| `group` _string_ | API group of the referenced resource. For example, `gateway.networking.k8s.io`.<br />Defaults to the empty string, which identifies the core API group. |  | MaxLength: 253 <br />Pattern: `^$\|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Optional: \{\} <br /> |
+| `kind` _string_ | Kind of the referenced resource. For example, `Service`.<br />Defaults to "Service" when not specified. |  | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$` <br />Optional: \{\} <br /> |
 | `name` _string_ | Name of the referenced resource. |  | MaxLength: 253 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `port` _integer_ | Destination port number to use for this resource.<br />Required when the referenced resource is a Kubernetes Service. |  | Maximum: 65535 <br />Minimum: 1 <br />Optional: \{\} <br /> |
 
@@ -3230,8 +3422,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | Name of the referenced CA certificate source. |  | Required: \{\} <br /> |
-| `kind` _string_ | Kind of the referenced CA certificate source. Omitted defaults to ConfigMap. | ConfigMap | Enum: [ConfigMap Secret] <br />Optional: \{\} <br /> |
-| `key` _string_ | Key within the referenced source holding the PEM-encoded CA bundle.<br />Omitted defaults to `ca.crt`. | ca.crt | MaxLength: 253 <br />MinLength: 1 <br />Pattern: `^[A-Za-z0-9]([A-Za-z0-9._-]*[A-Za-z0-9])?$` <br />Optional: \{\} <br /> |
+| `kind` _string_ | Kind of the referenced CA certificate source. Omitted defaults to ConfigMap. |  | Enum: [ConfigMap Secret] <br />Optional: \{\} <br /> |
+| `key` _string_ | Key within the referenced source holding the PEM-encoded CA bundle.<br />Omitted defaults to `ca.crt`. |  | MaxLength: 253 <br />MinLength: 1 <br />Pattern: `^[A-Za-z0-9]([A-Za-z0-9._-]*[A-Za-z0-9])?$` <br />Optional: \{\} <br /> |
 
 
 #### LocalPolicyTargetReference
@@ -3455,7 +3647,7 @@ _Appears in:_
 | `issuer` _[ShortString](#shortstring)_ | IdP that issued the JWT. This corresponds to the<br />`iss` claim ([RFC 7519 §4.1.1](https://tools.ietf.org/html/rfc7519#section-4.1.1)). |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `audiences` _string array_ | Allowed audiences that are allowed<br />access. This corresponds to the `aud` claim<br />([RFC 7519 §4.1.3](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.3)).<br />If unset, any audience is allowed. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `jwks` _[RemoteJWKS](#remotejwks)_ | Remote JSON Web Key used to validate the signature of<br />the JWT. |  | ExactlyOneOf: [backendRef url] <br />Required: \{\} <br /> |
-| `mode` _[JWTAuthenticationMode](#jwtauthenticationmode)_ | Validation mode for JWT authentication. | Strict | Optional: \{\} <br /> |
+| `mode` _[JWTAuthenticationMode](#jwtauthenticationmode)_ | Validation mode for JWT authentication. Defaults to `Strict`. |  | Optional: \{\} <br /> |
 | `validation` _[JWTValidationOptions](#jwtvalidationoptions)_ | Additional JWT claim presence requirements. Defaults to requiring `exp`.<br />Issuer validation always requires `iss`; a non-empty audiences list also<br />requires `aud`, regardless of these options. An empty `requiredClaims`<br />list removes only the additional presence requirements. Expiration is<br />still checked whenever `exp` is present. |  | Optional: \{\} <br /> |
 | `clientId` _string_ | Client ID to use for short-circuiting Dynamic Client Registration.<br />If set, the gateway will not proxy registration requests to the IDP and instead return this client ID. |  | Optional: \{\} <br /> |
 | `clientSecretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Reference to a Kubernetes Secret holding the OAuth client secret of the app<br />registration identified by `clientId` (for example Entra ID confidential clients,<br />which require the secret at the token endpoint). The gateway injects it into the<br />token requests it proxies to the provider. Defaults to the `clientSecret` key;<br />override via `clientSecretRef.key`. |  | Optional: \{\} <br /> |
@@ -3494,7 +3686,26 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `processors` _[MCPGuardrailsProcessor](#mcpguardrailsprocessor) array_ | `processors` is the ordered list of policy processors applied to matched<br />methods. Processors run in the order listed; the first to reject a request<br />short-circuits the chain. |  | ExactlyOneOf: [remote] <br />MaxItems: 16 <br />MinItems: 1 <br />Required: \{\} <br /> |
+| `processors` _[MCPGuardrailsProcessor](#mcpguardrailsprocessor) array_ | `processors` is the ordered list of policy processors applied to matched<br />methods. Processors run in the order listed; the first to reject a request<br />short-circuits the chain. |  | ExactlyOneOf: [remote expression] <br />MaxItems: 16 <br />MinItems: 1 <br />Required: \{\} <br /> |
+
+
+#### MCPGuardrailsExpression
+
+
+
+In-process guardrail driven by CEL expressions.
+
+_Validation:_
+- ExactlyOneOf: [reject transform]
+
+_Appears in:_
+- [MCPGuardrailsProcessor](#mcpguardrailsprocessor)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `condition` _[CELExpression](#celexpression)_ | Condition gating the action; absent means always. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `reject` _string_ | Reject with this message. |  | MaxLength: 4096 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `transform` _[CELExpression](#celexpression)_ | Returns a replacement body (`mcp.params` on requests or `mcp.result` on responses).<br />Use `merge` to preserve fields you do not wish to mutate; `null` leaves the body unchanged. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### MCPGuardrailsProcessor
@@ -3504,7 +3715,7 @@ _Appears in:_
 MCPGuardrailsProcessor selects a single policy processor. Exactly one variant must be set.
 
 _Validation:_
-- ExactlyOneOf: [remote]
+- ExactlyOneOf: [remote expression]
 
 _Appears in:_
 - [MCPGuardrails](#mcpguardrails)
@@ -3512,6 +3723,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `remote` _[MCPGuardrailsRemote](#mcpguardrailsremote)_ | `remote` configures a gRPC policy server. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
+| `expression` _[MCPGuardrailsExpression](#mcpguardrailsexpression)_ | In-process guardrail driven by CEL expressions. |  | ExactlyOneOf: [reject transform] <br />Optional: \{\} <br /> |
 | `methods` _object (keys:string, values:[MCPMethodPhase](#mcpmethodphase))_ | `methods` is the allowlist of JSON-RPC methods (e.g. `tools/call`,<br />`tools/list`) routed through this processor, keyed by method name with the<br />phase it runs in. Keys may be exact, a prefix wildcard (`tools/*`), a suffix<br />wildcard (`*/list`), or `*` for all methods; the most specific match wins.<br />Methods matching no key, including unknown ones, bypass this processor. |  | MaxProperties: 64 <br />MinProperties: 1 <br />Required: \{\} <br /> |
 
 
@@ -3649,8 +3861,9 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `name` _[SectionName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#sectionname)_ | Name of the MCP target. |  | Required: \{\} <br /> |
-| `selector` _[McpSelector](#mcpselector)_ | Label selector used to select `Service` resources.<br />If policies are needed on a per-service basis, `AgentgatewayPolicy` can<br />target the desired `Service`. |  | Optional: \{\} <br /> |
+| `selector` _[McpSelector](#mcpselector)_ | Label selector used to select `Service` resources.<br />Selected `Service` ports must set `appProtocol: agentgateway.dev/mcp` for<br />streamable HTTP or `appProtocol: agentgateway.dev/mcp-sse` for SSE. Ports<br />without a recognized MCP `appProtocol` value are ignored.<br />If policies are needed on a per-service basis, `AgentgatewayPolicy` can<br />target the desired `Service`. |  | Optional: \{\} <br /> |
 | `static` _[McpTarget](#mcptarget)_ | Static MCP destination. When connecting to<br />in-cluster `Service` resources, it is recommended to use `selector`<br />instead. |  | ExactlyOneOf: [host backendRef] <br />Optional: \{\} <br /> |
+| `condition` _[CELExpression](#celexpression)_ | CEL expression evaluated per request; when it evaluates to false, the<br />target is excluded from the virtual MCP. `mcp.target.name` is available.<br />With `selector`, the condition applies to each selected target. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### Message
@@ -3724,7 +3937,7 @@ _Appears in:_
 | `gcp` _[GcpAuth](#gcpauth)_ | Google authentication method for the model provider. When omitted,<br />default Google credential discovery is used. |  | Optional: \{\} <br /> |
 | `oauthTokenExchange` _[OAuthTokenExchange](#oauthtokenexchange)_ | OAuth 2.0 token exchange (RFC 8693) / jwt-bearer (RFC 7523)<br />authentication. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where backend credentials are inserted. If omitted, credentials are<br />written to the `Authorization` header with the `Bearer ` prefix. This<br />applies to `key`, `secretRef`, and `passthrough`. Entries in<br />`credentials` carry their own location. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
-| `credentials` _[BackendAuthCredential](#backendauthcredential) array_ | Credentials is a list of additional credentials to inject on the backend<br />request. Each entry resolves a Secret key and writes its value to the<br />entry's location. `credentials` is independent of the primary<br />`key`/`secretRef`/`passthrough` mechanism and may be set on its own or<br />alongside it. |  | MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `credentials` _[BackendAuthCredential](#backendauthcredential) array_ | Credentials is a list of additional credentials to inject on the backend<br />request. Each entry writes its value to the entry's location.<br />`credentials` is independent of the primary `key`/`secretRef`/`passthrough`<br />mechanism and may be set on its own or alongside it. |  | ExactlyOneOf: [secretRef gcp] <br />MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
 
 #### ModelCatalogConfigMapRef
@@ -3794,6 +4007,28 @@ _Appears in:_
 | `model` _[LongString](#longstring)_ | Model name matched against client requests. It may be exact, a suffix<br />wildcard such as `gpt-*`, a prefix wildcard such as `*-latest`, or `*`.<br />When omitted, the model matches metadata.name exactly. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
+#### ModelObjectReference
+
+
+
+References a same-namespace model resource. When group and kind are omitted,
+the reference selects a model of the referring model's own kind.
+
+
+
+_Appears in:_
+- [ConditionalModelTarget](#conditionalmodeltarget)
+- [FailoverModelTarget](#failovermodeltarget)
+- [ModelTargetReference](#modeltargetreference)
+- [WeightedModelTarget](#weightedmodeltarget)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `group` _[Group](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#group)_ | API group of the referenced model, such as `agentgateway.dev`. |  | MaxLength: 253 <br />Pattern: `^$\|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Optional: \{\} <br /> |
+| `kind` _[Kind](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#kind)_ | Kind of the referenced model, such as `AgentgatewayModel`. |  | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$` <br />Optional: \{\} <br /> |
+| `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | Name of the referenced model. |  | Required: \{\} <br /> |
+
+
 #### ModelPolicies
 
 
@@ -3832,6 +4067,7 @@ _Appears in:_
 | Field | Description |
 | --- | --- |
 | `OpenAI` |  |
+| `Copilot` |  |
 | `Azure` |  |
 | `Anthropic` |  |
 | `Gemini` |  |
@@ -3850,6 +4086,10 @@ _Appears in:_
 | `TogetherAI` |  |
 | `XAI` |  |
 | `Fireworks` |  |
+| `Meta` |  |
+| `Perplexity` |  |
+| `Typesafe` |  |
+| `Nebius` |  |
 | `Custom` |  |
 
 
@@ -3862,13 +4102,14 @@ _Appears in:_
 
 
 _Appears in:_
+- [CalloutModelRouting](#calloutmodelrouting)
 - [ConditionalModelTarget](#conditionalmodeltarget)
 - [FailoverModelTarget](#failovermodeltarget)
 - [WeightedModelTarget](#weightedmodeltarget)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `modelRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core)_ | Same-namespace AgentgatewayModel resource selected by this target. |  | Required: \{\} <br /> |
+| `modelRef` _[ModelObjectReference](#modelobjectreference)_ | Same-namespace model resource selected by this target. |  | Required: \{\} <br /> |
 | `model` _[LongString](#longstring)_ | Concrete model name selected through the referenced model. It is required<br />when modelRef points to a wildcard match.model. When omitted, the referenced<br />model's exact effective match.model is used. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
@@ -3905,6 +4146,7 @@ _Appears in:_
 | `name` _[SectionName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#sectionname)_ | Name of the provider. Policies can target this provider by name. |  | Required: \{\} <br /> |
 | `policies` _[BackendWithAI](#backendwithai)_ | Policies for communicating with this backend.<br />Policies may also be set in `AgentgatewayPolicy`, or in the top-level<br />`AgentgatewayBackend`. Policies are merged on a field-level basis, with<br />order: `AgentgatewayPolicy` < `AgentgatewayBackend` < `AgentgatewayBackend`<br />LLM provider (this field). |  | Optional: \{\} <br /> |
 | `openai` _[OpenAIConfig](#openaiconfig)_ | OpenAI provider settings. |  | Optional: \{\} <br /> |
+| `copilot` _[CopilotConfig](#copilotconfig)_ | GitHub Copilot provider settings. |  | Optional: \{\} <br /> |
 | `azureopenai` _[AzureOpenAIConfig](#azureopenaiconfig)_ | Azure OpenAI provider settings. |  | Optional: \{\} <br /> |
 | `azure` _[AzureConfig](#azureconfig)_ | Azure provider with resource-based configuration.<br />Supports both Azure OpenAI and Azure AI Foundry resource types. |  | Optional: \{\} <br /> |
 | `anthropic` _[AnthropicConfig](#anthropicconfig)_ | Anthropic provider settings. |  | Optional: \{\} <br /> |
@@ -4121,7 +4363,7 @@ _Appears in:_
 | `scopes` _string array_ | Scopes sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `resources` _string array_ | Resources sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `requestedTokenType` _[OAuthTokenType](#oauthtokentype)_ | RFC 8693 requested_token_type. Unlike subject/actor token types, only the<br />built-in values may be requested; custom URIs are not supported here. |  | Enum: [AccessToken Jwt IdToken IdJag] <br />Optional: \{\} <br /> |
-| `additionalParams` _object (keys:string, values:[CELExpression](#celexpression))_ | Extra form params; values are CEL expressions over the incoming request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
+| `additionalParams` _object (keys:string, values:[CELExpression](#celexpression))_ | Extra form params; values are CEL expressions over the incoming request.<br />Parameters set by the gateway itself (for example `scope`, `audience`, or `client_id`) may not be overridden. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `clientAuth` _[OAuthClientAuth](#oauthclientauth)_ | Client authentication for the token endpoint. When unset, none is sent. |  | Optional: \{\} <br /> |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where the exchanged token is written to the backend request.<br />Defaults to Authorization: Bearer. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
 | `cache` _[OAuthTokenCache](#oauthtokencache)_ | Response cache configuration. |  | Optional: \{\} <br /> |
@@ -4235,7 +4477,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `model` _[ShortString](#shortstring)_ | The moderation model to use, such as `omni-moderation-latest`.<br />Defaults to `omni-moderation-latest` if not specified. | omni-moderation-latest | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `model` _[ShortString](#shortstring)_ | The moderation model to use, such as `omni-moderation-latest`.<br />Defaults to `omni-moderation-latest` if not specified. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `policy` _[OpenAIInlineModerationPolicy](#openaiinlinemoderationpolicy)_ | Policies to apply to request input and generated output. |  | Optional: \{\} <br /> |
 
 
@@ -4302,8 +4544,9 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
+| `failureMode` _[FailureMode](#failuremode)_ | Behavior when the provider is unavailable or returns an error.<br />`FailOpen` allows the request to continue; `FailClosed` (default) rejects it. |  | Optional: \{\} <br /> |
 | `model` _string_ | Moderation model to use. For example,<br />`omni-moderation`. |  | Optional: \{\} <br /> |
-| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether flagged content is rejected or only observed.<br />`Reject` (the default) rejects flagged content; `Audit` records the<br />would-be rejection without blocking. | Reject | Optional: \{\} <br /> |
+| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether flagged content is rejected or only observed.<br />`Reject` (the default) rejects flagged content; `Audit` records the<br />would-be rejection without blocking. |  | Optional: \{\} <br /> |
 | `policies` _[OpenAIModerationPolicy](#openaimoderationpolicy)_ | Policies for communicating with OpenAI. |  | Optional: \{\} <br /> |
 
 
@@ -4365,7 +4608,7 @@ _Appears in:_
 | `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
 | `filter` _[CELExpression](#celexpression)_ | CEL expression used to filter OTLP logs. A log<br />will only be exported if the expression evaluates to `true`.<br />If unset, the parent access log filter is used. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `attributes` _[LogTracingAttributes](#logtracingattributes)_ | Customizations to the key-value pairs exported over OTLP.<br />If unset, the parent access log attributes are used. |  | Optional: \{\} <br /> |
-| `protocol` _[OTLPProtocol](#otlpprotocol)_ | OTLP protocol variant to use. | GRPC | Optional: \{\} <br /> |
+| `protocol` _[OTLPProtocol](#otlpprotocol)_ | OTLP protocol variant to use. Defaults to `GRPC`. |  | Optional: \{\} <br /> |
 | `path` _[LongString](#longstring)_ | OTLP/HTTP path to use. This is only applicable<br />when `protocol` is `HTTP`. If unset, this defaults to `/v1/logs`. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
@@ -4397,6 +4640,7 @@ PolicyBackendEndpoint identifies a backend used by policy features.
 
 _Appears in:_
 - [BackendTunnel](#backendtunnel)
+- [CalloutModelRouting](#calloutmodelrouting)
 - [CrossAppAccessEndpoint](#crossappaccessendpoint)
 - [ExtAuth](#extauth)
 - [ExtAuthOrConditional](#extauthorconditional)
@@ -4520,13 +4764,13 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `requestBodyMode` _[BodySendMode](#bodysendmode)_ | How request bodies are sent to the external processor.<br />Defaults to `FullDuplexStreamed`. | FullDuplexStreamed | Optional: \{\} <br /> |
-| `responseBodyMode` _[BodySendMode](#bodysendmode)_ | How response bodies are sent to the external processor.<br />Defaults to `FullDuplexStreamed`. | FullDuplexStreamed | Optional: \{\} <br /> |
-| `requestHeaderMode` _[HeaderSendMode](#headersendmode)_ | Whether request headers are sent to the external processor.<br />Defaults to `Send`. | Send | Optional: \{\} <br /> |
-| `responseHeaderMode` _[HeaderSendMode](#headersendmode)_ | Whether response headers are sent to the external processor.<br />Defaults to `Send`. | Send | Optional: \{\} <br /> |
-| `requestTrailerMode` _[TrailerSendMode](#trailersendmode)_ | Whether request trailers are sent to the external processor.<br />Defaults to `Send`. | Send | Optional: \{\} <br /> |
-| `responseTrailerMode` _[TrailerSendMode](#trailersendmode)_ | Whether response trailers are sent to the external processor.<br />Defaults to `Send`. | Send | Optional: \{\} <br /> |
-| `allowModeOverride` _boolean_ | Allows ext_proc `mode_override` values from matching header responses to update<br />subsequent request/response processing phases for this exchange. Defaults to `false`. | false | Optional: \{\} <br /> |
+| `requestBodyMode` _[BodySendMode](#bodysendmode)_ | How request bodies are sent to the external processor.<br />Defaults to `FullDuplexStreamed`. |  | Optional: \{\} <br /> |
+| `responseBodyMode` _[BodySendMode](#bodysendmode)_ | How response bodies are sent to the external processor.<br />Defaults to `FullDuplexStreamed`. |  | Optional: \{\} <br /> |
+| `requestHeaderMode` _[HeaderSendMode](#headersendmode)_ | Whether request headers are sent to the external processor.<br />Defaults to `Send`. |  | Optional: \{\} <br /> |
+| `responseHeaderMode` _[HeaderSendMode](#headersendmode)_ | Whether response headers are sent to the external processor.<br />Defaults to `Send`. |  | Optional: \{\} <br /> |
+| `requestTrailerMode` _[TrailerSendMode](#trailersendmode)_ | Whether request trailers are sent to the external processor.<br />Defaults to `Send`. |  | Optional: \{\} <br /> |
+| `responseTrailerMode` _[TrailerSendMode](#trailersendmode)_ | Whether response trailers are sent to the external processor.<br />Defaults to `Send`. |  | Optional: \{\} <br /> |
+| `allowModeOverride` _boolean_ | Allows ext_proc `mode_override` values from matching header responses to update<br />subsequent request/response processing phases for this exchange. Defaults to `false`. |  | Optional: \{\} <br /> |
 
 
 #### PromptCachingConfig
@@ -4557,11 +4801,11 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `cacheSystem` _boolean_ | Enables caching for system prompts.<br />Inserts a cache point after all system messages. | true | Optional: \{\} <br /> |
-| `cacheMessages` _boolean_ | Enables caching for conversation messages.<br />Caches all messages in the conversation for cost savings. | true | Optional: \{\} <br /> |
-| `cacheTools` _boolean_ | Enables caching for tool definitions.<br />Inserts a cache point after all tool specifications. | false | Optional: \{\} <br /> |
-| `minTokens` _integer_ | Minimum estimated token count<br />before caching is enabled. Uses rough heuristic (word count × 1.3) to estimate tokens.<br />Bedrock requires at least 1,024 tokens for caching to be effective. | 1024 | Minimum: 0 <br />Optional: \{\} <br /> |
-| `cacheMessageOffset` _integer_ | Shifts the message cache point further back in the<br />conversation. 0 (default) places it at the second-to-last message.<br />Higher values move it N additional messages towards the start, clamped<br />to bounds. | 0 | Minimum: 0 <br />Optional: \{\} <br /> |
+| `cacheSystem` _boolean_ | Enables caching for system prompts. Defaults to true.<br />Inserts a cache point after all system messages. |  | Optional: \{\} <br /> |
+| `cacheMessages` _boolean_ | Enables caching for conversation messages. Defaults to true.<br />Caches all messages in the conversation for cost savings. |  | Optional: \{\} <br /> |
+| `cacheTools` _boolean_ | Enables caching for tool definitions. Defaults to false.<br />Inserts a cache point after all tool specifications.<br />Ignored for Bedrock Nova models, which do not support caching tools. |  | Optional: \{\} <br /> |
+| `minTokens` _integer_ | Minimum estimated token count<br />before caching is enabled. Uses rough heuristic (word count × 1.3) to estimate tokens.<br />Applies to system prompt caching. Defaults to 1024; most models require at least<br />1,024 tokens for caching to be effective. |  | Minimum: 0 <br />Optional: \{\} <br /> |
+| `cacheMessageOffset` _integer_ | Shifts the message cache point further back in the<br />conversation. 0 (default) places it at the second-to-last message.<br />Higher values move it N additional messages towards the start, clamped<br />to bounds. |  | Minimum: 0 <br />Optional: \{\} <br /> |
 
 
 #### PromptGuardStreamingMode
@@ -4595,7 +4839,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `response` _[CustomResponse](#customresponse)_ | Custom response message to return to the client. If not specified, defaults to<br />`The request was rejected due to inappropriate content`. |  | Optional: \{\} <br /> |
-| `scope` _[ContentScope](#contentscope) array_ | Which parts of the request this guard inspects. When unset, defaults to<br />`SystemPrompt` and `Messages`. Tool call inputs and outputs are not<br />inspected unless `ToolInput`/`ToolOutput` are listed explicitly.<br />In APIs that send tool arguments as opaque JSON, such as Completions, the<br />arguments are masked as a single string, meaning a prompt guard has the<br />potential to rewrite the arguments into invalid JSON. |  | MaxItems: 4 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `scope` _[ContentScope](#contentscope) array_ | Which parts of the request this guard inspects. When unset, defaults to<br />`SystemPrompt`, `Messages`, and `ToolOutput`. Tool call inputs are not<br />inspected unless `ToolInput` is listed explicitly. Webhook guards do not<br />support scope and always inspect `SystemPrompt` and `Messages`.<br />In APIs that send tool arguments as opaque JSON, such as Completions, the<br />arguments are masked as a single string, meaning a prompt guard has the<br />potential to rewrite the arguments into invalid JSON. |  | MaxItems: 4 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `regex` _[Regex](#regex)_ | Regular expression (regex) matching for prompt guards and data masking. |  | Optional: \{\} <br /> |
 | `webhook` _[Webhook](#webhook)_ | Webhook that receives requests for prompt guarding. |  | Optional: \{\} <br /> |
 | `openAIModeration` _[OpenAIModeration](#openaimoderation)_ | Passes prompt data through the OpenAI Moderations<br />endpoint.<br />See https://developers.openai.com/api/reference/resources/moderations for more information. |  | Optional: \{\} <br /> |
@@ -4618,6 +4862,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `response` _[CustomResponse](#customresponse)_ | Custom response message to return to the client. If not specified, defaults to<br />`The response was rejected due to inappropriate content`. |  | Optional: \{\} <br /> |
+| `scope` _[ContentScope](#contentscope) array_ | Which parts of the response this guard inspects. When unset, defaults to<br />`Messages`. Tool calls generated by the model are not inspected unless<br />`ToolInput` is listed explicitly; `ToolOutput` covers results of<br />serverside tools.<br />In APIs that send tool arguments as opaque JSON, such as Completions, the<br />arguments are masked as a single string, meaning a prompt guard has the<br />potential to rewrite the arguments into invalid JSON. |  | MaxItems: 4 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `regex` _[Regex](#regex)_ | Regular expression (regex) matching for prompt guards and data masking. |  | Optional: \{\} <br /> |
 | `webhook` _[Webhook](#webhook)_ | Webhook that receives responses for prompt guarding. |  | Optional: \{\} <br /> |
 | `bedrockGuardrails` _[BedrockGuardrails](#bedrockguardrails)_ | AWS Bedrock Guardrails settings for prompt<br />guarding. |  | Optional: \{\} <br /> |
@@ -4644,6 +4889,8 @@ _Appears in:_
 | `AnthropicTokenCount` | ProviderFormatAnthropicTokenCount is the Anthropic token-count API.<br /> |
 | `Realtime` | ProviderFormatRealtime is the OpenAI-compatible realtime API.<br /> |
 | `Rerank` | ProviderFormatRerank is the Cohere-compatible rerank API.<br /> |
+| `Decisions` | ProviderFormatDecisions is the OpenAI decisions API.<br /> |
+| `SystemOne` | ProviderFormatSystemOne is the TypeSafe SystemOne API.<br /> |
 
 
 #### ProviderFormatConfig
@@ -4714,8 +4961,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `entries` _[RateLimitDescriptorEntry](#ratelimitdescriptorentry) array_ | Individual components that make up this descriptor. |  | MaxItems: 16 <br />MinItems: 1 <br />Required: \{\} <br /> |
 | `unit` _[RateLimitUnit](#ratelimitunit)_ | Cost unit. If unspecified,<br />`Requests` is used. |  | Optional: \{\} <br /> |
-| `cost` _[CELExpression](#celexpression)_ | Common Expression Language (`CEL`) expression that determines<br />the cost of the request for this descriptor. If unset, `Requests` costs<br />default to 1, and `Tokens` costs default to the total token count.<br />`Tokens` cost are evaluated after the request has completed. For non-streaming requests, `request`, `llm`, and<br />`response` fields are all available; for streaming requests, `response` is not available (however, all LLM<br />attributes are in `llm`). For `Requests`, cost is computed during the request phase.<br />See https://agentgateway.dev/docs/standalone/latest/reference/cel/ for more info. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
-| `limitOverride` _[CELExpression](#celexpression)_ | Common Expression Language (`CEL`) expression that returns a dynamic<br />limit override for this descriptor. The expression must evaluate to an<br />object containing `unit` and `requestsPerUnit`, for example<br />`\{"unit":"minute","requestsPerUnit":5\}`.<br />See https://agentgateway.dev/docs/standalone/latest/reference/cel/ for more info. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `cost` _[CELExpression](#celexpression)_ | Common Expression Language (`CEL`) expression that determines<br />the cost of the request for this descriptor. If unset, `Requests` costs<br />default to 1, and `Tokens` costs default to the total token count.<br />`Tokens` cost are evaluated after the request has completed. For non-streaming requests, `request`, `llm`, and<br />`response` fields are all available; for streaming requests, `response` is not available (however, all LLM<br />attributes are in `llm`). For `Requests`, cost is computed during the request phase.<br />See https://agentgateway.dev/docs/standalone/main/reference/cel/ for more info. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `limitOverride` _[CELExpression](#celexpression)_ | Common Expression Language (`CEL`) expression that returns a dynamic<br />limit override for this descriptor. The expression must evaluate to an<br />object containing `unit` and `requestsPerUnit`, for example<br />`\{"unit":"minute","requestsPerUnit":5\}`.<br />See https://agentgateway.dev/docs/standalone/main/reference/cel/ for more info. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### RateLimitDescriptorEntry
@@ -4732,7 +4979,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `name` _[TinyString](#tinystring)_ | Name of the descriptor. |  | MaxLength: 64 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `expression` _[CELExpression](#celexpression)_ | Common Expression Language (`CEL`) expression that<br />defines the value for the descriptor.<br />For example, to rate limit based on the Client IP: `source.address`.<br />See https://agentgateway.dev/docs/standalone/latest/reference/cel/ for more info. |  | MaxLength: 16384 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `expression` _[CELExpression](#celexpression)_ | Common Expression Language (`CEL`) expression that<br />defines the value for the descriptor.<br />For example, to rate limit based on the Client IP: `source.address`.<br />See https://agentgateway.dev/docs/standalone/main/reference/cel/ for more info. |  | MaxLength: 16384 <br />MinLength: 1 <br />Required: \{\} <br /> |
 
 
 #### RateLimitUnit
@@ -4820,7 +5067,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `matches` _[LongString](#longstring) array_ | Regex patterns to match against the request or response.<br />Matches and built-ins are additive. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `builtins` _[BuiltIn](#builtin) array_ | Built-in regex patterns to match against the request or response.<br />Matches and built-ins are additive. |  | Optional: \{\} <br /> |
-| `action` _[Action](#action)_ | The action to take if a regex pattern is matched in a request or response.<br />The action applies to request and response matches alike. Note that<br />`Mask` is not applied to streamed responses: matched content in a<br />streamed response is passed through unmodified.<br />Defaults to `Mask`. | Mask | Optional: \{\} <br /> |
+| `action` _[Action](#action)_ | The action to take if a regex pattern is matched in a request or response.<br />The action applies to request and response matches alike. Note that<br />`Mask` is not applied to streamed responses: matched content in a<br />streamed response is passed through unmodified.<br />Defaults to `Mask`. |  | Optional: \{\} <br /> |
 
 
 #### RejectAuditAction
@@ -4861,9 +5108,25 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `jwksPath` _[LongString](#longstring)_ | Path to the IdP `jwks` endpoint, relative to the root, commonly<br />`".well-known/jwks.json"`. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
-| `cacheDuration` _[Duration](#duration)_ | How long a fetched `jwks` document is used before it is re-fetched from the IdP. | 5m | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
+| `cacheDuration` _[Duration](#duration)_ | How long a fetched `jwks` document is used before it is re-fetched from the IdP.<br />Defaults to `5m`. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 | `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
 | `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
+
+
+#### RequestDecompression
+
+
+
+
+
+
+
+_Appears in:_
+- [CompressionRequest](#compressionrequest)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `algorithms` _[CompressionAlgorithm](#compressionalgorithm) array_ | Algorithms decoded from request bodies. Bodies using any other (or more than one) encoding<br />are forwarded untouched.<br />If unset, defaults to Gzip. |  | MaxItems: 4 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
 
 #### ResourceAdd
@@ -4881,6 +5144,22 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `name` _[ShortString](#shortstring)_ |  |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `expression` _[CELExpression](#celexpression)_ |  |  | MaxLength: 16384 <br />MinLength: 1 <br />Required: \{\} <br /> |
+
+
+#### ResponseCompression
+
+
+
+
+
+
+
+_Appears in:_
+- [CompressionResponse](#compressionresponse)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `algorithms` _[CompressionAlgorithm](#compressionalgorithm) array_ | Algorithms that may be negotiated with the client's Accept-Encoding header.<br />When the client accepts several equally, the first listed wins.<br />If unset, defaults to Gzip. |  | MaxItems: 4 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
 
 #### Retry
@@ -4926,6 +5205,8 @@ _Appears in:_
 | `Rerank` | RouteTypeRerank processes Cohere `/v2/rerank` format requests.<br /> |
 | `GenerateContent` | RouteTypeGenerateContent processes Gemini `models/\{model\}:generateContent`<br />and `models/\{model\}:streamGenerateContent` format requests.<br /> |
 | `GeminiCountTokens` | RouteTypeGeminiCountTokens processes Gemini `models/\{model\}:countTokens`<br />format requests.<br /> |
+| `Decisions` | RouteTypeDecisions processes OpenAI `/v1/decisions` format requests.<br /> |
+| `SystemOne` | RouteTypeSystemOne processes TypeSafe `/v1/systemone` format requests.<br /> |
 
 
 
@@ -5127,7 +5408,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `request` _[Duration](#duration)_ | Maximum time allowed from the start of downstream request processing until response headers<br />are received. The response body is not included; use `responseIdle` to bound gaps between body frames. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
-| `responseIdle` _[Duration](#duration)_ | Maximum time the response body may go without producing data. The window restarts on every<br />body frame, so this bounds the gap between frames rather than the total time a response may<br />take. It is what terminates a backend that stops producing data mid-stream without capping<br />how long a legitimately long response may run.<br />This complements Request rather than overlapping it: Request stops applying once the response<br />headers arrive, so it places no bound on how long the response body may take, and it cannot<br />distinguish a stalled stream from a slow one.<br />This does not apply to responses that switch protocols, so upgraded WebSocket connections and<br />CONNECT tunnels are never terminated by it. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
+| `responseIdle` _[Duration](#duration)_ | Maximum time to wait for a frame from the upstream response body.<br />Limits how long the gateway waits for more response data from the backend.<br />Time spent processing the response or waiting for the client to receive it does not count.<br />This complements Request rather than overlapping it: Request stops applying once the response<br />headers arrive, so it places no bound on how long the response body may take, and it cannot<br />distinguish a stalled stream from a slow one.<br />This does not apply to responses that switch protocols, so upgraded WebSocket connections and<br />CONNECT tunnels are never terminated by it. |  | MaxLength: 32 <br />Pattern: `^([0-9]\{1,5\}(h\|m\|s\|ms))\{1,4\}$` <br />Type: string <br />Optional: \{\} <br /> |
 
 
 
@@ -5148,7 +5429,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` selects a backend for this policy.<br />Mutually exclusive with `url`. |  | Optional: \{\} <br /> |
 | `url` _[LongString](#longstring)_ | `url` directly specifies the HTTP(S) endpoint for this policy.<br />When the scheme is `https`, backend TLS is enabled automatically.<br />Mutually exclusive with `backendRef`.<br />URLs are opaque; referencing a Kubernetes service hostname like `hello.ns.svc.cluster.local`<br />will not apply Service policies or load balancing. |  | MaxLength: 1024 <br />MinLength: 1 <br />Pattern: `^https?://[^/?#@]+(/[^?#]*)?$` <br />Optional: \{\} <br /> |
-| `protocol` _[OTLPProtocol](#otlpprotocol)_ | OTLP protocol variant to use. | GRPC | Optional: \{\} <br /> |
+| `protocol` _[OTLPProtocol](#otlpprotocol)_ | OTLP protocol variant to use. Defaults to `GRPC`. |  | Optional: \{\} <br /> |
 | `path` _[LongString](#longstring)_ | OTLP path to use. This is only applicable when<br />`protocol` is `HTTP`. If unset, this defaults to `/v1/traces`. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `attributes` _[LogTracingAttributes](#logtracingattributes)_ | Customizations to the key-value pairs that are<br />included in the trace. |  | Optional: \{\} <br /> |
 | `resources` _[ResourceAdd](#resourceadd) array_ | Entity producing telemetry and resources<br />resources to be included in the trace. |  | Optional: \{\} <br /> |
@@ -5188,6 +5469,7 @@ _Appears in:_
 | `apiKeyAuthentication` _[APIKeyAuthentication](#apikeyauthentication)_ | Authenticates users based on a configured API<br />key. |  | ExactlyOneOf: [secretRef secretSelector configMapSelector] <br />Optional: \{\} <br /> |
 | `directResponse` _[DirectResponseOrConditional](#directresponseorconditional)_ | Sends a direct response to the<br />client. |  | Optional: \{\} <br /> |
 | `buffer` _[Buffer](#buffer)_ | Buffers request and response bodies. Buffered bodies are accumulated in memory<br />by the proxy until completion before being forwarded. This changes the proxies default behavior, which streams bodies.<br />Warning: large bodies can lead to excessive memory usage in the proxy. Utilize with care, or with strict limits. |  | Optional: \{\} <br /> |
+| `compression` _[Compression](#compression)_ | Compresses responses sent to the client and decompresses request bodies before forwarding. |  | Optional: \{\} <br /> |
 | `delay` _[Delay](#delay)_ | Injects artificial latency before forwarding requests, for<br />fault-injection testing. |  | Optional: \{\} <br /> |
 
 
@@ -5298,7 +5580,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `projectId` _[TinyString](#tinystring)_ | The ID of the Google Cloud Project that you use for the Vertex AI. |  | MaxLength: 64 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `region` _[TinyString](#tinystring)_ | The location of the Google Cloud Project that you use for the Vertex AI.<br />Special values: `global` uses the global endpoint, while `us` and `eu` use restricted<br />multi-region endpoints. Other values are treated as regional locations.<br />Defaults to `global` if not specified. | global | MaxLength: 64 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `region` _[TinyString](#tinystring)_ | The location of the Google Cloud Project that you use for the Vertex AI.<br />Special values: `global` uses the global endpoint, while `us` and `eu` use restricted<br />multi-region endpoints. Other values are treated as regional locations.<br />Defaults to `global` if not specified. |  | MaxLength: 64 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `model` _[ShortString](#shortstring)_ | Model name override, such as `gpt-4o-mini`.<br />If unset, the model name is taken from the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
@@ -5317,7 +5599,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `projectId` _[TinyString](#tinystring)_ | The ID of the Google Cloud Project that you use for the Vertex AI. |  | MaxLength: 64 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `region` _[TinyString](#tinystring)_ | The location of the Google Cloud Project that you use for the Vertex AI.<br />Special values: `global` uses the global endpoint, while `us` and `eu` use restricted<br />multi-region endpoints. Other values are treated as regional locations.<br />Defaults to `global` if not specified. | global | MaxLength: 64 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `region` _[TinyString](#tinystring)_ | The location of the Google Cloud Project that you use for the Vertex AI.<br />Special values: `global` uses the global endpoint, while `us` and `eu` use restricted<br />multi-region endpoints. Other values are treated as regional locations.<br />Defaults to `global` if not specified. |  | MaxLength: 64 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### VirtualModel
@@ -5327,7 +5609,7 @@ _Appears in:_
 
 
 _Validation:_
-- ExactlyOneOf: [weighted failover conditional]
+- ExactlyOneOf: [weighted failover conditional callout]
 
 _Appears in:_
 - [AgentgatewayModelSpec](#agentgatewaymodelspec)
@@ -5337,6 +5619,7 @@ _Appears in:_
 | `weighted` _[WeightedModelRouting](#weightedmodelrouting)_ | Weight-based model selection. |  | Optional: \{\} <br /> |
 | `failover` _[FailoverModelRouting](#failovermodelrouting)_ | Priority-based model selection with failover between priority groups. |  | Optional: \{\} <br /> |
 | `conditional` _[ConditionalModelRouting](#conditionalmodelrouting)_ | Ordered condition-based model selection. |  | Optional: \{\} <br /> |
+| `callout` _[CalloutModelRouting](#calloutmodelrouting)_ | Model selection by calling an external HTTP service. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 
 
 #### Webhook
@@ -5357,7 +5640,7 @@ _Appears in:_
 | `headers` _object (keys:string, values:[CELExpression](#celexpression))_ | CEL-computed headers to include in webhook requests. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `forwardHeaderMatches` _HTTPHeaderMatch array_ | HTTP header matches used to select the headers to forward to the webhook.<br />Request headers are used when forwarding requests and response headers<br />are used when forwarding responses.<br />By default, no headers are forwarded. |  | Optional: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | Behavior when the webhook guardrail is unavailable<br />or returns an error. `FailOpen` allows the request to continue.<br />`FailClosed` (default) rejects the request. |  | Optional: \{\} <br /> |
-| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether the webhook's verdict is enforced or only observed.<br />`Reject` (the default) enforces it; `Audit` records the would-be action<br />without blocking or masking. | Reject | Optional: \{\} <br /> |
+| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether the webhook's verdict is enforced or only observed.<br />`Reject` (the default) enforces it; `Audit` records the would-be action<br />without blocking or masking. |  | Optional: \{\} <br /> |
 
 
 #### WeightedModelRouting
@@ -5373,7 +5656,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `targets` _[WeightedModelTarget](#weightedmodeltarget) array_ | Concrete model targets and their relative weights. |  | MaxItems: 64 <br />MinItems: 1 <br />Required: \{\} <br /> |
+| `targets` _[WeightedModelTarget](#weightedmodeltarget) array_ | Model targets and their relative weights. Targets may be concrete or<br />virtual models. |  | MaxItems: 64 <br />MinItems: 1 <br />Required: \{\} <br /> |
 
 
 #### WeightedModelTarget
@@ -5389,9 +5672,9 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `modelRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core)_ | Same-namespace AgentgatewayModel resource selected by this target. |  | Required: \{\} <br /> |
+| `modelRef` _[ModelObjectReference](#modelobjectreference)_ | Same-namespace model resource selected by this target. |  | Required: \{\} <br /> |
 | `model` _[LongString](#longstring)_ | Concrete model name selected through the referenced model. It is required<br />when modelRef points to a wildcard match.model. When omitted, the referenced<br />model's exact effective match.model is used. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
-| `weight` _integer_ | Relative traffic weight. Defaults to 1. | 1 | Maximum: 1e+06 <br />Minimum: 1 <br />Optional: \{\} <br /> |
+| `weight` _integer_ | Relative traffic weight. Defaults to 1. |  | Maximum: 1e+06 <br />Minimum: 1 <br />Optional: \{\} <br /> |
 
 
 
@@ -5404,8 +5687,8 @@ The following types are defined in the shared package and used across multiple A
 _Underlying type:_ _string_
 
 **Validation:**
-- MinLength=1
-- MaxLength=1024
+- `MinLength=1`
+- `MaxLength=1024`
 
 #### PolicyAncestorStatus
 
@@ -5427,22 +5710,22 @@ _Underlying type:_ _string_
 _Underlying type:_ _string_
 
 **Validation:**
-- MinLength=1
-- MaxLength=253
-- Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`
+- `MinLength=1`
+- `MaxLength=253`
+- `` Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` ``
 
 #### ShortString
 
 _Underlying type:_ _string_
 
 **Validation:**
-- MinLength=1
-- MaxLength=256
+- `MinLength=1`
+- `MaxLength=256`
 
 #### TinyString
 
 _Underlying type:_ _string_
 
 **Validation:**
-- MinLength=1
-- MaxLength=64
+- `MinLength=1`
+- `MaxLength=64`

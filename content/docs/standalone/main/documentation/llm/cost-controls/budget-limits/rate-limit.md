@@ -2,7 +2,6 @@
 title: Rate limit token budgets
 weight: 20
 description: Cap LLM token usage with a token bucket, per user with a rate limit server or gateway-wide.
-test: skip
 ---
 
 Cap LLM token usage with a token bucket, per user or gateway-wide.
@@ -25,7 +24,7 @@ To give every user a separate budget, use `remoteRateLimit` with a descriptor th
 1. Configure agentgateway to send a per-user descriptor to the rate limit server. The `apiKey.user` value comes from the API key `metadata`, so agentgateway counts each user independently. To count LLM tokens rather than requests, set `type: tokens`.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      policies:
        apiKey:
@@ -102,7 +101,7 @@ To track how much of each budget a user has consumed, query the Prometheus metri
 curl http://localhost:15020/metrics
 ```
 
-Query token usage by user with the `agentgateway_gen_ai_client_token_usage_sum` metric, or realized cost with `agw.ai.usage.cost.total`. For per-key spending queries and cost tracking, see [Virtual key management]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#monitor-per-key-spending" >}}) and [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
+Query token usage by user with the `agentgateway_gen_ai_client_token_usage_sum` metric, or realized cost with `agw.ai.usage.cost.total`. For per-key spending queries and cost tracking, see [Virtual key management]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#monitor-per-key-spending" >}}) and [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). The `agctl standalone budgets` command reports [per-key budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/" >}}), not the token buckets on this page.
 
 > [!WARNING]
 > When you sum token usage, do not add the `input_cache_read` or `input_cache_write` token types to the `input` type. The `input` series already includes the cached tokens, so adding them double counts.

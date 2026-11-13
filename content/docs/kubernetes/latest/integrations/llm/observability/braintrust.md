@@ -94,7 +94,7 @@ spec:
   frontend:
     tracing:
       backendRef:
-        group: agentgateway.dev
+        group: {{< reuse "agw-docs/snippets/group.md" >}}
         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
         name: braintrust-otlp
         port: 443
@@ -181,4 +181,4 @@ Braintrust's Logs view shows root spans. Export the root span for each request; 
 - Keep prompt and response attributes disabled when the request body contains data that should not leave the proxy.
 - Braintrust limits a single OTLP trace request to 10 MB. The tracing policy has no batch size setting, so if the exporter reports HTTP `413`, drop the message content attributes or lower `randomSampling` so that fewer spans are exported.
 
-For more information, see the [Braintrust OpenTelemetry integration](https://www.braintrust.dev/docs/integrations/sdk-integrations/opentelemetry) and [Kubernetes tracing]({{< link-hextra path="/documentation/observability/traces/setup/" >}}).
+For more information, see the [Braintrust OpenTelemetry integration](https://docs.braintrust.dev/integrations/sdk-integrations/opentelemetry/send-traces-and-logs) and [Kubernetes tracing]({{< link-hextra path="/documentation/observability/traces/setup/" >}}).

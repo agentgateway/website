@@ -2,10 +2,6 @@
 title: Debug your setup
 description: Find and fix configuration and runtime problems in a standalone agentgateway using its admin endpoints and agctl.
 weight: 15
-test:
-  admin-address:
-  - file: ${versionRoot}/documentation/operations/debug.md
-    path: admin-address
 ---
 
 Inspect and troubleshoot a standalone agentgateway instance through the admin endpoints and the [`agctl`]({{< link-hextra path="/documentation/operations/agctl" >}}) command-line tool.
@@ -55,6 +51,8 @@ To dump the configuration that the running proxy has loaded, capture the JSON fr
 For complete steps, see [Inspect agentgateway configuration]({{< link-hextra path="/documentation/operations/inspect-config" >}}).
 
 ## Trace requests
+
+For historical LLM requests, query the [request-log database with agctl]({{< link-hextra path="/documentation/observability/access-logs/view/#cli" >}}). For example, `agctl standalone logs --since 1h --status 500` lists stored server-error responses. Database request logs complement the live trace below. Startup and configuration reload errors appear in the process logs only.
 
 To capture a per-request trace as agentgateway processes it, use `agctl proxy trace`. The trace shows you the route that was selected, the policies that were applied, the backend that was chosen, and the response status. Tracing is invaluable for understanding why a request matched (or did not match) a route, why a policy was or was not applied, or why a request returned an unexpected status.
 
@@ -112,6 +110,59 @@ The agentgateway process now writes `debug` log lines, such as the following.
 ```
 
 You can also set fine-grained levels per module by using the same `RUST_LOG` filter syntax, such as `info,proxy::httpproxy=trace`.
+
+## Debug client-safe error responses {#client-safe-error-responses}
+
+When agentgateway rejects a request or cannot complete it, the response body carries a short, generic message, such as `authentication failed` or `no backends available`. The message does not include internal details, such as backend addresses, credential sources, or token validation errors. The `error` field of the access log and the request traces keep the full cause.
+
+For example, a route uses `backendAuth: copilot`, but agentgateway finds no Copilot token. The client receives only a generic message.
+
+```console
+HTTP/1.1 500 Internal Server Error
+content-type: text/plain
+content-length: 29
+
+backend authentication failed
+```
+
+The access log line for the same request names the cause.
+
+```console
+error	request gateway=default/default listener=default route=default/copilot ... http.status=500 error="backend authentication failed: Copilot token not found; set GH_COPILOT_TOKEN or authenticate with GitHub Copilot/GitHub CLI" reason=Internal
+```
+
+{{< reuse "agw-docs/pages/operations/client-error-messages.md" >}}
+
+### Return error details to clients {#expose-error-details}
+
+For local debugging in a trusted environment, you can send the full internal error back to the client. Set the `AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS` environment variable to `true`. Any other value keeps the details hidden.
+
+> [!WARNING]
+> Do not use this setting on a shared or public gateway. Client responses can include backend addresses, credential lookup failures, and other details about your environment.
+
+1. Start agentgateway with the environment variable.
+
+   ```sh
+   AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS=true agentgateway -f config.yaml
+   ```
+
+2. Send a request that fails. The response now includes the cause, such as for the Copilot example from the previous section.
+
+   ```console
+   HTTP/1.1 500 Internal Server Error
+   content-type: text/plain
+   content-length: 123
+
+   backend authentication failed: Copilot token not found; set GH_COPILOT_TOKEN or authenticate with GitHub Copilot/GitHub CLI
+   ```
+
+   Agentgateway logs a warning the first time that it returns an error with details.
+
+   ```console
+   warn	proxy	AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS is enabled; internal error details are sent to clients
+   ```
+
+3. When you finish debugging, restart agentgateway without the environment variable.
 
 ## Capture profiles
 
@@ -179,15 +230,10 @@ The value must use `ip:port` format, and also accepts `unix:/path/to/socket` or 
 > [!TIP]
 > To reach the UI from another host, attach the UI to a gateway instead of moving the admin address. A gateway is the only location that you can put an authentication policy on. For more information, see [Serve the UI on a gateway]({{< link-hextra path="/documentation/setup/ui/gateway-ui/" >}}).
 
-{{< doc-test paths="admin-address" >}}
-# Install agentgateway binary for tests
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
 1. Add or update the `adminAddr` field in your configuration file.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      adminAddr: localhost:9090
    ```
@@ -204,18 +250,6 @@ The value must use `ip:port` format, and also accepts `unix:/path/to/socket` or 
    INFO app  serving UI at http://localhost:9090/ui
    ```
 
-{{< doc-test paths="admin-address" >}}
-pkill -f "agentgateway -f" 2>/dev/null || true
-sleep 1
-cat > /tmp/agw-admin-custom.yaml <<'EOF'
-config:
-  adminAddr: localhost:9090
-EOF
-agentgateway -f /tmp/agw-admin-custom.yaml &
-AGW_CUSTOM_PID=$!
-sleep 3
-{{< /doc-test >}}
-
 3. Confirm that the admin interface answers on the new address. In this example, the endpoints move to port `9090`.
 
    ```sh
@@ -227,25 +261,6 @@ sleep 3
    ```txt
    200
    ```
-
-{{< doc-test paths="admin-address" >}}
-YAMLTest -f - <<'EOF'
-- name: UI is served on the custom admin address
-  http:
-    url: "http://localhost:9090"
-    path: "/ui/"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-  retries: 3
-EOF
-# /config_dump is trailing-slash sensitive, so assert it with curl rather than YAMLTest.
-ADMIN_DUMP_CODE="$(curl -s -o /dev/null -w '%{http_code}' http://localhost:9090/config_dump)"
-test "$ADMIN_DUMP_CODE" = "200"
-kill $AGW_CUSTOM_PID 2>/dev/null || true
-{{< /doc-test >}}
 
 > [!NOTE]
 > If you change `adminAddr`, update any command that calls the admin interface to use the new address. For example, change `curl http://localhost:15000/logging` to use the new port.
@@ -261,7 +276,7 @@ The default admin address binds to the container's own loopback interface, so pu
    > Binding the admin address to `0.0.0.0` publishes unauthenticated shutdown and configuration-dump endpoints to every network that the host is attached to. Never do this on a shared or production host. Attach the UI to a gateway instead.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      adminAddr: 0.0.0.0:15000
    gateways:
@@ -278,4 +293,3 @@ The default admin address binds to the container's own loopback interface, so pu
      {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}} \
      -f /config.yaml
    ```
-

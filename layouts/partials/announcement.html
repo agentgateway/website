@@ -1,5 +1,5 @@
 {{- /*
-  Announcement banner — promotes the AAIF announcement. A dismissible,
+  Announcement banner — invites feedback through the project survey. A dismissible,
   goose-style fixed bar pinned to the top of the viewport. This partial is
   included from every page template (homepage, docs, tutorials, enterprise,
   blog), so the banner is site-wide.
@@ -47,14 +47,14 @@
 </style>
 
 <div class="agw-banner" id="agwBanner" role="region" aria-label="Site announcement">
-  <span>agentgateway has joined the <strong>Agentic AI Foundation</strong> &mdash; <a href="https://aaif.io/blog/agentgateway-joins-aaif-as-an-open-gateway-for-agentic-ai-infrastructure/" target="_blank" rel="noopener">Learn more</a></span>
+  <span>Help guide the future of <strong>agentgateway</strong> &mdash; <a href="https://forms.gle/de5T7wr4wRsj1mKD7" target="_blank" rel="noopener">Take the survey</a></span>
   <button type="button" class="agw-banner-close" aria-label="Dismiss announcement" onclick="agwDismissBanner()">&times;</button>
 </div>
 
 <script>
   (function () {
     try {
-      if (localStorage.getItem('agw-aaif-banner') === 'dismissed') {
+      if (localStorage.getItem('agw-survey-banner') === 'dismissed') {
         var b = document.getElementById('agwBanner');
         if (b) { b.style.display = 'none'; }
         return;
@@ -67,6 +67,6 @@
     var b = document.getElementById('agwBanner');
     if (b) { b.remove(); }
     document.documentElement.classList.remove('agw-has-banner');
-    try { localStorage.setItem('agw-aaif-banner', 'dismissed'); } catch (e) {}
+    try { localStorage.setItem('agw-survey-banner', 'dismissed'); } catch (e) {}
   }
 </script>

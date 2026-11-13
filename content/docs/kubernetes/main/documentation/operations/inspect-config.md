@@ -2,7 +2,6 @@
 title: Inspect agentgateway configuration
 weight: 17
 description: Inspect the runtime configuration that an agentgateway proxy has loaded.
-test: skip
 ---
 
 > [!WARNING]

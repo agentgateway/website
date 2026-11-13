@@ -5,6 +5,13 @@ on:
     paths:
       - 'assets/**'
       - 'content/docs/**'
+      # This repo's own scripts, and this file. NOTE: `reuse_consumers.py` now
+      # lives in solo-io/docs-tests, so a change to the SELECTOR no longer
+      # triggers this workflow at all -- a path filter cannot watch another
+      # repository. The daily schedule below is what catches a selector
+      # regression now rather than the PR that introduced it.
+      - 'scripts/**'
+      - '.github/workflows/doc-tests.yaml'
   schedule:
     # Every day at 06:00 UTC
     - cron: '0 6 * * *'
@@ -17,20 +24,93 @@ on:
       slack_channel:
         description: 'Slack channel to notify'
         type: string
-        default: 'product-excellence-test-notifications'
+        default: 'doctopus-tests'
+      docs_tests_ref:
+        description: 'docs-tests branch or commit SHA to test with (default: main)'
+        type: string
+        default: ''
+
+# READ-ONLY, BECAUSE THIS WORKFLOW RUNS THE PAGES.
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
 
 jobs:
   discover:
     name: Discover test cases
+    # The nightly run belongs to the upstream repo only. Forks that keep `main`
+    # in sync inherit the `schedule:` trigger and would run the whole suite and
+    # post a second copy of the results to Slack. PR and manual runs still work
+    # in forks. Skipping this job skips `run-test` and `report` with it.
+    if: github.event_name != 'schedule' || github.repository == 'agentgateway/website'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.list.outputs.matrix }}
       has_tests: ${{ steps.list.outputs.has_tests }}
       test_count: ${{ steps.list.outputs.test_count }}
       dev_version: ${{ steps.dev-version.outputs.dev_version }}
+      docs_tests_ref: ${{ steps.docs-tests-ref.outputs.sha }}
     steps:
       - name: Checkout website repo
         uses: actions/checkout@v6
+
+      # A PR that changes a tested block can only be tested against the updated
+      # tests if this run uses them. So when solo-io/docs-tests has a branch with
+      # the same name as this PR's branch, every job checks out that branch;
+      # otherwise main. Resolved once, to a SHA, so all jobs use the same commit
+      # even if the branch moves during the run. HEAD_REF comes from the PR
+      # author, so it goes through env and is only ever compared, never run.
+      - name: Pick docs-tests ref
+        id: docs-tests-ref
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          REQUESTED_REF: ${{ inputs.docs_tests_ref }}
+        run: |
+          set -o pipefail
+          REPO=https://github.com/solo-io/docs-tests.git
+          resolve() { git ls-remote --heads "$REPO" | awk -v r="refs/heads/$1" '$2 == r { print $1 }'; }
+          SHA=""
+          # A manual run can name a docs-tests branch or SHA, so a candidate test
+          # fix can be run against real content before its PR opens. Unlike the
+          # PR branch match below, a ref asked for by name must exist: falling
+          # back to main would report main's result as the candidate's.
+          if [ -n "$REQUESTED_REF" ]; then
+            if [[ "$REQUESTED_REF" =~ ^[0-9a-f]{40}$ ]]; then
+              SHA="$REQUESTED_REF"
+            else
+              SHA=$(resolve "$REQUESTED_REF")
+            fi
+            if [ -z "$SHA" ]; then
+              echo "::error::docs-tests ref '$REQUESTED_REF' not found. Pass a branch name or a full 40-character SHA."
+              exit 1
+            fi
+            echo "::notice::Using requested docs-tests ref '$REQUESTED_REF' ($SHA)."
+            echo "Doc tests ran against docs-tests ref \`$REQUESTED_REF\` (\`${SHA:0:8}\`), not main." >> "$GITHUB_STEP_SUMMARY"
+          elif [ -n "$HEAD_REF" ] && [ "$HEAD_REF" != "main" ]; then
+            SHA=$(resolve "$HEAD_REF")
+          fi
+          if [ -n "$SHA" ]; then
+            echo "::notice::Using docs-tests branch '$HEAD_REF' ($SHA), which matches this PR's branch name."
+            echo "Doc tests ran against docs-tests branch \`$HEAD_REF\` (\`${SHA:0:8}\`), not main." >> "$GITHUB_STEP_SUMMARY"
+          else
+            SHA=$(resolve main)
+          fi
+          if [ -z "$SHA" ]; then
+            echo "::error::Could not resolve a docs-tests ref."
+            exit 1
+          fi
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+      # Public repo, no token needed. The doc-test scripts live here now, not in this
+      # repo's own scripts/ dir -- see docs-tests/scripts/doc_test_run.py etc. below.
+      - name: Checkout docs-tests
+        uses: actions/checkout@v6
+        with:
+          repository: solo-io/docs-tests
+          ref: ${{ steps.docs-tests-ref.outputs.sha }}
+          path: docs-tests
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -40,50 +120,142 @@ jobs:
       - name: Install Python dependencies
         run: pip install pyyaml
 
+      # Test markup lives in docs-tests as annotations, not in these pages.
+      # Attach them before anything reads the pages. The latest and main trees
+      # carry no inline markup; an older version tree that still does has it
+      # removed first wherever an annotation exists, so the run tests exactly
+      # what the annotations say. The report lists markup that did not attach,
+      # so the runner can skip those scenarios with a warning instead of
+      # running them short.
+      - name: Attach test annotations
+        run: |
+          python3 docs-tests/scripts/annotations.py attach --repo . \
+            --annotations docs-tests/products/agentgateway/annotations \
+            --report out/annotations/attach-report.json --summary
+
+      # The step below decides WHICH tests run, so a fault in it does not fail
+      # the build, it empties it. That is the failure mode this whole job just
+      # had, and it went unnoticed for as long as it existed, so the selector
+      # is checked before it is used.
+      - name: Test the changed-file resolver
+        env:
+          # `__pycache__/` is already gitignored, so this is not about the
+          # tree. It keeps the checkout the job later reads from identical to
+          # the one it checked out, which is one less difference to rule out
+          # when the resolver and a local run disagree.
+          PYTHONDONTWRITEBYTECODE: '1'
+          # The selector moved to docs-tests, so its tests moved with it and need
+          # to be told which consumer repo to walk; unset, they raise rather than
+          # silently examining nothing. The second line keeps this repo's own
+          # scripts/ tests (test_normalize_doc_links.py) running -- they were only
+          # ever covered here incidentally, and repointing the gate would have
+          # dropped them without saying so.
+          DOCS_REPO_ROOT: ${{ github.workspace }}
+        run: |
+          python3 -m unittest discover -s docs-tests/scripts -p 'test_*.py'
+          python3 -m unittest discover -s scripts -p 'test_*.py'
+
       - name: Get changed markdown files
         id: changed-files
         if: github.event_name == 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # This step picks the tests. EVERY failure in it has to be loud,
+          # because the shape of a selector's failure is an empty matrix and a
+          # green check, not a red one -- that is the bug this job just had.
+          # The default shell here is `bash -e`, which is not enough on its
+          # own: `-e` ignores a failure anywhere but the END of a pipeline,
+          # and the selection is a pipeline. Hence `pipefail`, and hence no
+          # `|| true` anywhere below.
+          set -o pipefail
+
+          # No `|| true`. A flaky `gh api` used to leave this empty, and an
+          # empty changed-file list is indistinguishable from "this PR changes
+          # no docs" -- the run went green having tested nothing. A network
+          # blip should cost a re-run, not a silent pass.
           ALL_CHANGED=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files \
-            --paginate --jq '.[].filename' || true)
+            --paginate --jq '.[].filename')
 
-          # Start with directly changed content/*.md files
-          FILES=$(echo "$ALL_CHANGED" | grep '^content/.*\.md$' | tr '\n' ' ' || true)
+          # `grep` exits 1 when nothing matches, and "this PR touches no
+          # markdown" is a normal outcome (a CSS or workflow-only PR), so it
+          # is kept OUT of the pipeline below, where pipefail would read that
+          # 1 as a failure. This is the one expected non-zero in the step, and
+          # it is handled here rather than blanket-suppressed.
+          CHANGED_MD=$(printf '%s\n' "$ALL_CHANGED" | grep -E '^(content|assets)/.*\.md$') \
+            || CHANGED_MD=""
 
-          # For each changed assets/agw-docs/pages/*.md file, check for corresponding
-          # content files in the kubernetes/standalone main/latest directories
-          ASSET_FILES=$(echo "$ALL_CHANGED" | grep '^assets/agw-docs/pages/.*\.md$' || true)
-          if [ -n "$ASSET_FILES" ]; then
-            while IFS= read -r asset_file; do
-              rel_path="${asset_file#assets/agw-docs/pages/}"
-              rel_path="${rel_path#agentgateway/}"
-              found=0
-              # docTabs moved most subject directories under documentation/, so each
-              # version root has two candidate prefixes: the version root itself (which
-              # still holds integrations/, reference/, and release-notes/) and
-              # documentation/ (everything else). Try both.
-              for content_dir in "content/docs/kubernetes/main" "content/docs/kubernetes/latest" "content/docs/standalone/main" "content/docs/standalone/latest" \
-                                 "content/docs/kubernetes/main/documentation" "content/docs/kubernetes/latest/documentation" "content/docs/standalone/main/documentation" "content/docs/standalone/latest/documentation"; do
-                candidate="${content_dir}/${rel_path}"
-                if [ -f "$candidate" ] && ! echo "$FILES" | grep -qF "$candidate"; then
-                  FILES="$FILES $candidate"
-                  found=1
-                fi
-              done
-              if [ "$found" -eq 0 ]; then
-                echo "No content candidates found for asset file: $asset_file"
-              fi
-            done <<< "$ASSET_FILES"
+          # Map every changed markdown file to the content pages affected by
+          # it: those that read it through a chain of `reuse` shortcodes, and
+          # those whose front-matter `test:` block runs its code blocks as a
+          # setup step.
+          #
+          # THIS USED TO MIRROR THE PATH, AND THE MIRROR WAS A CHECK THAT COULD
+          # NOT FAIL. It stripped `assets/agw-docs/pages/` and tried the
+          # remainder under each version root, with and without a
+          # `documentation/` segment. Anything it could not place was announced
+          # as "No content candidates found" and the job went green having run
+          # nothing. That was 62 of the 134 snippets carrying doc tests: pages
+          # under `integrations/`, snippets outside `assets/agw-docs/pages/`
+          # which it never even tried, and -- the case that cannot be fixed by
+          # adding prefixes -- snippets reached only through another snippet,
+          # whose page shares no path segments with them at all.
+          #
+          # `reuse_consumers.py` reads the edges out of the files instead of
+          # guessing, so a page moving cannot silently switch its tests off.
+          # Its own tests run above, before it is trusted with the selection.
+          #
+          # Under pipefail a traceback out of the resolver now FAILS this step.
+          # It previously could not: `|| true` forced the assignment to 0, so a
+          # crash produced an empty list and the exact green-having-run-nothing
+          # outcome the resolver was written to end.
+          FILES=""
+          RESOLVER_LOG="${RUNNER_TEMP}/resolver.txt"
+          : > "$RESOLVER_LOG"
+
+          # On a crash, the traceback lands in the stderr file, `-e` exits on
+          # the failed assignment, and nothing ever reads it. That step is loud
+          # in status and silent in content, which is half of what this job is
+          # being fixed for. So the log is printed on the way out of a failure.
+          # `if`, not a bare `cat`, because a non-zero test inside the handler
+          # must not become the thing that reports.
+          dump_resolver_log() {
+            if [ -s "$RESOLVER_LOG" ]; then
+              echo "::error::reuse_consumers.py failed. Its output was:"
+              cat "$RESOLVER_LOG"
+            fi
+          }
+          trap dump_resolver_log ERR
+
+          if [ -n "$CHANGED_MD" ]; then
+            FILES=$(printf '%s\n' "$CHANGED_MD" \
+              | python3 docs-tests/scripts/reuse_consumers.py --repo-root . --stdin 2>"$RESOLVER_LOG" \
+              | tr '\n' ' ')
           fi
 
           # NOT `xargs` for the trim: it re-wraps its output at ~4096 characters, so a
           # large PR turned this into a MULTI-LINE value and `files=...` below then
           # failed with "Unable to process file command 'output'". Trim with sed, and
           # write through the heredoc form so the length cannot break the format.
-          FILES=$(echo "$FILES" | tr ' ' '\n' | grep -v '^$' | sort -u | tr '\n' ' ' \
-            | sed -e 's/^ *//' -e 's/ *$//')
+          #
+          # Guarded, and `printf` rather than the `grep -v '^$'` this used to drop
+          # blanks with. Under the pipefail added above, that grep matches nothing on
+          # an empty list, exits 1, and takes the whole step down -- which a CSS-only
+          # PR hits, since the workflow's `paths:` filter includes all of `assets/**`.
+          # Unquoted `$FILES` word-splits to one path per line and discards the blanks
+          # on its own, so nothing in this pipeline can report failure for having had
+          # no work to do.
+          #
+          # The word-splitting is wanted; the globbing that comes with it is not. An
+          # unquoted expansion is also a glob pass, so a path holding `[` or `*` would
+          # expand against the working tree and select whatever it happened to match.
+          # `set -f` turns globbing off for the rest of the step -- it covers the
+          # `printf '%s\n' $FILES` below as well, which splits the same way.
+          set -f
+          if [ -n "$FILES" ]; then
+            FILES=$(printf '%s\n' $FILES | sort -u | tr '\n' ' ' \
+              | sed -e 's/^ *//' -e 's/ *$//')
+          fi
           {
             echo "files<<__CHANGED_FILES__"
             echo "$FILES"
@@ -113,6 +285,10 @@ jobs:
       - name: List test cases
         id: list
         run: |
+          # 'functional' scenarios run here and block the PR (real behavior in a real
+          # cluster, with in-cluster stand-ins for external services). 'schema'
+          # (config-vs-schema, no cluster) has its own job below.
+          #
           # Read the changed-file list from disk rather than an env var; see the note in
           # "Get changed markdown files". Each path becomes its own short argv entry, so
           # only the total (well under ARG_MAX) matters, not any single string's length.
@@ -124,9 +300,9 @@ jobs:
             while IFS= read -r line; do
               [ -n "$line" ] && FILE_ARGS+=("$line")
             done < "$CHANGED_FILES_LIST"
-            TESTS=$(python3 scripts/doc_test_run.py --repo-root . --list-tests --file "${FILE_ARGS[@]}")
+            TESTS=$(python3 docs-tests/scripts/doc_test_run.py --repo-root . --list-tests --types functional --file "${FILE_ARGS[@]}")
           else
-            TESTS=$(python3 scripts/doc_test_run.py --repo-root . --list-tests)
+            TESTS=$(python3 docs-tests/scripts/doc_test_run.py --repo-root . --list-tests --types functional)
           fi
           COUNT=$(echo "$TESTS" | jq 'length')
           echo "test_count=${COUNT}" >> $GITHUB_OUTPUT
@@ -135,9 +311,68 @@ jobs:
           else
             echo "has_tests=false" >> $GITHUB_OUTPUT
           fi
-          MATRIX=$(echo "$TESTS" | jq -c '(length | [., 40] | min) as $shards | . as $tests | {include: [range($shards) | . as $i | ([$tests | to_entries[] | select(.key % $shards == $i) | .value] as $shard | {shard_index: $i, test_count: ($shard | length), tests: ($shard | tojson), shard_name: ($shard | [.[].test] | join(", ") | if length > 80 then .[:77] + "..." else . end)})]}')
+          # Linux tests are spread over up to 40 shards. A scenario with
+          # `runner: macos` or `runner: windows` in docs-tests goes to one shard
+          # per OS, which runs on that OS's hosted runner (see run-test). A test
+          # with no `runner` field is a Linux test, so this also works with a
+          # docs-tests version that does not report runners.
+          MATRIX=$(echo "$TESTS" | jq -c '
+            def shardlabel: [.[] | "\(.test) (\(.file | split("/")[2:4] | join("/")))"] | join(", ") | if length > 80 then .[:77] + "..." else . end;
+            map(.runner = (.runner // "linux")) as $all
+            | ($all | map(select(.runner == "linux"))) as $linux
+            | ($linux | length | [., 40] | min) as $shards
+            | {include: (
+                [range($shards) | . as $i
+                  | ([$linux | to_entries[] | select(.key % $shards == $i) | .value] as $shard
+                  | {os: "ubuntu-latest", shard_index: $i, test_count: ($shard | length), tests: ($shard | tojson), shard_name: ($shard | shardlabel)})]
+                + [$all | map(select(.runner != "linux")) | group_by(.runner) | to_entries[] | .key as $k | .value as $shard
+                  | {os: "\($shard[0].runner)-latest", shard_index: (1000 + $k), test_count: ($shard | length), tests: ($shard | tojson),
+                     shard_name: ("[\($shard[0].runner)] " + ($shard | shardlabel))}]
+              )}
+          ')
           echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
-          echo "Discovered $COUNT test case(s)"
+          echo "Discovered $COUNT functional test case(s)"
+          # For "Aggregate results and report" on a PR: the scenarios this run
+          # selected, and the pages the PR reaches. A failed page step counts
+          # against the PR only on one of those pages. No pages file means the
+          # PR reaches no page (a workflow or CSS change), so every scenario
+          # ran and every page counts. Files, not job outputs: both lists can
+          # pass the 128 KiB cap on a single environment string.
+          mkdir -p out/selection
+          echo "$TESTS" | jq -c 'map({file, test})' > out/selection/expected.json
+          if [ -s "$CHANGED_FILES_LIST" ]; then
+            cp "$CHANGED_FILES_LIST" out/selection/pages.txt
+          fi
+
+      # The latest nightly run's merged results, kept 14 days, unlike the
+      # per-shard ones (1 day). Each test job reads them to tell a failure this
+      # PR caused from one that also happens on main. No nightly results means
+      # nothing is known to fail on main.
+      - name: Find the nightly results on main
+        if: github.event_name == 'pull_request' && steps.list.outputs.has_tests == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # `|| true`: an error here only means there is nothing to compare with.
+          RUN_ID=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow doc-tests.yaml \
+            --branch main --event schedule --status completed --limit 1 \
+            --json databaseId --jq '.[0].databaseId // empty' || true)
+          if [ -n "$RUN_ID" ] && gh run download "$RUN_ID" --repo "$GITHUB_REPOSITORY" \
+              --name doc-test-results --dir "$RUNNER_TEMP/nightly"; then
+            cp "$RUNNER_TEMP/nightly/test-results.yaml" out/selection/nightly.yaml
+            echo "Comparing with nightly run $RUN_ID."
+          else
+            echo "::notice::No nightly doc test results to compare with."
+          fi
+
+      - name: Upload the test selection
+        if: github.event_name == 'pull_request' && steps.list.outputs.has_tests == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: doc-test-selection
+          path: out/selection/
+          retention-days: 1
+
 
       # Resolve an installable version for the development ("main"/experimental) install
       # snippets. Those pages install the nightly chart pinned in
@@ -216,19 +451,191 @@ jobs:
           echo "dev_version=$RESOLVED" >> "$GITHUB_OUTPUT"
           echo "Resolved dev build version: $RESOLVED"
 
+  schema-check:
+    name: Schema validation (no cluster)
+    # For the docs-tests ref only; see "Pick docs-tests ref".
+    needs: discover
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout website repo
+        uses: actions/checkout@v6
+
+      - name: Checkout docs-tests
+        uses: actions/checkout@v6
+        with:
+          repository: solo-io/docs-tests
+          ref: ${{ needs.discover.outputs.docs_tests_ref }}
+          path: docs-tests
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Install Python dependencies
+        run: pip install pyyaml jsonschema
+
+      # Each version tree is checked against the CRDs of the release it
+      # documents. main/ documents the default branch. latest/ documents the
+      # newest stable patch of the minor that hugo.yaml labels `latest` (1.7.x ->
+      # v1.7.<n>). agentgateway has no release branches, so it's a tag.
+      - name: Resolve agentgateway release for latest
+        id: latest-tag
+        run: |
+          set -o pipefail
+          MINOR=$(python3 -c 'import yaml; v = yaml.safe_load(open("hugo.yaml"))["params"]["versions"]; print(next(e["version"] for e in v if e.get("linkVersion") == "latest").removesuffix(".x"))')
+          TAG=$(git ls-remote --tags --refs https://github.com/agentgateway/agentgateway.git "refs/tags/v${MINOR}.*" \
+            | awk '{ sub("refs/tags/", "", $2); print $2 }' | grep -E "^v${MINOR//./\\.}\.[0-9]+$" | sort -V | tail -n 1 || true)
+          if [ -z "$TAG" ]; then
+            echo "::error::No stable agentgateway tag v${MINOR}.<patch> found for the latest docs (${MINOR}.x in hugo.yaml)."
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "latest/ is checked against agentgateway $TAG CRDs; main/ against the default branch."
+
+      - name: Checkout agentgateway main (CRD schemas for main)
+        uses: actions/checkout@v6
+        with:
+          repository: agentgateway/agentgateway
+          path: agentgateway-main
+          persist-credentials: false
+
+      - name: Checkout agentgateway ${{ steps.latest-tag.outputs.tag }} (CRD schemas for latest)
+        uses: actions/checkout@v6
+        with:
+          repository: agentgateway/agentgateway
+          ref: ${{ steps.latest-tag.outputs.tag }}
+          path: agentgateway-latest
+          persist-credentials: false
+
+      # Gateway API kinds (HTTPRoute, Gateway, ...) are checked against the CRDs
+      # of the Gateway API release these docs install. The experimental channel
+      # is a superset of standard, so a standard-channel page cannot fail on it;
+      # the trade is that an experimental-only field on a standard-channel page
+      # passes. Both version trees install the same release today, so one file
+      # serves both.
+      #
+      # Core kinds (Service, Deployment, ...) go through kubeconform, against the
+      # newest Kubernetes version these docs support.
+      - name: Fetch Gateway API CRDs and kubeconform
+        env:
+          KUBECONFORM_VERSION: v0.8.0
+        run: |
+          set -o pipefail
+          GWAPI=$(tr -d '[:space:]' < assets/agw-docs/versions/k8s-gw-version-exp.md)
+          mkdir -p "$RUNNER_TEMP/gateway-api"
+          curl -sSfL -o "$RUNNER_TEMP/gateway-api/experimental-install.yaml" \
+            "https://github.com/kubernetes-sigs/gateway-api/releases/download/v${GWAPI}/experimental-install.yaml"
+          curl -sSfL "https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+            | tar -xz -C "$RUNNER_TEMP" kubeconform
+          KUBE=$(tr -d '[:space:]' < assets/agw-docs/versions/max-kube.md)
+          echo "GATEWAY_API_CRDS=$RUNNER_TEMP/gateway-api/experimental-install.yaml" >> "$GITHUB_ENV"
+          echo "KUBECONFORM=$RUNNER_TEMP/kubeconform" >> "$GITHUB_ENV"
+          echo "KUBERNETES_VERSION=${KUBE}.0" >> "$GITHUB_ENV"
+          echo "Gateway API v${GWAPI} (experimental), Kubernetes ${KUBE}.0 schemas via kubeconform ${KUBECONFORM_VERSION}."
+
+      # Test markup lives in docs-tests as annotations, not in these pages.
+      # Attach them before anything reads the pages. The latest and main trees
+      # carry no inline markup; an older version tree that still does has it
+      # removed first wherever an annotation exists, so the run tests exactly
+      # what the annotations say. The report lists markup that did not attach,
+      # so the runner can skip those scenarios with a warning instead of
+      # running them short.
+      - name: Attach test annotations
+        run: |
+          python3 docs-tests/scripts/annotations.py attach --repo . \
+            --annotations docs-tests/products/agentgateway/annotations \
+            --report out/annotations/attach-report.json
+
+      # Helm values a page sets (`--set`, `-f values.yaml`) are checked against
+      # the charts at the same two releases as the CRDs. The charts ship no
+      # values.schema.json, so the checker builds one from each chart's
+      # values.yaml and templates; see docs-tests' doc_test_helm_values.py.
+      - name: Run schema checks
+        run: |
+          mkdir -p out/tests/generated
+          HELM_CHARTS=()
+          CRD_DIRS=()
+          for tree in latest main; do
+            for chart in agentgateway agentgateway-standalone agentgateway-crds; do
+              HELM_CHARTS+=(--helm-chart "$tree=agentgateway-$tree/controller/install/helm/$chart")
+            done
+            # agentgateway#4319 moved the CRD YAMLs from templates/ to
+            # files/crds/ and made templates/crds.yaml a Helm template.
+            # Releases cut before that change still use templates/.
+            crds="agentgateway-$tree/controller/install/helm/agentgateway-crds"
+            if [ -d "$crds/files/crds" ]; then
+              CRD_DIRS+=(--crd-dir "$tree=$crds/files/crds")
+            else
+              CRD_DIRS+=(--crd-dir "$tree=$crds/templates")
+            fi
+          done
+          python3 docs-tests/scripts/doc_test_schema_check.py \
+            --repo-root . \
+            "${CRD_DIRS[@]}" \
+            --crd-dir "$GATEWAY_API_CRDS" \
+            --config-schema latest=agentgateway-latest/schema/config.json \
+            --config-schema main=agentgateway-main/schema/config.json \
+            "${HELM_CHARTS[@]}" \
+            --helm-overlay docs-tests/products/agentgateway/helm-values.yaml \
+            --kubeconform "$KUBECONFORM" \
+            --kubernetes-version "$KUBERNETES_VERSION" \
+            --docs-tests-root docs-tests \
+            --annotation-report out/annotations/attach-report.json \
+            --report-file out/tests/generated/test-results.yaml \
+            --verbose
+
+      # Named test-result-schema so it's picked up by the same test-result-* pattern the
+      # report job already downloads and merges -- no changes needed there. Writes a
+      # test-results.yaml in the exact shape doc_test_run.py writes (see write_report()).
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-result-schema
+          path: out/tests/generated/test-results.yaml
+          retention-days: 1
+
   run-test:
     name: "${{ matrix.shard_name }}"
     needs: discover
     if: needs.discover.outputs.has_tests == 'true'
-    runs-on: ubuntu-latest
+    # Linux unless the shard is for a `runner: macos` or `runner: windows`
+    # scenario. Those run with no cluster, so the kind steps below are
+    # Linux-only.
+    runs-on: ${{ matrix.os || 'ubuntu-latest' }}
     timeout-minutes: 45
+    defaults:
+      run:
+        # Every step is a bash script. On Windows this is Git Bash, not the
+        # default PowerShell.
+        shell: bash
 
     strategy:
       matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
       fail-fast: false
     steps:
+      # Windows checkouts convert line endings to CRLF by default, and the
+      # generated bash scripts then fail on the carriage returns.
+      - name: Keep LF line endings (Windows)
+        if: runner.os == 'Windows'
+        run: git config --global core.autocrlf false
+
+      # persist-credentials: false on both checkouts, so the token is not left
+      # in .git/config for the commands this job runs out of the changed pages.
+      # Nothing here pushes or fetches after the checkouts.
       - name: Checkout website repo
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Checkout docs-tests
+        uses: actions/checkout@v6
+        with:
+          repository: solo-io/docs-tests
+          ref: ${{ needs.discover.outputs.docs_tests_ref }}
+          path: docs-tests
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -236,6 +643,7 @@ jobs:
           python-version: '3.x'
 
       - name: Set up Go
+        if: runner.os == 'Linux'
         uses: actions/setup-go@v6
         with:
           go-version: 'stable'
@@ -249,11 +657,45 @@ jobs:
       - name: Install Python dependencies
         run: pip install pyyaml
 
+      # Test markup lives in docs-tests as annotations, not in these pages.
+      # Attach them before anything reads the pages. The latest and main trees
+      # carry no inline markup; an older version tree that still does has it
+      # removed first wherever an annotation exists, so the run tests exactly
+      # what the annotations say. The report lists markup that did not attach,
+      # so the runner can skip those scenarios with a warning instead of
+      # running them short.
+      - name: Attach test annotations
+        run: |
+          python docs-tests/scripts/annotations.py attach --repo . \
+            --annotations docs-tests/products/agentgateway/annotations \
+            --report out/annotations/attach-report.json
+
       - name: Install cloud-provider-kind
-        run: go install sigs.k8s.io/cloud-provider-kind@latest
+        if: runner.os == 'Linux'
+        # A release binary, not `go install ...@latest`. Building it pulls a few
+        # hundred modules through proxy.golang.org, and on 2026-10-14 dropped
+        # proxy streams failed shards before any test ran (website#920, #1250,
+        # #1265). Pinned and checksum-verified; bump CPK_VERSION to upgrade.
+        env:
+          CPK_VERSION: v0.12.0
+        run: |
+          set -euo pipefail
+          v="${CPK_VERSION#v}"
+          base="https://github.com/kubernetes-sigs/cloud-provider-kind/releases/download/${CPK_VERSION}"
+          tarball="cloud-provider-kind_${v}_linux_amd64.tar.gz"
+          cd "$RUNNER_TEMP"
+          curl -fsSL --retry 5 --retry-all-errors -o "$tarball" "$base/$tarball"
+          curl -fsSL --retry 5 --retry-all-errors -o cpk-checksums.txt "$base/cloud-provider-kind_${v}_checksums.txt"
+          grep " ${tarball}\$" cpk-checksums.txt | sha256sum -c -
+          mkdir -p "$HOME/.local/bin"
+          tar -xzf "$tarball" -C "$HOME/.local/bin" cloud-provider-kind
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Install yamltest
-        run: npm install -g yamltest@latest
+        # The package links both `yamltest` and `YAMLTest`. On macOS's
+        # case-insensitive filesystem the second link collides with the first
+        # (EEXIST), so retry with --force there.
+        run: npm install -g yamltest@latest || npm install -g --force yamltest@latest
 
       # Redirect the development install snippets to the version resolved in `discover`.
       # Only rewrites the checkout used by this run; the committed docs still ship
@@ -265,6 +707,7 @@ jobs:
           echo "Pinned assets/agw-docs/versions/patch-dev.md to ${{ needs.discover.outputs.dev_version }} for this run."
 
       - name: Run doc tests
+        id: run
         env:
           SHARD_TESTS: ${{ matrix.tests }}
           DEBUG_MODE: true
@@ -278,6 +721,9 @@ jobs:
           # Used by the install-agentgateway-binary snippet's `gh run download` of the
           # nightly release-binary-linux artifact from agentgateway/agentgateway.
           GH_TOKEN: ${{ github.token }}
+          DOCS_TESTS_ROOT: ${{ github.workspace }}/docs-tests
+          # Git Bash on Windows. A bare `bash` can resolve to the WSL launcher.
+          DOC_TEST_BASH: ${{ runner.os == 'Windows' && 'C:\Program Files\Git\bin\bash.exe' || '' }}
         run: |
           FAILED=0
           TEST_INDEX=0
@@ -287,33 +733,43 @@ jobs:
           # remaining lines of this loop's input, so the shard would stop early
           # and silently skip its remaining tests while still exiting 0.
           while IFS=$'\t' read -r -u 3 file test; do
-            python3 scripts/doc_test_run.py --repo-root . --file "$file" --test "$test" \
+            python docs-tests/scripts/doc_test_run.py --repo-root . --file "$file" --test "$test" \
+              --annotation-report out/annotations/attach-report.json \
               --report-file "out/tests/generated/shard/${TEST_INDEX}/test-results.yaml" \
               < /dev/null || FAILED=1
             TEST_INDEX=$((TEST_INDEX + 1))
-          done 3< <(echo "$SHARD_TESTS" | jq -r '.[] | "\(.file)\t\(.test)"')
-          python3 scripts/merge_test_results.py out/tests/generated/shard/ out/tests/generated/test-results.yaml
+          # `tr -d '\r'`: jq on Windows ends lines with CRLF, which would leave a
+          # carriage return on every test name.
+          done 3< <(echo "$SHARD_TESTS" | jq -r '.[] | "\(.file)\t\(.test)"' | tr -d '\r')
+          python docs-tests/scripts/merge_test_results.py out/tests/generated/shard/ out/tests/generated/test-results.yaml
 
           # Every assigned test must have produced a report. A missing report
           # means the loop above did not run it, which must fail the shard
           # rather than pass with a short result set.
-          EXPECTED=$(echo "$SHARD_TESTS" | jq 'length')
+          EXPECTED=$(echo "$SHARD_TESTS" | jq 'length' | tr -d '\r')
           if [ "$TEST_INDEX" -ne "$EXPECTED" ]; then
             echo "::error::Shard ran $TEST_INDEX of $EXPECTED assigned test(s)."
-            FAILED=1
+            exit 1
           fi
-          exit $FAILED
+          [ "$FAILED" -eq 0 ] && exit 0
+          # On a PR, "Check whether this change caused the failure" below
+          # decides whether this job goes red.
+          echo "failed=true" >> "$GITHUB_OUTPUT"
+          [ "${{ github.event_name }}" = pull_request ] || exit 1
 
+      # The run attempt is in the name so re-running a failed shard does not
+      # upload a second artifact with the same name. merge_test_results.py
+      # merges in attempt order, so the re-run's results replace the failure.
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: test-result-${{ strategy.job-index }}
+          name: test-result-${{ strategy.job-index }}-a${{ github.run_attempt }}
           path: out/tests/generated/test-results.yaml
           retention-days: 1
 
       - name: Upload test context (on failure)
-        if: failure()
+        if: failure() || steps.run.outputs.failed == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: test-context-${{ strategy.job-index }}
@@ -321,14 +777,71 @@ jobs:
           retention-days: 1
           if-no-files-found: ignore
 
+      # On a PR, red means the author has something to fix, and green means
+      # they do not. Red only when the PR broke a step: a code block on a page
+      # the PR reaches failed, and main's nightly run did not already fail
+      # there. Anything else (a failure that also happens on main, a docs-tests
+      # check that is out of date, a step on a page the PR does not reach) is
+      # for the docs team, which sees it in the nightly run, so the job stays
+      # green and the run summary lists it. The rules
+      # are in docs-tests/scripts/classify_pr_results.py, which the solo-io/docs
+      # PRs use too. Last in the job, so the uploads above always run.
+      - name: Download the test selection
+        if: github.event_name == 'pull_request' && steps.run.outputs.failed == 'true'
+        uses: actions/download-artifact@v7
+        with:
+          name: doc-test-selection
+          path: selection/
+
+      - name: Check whether this change caused the failure
+        if: github.event_name == 'pull_request' && steps.run.outputs.failed == 'true'
+        env:
+          SHARD_TESTS: ${{ matrix.tests }}
+        run: |
+          set -euo pipefail
+          echo "$SHARD_TESTS" | jq -c 'map({file, test})' > shard-expected.json
+          ARGS=()
+          if [ -f selection/nightly.yaml ]; then
+            ARGS+=(--known-results selection/nightly.yaml)
+          fi
+          if [ -f selection/pages.txt ]; then
+            ARGS+=(--affected-pages selection/pages.txt)
+          fi
+          python docs-tests/scripts/classify_pr_results.py \
+            --results out/tests/generated/test-results.yaml \
+            --expected shard-expected.json "${ARGS[@]}" \
+            --output verdicts.json --summary "$GITHUB_STEP_SUMMARY"
+          jq -r '.[] | select(.conclusion == "failure") | "\n## Needs your fix: `\(.name)`\n\n\(.summary)\n"' verdicts.json \
+            >> "$GITHUB_STEP_SUMMARY"
+          if jq -e 'any(.[]; .conclusion == "failure")' verdicts.json > /dev/null; then
+            jq -r '.[] | select(.conclusion == "failure")
+              | "::error title=Your change broke a doc test::\(.name): \(.title). The run summary shows the step and its output."' verdicts.json
+            exit 1
+          fi
+
   report:
     name: Aggregate results and report
-    needs: [discover, run-test]
+    needs: [discover, run-test, schema-check]
     if: always() && needs.discover.outputs.has_tests == 'true'
     runs-on: ubuntu-latest
+    # checks: write, for "Post the test update required check". This job runs
+    # none of the pages, only the docs-tests scripts on their results.
+    permissions:
+      contents: read
+      actions: read
+      checks: write
     steps:
       - name: Checkout website repo
         uses: actions/checkout@v6
+
+      # Public repo, no token needed. The doc-test scripts live here now, not in this
+      # repo's own scripts/ dir -- see docs-tests/scripts/merge_test_results.py etc. below.
+      - name: Checkout docs-tests
+        uses: actions/checkout@v6
+        with:
+          repository: solo-io/docs-tests
+          ref: ${{ needs.discover.outputs.docs_tests_ref }}
+          path: docs-tests
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -345,7 +858,7 @@ jobs:
           path: collected-results/
 
       - name: Merge test results
-        run: python3 scripts/merge_test_results.py collected-results/ out/tests/generated/test-results.yaml
+        run: python3 docs-tests/scripts/merge_test_results.py collected-results/ out/tests/generated/test-results.yaml
 
       - name: Generate job summary
         id: summary
@@ -353,13 +866,20 @@ jobs:
           RESULTS_FILE=out/tests/generated/test-results.yaml
 
           # GitHub Step Summary (Markdown)
-          python3 scripts/report_summary.py "$RESULTS_FILE" >> "$GITHUB_STEP_SUMMARY"
+          python3 docs-tests/scripts/report_summary.py "$RESULTS_FILE" >> "$GITHUB_STEP_SUMMARY"
 
           # Slack Block Kit payload
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          SLACK_PAYLOAD=$(python3 scripts/report_summary.py --slack --run-url "$RUN_URL" "$RESULTS_FILE")
+          SLACK_PAYLOAD=$(python3 docs-tests/scripts/report_summary.py --slack --run-url "$RUN_URL" "$RESULTS_FILE")
+          # Name the product in the header. Other repos post doc test results
+          # to the same channels, and report_summary.py's header does not say
+          # which product the results are for.
           echo "slack_blocks<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$SLACK_PAYLOAD" | jq '.main' >> "$GITHUB_OUTPUT"
+          echo "$SLACK_PAYLOAD" | jq --arg product "agentgateway OSS" '
+            .main
+            | .text |= sub("Doc Test Results"; "Doc Test Results (\($product))")
+            | .blocks[0].text.text |= (sub("Doc Test Results"; "Doc Test Results (\($product))") | .[:150])
+          ' >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
           echo "slack_thread_blocks<<EOF" >> "$GITHUB_OUTPUT"
           echo "$SLACK_PAYLOAD" | jq '.thread // empty' >> "$GITHUB_OUTPUT"
@@ -369,32 +889,100 @@ jobs:
         if: always() && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.slack_notification))
         uses: ./.github/actions/notify-slack
         with:
-          message: "Doc Test Results"
+          message: "Doc Test Results (agentgateway OSS)"
           blocks: ${{ steps.summary.outputs.slack_blocks }}
           thread_blocks: ${{ steps.summary.outputs.slack_thread_blocks }}
-          channel: ${{ github.event_name == 'workflow_dispatch' && inputs.slack_channel || 'product-excellence-test-notifications,doctopus-tests' }}
+          channel: ${{ github.event_name == 'workflow_dispatch' && inputs.slack_channel || 'doctopus-tests' }}
           token: ${{ secrets.SLACK_BOT_TOKEN }}
 
       - name: List untested docs
         if: always()
         run: |
-          python3 scripts/list_untested_docs.py \
+          python3 docs-tests/scripts/list_untested_docs.py \
             --docs-dir content/docs \
             --output out/tests/generated/untested-docs.txt
 
+      # Read by production builds for the Verified badge, by the name
+      # doc-test-results. A manual run with another docs_tests_ref tries
+      # unmerged tests, so its results go under a different name and never
+      # reach the badge.
       - name: Upload merged results
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: doc-test-results
+          name: ${{ inputs.docs_tests_ref && inputs.docs_tests_ref != 'main' && 'doc-test-results-trial' || 'doc-test-results' }}
           path: out/tests/generated/
           retention-days: 14
 
+      # On a PR, each test job already decided whether its failures are the
+      # PR's, and is red only then. This adds the whole run's verdicts to the
+      # run summary, in one table.
+      - name: Download the test selection
+        if: github.event_name == 'pull_request'
+        uses: actions/download-artifact@v7
+        with:
+          name: doc-test-selection
+          path: selection/
+
+      - name: Add the verdicts to the run summary
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          ARGS=()
+          if [ -f selection/nightly.yaml ]; then
+            ARGS+=(--known-results selection/nightly.yaml)
+          fi
+          if [ -f selection/pages.txt ]; then
+            ARGS+=(--affected-pages selection/pages.txt)
+          fi
+          python3 docs-tests/scripts/classify_pr_results.py \
+            --results out/tests/generated/test-results.yaml \
+            --expected selection/expected.json "${ARGS[@]}" \
+            --output verdicts.json --groups groups.json --summary "$GITHUB_STEP_SUMMARY"
+
+      # Grey (skipped) "Doc tests: test update required": failures that are not
+      # the PR's, listed on the PR so nobody mistakes them for passes. Green
+      # when there are none, so a rerun on the same commit replaces an old grey
+      # one. Same check as the solo-io/docs PRs. Only for a PR from a branch in
+      # this repo: a fork's PR gets a read-only token, which cannot create
+      # checks, so there the list is only in the run summary. Not on a
+      # cancelled run, whose missing results would show up in the list.
+      - name: Post the test update required check
+        if: >-
+          !cancelled() && github.event_name == 'pull_request'
+          && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          jq -c --arg sha "$HEAD_SHA" --arg url "$RUN_URL" '.[] | select(.name == "Doc tests: test update required")
+            | {name, head_sha: $sha, status: "completed", conclusion, details_url: $url,
+               output: {title, summary, text: "**Full report:** the [summary page of the doc tests run](\($url)) lists every scenario and its result."}}' groups.json \
+            | gh api "repos/$GITHUB_REPOSITORY/check-runs" --input - --jq '"\(.name): \(.conclusion)"'
+
+      # On a PR, this job is red only when the tooling failed: a selected test
+      # produced no result. Whether the PR broke a test shows on that test's
+      # own job. Scheduled and manual runs fail on any failed test.
       - name: Fail if any test failed
         env:
-          # Number of test cases the discover job found. The merged report must
-          # account for all of them, otherwise a test that never ran would be
-          # indistinguishable from one that passed.
+          IS_PR: ${{ github.event_name == 'pull_request' }}
+          # Number of functional test cases the discover job found. The merged
+          # report must account for all of them, otherwise a test that never ran
+          # would be indistinguishable from one that passed.
+          #
+          # Counted per type, not against the whole report: the merged results also
+          # contain the schema-check job's cases, which are discovered repo-wide and
+          # are not narrowed by changed files the way functional ones are. Comparing
+          # test_count against len(tests) would make `missing` negative on every PR
+          # and silently defeat the check the moment schema results outnumber the
+          # shortfall. schema-check needs no equivalent guard: it is a single job that
+          # reports every case it discovers, and it fails the workflow on its own if
+          # it does not run.
+          #
+          # A scenario skipped because its test markup no longer attaches is listed
+          # under skipped_needs_update, not tests. The shard already reported it and
+          # the summary flags it as a warning, so it counts as accounted for here.
           EXPECTED_TESTS: ${{ needs.discover.outputs.test_count }}
         run: |
           python3 -c "
@@ -403,16 +991,23 @@ jobs:
               report = yaml.safe_load(f) or {}
           tests = report.get('tests', {})
           failed = [k for k, v in tests.items() if v.get('status') != 'passed']
+          sharded = {k: v for k, v in tests.items() if v.get('type') != 'schema'}
+          needs_update = report.get('skipped_needs_update') or {}
           expected = int(os.environ.get('EXPECTED_TESTS') or 0)
-          missing = expected - len(tests)
+          missing = expected - len(sharded) - len(needs_update)
+          if os.environ.get('IS_PR') == 'true':
+              failed = []
           if failed:
               print(f'{len(failed)} test(s) failed:', file=sys.stderr)
               for name in failed:
                   print(f'  - {name}', file=sys.stderr)
           if missing > 0:
-              print(f'{missing} discovered test(s) produced no result:', file=sys.stderr)
-              print(f'  discovered {expected}, reported {len(tests)}', file=sys.stderr)
+              print(f'{missing} discovered functional test(s) produced no result:', file=sys.stderr)
+              print(f'  discovered {expected}, reported {len(sharded)}, skipped (needs update) {len(needs_update)}', file=sys.stderr)
           if failed or missing > 0:
               sys.exit(1)
-          print(f'All {len(tests)} test(s) passed')
+          if os.environ.get('IS_PR') == 'true':
+              print('Every selected test produced a result. A test this change broke is red on its own job.')
+          else:
+              print(f'All {len(tests)} test(s) passed')
           "

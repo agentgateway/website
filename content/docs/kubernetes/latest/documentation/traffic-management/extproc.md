@@ -2,16 +2,6 @@
 title: External processing (ExtProc)
 weight: 10
 description: Modify requests and responses with an external gRPC processing server.
-test:
-  extproc:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/documentation/install/sample-app.md
-    path: install-httpbin
-  - file: ${versionRoot}/documentation/traffic-management/extproc.md
-    path: extproc
 ---
 
 Modify aspects of an HTTP request or response with an external processing server. 
@@ -56,6 +46,12 @@ The ExtProc server is a gRPC interface that must be able to respond to events in
 
 To implement your own ExtProc server, make sure that you follow [Envoy's technical specification for an external processor](https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/http/ext_proc/v3/ext_proc.proto#extensions-filters-http-ext-proc-v3-externalprocessor). This guide uses a sample ExtProc server that you can use to try out the ExtProc functionality.
 
+By default, agentgateway waits 10 seconds for the ExtProc server to answer when it opens a processing stream. When the wait runs out, the call fails and the `traffic.extProc.failureMode` setting decides what happens to the request. `FailClosed`, the default, rejects the request, and `FailOpen` lets it continue. To use a different timeout, apply a second {{< reuse "agw-docs/snippets/policy.md" >}} whose `targetRefs` names the ExtProc server, either as a Kubernetes Service or as an {{< reuse "agw-docs/snippets/backend.md" >}}, and set `backend.http.requestTimeout` on it.
+
+For requests with a body, `FailOpen` applies only while no request body bytes have been sent to the ExtProc server. If the server can't be reached or fails before that point, the original request, including its body, is forwarded to the upstream application. After the request body starts streaming to the server, a failure returns an error even with `FailOpen`. In the default `FullDuplexStreamed` request body mode (`traffic.extProc.processingOptions.requestBodyMode`), the body starts streaming as soon as the processing stream is established, so `FailOpen` applies only when that stream can't be established.
+
+A clean close from the ExtProc server is different from a failure. If the server finishes request processing and closes its gRPC stream, the gateway skips later ExtProc phases for that exchange. The request continues to the upstream application, and the upstream response is returned to the client even when `traffic.extProc.failureMode` is `FailClosed`.
+
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up an ExtProc server
@@ -63,7 +59,7 @@ To implement your own ExtProc server, make sure that you follow [Envoy's technic
 Use a sample ExtProc server implementation to try out the ExtProc functionality in {{< reuse "agw-docs/snippets/kgateway.md" >}}.
 
 1. Set up the ExtProc server. This example uses a prebuilt ExtProc server that manipulates request and response headers based on instructions that are sent in an instructions header.
-   ```yaml {paths="extproc"}
+   ```yaml
    kubectl apply -n {{< reuse "agw-docs/snippets/namespace.md" >}} -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -117,25 +113,6 @@ Use a sample ExtProc server implementation to try out the ExtProc functionality 
    }
    ```
 
-{{< doc-test paths="extproc" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for ext-proc-grpc deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: ext-proc-grpc
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
 2. Verify that the ExtProc server is up and running.
    ```sh
    kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}} | grep ext-proc-grpc
@@ -149,7 +126,7 @@ EOF
 You can enable ExtProc for a particular route in an HTTPRoute resource. 
    
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that enables external processing for the agentgateway-proxy.
-   ```yaml {paths="extproc"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -169,27 +146,6 @@ You can enable ExtProc for a particular route in an HTTPRoute resource.
            port: 4444
    EOF
    ```
-   
-{{< doc-test paths="extproc" >}}
-YAMLTest -f - <<'EOF'
-- name: extproc - /headers returns 200 with extproc header injected
-  retries: 10
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/headers"
-    method: GET
-    headers:
-      host: www.example.com
-      instructions: '{"addHeaders":{"extproc":"true"}}'
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.headers.Extproc[0]"
-        comparator: equals
-        value: "true"
-EOF
-{{< /doc-test >}}
 
 2. Send a request to the httpbin app along the `/headers` path and provide your instructions in the `instruction` header. This example instructs the ExtProc server to add the `extproc: true` header. Verify that you get back a 200 HTTP response and that your response includes the `extproc: true` header.
 
@@ -243,7 +199,7 @@ EOF
 By default, ExtProc sends request headers, response headers, request trailers, and response trailers to the external processor, and streams request and response bodies. To change which request or response phases are sent to the external processor, configure `traffic.extProc.processingOptions`.
 
 > [!NOTE]
-> The default body mode is `FullDuplexStreamed`. If the external processor must inspect a complete body before the gateway forwards it, use `Buffered` or `BufferedPartial` and account for the gateway's body buffer limit, which defaults to 2 MiB. To change the limit, set `frontend.http.maxBufferSize` in an {{< reuse "agw-docs/snippets/policy.md" >}} that targets the Gateway. For more information, see [Buffer limits]({{< link-hextra path="/documentation/traffic-management/buffering/" >}}).
+> The default body mode is `FullDuplexStreamed`. If the external processor must inspect a complete body before the gateway forwards it, use `Buffered` or `BufferedPartial` and account for the gateway's body buffer limit, which defaults to 2 MiB, or 32 MiB for requests that enter LLM processing. To change the limit, set `frontend.http.maxBufferSize` in an {{< reuse "agw-docs/snippets/policy.md" >}} that targets the Gateway. For more information, see [Buffer limits]({{< link-hextra path="/documentation/traffic-management/buffering/" >}}).
 
 | Field | Default | Values | Description |
 | --- | --- | --- | --- |

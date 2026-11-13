@@ -2,117 +2,9 @@
 title: Virtual MCP
 weight: 20
 description: Federate multiple MCP servers into a unified virtual MCP backend
-test:
-  mcp-virtual:
-  - file: ${versionRoot}/integrations/mcp/servers/virtual.md
-    path: mcp-virtual
 ---
 
 Federate tools of multiple MCP servers on the agentgateway by using MCP {{< gloss "Multiplex" >}}multiplexing{{< /gloss >}}.
-
-{{< doc-test paths="mcp-virtual" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * "Configure the agentgateway" step 1: the documented download URL resolves and
-#     returns a config that agentgateway accepts (--validate-only).
-#   * "Verify access to tools" steps 5-7, through the MCP API rather than the UI
-#     playground: the downloaded multiplex config runs, tools/list returns tools
-#     federated from both targets with target-name prefixes
-#     (`time_get_current_time`, `everything_echo`), calling `everything_echo`
-#     echoes the page's example message, and calling `time_get_current_time` with
-#     `America/New_York` returns a time result.
-#   * "Tool name prefixing": the `prefixMode: never` example config is accepted, and
-#     all three rows of the prefixMode table are asserted at runtime against a live
-#     MCP session:
-#       - conditional (default), two targets -> names are prefixed
-#       - always, one target                 -> names are prefixed even with one target
-#       - never                              -> names are plain (echo)
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The published multiplex config's `time` target needs `uvx mcp-server-time` to
-#     resolve an MCP Python SDK older than 2.x, because that release renamed
-#     McpError and the server fails to import against it. agentgateway#2873 adds the
-#     `--with mcp<2` constraint to the example; until that lands and redeploys, the
-#     test applies the same constraint to its local copy. Once the published config
-#     carries it, the test runs the downloaded file verbatim.
-#   * The agentgateway UI steps (Tool Playground, Apply CORS, Initialize, the
-#     screenshots) - UI-only, no command-line equivalent. The test drives the same
-#     MCP endpoint the playground drives.
-#   * The two collapsed "details" example configs ("Example multiplexing configuration"
-#     and "Example load balancing configuration") - display-only structural excerpts;
-#     neither is a complete config (no gateways/routes, and the backends entry omits
-#     its required `name`), so neither can be validated as written.
-#   * The step 3 optional CORS config - display-only; it is a complete config, but the
-#     test exercises the downloaded config.yaml, which carries no CORS policy.
-#   * That load balancing distributes across backends by weight - requires
-#     config/traffic the page omits; the load balancing example is contrast material,
-#     not a walkthrough.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-
-# The stdio targets launch their MCP servers through npx and uvx. Fetch both up
-# front: otherwise the first start pays a cold registry download inside every
-# readiness retry loop below, which is slow enough to time the test out.
-npm install -g @modelcontextprotocol/server-everything >/dev/null 2>&1 || true
-
-# "Before you begin" step 2 installs uv. The agentgateway install snippet already put
-# $HOME/.local/bin on PATH, which is where the uv installer places its binaries.
-if ! command -v uvx >/dev/null 2>&1; then
-  curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1 || true
-fi
-uvx --with 'mcp<2' mcp-server-time --help >/dev/null 2>&1 || true
-
-# Open an MCP session and list the tool names it exposes. MCP responses are
-# server-sent events, so `data:` lines are unwrapped before parsing.
-mcp_tool_names() {
-  local sid
-  sid=$(curl -sS -D - -o /dev/null --max-time 10 -X POST http://localhost:3000/mcp \
-    -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' \
-    -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"doctest","version":"1.0"}},"id":1}' \
-    | grep -i '^mcp-session-id:' | tr -d '\r' | awk '{print $2}')
-  [ -n "$sid" ] || return 1
-  curl -sS --max-time 10 -o /dev/null -X POST http://localhost:3000/mcp \
-    -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' \
-    -H "Mcp-Session-Id: $sid" -d '{"jsonrpc":"2.0","method":"notifications/initialized"}'
-  echo "$sid" > .mcp-session
-  curl -sS --max-time 15 -X POST http://localhost:3000/mcp \
-    -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' \
-    -H "Mcp-Session-Id: $sid" -d '{"jsonrpc":"2.0","method":"tools/list","id":2}' \
-    | sed -n 's/^data: //p' | jq -r '[.result.tools[].name] | join(" ")'
-}
-
-# Start a config in the background. This must NOT be called inside a command
-# substitution: AGW_PID would be set in the subshell and the parent would never stop
-# the gateway, leaving port 3000 held for the next config. The gateway's output goes
-# to a file for the same reason -- inside `$( )` it would be captured into the value.
-start_gateway() {
-  agentgateway -f "$1" > "agw-$1.log" 2>&1 &
-  AGW_PID=$!
-}
-
-# Wait for the stdio targets to come up and echo the multiplexed tool names. Pure
-# curl, no background jobs, so it is safe to call inside a command substitution.
-# ~15 attempts x (10s max curl + 2s sleep) bounds this at about 3 minutes.
-wait_for_tools() {
-  local names=""
-  for i in $(seq 1 15); do
-    names=$(mcp_tool_names 2>/dev/null || true)
-    [ -n "$names" ] && break
-    sleep 2
-  done
-  echo "$names"
-}
-
-stop_gateway() {
-  [ -n "${AGW_PID:-}" ] || return 0
-  kill "$AGW_PID" 2>/dev/null || true
-  wait "$AGW_PID" 2>/dev/null || true
-  AGW_PID=""
-}
-
-trap 'stop_gateway' EXIT
-{{< /doc-test >}}
 
 ## About multiplexing {#about}
 
@@ -167,20 +59,52 @@ routes:
 
 ## Configure the agentgateway
 
+You can add the MCP servers in the UI or in a configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+The UI adds both targets to the top-level `mcp` section, as in the [example multiplexing configuration](#about). The downloaded configuration in the **Config file** tab puts the same targets in a route backend instead. Both setups multiplex the targets in the same way.
+
+1. Create a configuration with an empty `mcp` section, and start agentgateway. You add the MCP servers in the UI.
+   ```sh
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+   mcp:
+     port: 3000
+     targets: []
+   EOF
+   agentgateway -f config.yaml
+   ```
+2. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and add the `time` server.
+   1. Click **Add server**.
+   2. Enter `time` for the **Server name**, and select the **Command Line** transport. Target names cannot include underscores (`_`).
+   3. Enter `uvx` for the **Command** and `--with mcp<2 mcp-server-time` for the **Arguments**.
+
+      {{< reuse-image src="img/ui-mcp-servers-add-time.png" srcDark="img/ui-mcp-servers-add-time-dark.png" alt="Add MCP server drawer for the time target with the uvx command and the mcp-server-time arguments" >}}
+
+   4. Click **Save server**.
+3. Add the `everything` server.
+   1. Click **Add server**.
+   2. Enter `everything` for the **Server name**, and select the **Command Line** transport.
+   3. Enter `npx` for the **Command** and `@modelcontextprotocol/server-everything` for the **Arguments**.
+   4. Click **Save server**.
+
+The **MCP Servers** page lists both servers. The UI writes each target with an empty `env` map and `clear_env: false`.
+
+To use the UI playground, you also need a CORS policy. In the UI, you add it with **Apply CORS** when you verify the setup in the next section.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 1. Download a multiplex configuration for your agentgateway.
 
-   ```yaml {paths="mcp-virtual"}
+   ```yaml
    curl -L https://agentgateway.dev/examples/mcp-multiplex/config.yaml -o config.yaml
    ```
 
-   {{< doc-test paths="mcp-virtual" >}}
-   # Step 1: the documented multiplex config downloads and is accepted
-   agentgateway -f config.yaml --validate-only
-   {{< /doc-test >}}
-
 2. Review the configuration file. 
 
-   ```
+   ```sh
    cat config.yaml
    ```
 
@@ -192,7 +116,7 @@ routes:
 3. Optional: To use the agentgateway UI playground later, add a `cors` policy to the route. Replace the contents of your `config.yaml` file with the following complete example, which keeps both targets and adds the policy. The config automatically reloads when you save the file.
 
       ```yaml
-      # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+      # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
       gateways:
         default:
           port: 3000
@@ -220,6 +144,8 @@ routes:
    ```sh
    agentgateway -f config.yaml
    ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Verify access to tools
 
@@ -264,8 +190,23 @@ When you multiplex multiple targets, agentgateway namespaces tool and prompt nam
 
 Use `never` when clients need to call tools by their plain names, such as for [MCP Apps]({{< link-hextra path="/documentation/mcp/apps" >}}) that issue tool calls from a rendered UI. Because unprefixed names must be unique, agentgateway fails to start if two targets expose the same tool name in this mode.
 
+You can set the prefix mode in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**. Expand **MCP behavior**.
+2. For **Prefix mode**, select **Never**.
+3. Check **State mode**. If `statefulMode` is not set in your configuration, the drawer still shows **Stateless** and saves it, so select **Stateful** to keep the default session behavior.
+
+   {{< reuse-image src="img/ui-mcp-settings-prefix-never.png" srcDark="img/ui-mcp-settings-prefix-never-dark.png" alt="MCP servers settings drawer with the prefix mode set to Never and the state mode set to Stateful" >}}
+
+4. Click **Save settings**.
+
+The UI sets `prefixMode` to `never`, as in the **Config file** tab. It also writes the selected state mode, sets `failureMode` to `failClosed`, and writes an empty `gateways` list. The **None** option removes `prefixMode`, so the default `conditional` behavior applies, and names are still prefixed when the backend has more than one target.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   prefixMode: never
@@ -279,76 +220,81 @@ mcp:
       cmd: npx
       args: ["@modelcontextprotocol/server-everything"]
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 > [!NOTE]
 > The `time` target pins the MCP Python SDK with `--with mcp<2` because `mcp-server-time` does not yet support version 2.x of the SDK. Without the constraint, the target fails to start. Drop the constraint after `mcp-server-time` adds support.
 
-## Next steps
+## Target conditions {#target-conditions}
 
-- Apply different policies to different MCP targets with [MCP target policies]({{< link-hextra path="/documentation/mcp/mcp-target-policies/" >}}).
+Set `condition` on an MCP target to include it only when a CEL expression returns `true`. Omit `condition` to always include the target. A condition requires at least two configured targets.
 
-{{< doc-test paths="mcp-virtual" >}}
-# Run the downloaded multiplex config and assert the federated tool list and both
-# tool calls from "Verify access to tools" steps 5-7.
-#
-# The published example's `time` target needs an MCP Python SDK older than 2.x
-# (agentgateway#2873). Use the downloaded file as-is once it carries that
-# constraint; until then, apply the same constraint to a local copy so the target
-# can start.
-if grep -q 'mcp<2' config.yaml; then
-  cp config.yaml config-multiplex.yaml
-else
-  sed 's/args: \["mcp-server-time"\]/args: ["--with", "mcp<2", "mcp-server-time"]/' \
-    config.yaml > config-multiplex.yaml
-fi
-agentgateway -f config-multiplex.yaml --validate-only
+The expression can read request attributes, such as headers, and `mcp.target.name`, the target under evaluation. With authentication configured, it can also read the authenticated identity.
 
-start_gateway config-multiplex.yaml
-NAMES=$(wait_for_tools)
-case "$NAMES" in
-  *time_get_current_time*) ;;
-  *) echo "FAIL: tools/list did not include time_get_current_time from the time target"
-     echo "$NAMES"; exit 1 ;;
-esac
-case "$NAMES" in
-  *everything_echo*) ;;
-  *) echo "FAIL: tools/list did not include everything_echo from the everything target"
-     echo "$NAMES"; exit 1 ;;
-esac
-echo "✓ Step 5: tools/list federates both targets with target-name prefixes"
+Agentgateway evaluates conditions before contacting targets. The `mcpAuthorization` policy filters list responses after agentgateway contacts the targets. See [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}) to compare the filtering options.
 
-SESSION=$(cat .mcp-session)
-mcp_tool_call() {
-  curl -sS --max-time 15 -X POST http://localhost:3000/mcp \
-    -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' \
-    -H "Mcp-Session-Id: $SESSION" -d "$1" | sed -n 's/^data: //p'
-}
+If every condition returns `false`, clients see an empty virtual MCP server.
 
-RESULT=$(mcp_tool_call '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"everything_echo","arguments":{"message":"hello world"}},"id":3}')
-case "$(jq -r '.result.content[0].text // ""' <<<"$RESULT")" in
-  *"hello world"*) echo "✓ Step 6: everything_echo routes to the everything target and echoes the message" ;;
-  *) echo "FAIL: everything_echo did not return the message"; echo "$RESULT"; exit 1 ;;
-esac
+The following example always includes the `everything` target and includes the `time` target only when the request has the header `x-include-time: true`.
 
-RESULT=$(mcp_tool_call '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"time_get_current_time","arguments":{"timezone":"America/New_York"}},"id":4}')
-case "$(jq -r '.result.content[0].text // ""' <<<"$RESULT")" in
-  *America/New_York*) echo "✓ Step 7: time_get_current_time routes to the time target and returns a time" ;;
-  *) echo "FAIL: time_get_current_time did not return a result for America/New_York"; echo "$RESULT"; exit 1 ;;
-esac
-stop_gateway
-echo "✓ prefixMode conditional (default): two targets produce prefixed names"
-{{< /doc-test >}}
-
-{{< doc-test paths="mcp-virtual" >}}
-# "Tool name prefixing": validate the documented prefixMode: never config, then assert
-# the always and never rows of the table. Both use a single npx target, because
-# `always` is only distinguishable from the default with one target and `never`
-# requires names that do not collide.
-cat <<'EOF' > config-prefix-never.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
-  prefixMode: never
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+  - name: time
+    condition: '"x-include-time" in request.headers && request.headers["x-include-time"] == "true"'
+    stdio:
+      cmd: uvx
+      args: ["--with", "mcp<2", "mcp-server-time"]
+```
+
+Configure your MCP client to send `x-include-time: true` on its requests, including initialization, to expose tools such as `time_get_current_time` alongside `everything_echo`. Without that header, or with a different value, only the `everything` target participates.
+
+Conditions run on every request. Keep these behaviors in mind:
+
+* **Stateful sessions (default)**: Each request must select the same targets as at initialization. A change, such as dropping the `x-include-time` header, returns `404` with `session not found`.
+* **Session recovery**: After a session `404`, the MCP specification requires the client to start a new session. Its requests determine the new target selection.
+* **Stateless sessions**: In stateless mode, each request uses the targets its conditions select.
+* **Stable names**: Tool and prompt names keep their target-name prefix even when only one target remains.
+* **Excluded targets**: Their tools are absent from lists. Calls to those tools fail because the target is not part of the session.
+* **Evaluation errors**: Agentgateway excludes the target if its condition fails to evaluate, such as when it reads a missing JWT claim.
+
+| Field | Description |
+| ----- | ----------- |
+| `mcp.targets[].condition` | Optional CEL expression that controls whether the target participates in the virtual MCP request. The expression must return a boolean value. |
+| `mcp.target.name` | Name of the MCP target for the current target-scoped operation, including condition evaluation. |
+
+## Server information overrides {#server-information-overrides}
+
+When you multiplex multiple targets, the client receives the gateway MCP `serverInfo` values and instructions. To customize that metadata, set the `server` block on the MCP configuration. The override applies only to multiplexed targets. A backend with one target keeps the target server's normal metadata.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**. Expand **Server info**.
+2. For **Name** and **Version**, enter `company-mcp-gateway` and `2026.09`. Set both fields or leave both empty.
+3. For **Title**, enter `Company MCP Gateway`.
+4. For **Instructions**, enter `Use this gateway to access approved internal MCP tools.`
+5. Expand **MCP behavior**. Check **State mode**. If `statefulMode` is not set in your configuration, the drawer still shows **Stateless** and saves it, so select **Stateful** to keep the default session behavior.
+6. Click **Save settings**.
+
+The UI sets the `server` block, as in the **Config file** tab. The UI also writes the other drawer values: the selected state mode, `failureMode` (`failClosed` if it was not set), and an empty `gateways` list with the port if no gateway is bound. To remove the overrides, clear all four fields and save.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+mcp:
+  port: 3000
+  server:
+    name: company-mcp-gateway
+    version: "2026.09"
+    title: Company MCP Gateway
+    instructions: "Use this gateway to access approved internal MCP tools."
   targets:
   - name: time
     stdio:
@@ -358,37 +304,69 @@ mcp:
     stdio:
       cmd: npx
       args: ["@modelcontextprotocol/server-everything"]
-EOF
-agentgateway -f config-prefix-never.yaml --validate-only
+```
+{{% /tab %}}
+{{< /tabs >}}
 
-cat <<'EOF' > config-always.yaml
-mcp:
-  port: 3000
-  prefixMode: always
-  targets:
-  - name: alpha
-    stdio:
-      cmd: npx
-      args: ["@modelcontextprotocol/server-everything"]
-EOF
-sed 's/prefixMode: always/prefixMode: never/' config-always.yaml > config-never.yaml
-agentgateway -f config-always.yaml --validate-only >/dev/null
-agentgateway -f config-never.yaml --validate-only >/dev/null
+| Field | Description |
+| ----- | ----------- |
+| `mcp.server` | Optional overrides for the MCP `serverInfo` response and gateway instructions in `initialize` and `server/discover` responses. Omit this block to keep the default values. |
+| `mcp.server.name` | Value to report in `serverInfo.name`. Set this field together with `mcp.server.version`. The configuration is invalid when only one of the two fields is set. |
+| `mcp.server.version` | Value to report in `serverInfo.version`. Set this field together with `mcp.server.name`. The configuration is invalid when only one of the two fields is set. |
+| `mcp.server.title` | Optional value to report in `serverInfo.title`. You can set this field without `mcp.server.name` or `mcp.server.version`. |
+| `mcp.server.instructions` | Gateway instructions preamble to report to clients. When upstream targets also return instructions, the merged target instructions start with this value. |
 
-start_gateway config-always.yaml
-NAMES=$(wait_for_tools)
-stop_gateway
-case "$NAMES" in
-  *alpha_echo*) echo "✓ prefixMode always: a single target still produces prefixed names" ;;
-  *) echo "FAIL: prefixMode always did not prefix names for a single target"; echo "$NAMES"; exit 1 ;;
-esac
+## Capabilities and change notifications {#capabilities}
 
-start_gateway config-never.yaml
-NAMES=$(wait_for_tools)
-stop_gateway
-case "$NAMES" in
-  *alpha_echo*) echo "FAIL: prefixMode never still prefixed names"; echo "$NAMES"; exit 1 ;;
-  *echo*) echo "✓ prefixMode never: names are unprefixed (echo)" ;;
-  *) echo "FAIL: prefixMode never did not expose the echo tool"; echo "$NAMES"; exit 1 ;;
-esac
-{{< /doc-test >}}
+For sessions with multiple targets, agentgateway merges their capabilities into one `initialize` result. Tools, prompts, and resources are always enabled.
+
+Each of the following capabilities is advertised only if at least one session target offers it:
+
+- `tools.listChanged`
+- `prompts.listChanged`
+- `resources.listChanged`
+- `resources.subscribe`
+
+When you set `statefulMode: stateless`, `initialize` omits these capabilities, even for a single target. Stateless sessions have no notification stream.
+
+Clients using `server/discover` get the same merged capabilities, regardless of `statefulMode`. They receive notifications through `subscriptions/listen`.
+
+Agentgateway skips targets that do not support `subscriptions/listen` without failing the stream.
+
+If no target offers a capability, the result omits it. For example, a backend whose targets offer none of these capabilities returns `"tools": {}`, `"prompts": {}`, and `"resources": {}`.
+
+In this guide, the `everything` target advertises all of these capabilities, and the `time` target advertises none.
+
+Run the configuration from [Configure the agentgateway](#configure-the-agentgateway). Initialize a session and review the returned capabilities.
+
+```sh
+curl -s http://localhost:3000/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"curl","version":"1.0.0"}}}' \
+  | sed -n 's/^data: //p' | jq '.result.capabilities'
+```
+
+The capabilities come from the `everything` target.
+
+Example output:
+
+```json
+{
+  "prompts": {
+    "listChanged": true
+  },
+  "resources": {
+    "subscribe": true,
+    "listChanged": true
+  },
+  "tools": {
+    "listChanged": true
+  }
+}
+```
+
+
+## Next steps
+
+- Apply different policies to different MCP targets with [MCP target policies]({{< link-hextra path="/documentation/mcp/mcp-target-policies/" >}}).

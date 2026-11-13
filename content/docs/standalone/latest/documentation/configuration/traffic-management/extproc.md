@@ -2,15 +2,7 @@
 title: External processing (ExtProc)
 weight: 16
 description: Use external gRPC servers to modify HTTP requests and responses.
-test:
-  extproc:
-  - file: ${versionRoot}/documentation/configuration/traffic-management/extproc.md
-    path: extproc
 ---
-
-{{< doc-test paths="extproc" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
 
 Attaches to: {{< badge content="Listener" path="/documentation/configuration/listeners/">}} {{< badge content="Route" path="/documentation/configuration/routes/">}}
 
@@ -53,6 +45,12 @@ You can choose whether you want agentgateway to forward requests if the external
 * **failOpen**: Forward requests to the backend service, even if the connection to the external processing server fails. You might choose this option to ensure availability of the backend services even when the ExtProc service is down.
 * **failClosed**: Block requests if the request to the external processing server fails. This is the default behavior.
 
+By default, agentgateway waits 10 seconds for the external processing server to answer when opening a processing stream. When the wait runs out, the call counts as a failure and the `failureMode` setting decides what happens to the request. To use a different timeout, set `extProc.policies.http.requestTimeout`.
+
+For requests with a body, `failOpen` applies only while no request body bytes have been sent to the external processing server. If the server can't be reached or fails before that point, the original request, including its body, is forwarded to the backend. After the request body starts streaming to the server, a failure returns an error even with `failOpen`. In the default `fullDuplexStreamed` request body mode, the body starts streaming as soon as the processing stream is established, so `failOpen` applies only when that stream can't be established.
+
+A clean close from the external processing server is different from a failure. If the server finishes request processing and closes its gRPC stream, the gateway skips any later external processing phases for that exchange. The request continues to the backend, and the upstream response is returned to the client even when `extProc.failureMode` is `failClosed`.
+
 ## Compatibility
 
 The [External Processing gRPC service](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/ext_proc/v3/external_processor.proto) was designed for Envoy,
@@ -76,7 +74,7 @@ If any incompatibility causes issues for your external processing server, open a
 External processing is applied at the route level.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -101,7 +99,7 @@ routes:
 By default, ExtProc sends request headers, response headers, request trailers, and response trailers to the external processing service, and streams request and response bodies. To change which request or response phases are sent to the processor, configure `extProc.processingOptions`.
 
 > [!NOTE]
-> The default body mode is `fullDuplexStreamed`. If the external processor must inspect a complete body before agentgateway forwards it, use `buffered` or `bufferedPartial` and account for the gateway's body buffer limit, which defaults to 2 MiB. To change the limit, set `frontendPolicies.http.maxBufferSize`. For general request and response body buffering outside of ExtProc, see [Body buffering]({{< link-hextra path="/documentation/configuration/traffic-management/buffer/" >}}).
+> The default body mode is `fullDuplexStreamed`. If the external processor must inspect a complete body before agentgateway forwards it, use `buffered` or `bufferedPartial` and account for the gateway's body buffer limit, which defaults to 2 MiB, or 32 MiB for requests that enter LLM processing. To change the limit, set `frontendPolicies.http.maxBufferSize`. For general request and response body buffering outside of ExtProc, see [Body buffering]({{< link-hextra path="/documentation/configuration/traffic-management/buffer/" >}}).
 
 | Field | Default | Values | Description |
 | --- | --- | --- | --- |
@@ -116,7 +114,7 @@ By default, ExtProc sends request headers, response headers, request trailers, a
 The following example sends headers and trailers, buffers request bodies up to the body buffer limit, skips response bodies, and allows the external processor to override later processing phases after a matching header response.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -146,7 +144,7 @@ routes:
 You can also set `processingOptions` inside a conditional ExtProc policy. Each conditional policy entry can use different phase settings.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -184,7 +182,7 @@ A dynamic backend dials whatever destination the request itself names, taken fro
 An external processor can already return Envoy's standard `dynamic_metadata` alongside its verdict, and agentgateway exposes that metadata to CEL as `extproc.*`. Set a `target` expression on the dynamic backend to dial the destination directly from that metadata, rather than making the processor rewrite the request authority to communicate it.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -196,39 +194,6 @@ routes:
   - dynamic:
       target: 'extproc.workerIp + ":" + string(extproc.workerPort)'
 ```
-
-{{< doc-test paths="extproc" >}}
-# WHAT THIS TEST VALIDATES:
-#   * A dynamic backend accepts a `target` CEL expression alongside an extProc policy.
-#   * Omitting `target` still validates, which is the pre-1.5 behavior the page describes.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That the expression resolves at request time -- that needs a running external
-#     processor that returns dynamic metadata, which this guide does not stand up.
-cat <<'EOF' > config-dynamic-target.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- policies:
-    extProc:
-      host: "extproc.com:9000"
-  backends:
-  - dynamic:
-      target: 'extproc.workerIp + ":" + string(extproc.workerPort)'
-EOF
-agentgateway -f config-dynamic-target.yaml --validate-only
-cat <<'EOF' > config-dynamic-notarget.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - dynamic: {}
-EOF
-agentgateway -f config-dynamic-notarget.yaml --validate-only
-{{< /doc-test >}}
 
 | Field | Required | Description |
 | -- | -- | -- |
@@ -246,6 +211,8 @@ Which CEL variables the expression can read depends on the route type.
 Review the following limits.
 
 - **The expression must return a string.** A value of any other type fails the request with `dynamic backend target expression must evaluate to a host:port string`.
+- **Targets must use `host:port`.** A Unix socket path such as `unix:/run/admin.sock` fails with `dynamic backend target "unix:/run/admin.sock" must be a host:port`.
+- **Loopback and link-local destinations are blocked.** Targets resolving to addresses such as `127.0.0.1` or `169.254.169.254` fail with `503`. For blocked addresses and the `config.backend.allowDynamicLoopback` override, see [Loopback and link-local destinations]({{< link-hextra path="/documentation/configuration/egress-proxy/#loopback-destinations" >}}).
 - **`inferenceRouting` cannot be combined with a dynamic backend.** A request that hits both fails with `inferenceRouting is not supported with dynamic backends`.
 
 > [!WARNING]

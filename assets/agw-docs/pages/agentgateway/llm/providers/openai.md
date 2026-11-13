@@ -24,7 +24,7 @@ The following example uses OpenAI. If you use another AI provider, create an API
    ```
 
 3. Create a Kubernetes secret to store your AI API key.
-   ```yaml {paths="openai-setup"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Secret
@@ -41,7 +41,7 @@ The following example uses OpenAI. If you use another AI provider, create an API
 
 Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure an LLM provider that references the AI API key secret.
 
-```yaml {paths="openai-setup"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -105,7 +105,7 @@ EOF
 ```
 {{% /tab %}}
 {{% tab name="Custom route" %}}
-```yaml {paths="openai-setup"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -136,72 +136,6 @@ EOF
 ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="openai-setup" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for openai backend to be ready
-  wait:
-    target:
-      kind: AgentgatewayBackend
-      metadata:
-        namespace: agentgateway-system
-        name: openai
-    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="openai-setup" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * "Set up access to OpenAI": the Secret, the AgentgatewayBackend with the
-#     `openai` provider and its `policies.auth.secretRef`, and the HTTPRoute are
-#     all accepted, and the backend reports Accepted=True.
-#   * "Step 4": a request along the documented route reaches the provider and
-#     comes back as an OpenAI-shaped chat completion with token usage.
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * A live completion from OpenAI itself. This setup is the shared prerequisite
-#     for most of the LLM guides, so the backend created above is patched to point
-#     at the httpbun mock LLM. That keeps every guide that chains this path free of
-#     a provider API key and bills nothing, while still exercising the whole
-#     gateway side of the request: the route, the auth policy, the provider wiring,
-#     and the response parsing that produces the token usage.
-#     To reproduce the guide against the real provider, skip this block and export
-#     a real OPENAI_API_KEY.
-{{< reuse "agw-docs/snippets/deploy-mock-llm.md" >}}
-kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type=merge --patch-file /dev/stdin <<EOF
-spec:
-  ai:
-    provider:
-      host: httpbun.default.svc.cluster.local
-      port: 3090
-      path: /llm/chat/completions
-EOF
-YAMLTest -f - <<'EOF'
-- name: wait for the openai backend to settle after the mock LLM patch
-  wait:
-    target:
-      kind: AgentgatewayBackend
-      metadata:
-        namespace: agentgateway-system
-        name: openai
-    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
    
 ### Step 4: Send a request to the LLM
 
@@ -279,41 +213,6 @@ curl "localhost:8080/openai" -H content-type:application/json  -d '{
 ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="openai-setup" >}}
-YAMLTest -f - <<'EOF'
-- name: send request to OpenAI and verify response with token usage
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/openai"
-    method: POST
-    headers:
-      content-type: application/json
-    body: |
-      {
-        "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
-        "messages": [
-          {
-            "role": "user",
-            "content": "Say hello in one word"
-          }
-        ]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.usage.total_tokens"
-        comparator: greaterThan
-        value: 0
-      - path: "$.usage.prompt_tokens"
-        comparator: greaterThan
-        value: 0
-      - path: "$.usage.completion_tokens"
-        comparator: greaterThan
-        value: 0
-EOF
-{{< /doc-test >}}
    
 Example output: 
 ```json
@@ -359,6 +258,12 @@ Example output:
    {{< reuse-image-dark srcDark="img/agentgateway-ui-kube-route-llm-dark.png" width="600px">}}
 {{% /conditional-text %}}
 {{% /version %}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+## Send OpenAI Decisions API requests {#decisions}
+
+To send requests to the OpenAI Decisions API, add the `Decisions` route type for the `/v1/decisions` path to the `routes` of your OpenAI {{< reuse "agw-docs/snippets/backend.md" >}}. For the steps, see [Decisions]({{< link-hextra path="/documentation/llm/api-types/decisions/" >}}).
+{{< /version >}}
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
 

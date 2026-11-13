@@ -16,7 +16,7 @@ endpoint.
 
 For the complete example, you need:
 
-- [Docker](https://docs.docker.com/get-docker/) with
+- [Docker](https://docs.docker.com/get-started/get-docker/) with
   [Docker Compose](https://docs.docker.com/compose/install/).
 - [uv](https://docs.astral.sh/uv/) and `curl`.
 - Free loopback ports `13000`, `18080`, and `18520`.
@@ -138,7 +138,7 @@ site if needed.
 Add this tracing policy to your `config.yaml`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: otlp.datadoghq.com:443

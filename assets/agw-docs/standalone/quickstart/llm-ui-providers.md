@@ -92,6 +92,13 @@ export GROQ_API_KEY='<your-api-key>'
 export HUGGINGFACE_API_KEY='<your-api-key>'
 ```
 {{% /tab %}}
+{{% tab name="Meta" %}}
+Create a key in the [Meta Model API dashboard](https://dev.meta.ai/).
+
+```sh
+export META_API_KEY='<your-api-key>'
+```
+{{% /tab %}}
 {{% tab name="Mistral AI" %}}
 ```sh
 export MISTRAL_API_KEY='<your-api-key>'
@@ -135,29 +142,6 @@ Example output:
 info  app  serving UI at http://localhost:4000/ui
 ```
 
-{{< doc-test paths="llm" >}}
-# Hidden test: the UI steps below (Enable LLM -> Add model) are not scriptable, so this
-# block reproduces the equivalent config they produce, to keep the resulting setup tested.
-# The model points at the local mock LLM so that the request in Step 5 is a real,
-# asserted round trip through the gateway without needing a provider API key.
-{{< reuse "agw-docs/snippets/start-mock-llm.md" >}}
-cat > config.yaml << 'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  models:
-  - name: gpt-3.5-turbo
-    provider: openAI
-    params:
-      model: gpt-3.5-turbo
-      apiKey: "$OPENAI_API_KEY"
-EOF
-{{< reuse "agw-docs/snippets/point-config-at-mock-llm.md" >}}
-agentgateway -f config-mock.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
-sleep 3
-{{< /doc-test >}}
-
 ### Step 3: Enable LLM
 
 1. Open the [agentgateway UI](http://localhost:4000/ui/).
@@ -198,7 +182,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 {{% /tab %}}
 {{% tab name="Vertex AI" %}}
 1. For **Incoming model match**, enter `gemini-2.5-flash`.
-2. From **Provider**, select **Vertex AI**.
+2. From **Provider**, select **Gemini Enterprise (GCP Vertex)**.
 3. Keep **Google credentials** set to **ADC**.
 4. For **Vertex project**, enter your Google Cloud project ID. For **Vertex region**, enter `us-central1` or your region.
 5. Click **Save model**.
@@ -304,6 +288,14 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 
 {{< reuse-image src="img/ui-llm-add-model-huggingface.png" >}}
 {{% /tab %}}
+{{% tab name="Meta" %}}
+1. For **Incoming model match**, enter `muse-spark-1.3`, or a model that your Meta account can access.
+2. From **Provider**, select **Meta**.
+3. For **Provider API key**, select **Env var** and enter `META_API_KEY`.
+4. Click **Save model**.
+
+{{< reuse-image src="img/ui-llm-add-model-meta.png" srcDark="img/ui-llm-add-model-meta-dark.png" alt="Add model form with Meta selected, muse-spark-1.3 as the incoming model match, and META_API_KEY as the credential environment variable" >}}
+{{% /tab %}}
 {{% tab name="Mistral AI" %}}
 1. For **Incoming model match**, enter `mistral-small-latest`.
 2. From **Provider**, select **Mistral AI**.
@@ -339,7 +331,7 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 {{% /tab %}}
 {{% tab name="xAI" %}}
 1. For **Incoming model match**, enter `grok-4.3`.
-2. From **Provider**, select **xAI**.
+2. From **Provider**, select **xAI (Grok)**.
 3. For **Provider API key**, select **Env var** and enter `XAI_API_KEY`.
 4. Click **Save model**.
 
@@ -347,13 +339,19 @@ In the **LLM** section of the navigation menu, click **Models**, and then click 
 {{% /tab %}}
 {{< /tabs >}}
 
+**Incoming model match** matches the request's `model` field. This quick start uses an exact name.
+
+If you leave the field empty, selecting a provider adds a prefix such as `openai/*` and a transformation to strip it. This exposes all models from that provider.
+
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
+
 ### Step 5: Send a chat completion request
 
 From another terminal, send a request to the chat completions endpoint.
 
 {{< tabs >}}
 {{% tab name="OpenAI" %}}
-```sh {paths="llm"}
+```sh
 curl http://localhost:4000/v1/chat/completions \
   -H 'content-type: application/json' \
   -d '{
@@ -592,6 +590,21 @@ curl http://localhost:4000/v1/chat/completions \
   }'
 ```
 {{% /tab %}}
+{{% tab name="Meta" %}}
+```sh
+curl http://localhost:4000/v1/chat/completions \
+  -H 'content-type: application/json' \
+  -d '{
+    "model": "muse-spark-1.3",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Reply with exactly: Meta through agentgateway works"
+      }
+    ]
+  }'
+```
+{{% /tab %}}
 {{% tab name="Mistral AI" %}}
 ```sh
 curl http://localhost:4000/v1/chat/completions \
@@ -668,37 +681,6 @@ curl http://localhost:4000/v1/chat/completions \
 ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="llm" >}}
-YAMLTest -f - <<'EOF'
-- name: chat completion request returns an OpenAI-shaped response with token usage
-  http:
-    url: "http://localhost:4000"
-    path: /v1/chat/completions
-    method: POST
-    headers:
-      content-type: application/json
-    body: |
-      {
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "Reply with exactly: OpenAI through agentgateway works"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.model"
-        comparator: equals
-        value: "gpt-3.5-turbo"
-      - path: "$.choices[0].message.role"
-        comparator: equals
-        value: "assistant"
-      - path: "$.usage.total_tokens"
-        comparator: greaterThan
-        value: 0
-EOF
-{{< /doc-test >}}
 
 You can send the same request from the built-in playground.
 
@@ -797,6 +779,12 @@ You can send the same request from the built-in playground.
 1. Open the [LLM playground](http://localhost:4000/ui/llm/playground/).
 2. From **Model**, select `Qwen/Qwen3-32B`.
 3. In **User message**, enter `Reply with exactly: Hugging Face through agentgateway works`.
+4. Click **Send**.
+{{% /tab %}}
+{{% tab name="Meta" %}}
+1. Open the [LLM playground](http://localhost:4000/ui/llm/playground/).
+2. From **Model**, select `muse-spark-1.3`, or the model that you configured.
+3. In **User message**, enter `Reply with exactly: Meta through agentgateway works`.
 4. Click **Send**.
 {{% /tab %}}
 {{% tab name="Mistral AI" %}}

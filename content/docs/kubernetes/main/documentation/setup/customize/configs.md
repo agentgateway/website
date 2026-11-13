@@ -30,3 +30,9 @@ EOF
 
 Agentgateway validates the headers when the proxy starts. A variable whose name or value cannot form a valid HTTP header stops startup with an error, rather than being dropped silently.
 
+## Istio CA address defaults {#istio-ca-address}
+
+When Istio integration is enabled, you can omit `spec.istio.caAddress` to let the control plane choose the Istio certificate authority (CA) endpoint. The control plane first uses the controller-wide `istio.caAddress` setting. If that setting is empty, the default revision uses `https://istiod.<istio namespace>.svc:15012`. A non-default `istio.revision` value changes the service name to `istiod-<revision>`.
+
+For example, if `istio.revision` is `1-30` and the Istio namespace is omitted, the gateway uses `https://istiod-1-30.istio-system.svc:15012`. Set `spec.istio.caAddress` only when the gateway must use a different CA service name, namespace, scheme, or port.
+

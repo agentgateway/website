@@ -3,7 +3,7 @@ title: LibreChat
 description: Front LibreChat with agentgateway to centralize LLM credentials, audit, and rate limits.
 ---
 
-[LibreChat](https://github.com/danny-avila/LibreChat) is an open-source, multi-user chat interface that supports many LLM providers. Configuring LibreChat with a single OpenAI-compatible custom endpoint pointed at agentgateway lets you keep provider keys server-side and apply policies once for all chats.
+[LibreChat](https://github.com/LibreChat-AI/LibreChat) is an open-source, multi-user chat interface that supports many LLM providers. Configuring LibreChat with a single OpenAI-compatible custom endpoint pointed at agentgateway lets you keep provider keys server-side and apply policies once for all chats.
 
 ## What you get
 
@@ -32,11 +32,19 @@ description: Front LibreChat with agentgateway to centralize LLM credentials, au
 
 ### Step 1: Configure agentgateway
 
+You can configure agentgateway in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+{{< reuse "agw-docs/standalone/llm/clients/ui-openai-port-3000.md" >}}
+
+Agentgateway is already running with the new configuration, so skip Step 2.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 Create a `config.yaml`:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   port: 3000
   models:
@@ -45,6 +53,8 @@ llm:
     params:
       apiKey: "$OPENAI_API_KEY"
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Step 2: Start agentgateway
 
@@ -76,7 +86,7 @@ endpoints:
 
 `apiKey` must be set, but it is not used to call the upstream provider — agentgateway holds the real key. Set it to any non-empty value or to a key you require LibreChat clients to present (and validate at the gateway).
 
-Set `fetch: false` and list your models explicitly in `models.default`. When agentgateway is configured with a wildcard (`*`) model, the `/v1/models` endpoint returns only the wildcard entry, which LibreChat cannot use to populate its model list.
+Set `fetch: false` and list your chat models in `models.default`. For a wildcard (`*`) model, `/v1/models` returns every catalog model for that provider. The list can include embedding and image models that do not support chat.
 
 > [!NOTE]
 > If LibreChat runs in Docker and agentgateway runs on your host machine, replace `localhost` with `host.docker.internal`:

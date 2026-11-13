@@ -1,0 +1,12 @@
+{{- $src := .Get "src" -}}
+{{- $alt := .Get "alt" -}}
+{{- with resources.Get $src -}}
+<figure>
+  <a href="{{ .RelPermalink }}" target="_blank" rel="noopener" aria-label="Open full-size chart: {{ $alt }}">
+    <img src="{{ .RelPermalink }}" width="{{ .Width }}" height="{{ .Height }}" alt="{{ $alt }}" style="max-width: 100%; height: auto;" />
+  </a>
+  <figcaption><a href="{{ .RelPermalink }}" target="_blank" rel="noopener">View full-size chart</a></figcaption>
+</figure>
+{{- else -}}
+  {{- errorf "benchmark-chart: image %q not found (%s)" $src .Position -}}
+{{- end -}}

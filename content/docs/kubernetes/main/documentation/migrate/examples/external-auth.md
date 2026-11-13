@@ -14,11 +14,12 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ext-auth-demo
+  namespace: default
   annotations:
     nginx.ingress.kubernetes.io/auth-url: "http://auth-service.auth.svc.cluster.local/verify"
     nginx.ingress.kubernetes.io/auth-response-headers: "X-User-ID, X-User-Email"
 spec:
-  ingressClassName: agentgateway
+  ingressClassName: nginx
   rules:
   - host: app.example.com
     http:

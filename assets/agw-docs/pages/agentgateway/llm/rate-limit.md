@@ -48,7 +48,7 @@ Review the following table for example use cases and configuration guidance.
 
 Also, check out the rate limiting guides for other use cases:
 
-- [Request-based rate limiting on HTTP routes]({{< link-hextra path="/documentation/security/rate-limit-http" >}}).
+- {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Request-based rate limiting on HTTP routes]({{< link-hextra path="/documentation/security/rate-limit/local" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Request-based rate limiting on HTTP routes]({{< link-hextra path="/documentation/security/rate-limit-http" >}}){{< /version >}}.
 - [MCP tool call limiting]({{< link-hextra path="/documentation/mcp/rate-limit" >}}).
 
 ## Before you begin
@@ -61,7 +61,7 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
 
 1. Apply a token budget to your LLM HTTPRoute. The following example limits total token consumption to 100 tokens per minute across all requests hitting this route.
 
-   ```yaml {paths="llm-token-rate-limit"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -80,25 +80,6 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
            unit: Minutes
    EOF
    ```
-
-   {{< doc-test paths="llm-token-rate-limit" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for llm-token-budget policy to be accepted
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: agentgateway-system
-           name: llm-token-budget
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 120
-         intervalSeconds: 2
-   EOF
-   {{< /doc-test >}}
 
    {{< reuse "agw-docs/snippets/review-table.md" >}}
 
@@ -216,37 +197,6 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
    rate limit exceeded
    ```
 
-{{< doc-test paths="llm-token-rate-limit" >}}
-# Send requests to consume the 100 token budget
-# httpbun returns ~32 tokens per request, so 4 requests = 128 tokens (exceeds 100 limit)
-for i in $(seq 1 4); do
-  curl -s http://${INGRESS_GW_ADDRESS}/v1/chat/completions \
-    -H "Content-Type: application/json" \
-    -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Test"}]}' > /dev/null
-  sleep 0.1
-done
-
-# Verify the rate limit is now active (4 requests × ~32 tokens = ~128, exceeds 100 limit)
-YAMLTest -f - <<'EOF'
-- name: Verify token rate limit is enforced
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
-    method: POST
-    headers:
-      Content-Type: application/json
-    body: |
-      {
-        "model": "gpt-4",
-        "messages": [{"role": "user", "content": "Test"}]
-      }
-  source:
-    type: local
-  retries: 5
-  expect:
-    statusCode: 429
-EOF
-{{< /doc-test >}}
-
 ## Other configurations
 
 The following examples show additional configuration patterns for LLM rate limiting.
@@ -317,7 +267,7 @@ Create claim-level budget limits with JWT authentication and CEL expressions.
 
 A token budget without a `key` field is shared by every request on the target, so a single caller can spend the budget for everyone. Set `key` to a CEL expression to give each distinct value its own token bucket with the limits of that rule. The CEL expression checks against claims in a JWT. This way, per-user, per-team, and per-model budgets do not require an external rate limit service.
 
-Before you begin, create a [JWT authentication policy]({{< link-hextra path="/documentation/security/jwt/" >}}) that targets the same backend that you want to rate limit, such as an OpenAI HTTPRoute in the following example. To key on a virtual key instead, use `apiKey.user_id`, as described in the [virtual keys guide]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
+Before you begin, create a {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication policy]({{< link-hextra path="/documentation/security/extauth/jwt/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication policy]({{< link-hextra path="/documentation/security/jwt/" >}}){{< /version >}} that targets the same backend that you want to rate limit, such as an OpenAI HTTPRoute in the following example. To key on a virtual key instead, use `apiKey.user_id`, as described in the [virtual keys guide]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
 
 The following policy sets up these budgets:
 
@@ -354,7 +304,12 @@ EOF
 
 Review the following behavior before you rely on claim-level budget limits.
 
+{{% version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
 * **When a key is evaluated**: A `requests` limit is checked before the LLM request body is parsed, so its key cannot read `llm` fields such as `llm.requestModel`. A `tokens` limit is checked after the body is parsed, so its key can read the body tokens. A key that reads a value that is not in its context falls back to the shared bucket.
+{{% /version %}}
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
+* **What a key can read**: Both `requests` and `tokens` keys can read `llm.requestModel` and `llmRequest` (the parsed request body). To count requests per model, set a `requests` limit's key to `llm.requestModel`.
+{{% /version %}}
 * **How usage is settled**: A `tokens` limit charges an estimate when the request is admitted. After the response, the limit settles the real input and output counts against the same per-key bucket, exactly as it does for a single shared bucket.
 * **Requests without a value**: Requests whose key is empty, or whose expression cannot be evaluated, such as an unauthenticated request, all share one bucket. An empty key does not exempt a request from the limit. To apply a budget to only some requests, use [conditional policies]({{< link-hextra path="/documentation/about/policies/conditional-policies" >}}).
 * **How many buckets are kept, and where they live**: {{< reuse "agw-docs/snippets/ratelimit-key-buckets.md" >}} For a budget that is shared across replicas, use [global rate limiting](#global).
@@ -364,12 +319,12 @@ Review the following behavior before you rely on claim-level budget limits.
 
 Local rate limiting runs independently on each proxy replica. For shared token budgets across multiple agentgateway replicas, use global rate limiting with an external rate limit service.
 
-For detailed instructions on setting up global rate limiting with descriptors and an external rate limit service, see the [Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit-global" >}}).
+For detailed instructions on setting up global rate limiting with descriptors and an external rate limit service, see the {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit/global" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit-global" >}}){{< /version >}}.
 
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="llm-token-rate-limit"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} llm-token-budget -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

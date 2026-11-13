@@ -160,7 +160,7 @@ In your GKE cluster, set up workload identity.
 
 ## Apply guardrails
 
-1. Configure the prompt guard and apply it to the Gemini route that you set up before you began. Add the location, project ID and template ID of your guardrail.
+1. Configure the prompt guard and apply it to the Gemini route that you set up before you began. Add the location, project ID, and template ID of your guardrail.
 
    > [!NOTE]
    > To run this guard without blocking traffic, set `googleModelArmor.action: Audit`. The guard records what it detects and forwards the content unchanged. For more information, see [Audit mode](../overview/#audit).
@@ -274,6 +274,30 @@ In your GKE cluster, set up workload identity.
    ```console
    The request was rejected due to inappropriate content
    ```
+
+## Guard scope {#scope}
+
+By default, a request guard sends Model Armor the system prompt, message text, and tool call results. A response guard sends only response message text.
+
+Set `scope` to change which text the guard sends. This example excludes tool call results from the request guard.
+
+```yaml
+promptGuard:
+  request:
+  - scope:
+    - SystemPrompt
+    - Messages
+    googleModelArmor:
+      templateId: <template-ID>
+      projectId: <project-ID>
+      location: <location>
+      policies:
+        auth:
+          gcp:
+            type: AccessToken
+```
+
+If no text is in scope, the guard skips the call to Model Armor. For supported values and restrictions, see [Guard scope]({{< link-hextra path="/documentation/llm/guardrails/overview/#scope" >}}).
 
 ## Backend connection and authentication policies
 

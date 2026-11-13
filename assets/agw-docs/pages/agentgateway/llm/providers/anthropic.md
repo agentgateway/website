@@ -3,6 +3,18 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 > [!NOTE]
 > Anthropic excludes cached tokens from the input count that it reports. The CEL field `llm.inputTokens` adds them back, so telemetry, metrics, and token-based limits count a cache-heavy request higher than the number that Anthropic reports. To read the Anthropic number itself, use `llm.providerInputTokens`. For more information, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
+>
+> {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Client response bodies use the usage convention for the API format that the client called. A `/v1/messages` response uses Anthropic usage fields. In that response, `usage.input_tokens` excludes prompt-cache tokens and cache counts appear separately. A `/v1/chat/completions` response uses OpenAI usage fields, and `usage.prompt_tokens` includes prompt-cache tokens.{{< /version >}}
+>
+> {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}When Anthropic reports `usage.iterations`, the `/v1/messages` response keeps that array. Telemetry, cost calculations, and converted Chat Completions responses use the sum of the iteration entries.{{< /version >}}
+{{< /version >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+For Anthropic Messages and token-count requests, a client `anthropic-version` header is forwarded. If the client sends no version header, the request uses the default `2023-06-01` version.
+{{< /version >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+To add prompt-cache markers automatically, set `backend.ai.promptCaching` in an {{< reuse "agw-docs/snippets/policy.md" >}} resource. The setting also works for Claude models on Vertex AI. If a request already has `cache_control` markers, the policy adds none. The `minTokens` value applies only to system prompt caching. For the fields and their defaults, see [Prompt caching on Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/#prompt-caching" >}}).
 {{< /version >}}
 
 ## Before you begin
@@ -38,7 +50,7 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
    
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: anthropic
@@ -82,7 +94,7 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
      - backendRefs:
        - name: anthropic
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -107,7 +119,7 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
        backendRefs:
        - name: anthropic
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -132,7 +144,7 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
        backendRefs:
        - name: anthropic
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -250,6 +262,12 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
    }
    ```
 
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+## Send inline files through Chat Completions {#send-inline-files-through-chat-completions}
+
+When a client sends a `/v1/chat/completions` request to Anthropic through {{< reuse "agw-docs/snippets/agentgateway.md" >}}, an inline `file` content part becomes an Anthropic Messages `document` block. Set `file.file_data` to a base64 `data:` URI, such as `data:application/pdf;base64,<base64>`. The document title comes from `file.filename`. The conversion rejects a `file_id`, raw base64 string, remote URL, or file part with no content. Those forms have no inline content to send to Anthropic.
+{{< /version >}}
+
 ## Extended thinking and reasoning
 
 Extended thinking and reasoning lets Claude reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding specific parameters to your request. 
@@ -358,7 +376,9 @@ Use the `reasoning_effort` field in your request to enable extended thinking. Th
 |---|---|
 | `minimal` or `low` | 1,024 tokens |
 | `medium` | 2,048 tokens |
-| `high` or `xhigh` | 4,096 tokens |
+| `high` | 4,096 tokens |
+| `xhigh` | 8,192 tokens in agentgateway 1.4 and later. 4,096 tokens in earlier versions, including 2.2.x. |
+| `max` | 16,384 tokens. Supported in agentgateway 1.4 and later. |
 
 Note that the `max_tokens` value must be greater than the tokens in the thinking budget for the request to succeed. 
 
@@ -639,7 +659,7 @@ Example output:
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: anthropic-aws
@@ -695,7 +715,7 @@ Example output:
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: anthropic-aws
@@ -751,7 +771,7 @@ Example output:
        backendRefs:
        - name: anthropic-aws
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```

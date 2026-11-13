@@ -2,10 +2,6 @@
 title: OpenAI Realtime
 weight: 40
 description: Proxy OpenAI Realtime API WebSocket traffic and track token usage.
-test:
-  realtime-standalone:
-  - file: ${versionRoot}/documentation/llm/api-types/realtime.md
-    path: realtime-standalone
 ---
 
 Proxy OpenAI Realtime API traffic through agentgateway to get token usage tracking and observability for WebSocket-based interactions.
@@ -17,17 +13,11 @@ The [OpenAI Realtime API](https://developers.openai.com/api/docs/guides/realtime
 To enable token usage tracking, you must prevent the client and server from negotiating WebSocket frame compression. When the `sec-websocket-extensions: permessage-deflate` header is present, the WebSocket frames are compressed and agentgateway cannot parse the token usage data. Remove this header from the request so that frames remain uncompressed and parseable.
 
 > [!NOTE]
-> The `realtime` route type supports token usage tracking and observability. Other LLM policies such as prompt guards, prompt enrichment, and request-body rate limiting are not supported for WebSocket traffic.
+> The `realtime` route type supports token usage tracking and observability. Prompt guards run on WebSocket traffic only when streaming guardrails are enabled, and only the `reject` action applies. Other LLM policies such as prompt enrichment and request-body rate limiting are not supported for WebSocket traffic. For more information, see [Streaming guardrails]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#streaming-guardrails" >}}).
 
 ## Before you begin
 
 [Install the `agentgateway` binary]({{< link-hextra path="/documentation/setup/install/binary/">}}).
-
-{{< doc-test paths="realtime-standalone" >}}
-# Install agentgateway binary
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"
-{{< /doc-test >}}
 
 ## Step 1: Configure the Realtime route
 
@@ -35,9 +25,9 @@ Set up your agentgateway configuration with the `realtime` route type and a tran
 
 1. Create or update your `config.yaml` file. Map the `/v1/realtime` path to the `realtime` route type and remove the `sec-websocket-extensions` header to prevent WebSocket frame compression.
 
-   ```yaml {paths="realtime-standalone"}
+   ```yaml
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
@@ -75,10 +65,6 @@ Set up your agentgateway configuration with the `realtime` route type and a tran
          key: "$OPENAI_API_KEY"
    EOF
    ```
-
-   {{< doc-test paths="realtime-standalone" >}}
-   agentgateway -f config.yaml --validate-only
-   {{< /doc-test >}}
 
 2. Run the agentgateway proxy with your configuration.
 

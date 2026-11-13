@@ -33,7 +33,7 @@ You can run `agctl trace` in two modes:
 If you do not already have a setup, the following minimal `config.yaml` works for the examples in this guide.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 binds:
 - port: 3000
   listeners:
@@ -43,27 +43,6 @@ binds:
       backends:
       - host: 127.0.0.1:8000
 ```
-
-{{< doc-test paths="trace-validate" >}}
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
-
-cat > /tmp/agctl-trace-config.yaml << 'EOF'
-binds:
-- port: 3000
-  listeners:
-  - protocol: HTTP
-    routes:
-    - name: httpbin
-      backends:
-      - host: 127.0.0.1:8000
-EOF
-agentgateway -f /tmp/agctl-trace-config.yaml --validate-only
-{{< /doc-test >}}
 
 ## Start agentgateway
 

@@ -4,6 +4,11 @@ An upgrade replaces the agentgateway binary or image. It does not change your co
 
 Every method requires a restart of the agentgateway process, because a new binary cannot replace a running one in place. Plan for a brief interruption in proxy traffic, or run more than one instance behind a load balancer.
 
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+> [!WARNING]
+> If you upgrade from an earlier version, agentgateway generates an MCP session key at the first start, unless you set `SESSION_KEY` or `config.session.key`. MCP sessions that clients established before the upgrade are rejected, so clients must start new sessions. Where agentgateway saves the key depends on the storage mode. In `file` mode, agentgateway writes the key into your configuration file, which is a change to the file that you might keep in version control. In `hybrid` mode, agentgateway stores the key in the database. To prevent the write, set your own key in `SESSION_KEY` before you upgrade, or set `SESSION_KEY` or `config.session.key` to `disabled` to keep session IDs unencrypted. For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
+{{% /version %}}
+
 ## Before you begin
 
 1. {{< reuse "agw-docs/standalone/operations/upgrade-release-notes.md" >}}
@@ -105,11 +110,29 @@ Recreate the container from a new image tag, mounting the same configuration pat
    docker exec agentgateway /app/agentgateway --version
    ```
 
+{{% version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 5. Confirm that your configuration came through, such as by checking the effective configuration.
 
    ```sh
    curl -s http://localhost:4000/api/config/effective | jq
    ```
+{{% /version %}}
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
+5. Confirm that the new version loaded your configuration. The `configReload` field of the `/api/runtime` endpoint reports whether the last configuration load succeeded.
+
+   ```sh
+   curl -s http://localhost:4000/api/runtime | jq .configReload
+   ```
+
+   Example output:
+
+   ```json
+   {
+     "synchronized": true,
+     "lastError": null
+   }
+   ```
+{{% /version %}}
 
 In Docker Compose, change the `image` tag in your `compose.yaml` file and recreate the service instead.
 
@@ -181,7 +204,7 @@ Because the default `replicaCount` is `1`, expect a brief interruption in traffi
 Roll back to an earlier version.
 
 > [!WARNING]
-> Rolling back to an older version after agentgateway has written to a database can fail if the newer version changed the database schema. If you use `hybrid` storage mode, back up the database before you upgrade. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
+> Rolling back to an older version after agentgateway has written to a database can fail if the newer version changed the database schema. If you use `hybrid` storage mode, back up the database before you upgrade. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} The same applies to the request log database that `config.logging.database` or `config.database` configures. After the upgrade migrates a PostgreSQL request log database, an earlier version does not start until you remove the new migration records. For more information, see [Schema migrations]({{< link-hextra path="/documentation/observability/access-logs/database/#schema-migrations" >}}).{{< /version >}}
 
 {{< tabs >}}
 {{% tab name="Binary" %}}

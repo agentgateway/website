@@ -2,7 +2,7 @@
 title: Multiple inference pools
 weight: 20
 description: Route inference requests to multiple InferencePools based on the model name in the request body.
-url: /docs/kubernetes/latest/documentation/llm/multiple-inference-pools/
+url: /docs/kubernetes/1.4.x/documentation/llm/multiple-inference-pools/
 test: skip
 ---
 
@@ -21,7 +21,7 @@ that API shape by default. {{< reuse "agw-docs/snippets/agentgateway-capital.md"
 also supports [custom providers]({{< link-hextra path="/integrations/llm/providers/custom/" >}})
 when you need to declare different provider API formats, such as Anthropic
 Messages or other non-default paths and request shapes. The
-[EPP](https://llm-d.ai/docs/architecture/core/router) supports request parsers
+[EPP](https://llm-d.ai/docs/architecture/router) supports request parsers
 such as Anthropic, Vertex AI, vLLM HTTP, vLLM gRPC, and passthrough parsers.
 For parser options, see the
 [llm-d Router parser docs](https://github.com/llm-d/llm-d-router/blob/main/pkg/epp/framework/plugins/requesthandling/parsers/README.md).

@@ -2,7 +2,6 @@
 title: Grafana Cloud
 weight: 50
 description: Export agentgateway traces to Grafana Cloud by using its OTLP ingestion endpoint.
-test: skip
 ---
 
 [Grafana Cloud](https://grafana.com/products/cloud/) is a managed observability platform. You can send traces directly to your Grafana Cloud OTLP endpoint by setting a Base64-encoded `Authorization` header on every export request.
@@ -15,7 +14,7 @@ Find your OTLP endpoint and instance credentials in Grafana Cloud under **Connec
 Add the following tracing configuration to your `config.yaml`. Replace the `host` with your Grafana Cloud OTLP endpoint and the `Authorization` value with your Base64-encoded `instance-id:api-token`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: <your-grafana-otlp-endpoint>:443

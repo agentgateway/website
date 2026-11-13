@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Fixture for tests/ui-tabs-d.spec.ts: the "UI" tabs of the standalone MCP server guides
+# (integrations/mcp/servers/{http,openapi,stdio,virtual}.md). Served by
+# scripts/serve-fixture-ui.sh with no backends; the drawers are filled in and never saved.
+#
+# The one target is the `openapi` server that openapi.md's "Schema URL" and "Inline schema" tabs
+# edit with the Edit server pencil. Its schema is inline (the page's Petstore example) because the
+# distroless image has no openapi.json file to read and no Petstore server to fetch a URL from;
+# an inline schema loads without either. localhost:8080 is never called: nothing sends a tool call.
+# No CORS policy and no statefulMode/prefixMode, so the CORS and Settings drawers open at defaults.
+mcp:
+  port: 3000
+  targets:
+  - name: openapi
+    openapi:
+      schema: |
+        {
+          "openapi": "3.0.0",
+          "info": { "title": "Petstore", "version": "1.0.0" },
+          "servers": [{ "url": "/" }],
+          "paths": {
+            "/pet/{petId}": {
+              "get": {
+                "operationId": "getPetById",
+                "summary": "Find pet by ID",
+                "parameters": [
+                  {
+                    "name": "petId",
+                    "in": "path",
+                    "required": true,
+                    "schema": { "type": "integer", "format": "int64" }
+                  }
+                ],
+                "responses": { "200": { "description": "successful operation" } }
+              }
+            }
+          }
+        }
+      host: localhost:8080

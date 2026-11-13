@@ -7,7 +7,7 @@ The injected delay counts against the request timeout. If the delay is longer th
 ## Inject a delay {#inject-a-delay}
 
 1. Create an HTTPRoute for the httpbin app.
-   ```yaml {paths="delay-in-trafficpolicy"}
+   ```yaml
    kubectl apply -n httpbin -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -29,7 +29,7 @@ The injected delay counts against the request timeout. If the delay is longer th
    ```
 
 2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that injects a fixed 2-second delay into the requests that the HTTPRoute handles.
-   ```yaml {paths="delay-in-trafficpolicy"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -114,86 +114,6 @@ spec:
       duration: "random() < 0.1 ? 500 : 0"
 EOF
 ```
-
-{{< doc-test paths="delay-in-trafficpolicy" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The httpbin-delay HTTPRoute (host faultinjection.example) is Accepted.
-#   * The httpbin-delay AgentgatewayPolicy (traffic.delay.duration: 2s) is Accepted.
-#   * A request to /get with host faultinjection.example returns 200 (the injected
-#     delay does not break the request).
-#   * The delay policy is present in the proxy config dump.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That the response is actually delayed by ~2s — Different layer: YAMLTest has
-#     no response-latency assertion, so timing is not measured.
-#   * The probabilistic/random CEL delay example — Display-only block, not tagged.
-# Warm up the new faultinjection.example hostname before asserting (two-phase proxy warmup).
-for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/get" -H "host: faultinjection.example" && break
-  sleep 2
-done
-{{< /doc-test >}}
-
-{{< doc-test paths="delay-in-trafficpolicy" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for httpbin-delay HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-delay
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-- name: wait for httpbin-delay AgentgatewayPolicy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: httpbin
-        name: httpbin-delay
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-- name: verify request through the delayed route returns 200
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /get
-    method: GET
-    headers:
-      host: "faultinjection.example"
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: verify delay policy in config dump
-  http:
-    url: http://localhost:15000
-    skipSslVerification: true
-    method: GET
-    path: /config_dump
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: agentgateway-proxy
-  expect:
-    bodyContains:
-    - '"duration"'
-EOF
-{{< /doc-test >}}
 
 ## Cleanup
 

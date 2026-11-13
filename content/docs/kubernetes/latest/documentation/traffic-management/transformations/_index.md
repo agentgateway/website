@@ -2,7 +2,6 @@
 title: Transformations
 weight: 10
 description: Mutate and transform requests and responses before forwarding them.
-test: skip
 ---
 
 Mutate and transform requests and responses before forwarding them to the destination.

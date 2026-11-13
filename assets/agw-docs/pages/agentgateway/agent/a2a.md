@@ -74,7 +74,7 @@ Deploy an A2A server that you want agentgateway to proxy traffic to.
 
 Deploy an A2A server that you want {{< reuse "agw-docs/snippets/agentgateway.md" >}} to proxy traffic to. Notice that the Service uses the `appProtocol: kgateway.dev/a2a` setting. This way, {{< reuse "agw-docs/snippets/kgateway.md" >}} configures the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy to use the A2A protocol.
 
-```yaml {paths="a2a"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: apps/v1
 kind: Deployment
@@ -117,7 +117,7 @@ EOF
 
 Create an HTTPRoute resource that routes incoming traffic to the A2A server. The route matches the `/myagent` path so that the A2A server has a unique address on the gateway, and rewrites the path to `/` so that requests reach the A2A server, which listens on the root path.
 
-```yaml {paths="a2a"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -158,7 +158,7 @@ Because the backend's `a2a` type signals the A2A protocol, the Service does not 
 
 1. Deploy the A2A server with a Deployment and a Service.
 
-   ```yaml {paths="a2a"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -198,7 +198,7 @@ Because the backend's `a2a` type signals the A2A protocol, the Service does not 
 
 2. Create an `{{< reuse "agw-docs/snippets/backend.md" >}}` resource that defines the A2A server as a backend. The `a2a` type configures {{< reuse "agw-docs/snippets/agentgateway.md" >}} to use the A2A protocol when it connects to the `host` and `port` that you specify.
 
-   ```yaml {paths="a2a"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -213,7 +213,7 @@ Because the backend's `a2a` type signals the A2A protocol, the Service does not 
 
 3. Create an HTTPRoute that routes traffic along the `/myagent` prefix path to the `{{< reuse "agw-docs/snippets/backend.md" >}}`. The prefix path exposes the A2A server under a unique address on the gateway. However, because the A2A server requires traffic to be sent along the root path (`/`), you add a `URLRewrite` filter to the HTTPRoute that rewrites the `/myagent` prefix to `/`.
 
-   ```yaml {paths="a2a"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -315,10 +315,6 @@ Because the backend's `a2a` type signals the A2A protocol, the Service does not 
 {{< /tabs >}}
 {{< /version >}}
 
-{{< doc-test paths="a2a" >}}
-kubectl wait deployment/a2a-agent --for=condition=Available --timeout=120s
-{{< /doc-test >}}
-
 {{% version include-if="1.2.x,1.1.x,1.0.x" %}}
 ## Step 3: Verify the connection {#verify}
 {{% /version %}}
@@ -330,7 +326,7 @@ kubectl wait deployment/a2a-agent --for=condition=Available --timeout=120s
    
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
-   ```sh {paths="a2a"}
+   ```sh
    export INGRESS_GW_ADDRESS=$(kubectl get gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o=jsonpath="{.status.addresses[0].value}")
    echo $INGRESS_GW_ADDRESS
    ```
@@ -342,21 +338,11 @@ kubectl wait deployment/a2a-agent --for=condition=Available --timeout=120s
    {{% /tab %}}
    {{< /tabs >}}
 
-{{< doc-test paths="a2a" >}}
-for i in $(seq 1 30); do
-  STATUS=$(curl -s --max-time 5 -o /dev/null -w "%{http_code}" -X POST "http://${INGRESS_GW_ADDRESS}:80/myagent" \
-    -H "Content-Type: application/json" \
-    -d '{"jsonrpc":"2.0","id":"test","method":"tasks/send","params":{"id":"test","message":{"role":"user","parts":[{"type":"text","text":"ping"}]}}}')
-  [ "$STATUS" = "200" ] && break
-  sleep 2
-done
-{{< /doc-test >}}
-
 2. As a user, send a request to the A2A server. As an assistant, the agent echoes back the message that you sent.
 
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
-   ```sh {paths="a2a"}
+   ```sh
    curl -X POST http://$INGRESS_GW_ADDRESS/myagent \
      -H "Content-Type: application/json" \
        -v \
@@ -430,7 +416,7 @@ done
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="a2a"}
+```sh
 kubectl delete Deployment a2a-agent --ignore-not-found
 kubectl delete Service a2a-agent --ignore-not-found
 kubectl delete HTTPRoute a2a --ignore-not-found

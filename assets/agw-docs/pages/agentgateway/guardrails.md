@@ -79,6 +79,35 @@ When implementing a guardrail webhook server, consider the following performance
 * **Implementation challenges**: Your webhook server must handle requests synchronously and respond quickly to avoid user experience degradation. The requests might be streaming or non-streaming.
 * **Operational responsibilities**: You are responsible for developing, integrating, and operating your own guardrail webhook server.
 
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
+### Webhook response actions {#webhook-response-actions}
+
+The webhook returns an `action` object whose fields determine how {{< reuse "agw-docs/snippets/agentgateway.md" >}} handles the content.
+
+| Action | Fields in the `action` object | Result |
+| -- | -- | -- |
+| Pass | Empty object or `reason` only. | The content continues unchanged. |
+| Mask | `body` and an optional `reason`. `body` contains masked request `messages` or response `choices`. | {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} replaces the content with the masked version. |
+| Reject | `status_code`, `body`, and an optional `reason`. | {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} returns the status code and body to the client. |
+
+Extra fields in a pass action, such as a score, cause a webhook error. For mask actions, message fields other than `role` and `content` also cause an error.
+
+Return extra metadata outside the `action` object, where {{< reuse "agw-docs/snippets/agentgateway.md" >}} ignores it.
+
+The guard's `failureMode` determines how {{< reuse "agw-docs/snippets/agentgateway.md" >}} handles webhook errors:
+
+* With the default, `FailClosed`, {{< reuse "agw-docs/snippets/agentgateway.md" >}} rejects the request with a `503` status code and the body `failed to process LLM request`. For a response guard, the body is `failed to process LLM response`.
+* With `failureMode: FailOpen`, {{< reuse "agw-docs/snippets/agentgateway.md" >}} forwards the content unchanged.
+
+For a streamed response, `FailClosed` ends the stream with an error event that contains `Content blocked by guardrail policy` instead of returning a `503` status code. `FailOpen` lets the stream continue.
+
+The proxy log explains the error. For example:
+
+```console
+warn	llm	failed to call prompt guard webhook: data did not match any variant of untagged enum RequestAction at line 1 column 51
+```
+{{% /version %}}
+
 ### Optimize guardrail webhook performance {#optimize-performance}
 
 To optimize guardrail webhook performance, you can update the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} for {{< reuse "agw-docs/snippets/agentgateway.md" >}} with the following settings.

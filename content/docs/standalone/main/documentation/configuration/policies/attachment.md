@@ -2,7 +2,6 @@
 title: Attachment points
 weight: 10
 description: Learn how to attach policies to different resources in agentgateway.
-test: skip
 ---
 
 You can attach policies at the gateway or {{< gloss "Listener" >}}listener{{< /gloss >}}, {{< gloss "Route" >}}route{{< /gloss >}}, or {{< gloss "Backend" >}}backend{{< /gloss >}} level to provide fine-grained control over traffic.
@@ -22,7 +21,7 @@ Policies that are attached at multiple levels are applied at all levels.
 Review the following example configuration that uses one of each policy type.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

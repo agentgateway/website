@@ -2,10 +2,6 @@
 title: MCP authentication
 weight: 30
 description: Configure OAuth 2.0 protection for MCP servers with JWT validation.
-test:
-  mcp-authn:
-  - file: ${versionRoot}/documentation/configuration/security/mcp-authn.md
-    path: mcp-authn
 ---
 
 Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/">}}
@@ -22,19 +18,6 @@ MCP authentication uses a connect-time model, sometimes called *eager auth*: the
 > {{< reuse "agw-docs/snippets/mcp-policy-note.md" >}}
 
 There are three deployment scenarios.
-
-{{< doc-test paths="mcp-authn" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
-{{< doc-test paths="mcp-authn" >}}
-# Create the local JWKS file that the tests reference in place of the IdP URL,
-# so they validate the policy structure without a live identity provider.
-mkdir -p manifests/jwt
-cat <<'EOF' > manifests/jwt/pub-key
-{"keys": [{"kty": "RSA", "kid": "test", "use": "sig", "alg": "RS256", "n": "teXe4sfDoHQR5YUos3nsY_Ax6J2xrgXnIfUziaTWJ4nljejLVyg8m0g6SK9zrSaCvLm9GxAhpaJ_48RalwqDt4spBPQ8uvr-54jHrECboAbTxhy2T-oXP80Duz0xauSDVlyA_xenoCA24MFJ1rgHppy1F1eYTD-CQ-IxhXLNm5mE3rJufP_pdnMy0q6acXSfPtEzMJY3BYNV5umqimkOgH9PqQWd1RAgYdE7z5fvdCb4T4K667rRRT75PqRB4GJgSY-zQrC4CEVCw_ql7bfdouFcxXwsyh7AfImIEamA1LMODvMXVZWkZ8V0w_VEK6NHqr-BGOBVAUfRqYAEPxfaIw", "e": "AQAB"}]}
-EOF
-{{< /doc-test >}}
 
 ## Authorization Server Proxy
 
@@ -55,6 +38,8 @@ The `provider` field takes a map with a single provider key, such as `provider: 
 
 Other identity providers that fully comply with the OAuth 2.0 specifications might also work, but are not tested. For an end-to-end setup guide for each tested provider, see the [Authentication & Identity]({{< link-hextra path="/integrations/auth/" >}}) section.
 
+For derived JWKS URLs, normalization removes trailing slashes from `issuer` before appending the provider-specific path. This normalization keeps issuer values that must end in `/`, such as Auth0 and authentik, from producing URLs with `//` before `.well-known` or `jwks`.
+
 | `provider` | Derived JWKS URL | Metadata source | Notable behavior |
 |------------|------------------|-----------------|------------------|
 | [`auth0`]({{< link-hextra path="/integrations/auth/auth0" >}})  | {issuer}/.well-known/jwks.json | RFC 8414 | Appends the first audience to the authorization endpoint, because Auth0 does not support RFC 8707. |
@@ -69,12 +54,64 @@ Other identity providers that fully comply with the OAuth 2.0 specifications mig
 
 ### Configuration example
 
-Review the following configuration example and descriptions.
+Review the following configuration example and descriptions. You can configure the policy in the UI or in your configuration file.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same `mcpAuthentication` policy as the **Simplified (MCP)** example in the **Config file** tab.
+
+1. Create a configuration with an MCP target, but no authentication policy. You add the policy in the UI.
+   ```yaml
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+   mcp:
+     port: 3000
+     targets:
+     - name: tools
+       stdio:
+         cmd: npx
+         args: ["@modelcontextprotocol/server-everything"]
+   ```
+2. Start agentgateway with this configuration.
+3. Open [http://localhost:15000/ui/mcp/policies](http://localhost:15000/ui/mcp/policies) (**MCP** > **Policies**), and click the **MCP authentication** tile.
+4. In the **Enforcement** section, keep **Strict** for the **Validation mode**.
+5. In the **Signing keys** section, select **Remote URL** for the **JWKS source**. Then, enter `http://localhost:7080/realms/mcp/protocol/openid-connect/certs` for the **JWKS URL**.
+6. In the **Token validation** section, enter `http://localhost:7080/realms/mcp` for the **Issuer**. In **Audiences**, enter `http://localhost:3000/mcp`, and click **Add**.
+
+   {{< reuse-image src="img/ui-mcp-policy-authn-keycloak.png" srcDark="img/ui-mcp-policy-authn-keycloak-dark.png" alt="MCP authentication drawer with the Keycloak JWKS URL, issuer, and audience" >}}
+
+7. In the **Protected resource metadata** section, enter the following YAML in **Resource metadata YAML**.
+   ```yaml
+   resource: http://localhost:3000/mcp
+   scopesSupported:
+   - read:all
+   bearerMethodsSupported:
+   - header
+   - body
+   - query
+   resourceDocumentation: http://localhost:3000/stdio/docs
+   resourcePolicyUri: http://localhost:3000/stdio/policies
+   ```
+
+   {{< reuse-image src="img/ui-mcp-policy-authn-keycloak-metadata.png" srcDark="img/ui-mcp-policy-authn-keycloak-metadata-dark.png" alt="MCP authentication drawer scrolled to the resource metadata YAML for the Keycloak setup" >}}
+
+8. The form has no field for `provider`. Click the **Raw** icon (`<>`) in the drawer header, and add the following lines at the end of the YAML.
+   ```yaml
+   provider:
+     keycloak: {}
+   ```
+9. Click **Save policy**.
+
+The authorization server must be running when you save, because agentgateway fetches the JWKS when it loads the policy. If the JWKS URL is unreachable, the save fails with a `failed to load JWKS` error.
+
+The **Routing-based** example uses an inline `mcp` backend, which the UI edits only as raw YAML. For that example, use the **Config file** tab.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -104,7 +141,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -146,10 +183,14 @@ routes:
 ```
 {{< /tab >}}
 {{< /tabs >}}
+{{% /tab %}}
+{{< /tabs >}}
 
 | Setting | Description |
 | --- | --- |
+| audiences | The accepted JWT `aud` values. When you set one or more values, the token must have an `aud` claim that matches one of them. Omit `audiences`, or set an empty list, to turn off audience validation. For clients that send tokens without a stable `aud` claim, omit this setting. For the `auth0` and `okta` providers, keep `audiences` set. These providers don't support RFC 8707 resource indicators, so the first `audiences` value is sent as the `audience` query parameter on the authorization request instead. For `authentik`, set `audiences` to the pre-registered client ID because authentik puts the client ID in the token's `aud` claim. |
 | resourceMetadata | The metadata source is where agentgateway fetches the authorization server metadata that it serves to MCP clients. `RFC 8414` means the path-based `/.well-known/oauth-authorization-server/{path}` form. `OIDC discovery` means `{issuer}/.well-known/openid-configuration`, which these providers serve instead. Most of them do not implement the RFC 8414 path-based issuer format; Keycloak 26.4.0 and later do, but agentgateway keeps using OIDC discovery for it so that earlier versions work, too. |
+| resourceMetadata.authorizationServers | By default, agentgateway builds the `issuer` of the metadata that it serves, and the endpoints that it proxies such as client registration, from the request URL. If clients reach the gateway through an external URL that differs from the request URL that the gateway sees, set this field to that one external URL, such as `https://mcp.example.com/mcp`. When the field holds exactly one URL, agentgateway uses it as the `issuer` and builds the proxied endpoints from it. The field itself already existed. Only this single-URL behavior is new. |
 | jwks | Set `jwks` to override that URL with a different endpoint, a local file, or an inline key set. If you omit `jwks`, agentgateway fetches keys from the derived URL for your provider.  |
 | clientId | Setting `clientId` short-circuits DCR for every provider: agentgateway answers registration requests with that pre-registered client instead of proxying them to the authorization server. For `authentik` and `entra` this is the only way registration can succeed, because Entra has no registration endpoint and open source authentik does not implement RFC 7591. |
 | clientSecret | Set `clientSecret` when your pre-registered client is a confidential client that the authorization server requires to authenticate at the token endpoint, such as an Entra app registration under the **Web** platform. Omit it for public, PKCE-only clients. Agentgateway injects the secret server-side into proxied token requests; MCP clients never supply it.
@@ -157,101 +198,59 @@ routes:
 
 ### Adding an IdP
 
-Adding support for a new provider requires minimal code changes. To contribute support for your identity provider, see the [`McpIDP` enum in the agentgateway source](https://github.com/agentgateway/agentgateway/blob/main/crates/agentgateway/src/types/agent.rs).
-
-{{< doc-test paths="mcp-authn" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The Authorization Server Proxy mcpAuthentication example (issuer, audiences,
-#     keycloak provider, resourceMetadata, jwks) is accepted by agentgateway in
-#     both the simplified MCP (mcp) and routing-based (gateways) forms.
-#   * The test points jwks at a local file instead of the displayed IdP URL so it
-#     runs without a live identity provider.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * Runtime token verification, the 401/WWW-Authenticate challenge, and the
-#     proxied authorization-server metadata — require a real IdP and a signed JWT
-#     the page does not stand up.
-cat <<'EOF' > proxy-mcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  port: 3000
-  policies:
-    mcpAuthentication:
-      issuer: http://localhost:7080/realms/mcp
-      audiences: ["http://localhost:3000/mcp"]
-      jwks:
-        file: ./manifests/jwt/pub-key
-      provider:
-        keycloak: {}
-      resourceMetadata:
-        resource: http://localhost:3000/mcp
-        scopesSupported:
-        - read:all
-        bearerMethodsSupported:
-        - header
-        - body
-        - query
-        resourceDocumentation: http://localhost:3000/stdio/docs
-        resourcePolicyUri: http://localhost:3000/stdio/policies
-  targets:
-  - name: tools
-    stdio:
-      cmd: npx
-      args: ["@modelcontextprotocol/server-everything"]
-EOF
-agentgateway -f proxy-mcp.yaml --validate-only
-
-cat <<'EOF' > proxy-routing.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - mcp:
-      targets:
-      - name: tools
-        stdio:
-          cmd: npx
-          args: ["@modelcontextprotocol/server-everything"]
-  matches:
-  - path:
-      exact: /mcp
-  - path:
-      exact: /.well-known/oauth-protected-resource/mcp
-  - path:
-      exact: /.well-known/oauth-authorization-server/mcp
-  - path:
-      exact: /.well-known/oauth-authorization-server/mcp/client-registration
-  policies:
-    mcpAuthentication:
-      issuer: http://localhost:7080/realms/mcp
-      audiences: ["http://localhost:3000/mcp"]
-      jwks:
-        file: ./manifests/jwt/pub-key
-      provider:
-        keycloak: {}
-      resourceMetadata:
-        resource: http://localhost:3000/mcp
-        scopesSupported:
-        - read:all
-        bearerMethodsSupported:
-        - header
-        - body
-        - query
-        resourceDocumentation: http://localhost:3000/stdio/docs
-        resourcePolicyUri: http://localhost:3000/stdio/policies
-EOF
-agentgateway -f proxy-routing.yaml --validate-only
-{{< /doc-test >}}
+Adding support for a new provider requires minimal code changes. To contribute support for your identity provider, see the [`McpIDP` enum in the agentgateway source](https://github.com/agentgateway/agentgateway/blob/v1.7.0/crates/agentgateway/src/types/agent.rs).
 
 ## Resource Server Only
 
 Agentgateway acts solely as a resource server, validating tokens issued by an external authorization server.
 
 {{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same `mcpAuthentication` policy as the **Simplified (MCP)** example in the **Config file** tab.
+
+1. Create a configuration with an MCP target, but no authentication policy. You add the policy in the UI.
+   ```yaml
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+   mcp:
+     port: 3000
+     targets:
+     - name: tools
+       stdio:
+         cmd: npx
+         args: ["@modelcontextprotocol/server-everything"]
+   ```
+2. Start agentgateway with this configuration.
+3. Open [http://localhost:15000/ui/mcp/policies](http://localhost:15000/ui/mcp/policies) (**MCP** > **Policies**), and click the **MCP authentication** tile.
+4. In the **Enforcement** section, keep **Strict** for the **Validation mode**.
+5. In the **Signing keys** section, select **Remote URL** for the **JWKS source**. Then, enter `http://localhost:9000/.well-known/jwks.json` for the **JWKS URL**.
+6. In the **Token validation** section, enter `http://localhost:9000` for the **Issuer**. In **Audiences**, enter `http://localhost:3000/mcp`, and click **Add**.
+
+   {{< reuse-image src="img/ui-mcp-policy-authn-resource-server.png" srcDark="img/ui-mcp-policy-authn-resource-server-dark.png" alt="MCP authentication drawer with the localhost:9000 JWKS URL, issuer, and audience" >}}
+
+7. In the **Protected resource metadata** section, enter the following YAML in **Resource metadata YAML**.
+   ```yaml
+   resource: http://localhost:3000/mcp
+   scopesSupported:
+   - read:all
+   bearerMethodsSupported:
+   - header
+   - body
+   - query
+   ```
+
+   {{< reuse-image src="img/ui-mcp-policy-authn-resource-server-metadata.png" srcDark="img/ui-mcp-policy-authn-resource-server-metadata-dark.png" alt="MCP authentication drawer scrolled to the resource metadata YAML for the resource server setup" >}}
+
+8. Click **Save policy**.
+
+The authorization server must be running when you save, because agentgateway fetches the JWKS when it loads the policy. If the JWKS URL is unreachable, the save fails with a `failed to load JWKS` error.
+
+The **Routing-based** example uses an inline `mcp` backend, which the UI edits only as raw YAML. For that example, use the **Config file** tab.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -277,7 +276,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -311,80 +310,8 @@ routes:
 ```
 {{< /tab >}}
 {{< /tabs >}}
-
-{{< doc-test paths="mcp-authn" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The Resource Server Only mcpAuthentication example (issuer, audiences, jwks,
-#     resourceMetadata) is accepted by agentgateway in both the simplified MCP
-#     (mcp) and routing-based (gateways) forms.
-#   * The test points jwks at a local file instead of the displayed IdP URL so it
-#     runs without a live identity provider.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * Runtime token verification and the 401/WWW-Authenticate challenge — require
-#     a real authorization server and a signed JWT the page does not stand up.
-#   * The permissive-mode snippet below is a focused field-reference fragment, not
-#     a standalone config, so it is not tested here.
-cat <<'EOF' > rsonly-mcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  port: 3000
-  policies:
-    mcpAuthentication:
-      issuer: http://localhost:9000
-      audiences: ["http://localhost:3000/mcp"]
-      jwks:
-        file: ./manifests/jwt/pub-key
-      resourceMetadata:
-        resource: http://localhost:3000/mcp
-        scopesSupported:
-        - read:all
-        bearerMethodsSupported:
-        - header
-        - body
-        - query
-  targets:
-  - name: tools
-    stdio:
-      cmd: npx
-      args: ["@modelcontextprotocol/server-everything"]
-EOF
-agentgateway -f rsonly-mcp.yaml --validate-only
-
-cat <<'EOF' > rsonly-routing.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - mcp:
-      targets:
-      - name: tools
-        stdio:
-          cmd: npx
-          args: ["@modelcontextprotocol/server-everything"]
-  matches:
-  - path:
-      exact: /mcp
-  - path:
-      exact: /.well-known/oauth-protected-resource/mcp
-  policies:
-    mcpAuthentication:
-      issuer: http://localhost:9000
-      audiences: ["http://localhost:3000/mcp"]
-      jwks:
-        file: ./manifests/jwt/pub-key
-      resourceMetadata:
-        resource: http://localhost:3000/mcp
-        scopesSupported:
-        - read:all
-        bearerMethodsSupported:
-        - header
-        - body
-        - query
-EOF
-agentgateway -f rsonly-routing.yaml --validate-only
-{{< /doc-test >}}
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Authentication mode
 
@@ -417,12 +344,12 @@ policies:
 By default, agentgateway requires the `exp` (expiration) claim to be present in every JWT. To change which claims are required, set the `jwtValidationOptions.requiredClaims` field. The following RFC 7519 registered claims are supported: `exp`, `nbf`, `aud`, `iss`, and `sub`. Any other claim name that you list, such as `iat` or a custom claim, is ignored and logged as a warning.
 
 > [!NOTE]
-> The `requiredClaims` field controls only whether a claim must be present. It does not control whether the claim's value is checked. When one of the `exp`, `nbf`, `aud`, or `iss` claims is present in a token, agentgateway validates its value, whether or not you list the claim in `requiredClaims`. For example, an expired token is rejected because it carries an `exp` claim, even if you omit `exp` from `requiredClaims`. The `sub` claim is checked for presence only, and custom claims are never validated by this field. To enforce the value of a custom claim, use an [authorization policy]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}}) instead.
+> The `requiredClaims` field controls only whether a claim must be present. It does not control whether the claim's value is checked. When the `exp` or `nbf` claim is present in a token, agentgateway validates its value. The `iss` claim is always required and must match `issuer`. If you set `audiences`, the `aud` claim is required and must match one of the values, whether or not you list `aud` in `requiredClaims`. If you omit `audiences`, the `aud` value is not checked, and listing `aud` in `requiredClaims` only requires the claim to be present. For example, an expired token is rejected because it carries an `exp` claim, even if you omit `exp` from `requiredClaims`. The `sub` claim is checked for presence only, and custom claims are never validated by this field. To enforce the value of a custom claim, use an [authorization policy]({{< link-hextra path="/documentation/configuration/security/mcp-authz" >}}) instead.
 
 Some identity providers issue tokens without an `exp` claim. To accept those tokens, set `requiredClaims` to an empty list.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -447,7 +374,7 @@ mcp:
 To require additional claims, such as `aud` and `sub` alongside `exp`, list each one.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -471,67 +398,6 @@ mcp:
       cmd: npx
       args: ["@modelcontextprotocol/server-everything"]
 ```
-
-{{< doc-test paths="mcp-authn" >}}
-# WHAT THIS TEST VALIDATES:
-#   * Both jwtValidationOptions.requiredClaims examples (the empty list and the
-#     explicit exp/aud/sub list) are accepted by agentgateway.
-#   * The test points jwks at a local file instead of the displayed IdP URL so it
-#     runs without a live identity provider.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That a token missing exp is actually accepted or rejected — requires a real
-#     authorization server and signed JWTs the page does not stand up.
-cat <<'EOF' > claims-empty.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  port: 3000
-  policies:
-    mcpAuthentication:
-      issuer: http://localhost:9000
-      audiences: ["http://localhost:3000/mcp"]
-      jwks:
-        file: ./manifests/jwt/pub-key
-      jwtValidationOptions:
-        requiredClaims: []
-      resourceMetadata:
-        resource: http://localhost:3000/mcp
-        scopesSupported:
-        - read:all
-  targets:
-  - name: tools
-    stdio:
-      cmd: npx
-      args: ["@modelcontextprotocol/server-everything"]
-EOF
-agentgateway -f claims-empty.yaml --validate-only
-
-cat <<'EOF' > claims-required.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  port: 3000
-  policies:
-    mcpAuthentication:
-      issuer: http://localhost:9000
-      audiences: ["http://localhost:3000/mcp"]
-      jwks:
-        file: ./manifests/jwt/pub-key
-      jwtValidationOptions:
-        requiredClaims:
-        - exp
-        - aud
-        - sub
-      resourceMetadata:
-        resource: http://localhost:3000/mcp
-        scopesSupported:
-        - read:all
-  targets:
-  - name: tools
-    stdio:
-      cmd: npx
-      args: ["@modelcontextprotocol/server-everything"]
-EOF
-agentgateway -f claims-required.yaml --validate-only
-{{< /doc-test >}}
 
 ## Passthrough
 

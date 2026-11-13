@@ -1,22 +1,17 @@
-<!-- Install-path design (decided 2026-07, PR #702): the install is split into two channel-keyed bundles, and the agentgateway build is tied to the channel.
-Standard = released build (helm-version-flag) + standard Gateway API CRDs (k8s-gw-version) + no experimental feature gate.
-Experimental = nightly build (patch-dev) + experimental Gateway API CRDs at the newest version (k8s-gw-version-exp) + feature gate on.
-Why bundled: the nightly build watches TCPRoute at v1, which only Gateway API 1.6 serves. Through 1.3.x the released build watched v1alpha2, so the Standard path stayed on Gateway API 1.5 and Experimental needed its own newer Gateway API version (k8s-gw-version-exp).
-As of the 1.5 release the Standard path is also in the v1 / Gateway API 1.6 era, so k8s-gw-version and k8s-gw-version-exp now resolve to the same value and the channels differ only by build and feature gate. Revisit whether the two Gateway API conrefs still need to be separate. -->
 1. Deploy the Kubernetes Gateway API CRDs. The examples in this guide use Gateway API {{< reuse "agw-docs/versions/k8s-gw-version.md" >}} for the standard channel and {{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}} for the experimental channel, but you can use any version within the [supported range]({{< link-hextra path="/release-notes/versions/" >}}) by setting the variable accordingly.
 
    <!--The `--force-conflicts` flag is included to prevent field ownership conflicts if Gateway API CRDs were previously installed by another tool.-->
 
    {{< tabs >}}
    {{% tab name="Standard" %}}
-   ```sh {paths="standard"}
+   ```sh
    export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version.md" >}}
    kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v$GWAPI_VERSION/standard-install.yaml
    ```
    {{% /tab %}}
    {{% tab name="Experimental" %}}
    CRDs in the experimental channel are required to use some experimental features in the Gateway API. Guides that require experimental CRDs note this requirement in their prerequisites.
-   ```sh {paths="experimental"}
+   ```sh
    export GWAPI_VERSION={{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}
    kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v$GWAPI_VERSION/experimental-install.yaml
    ```
@@ -27,20 +22,18 @@ As of the 1.5 release the Standard path is also in the v1 / Gateway API 1.6 era,
 
    {{< tabs >}}
    {{% tab name="Standard" %}}
-   ```sh {paths="standard"}
+   ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}} \
    --create-namespace --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
-   --set controller.image.pullPolicy=Always
+   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
    ```
    {{% /tab %}}
    {{% tab name="Experimental" %}}
    The experimental path uses the nightly development build of the {{< reuse "agw-docs/snippets/kgateway.md" >}} CRDs.
-   ```sh {paths="experimental"}
+   ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}} \
    --create-namespace --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-   --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
-   --set controller.image.pullPolicy=Always
+   --version {{< reuse "agw-docs/versions/patch-dev.md" >}}
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -49,7 +42,7 @@ As of the 1.5 release the Standard path is also in the v1 / Gateway API 1.6 era,
 
    {{< tabs >}}
    {{% tab name="Standard" %}}
-   ```sh {paths="standard"}
+   ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
      --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
@@ -58,13 +51,12 @@ As of the 1.5 release the Standard path is also in the v1 / Gateway API 1.6 era,
    ```
    {{% /tab %}}
    {{% tab name="Experimental" %}}
-   The experimental path uses the nightly development build. Experimental Gateway API features are enabled by default, and the following command sets the feature gate explicitly with `--set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true`.
-   ```sh {paths="experimental"}
+   The experimental path uses the nightly development build.
+   ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
    --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
    --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
    --set controller.image.pullPolicy=Always \
-   --set controller.extraEnv.AGW_ENABLE_EXPERIMENTAL_GATEWAY_API_FEATURES=true \
    --wait
    ```
    {{% /tab %}}

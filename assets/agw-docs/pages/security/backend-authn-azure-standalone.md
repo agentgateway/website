@@ -1,6 +1,6 @@
 ## About
 
-The `azure` backend authentication method gets a Microsoft Entra ID token and writes it to the `Authorization` header of every request that agentgateway forwards to the backend. Agentgateway requests the token for the Azure Cognitive Services scope, or for the Azure AI scope when the backend is an Azure AI Foundry endpoint, and it caches the credential after the first successful use.
+The `azure` backend authentication method gets a Microsoft Entra ID token and writes it to the `Authorization` header of every request that agentgateway forwards to the backend. Agentgateway requests the token for the Azure Cognitive Services scope, or for the Azure AI scope when the backend is an Azure AI Foundry endpoint, and it caches the credential after the first successful use.{{< version exclude-if="1.5.x" >}} To authenticate to Microsoft Graph or another Microsoft Entra-protected backend, configure the token scopes.{{< /version >}}
 
 The method has three forms.
 
@@ -90,6 +90,7 @@ backendAuth:
 | `azure.explicitConfig.managedIdentity` | Managed identity of the Azure host. Set to `{}` for the system-assigned identity, or set `userAssignedIdentity` to select a user-assigned one. |
 | `azure.explicitConfig.managedIdentity.userAssignedIdentity` | Identifier of a user-assigned managed identity. Set exactly one of `clientId`, `objectId`, or `resourceId`. |
 | `azure.explicitConfig.workloadIdentity` | Set to `{}` to use the projected federated token. |
+{{< version exclude-if="1.5.x" >}}| `azure.scopes` | Scopes to request for the access token. When omitted, agentgateway infers the scope from the backend hostname. |{{< /version >}}
 
 > [!WARNING]
 > The three fields under `clientSecret` are `tenant_id`, `client_id`, and `client_secret`, in `snake_case`. Every field around them is camelCase, so this is easy to get wrong. The camelCase spelling is not accepted, and agentgateway rejects the configuration when it loads rather than falling back to another credential source.
@@ -98,135 +99,22 @@ backendAuth:
 > Error: routes[0]: data did not match any variant of untagged enum BackendAuthCompat
 > ```
 
-{{< doc-test paths="backend-authn-azure" >}}
-# WHAT THIS TEST VALIDATES:
-#   * Every credential mode in the tabs above is accepted as a complete standalone config:
-#     implicit, developerImplicit, and all three explicitConfig sources, including each of the
-#     three userAssignedIdentity identifiers.
-#   * The snake_case gotcha is real: the camelCase spelling of the clientSecret fields is rejected
-#     with the error that the warning quotes.
-#   * userAssignedIdentity is a one-of: naming two identifiers is rejected.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That any credential actually authenticates to Azure -- external dependency: each mode needs a
-#     real Azure tenant and identity (a service principal, a managed identity, or a federated
-#     workload identity), none of which a doc test can stand up. Only that agentgateway accepts
-#     each config shape is asserted.
-#   * The resolution order of the implicit chain -- external dependency: exercising a rung means
-#     supplying the credential it looks for, on the host type it looks on.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-export AZURE_TENANT_ID="${AZURE_TENANT_ID:-00000000-0000-0000-0000-000000000000}"
-export AZURE_CLIENT_ID="${AZURE_CLIENT_ID:-11111111-1111-1111-1111-111111111111}"
-export AZURE_CLIENT_SECRET="${AZURE_CLIENT_SECRET:-not-a-real-secret}"
-{{< /doc-test >}}
+{{< version exclude-if="1.5.x" >}}
+## Configure token scopes
 
-{{< doc-test paths="backend-authn-azure" >}}
-# Wrap each policy fragment from the tabs above in the gateways/routes scaffolding that a complete
-# standalone config needs, then validate it. The fragments on the page are field references, so
-# they are not runnable as written.
-azure_case() {
-  local name="$1" expect="$2"
-  { cat <<'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - host: myaccount.openai.azure.com:443
-    policies:
-      backendAuth:
-EOF
-    sed 's/^/        /'
-  } > "config-azure-$name.yaml"
-  if agentgateway -f "config-azure-$name.yaml" --validate-only > "azure-$name.log" 2>&1; then
-    [ "$expect" = ok ] || { echo "FAIL: $name was accepted but should be rejected"; exit 1; }
-    echo "ok       $name"
-  else
-    [ "$expect" = fail ] || { echo "FAIL: $name was rejected"; cat "azure-$name.log"; exit 1; }
-    echo "rejected $name (as expected)"
-  fi
-}
+Set `scopes` when the backend requires a token for a resource other than Azure Cognitive Services or Azure AI Foundry. For example, the following configuration uses workload identity to request a token for Microsoft Graph. The `scopes` field is a sibling of `explicitConfig`, not a child of it.
 
-azure_case implicit ok <<'EOF'
-azure:
-  implicit: {}
-EOF
+```yaml
+backendAuth:
+  azure:
+    scopes:
+    - https://graph.microsoft.com/.default
+    explicitConfig:
+      workloadIdentity: {}
+```
 
-azure_case developer-implicit ok <<'EOF'
-azure:
-  developerImplicit: {}
-EOF
-
-azure_case client-secret ok <<'EOF'
-azure:
-  explicitConfig:
-    clientSecret:
-      tenant_id: "$AZURE_TENANT_ID"
-      client_id: "$AZURE_CLIENT_ID"
-      client_secret: "$AZURE_CLIENT_SECRET"
-EOF
-
-azure_case managed-identity-system ok <<'EOF'
-azure:
-  explicitConfig:
-    managedIdentity: {}
-EOF
-
-azure_case managed-identity-client-id ok <<'EOF'
-azure:
-  explicitConfig:
-    managedIdentity:
-      userAssignedIdentity:
-        clientId: "22222222-2222-2222-2222-222222222222"
-EOF
-
-azure_case managed-identity-object-id ok <<'EOF'
-azure:
-  explicitConfig:
-    managedIdentity:
-      userAssignedIdentity:
-        objectId: "33333333-3333-3333-3333-333333333333"
-EOF
-
-azure_case managed-identity-resource-id ok <<'EOF'
-azure:
-  explicitConfig:
-    managedIdentity:
-      userAssignedIdentity:
-        resourceId: "/subscriptions/sub/resourceGroups/rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/my-identity"
-EOF
-
-azure_case workload-identity ok <<'EOF'
-azure:
-  explicitConfig:
-    workloadIdentity: {}
-EOF
-
-# The gotcha the page warns about: camelCase inner fields are rejected.
-azure_case client-secret-camel fail <<'EOF'
-azure:
-  explicitConfig:
-    clientSecret:
-      tenantId: "$AZURE_TENANT_ID"
-      clientId: "$AZURE_CLIENT_ID"
-      clientSecret: "$AZURE_CLIENT_SECRET"
-EOF
-grep -q 'did not match any variant of untagged enum BackendAuthCompat' azure-client-secret-camel.log || {
-  echo "FAIL: the error the warning quotes is no longer what the binary emits"
-  cat azure-client-secret-camel.log; exit 1; }
-
-# userAssignedIdentity is a one-of, so two identifiers must be rejected.
-azure_case managed-identity-two-ids fail <<'EOF'
-azure:
-  explicitConfig:
-    managedIdentity:
-      userAssignedIdentity:
-        clientId: "22222222-2222-2222-2222-222222222222"
-        objectId: "33333333-3333-3333-3333-333333333333"
-EOF
-
-echo "azure standalone backend authentication verified"
-{{< /doc-test >}}
+The configured scopes override hostname-based inference. Use the scope required by the backend, commonly the resource application ID URI followed by `/.default`. The identity must have permission to access the requested resource. Azure managed identity credentials support exactly one scope. Unlike the Kubernetes API server, the standalone binary does not reject a configuration that pairs `managedIdentity` with more than one scope; the request fails later, when Azure refuses to issue the token.
+{{< /version >}}
 
 ## How agentgateway resolves an implicit credential
 
@@ -249,11 +137,27 @@ Two behaviors of this chain are worth knowing.
 
 ## Troubleshoot
 
-A request that agentgateway cannot authenticate returns a `500`.
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+A gateway-local authentication failure, such as missing credentials or invalid configuration, returns `500`. A failure contacting an external credential provider or processing its token response returns `502`. The status code change does not automatically retry the authentication flow.
 
+For example, a missing credential source returns `500` with the following message.
+{{< /version >}}
+{{< version include-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+A request that agentgateway cannot authenticate returns a `500`.
+{{< /version >}}
+
+{{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ```
 backend authentication failed: the credential provider was not enabled
 ```
+{{< /version >}}
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+```
+backend authentication failed
+```
+
+The agentgateway logs record the cause, such as `the credential provider was not enabled`.
+{{< /version >}}
 
 | Symptom | Cause |
 | -- | -- |

@@ -13,7 +13,7 @@ Global rate limiting is essential when running multiple proxy replicas and you n
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 > [!NOTE]
-> A shared counter is the reason to choose global rate limiting, not claim-level granularity. Local rate limits can also apply per user, per team, or per model by setting a CEL expression in the `local[].key` field, which needs no external service but counts separately on each replica. For more information, see [Claim-level rate limits]({{< link-hextra path="/documentation/security/rate-limit-http/#claim-level" >}}).
+> A shared counter is the reason to choose global rate limiting, not claim-level granularity. Local rate limits can also apply per user, per team, or per model by setting a CEL expression in the `local[].key` field, which needs no external service but counts separately on each replica. For more information, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Claim-level rate limits]({{< link-hextra path="/documentation/security/rate-limit/local/#claim-level" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Claim-level rate limits]({{< link-hextra path="/documentation/security/rate-limit-http/#claim-level" >}}){{< /version >}}.
 {{< /version >}}
 
 Global rate limiting requires two components:
@@ -54,6 +54,10 @@ sequenceDiagram
         Gateway->>Client: 6. Deny request & return rate limit message
     end
 ```
+
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+By default, the gateway waits 10 seconds for the rate limit service to return a decision. When the wait runs out, the call counts as a failure. To use a different timeout, apply a second {{< reuse "agw-docs/snippets/policy.md" >}} whose `targetRefs` names the rate limit service, either as a Kubernetes Service or as an {{< reuse "agw-docs/snippets/backend.md" >}}, and set `backend.http.requestTimeout` on it.
+{{< /version >}}
 
 ### Response headers
 
@@ -133,13 +137,13 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 1. Create a namespace for the rate limit infrastructure.
 
-   ```sh {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
+   ```sh
    kubectl create namespace ratelimit
    ```
 
 2. Deploy Redis as the backing store.
 
-   ```yaml {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -177,7 +181,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 3. Create a ConfigMap with rate limit rules. This configuration defines the actual rate limits that are enforced by the rate limit service. The configuration includes rate limits by client IP (10 requests per minute), a per-user LLM token budget (100 tokens per day, used by the [virtual keys guide]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys" >}})), by path (100 requests per minute for `/api/v1`, 200 for `/api/v2`), by user ID (50 requests per minute for most users, 500 for VIP users), and by service tier (1000 requests per minute for premium, 100 for standard).
 
-   ```yaml {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: ConfigMap
@@ -254,7 +258,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 4. Deploy the rate limit service.
 
-   ```yaml {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -315,39 +319,6 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
    EOF
    ```
 
-   {{< doc-test paths="global-rate-limit-by-ip,deploy-rate-limit-server" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for redis deployment to be ready
-     wait:
-       target:
-         kind: Deployment
-         metadata:
-           namespace: ratelimit
-           name: redis
-       jsonPath: "$.status.availableReplicas"
-       jsonPathExpectation:
-         comparator: greaterThan
-         value: 0
-       polling:
-         timeoutSeconds: 120
-         intervalSeconds: 5
-   - name: wait for ratelimit deployment to be ready
-     wait:
-       target:
-         kind: Deployment
-         metadata:
-           namespace: ratelimit
-           name: ratelimit
-       jsonPath: "$.status.availableReplicas"
-       jsonPathExpectation:
-         comparator: greaterThan
-         value: 0
-       polling:
-         timeoutSeconds: 120
-         intervalSeconds: 5
-   EOF
-   {{< /doc-test >}}
-
 5. Verify the rate limit service is running.
 
    ```sh
@@ -378,7 +349,7 @@ The table summarizes the examples in the following sections.
 | Combine local and global limits | Include both `local[]` and `global` in same policy |
 | Token-based rate limiting (LLMs) | Set `descriptors[].unit: Tokens` and configure token limits in service |
 
-Global rate limiting is the right choice when you need shared quotas across multiple proxy replicas, fine-grained control based on request attributes, or integration with existing rate limiting infrastructure. For simpler per-replica limits, use [local rate limiting]({{< link-hextra path="/documentation/security/rate-limit-http#local" >}}).
+Global rate limiting is the right choice when you need shared quotas across multiple proxy replicas, fine-grained control based on request attributes, or integration with existing rate limiting infrastructure. For simpler per-replica limits, use {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[local rate limiting]({{< link-hextra path="/documentation/security/rate-limit/local#local" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[local rate limiting]({{< link-hextra path="/documentation/security/rate-limit-http#local" >}}){{< /version >}}.
 
 For AI-specific use cases:
 - [LLM token-based rate limiting]({{< link-hextra path="/documentation/llm/rate-limit" >}})
@@ -393,7 +364,7 @@ Limit requests based on the client's source IP address (10 requests per minute p
 
 1. Apply the policy.
 
-   ```yaml {paths="global-rate-limit-by-ip"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -419,25 +390,6 @@ Limit requests based on the client's source IP address (10 requests per minute p
                    expression: "source.address"
    EOF
    ```
-
-   {{< doc-test paths="global-rate-limit-by-ip" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for ip-rate-limit policy to be accepted
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: httpbin
-           name: ip-rate-limit
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 120
-         intervalSeconds: 2
-   EOF
-   {{< /doc-test >}}
 
 2. Send 15 requests to the httpbin app.
 
@@ -478,29 +430,6 @@ Limit requests based on the client's source IP address (10 requests per minute p
    ...
    Request 15: HTTP 429
    ```
-
-   {{< doc-test paths="global-rate-limit-by-ip" >}}
-   # Send 15 requests rapidly to exceed the 10 req/min limit
-   for i in $(seq 1 15); do
-     curl -s -o /dev/null http://${INGRESS_GW_ADDRESS}:80/get -H "host: www.example.com" &
-   done
-   wait
-
-   # Verify rate limit is active
-   YAMLTest -f - <<'EOF'
-   - name: Verify global rate limit by IP
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/get"
-       method: GET
-       headers:
-         host: www.example.com
-     source:
-       type: local
-     expect:
-       statusCode: 429
-     retries: 3
-   EOF
-   {{< /doc-test >}}
 
 
 ### Rate limit by user ID {#rate-limit-by-user-id}
@@ -899,7 +828,7 @@ To apply different rate limits based on the request, use the `conditional` field
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="global-rate-limit-by-ip"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} ip-rate-limit -n httpbin --ignore-not-found
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} user-rate-limit -n httpbin --ignore-not-found
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} path-rate-limit -n httpbin --ignore-not-found

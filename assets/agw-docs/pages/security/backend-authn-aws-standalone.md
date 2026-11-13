@@ -69,7 +69,8 @@ backendAuth:
 
 | Field | Description |
 | -- | -- |
-| `assumeRole.roleArn` | Required ARN of the IAM role to assume. |
+| `assumeRole.roleArn` | Required ARN of the IAM role to assume. |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+| `assumeRole.externalId` | External ID to pass to STS when the trust policy of the role requires `sts:ExternalId`. The value must be 2 to 1224 characters and match `[\w+=,.@:/-]`. |{{< /version >}}
 | `assumeRole.sessionName` | Session name (`RoleSessionName`) that appears in AWS CloudTrail and in the Cost and Usage Report. Either a static string, or `{expression: <cel>}`. Two to 64 characters, matching `[\w+=,.@-]`. Omit the field and AWS generates a random name. |
 | `assumeRole.tags` | Session tags that agentgateway passes to STS. Each tag sets `key`, plus exactly one of `value` for a static value or `expression` for a CEL expression. STS allows at most 50 tags for one role session. |
 
@@ -79,104 +80,12 @@ backendAuth:
 > [!WARNING]
 > A CEL expression that does not produce a valid session name or tag value at request time causes agentgateway to reject that request. An expression such as `jwt.sub` therefore makes the route depend on a client authentication policy that populates the JWT claims. The failure is per-request, and `--validate-only` does not catch it.
 
-{{< doc-test paths="backend-authn-aws" >}}
-# WHAT THIS TEST VALIDATES:
-#   * Every aws fragment above is accepted once wrapped in the gateways/routes
-#     scaffolding that the page tells the reader to add: an explicit access key,
-#     the implicit form, and assumeRole with both a static and a CEL session
-#     name plus static and CEL tags.
-#   * A session tag really does require exactly one of value and expression.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That any credential signs a request AWS accepts -- external dependency:
-#     needs a real account, an IAM role, and a service to call.
-#   * The credential resolution order -- external dependency: exercising a rung
-#     means supplying the credential it looks for, on the host type it looks on.
-#   * The Cost and Usage Report behavior of session tags -- different layer: the
-#     tag is sent to STS, and the report is a billing artifact that appears hours
-#     later, only after the tag key is activated in the console.
-#   * The per-request rejection when a CEL expression yields an invalid session
-#     name -- requires traffic the page omits: it needs a client authentication
-#     policy populating jwt claims, and a live STS call.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-AKIAIOSFODNN7EXAMPLE}"
-export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-dummy}"
-export AWS_SESSION_TOKEN="${AWS_SESSION_TOKEN:-dummy}"
-{{< /doc-test >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+If the trust policy of the role requires `sts:ExternalId`, set `assumeRole.externalId` to the external ID that the trust policy expects. A value outside the STS limits fails config loading with `external id must be 2-1224 characters` or `external id contains characters STS does not accept`.
 
-{{< doc-test paths="backend-authn-aws" >}}
-aws_case() {
-  local name="$1" expect="$2"
-  { cat <<'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - host: bedrock-runtime.us-east-1.amazonaws.com:443
-    policies:
-      backendAuth:
-EOF
-    sed 's/^/        /'
-  } > "config-aws-$name.yaml"
-  if agentgateway -f "config-aws-$name.yaml" --validate-only > "aws-$name.log" 2>&1; then
-    [ "$expect" = ok ] || { echo "FAIL: $name was accepted but should be rejected"; exit 1; }
-    echo "ok       $name"
-  else
-    [ "$expect" = fail ] || { echo "FAIL: $name was rejected"; cat "aws-$name.log"; exit 1; }
-    echo "rejected $name (as expected)"
-  fi
-}
-
-aws_case explicit ok <<'EOF'
-aws:
-  accessKeyId: "$AWS_ACCESS_KEY_ID"
-  secretAccessKey: "$AWS_SECRET_ACCESS_KEY"
-  sessionToken: "$AWS_SESSION_TOKEN"
-  region: us-west-2
-  serviceName: execute-api
-EOF
-
-aws_case implicit ok <<'EOF'
-aws:
-  region: us-east-1
-  serviceName: bedrock
-EOF
-
-aws_case assume-role ok <<'EOF'
-aws:
-  region: us-east-1
-  serviceName: bedrock
-  assumeRole:
-    roleArn: arn:aws:iam::123456789012:role/agentgateway-bedrock
-    sessionName: agentgateway
-EOF
-
-aws_case assume-role-cel ok <<'EOF'
-aws:
-  region: us-east-1
-  serviceName: bedrock
-  assumeRole:
-    roleArn: arn:aws:iam::123456789012:role/agentgateway-bedrock
-    sessionName:
-      expression: jwt.sub
-    tags:
-    - key: team
-      value: platform
-    - key: user
-      expression: jwt.sub
-EOF
-
-# A tag sets exactly one of value and expression.
-aws_case tag-both fail <<'EOF'
-aws:
-  assumeRole:
-    roleArn: arn:aws:iam::123456789012:role/agentgateway-bedrock
-    tags:
-    - key: team
-      value: platform
-      expression: jwt.sub
-EOF
-
-echo "aws standalone backend authentication verified"
-{{< /doc-test >}}
+```yaml
+assumeRole:
+  roleArn: arn:aws:iam::123456789012:role/agentgateway-bedrock
+  externalId: tenant-a:prod/12345
+```
+{{< /version >}}

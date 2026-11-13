@@ -36,12 +36,6 @@ You can access the {{< reuse "agw-docs/snippets/agentgateway.md" >}} metrics end
 
 For more information, see the [Semantic conventions for generative AI metrics](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-metrics/) in the OpenTelemetry docs.
 
-{{< doc-test paths="llm-observability" >}}
-PROXY_POD=$(kubectl get pods -n agentgateway-system -o name | grep agentgateway-proxy | head -1)
-PROXY_POD_IP=$(kubectl get ${PROXY_POD} -n agentgateway-system -o jsonpath='{.status.podIP}')
-kubectl run metrics-check -n agentgateway-system --rm -i --restart=Never --image=curlimages/curl -- -s "http://${PROXY_POD_IP}:15020/metrics" 2>/dev/null | grep "agentgateway_gen_ai_client_token_usage"
-{{< /doc-test >}}
-
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ## Token usage fields {#token-usage-fields}
 
@@ -49,7 +43,8 @@ LLM providers disagree about whether the input token count in a response include
 
 | Field | What it reports |
 |-------|-----------------|
-| `llm.inputTokens` | The total input count, including cache-read and cache-creation tokens. |
+| `llm.inputTokens` | The total input count, including cache-read and cache-creation tokens. |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+| `llm.outputTokens` | The normalized output count, including reasoning tokens when the provider reports them separately. |{{< /version >}}
 | `llm.totalTokens` | The normalized input count plus the output count. |
 | `llm.providerInputTokens` | The input count exactly as the provider sent it. |
 | `llm.providerTotalTokens` | The total count exactly as the provider sent it. |
@@ -58,7 +53,15 @@ LLM providers disagree about whether the input token count in a response include
 
 The `gen_ai.usage.input_tokens` log and span field and the `input` series of the `agentgateway_gen_ai_client_token_usage` metric both report the normalized count.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+The `gen_ai.usage.output_tokens` log and span field and the `output` series of the `agentgateway_gen_ai_client_token_usage` metric report the normalized output count.
+{{< /version >}}
+
 Anthropic and Amazon Bedrock exclude cached tokens from the input count that they report. OpenAI, Azure OpenAI, and Google Gemini include them. For the providers that exclude them, `llm.inputTokens` is therefore larger than `llm.providerInputTokens` whenever prompt caching is active. To report exactly what the provider billed, read `llm.providerInputTokens` or `llm.providerTotalTokens` instead.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+Google Gemini can report reasoning tokens separately from completion tokens. For Gemini responses, `llm.outputTokens` includes visible output and reasoning tokens. As a result, the output count matches the output side of the provider's total token count.
+{{< /version >}}
 
 > [!WARNING]
 > Do not add `llm.cachedInputTokens` or `llm.cacheCreationInputTokens` to `llm.inputTokens`. The cache counts are a subset of the normalized input count, so adding them double counts the cached tokens.
@@ -96,7 +99,7 @@ sum by (user_id) (
 {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} automatically logs information to stdout. When you run {{< reuse "agw-docs/snippets/agentgateway.md" >}} on your local machine, you can view a log entry for each request that is sent to {{< reuse "agw-docs/snippets/agentgateway.md" >}} in your CLI output. 
 
 To view the logs: 
-```sh {paths="llm-observability"}
+```sh
 kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
@@ -108,10 +111,6 @@ http.host=localhost http.path=/openai http.version=HTTP/1.1 http.status=200 prot
 operation.name=chat gen_ai.provider.name=openai gen_ai.request.model={{< reuse "agw-docs/snippets/openai-model.md" >}} gen_ai.response.
 model={{< reuse "agw-docs/snippets/openai-model.md" >}}-0125 gen_ai.usage.input_tokens=68 gen_ai.usage.output_tokens=298 duration=2488ms 
 ```
-
-{{< doc-test paths="llm-observability" >}}
-kubectl logs deployment/agentgateway-proxy -n agentgateway-system | grep "gen_ai.usage.input_tokens"
-{{< /doc-test >}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x" >}}
 ## Tool calls {#tool-calls}

@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Fixture for tests/ui-tabs-e-binds.spec.ts: the "Migrate from binds" UI tab in
+# configuration/gateways.md. The guide's binds example verbatim. It has `binds` and no
+# `gateways`, which is what makes Traffic > Gateways show the "Detected legacy binds config"
+# banner and its Review migration button. The migration is never saved.
+binds:
+- port: 3000
+  listeners:
+  - protocol: HTTP
+    routes:
+    - name: api
+      matches:
+      - path:
+          pathPrefix: /api
+      backends:
+      - host: localhost:8000

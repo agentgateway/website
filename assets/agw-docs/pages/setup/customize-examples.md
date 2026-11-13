@@ -485,6 +485,10 @@ EOF
 
 Configure graceful shutdown timeouts using the `shutdown` config.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+During the `min` window, the proxy keeps accepting new connections and asks clients on existing connections to close them after the current request. After `min`, the proxy closes the listener, refuses new connections, and lets existing connections finish until all tracked connections close or `max` passes.
+{{< /version >}}
+
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -498,6 +502,73 @@ spec:
     max: 120
 EOF
 ```
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+| Field | Description |
+| ----- | ----------- |
+| `spec.shutdown.min` | Time, in seconds, that the proxy keeps accepting new connections after it receives SIGTERM. Defaults to `10`. |
+| `spec.shutdown.max` | Sets the `terminationGracePeriodSeconds` of the proxy pod. Defaults to `60`. The proxy's total drain window is this value minus 5 seconds, or minus 1 second when the value is `10` or less, so that the proxy closes any remaining connections before Kubernetes stops the pod. For example, `max: 120` gives a drain window of 115 seconds. If `min` is longer than the drain window, the proxy shortens `min` to match it. |
+{{< /version >}}
+
+### Internal-only ClusterIP service {#clusterip-service}
+
+By default, the service that is generated for a Gateway is of type `LoadBalancer`. Depending on your load balancer implementation, each generated service can consume an external IP address from the address pool of your cluster. When you create several Gateways across namespaces, you might exhaust that pool even though you do not need to expose every Gateway outside of the cluster.
+
+To keep a Gateway reachable only from inside the cluster, set the service type to `ClusterIP`. No external IP address is allocated, and the Gateway is still managed by the agentgateway controller.
+
+1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that sets the service type to `ClusterIP`.
+
+   ```yaml
+   kubectl apply --server-side -f- <<'EOF'
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+   metadata:
+     name: internal-gateway
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     service:
+       spec:
+         type: ClusterIP
+   EOF
+   ```
+
+2. Reference the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource from your Gateway in the `spec.infrastructure.parametersRef` field.
+
+   ```yaml
+   kubectl apply --server-side -f- <<'EOF'
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: Gateway
+   metadata:
+     name: agentgateway-proxy
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
+     infrastructure:
+       parametersRef:
+         name: internal-gateway
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
+         kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+     listeners:
+       - name: http
+         port: 80
+         protocol: HTTP
+   EOF
+   ```
+
+3. Verify that the generated service is of type `ClusterIP` and that no external IP address is assigned.
+
+   ```sh
+   kubectl get svc agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+   Example output:
+
+   ```txt
+   NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+   agentgateway-proxy   ClusterIP   172.xx.xxx.xx   <none>        80/TCP    10s
+   ```
+
+   To reach a `ClusterIP` gateway, send requests from a pod in the cluster to `agentgateway-proxy.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local`, or use `kubectl port-forward` for local testing.
 
 ### Static IP for LoadBalancer {#static-ip}
 

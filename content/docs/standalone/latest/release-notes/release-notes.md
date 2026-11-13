@@ -2,7 +2,6 @@
 title: Release notes
 weight: 20
 description: What's new, changed, and fixed in each agentgateway standalone release.
-test: skip
 ---
 
 Review the release notes for agentgateway standalone.
@@ -10,472 +9,367 @@ Review the release notes for agentgateway standalone.
 > [!NOTE]
 > For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
-## ✨ Highlights {#v15-highlights}
+## ✨ Highlights {#v17-highlights}
 
-Version 1.5 focuses on LLM cost control, native provider API surfaces, and outbound traffic.
+With the 1.7 release, agentgateway knows more about your models and your traffic than in previous versions. Review the following highlights, then continue to the [breaking changes](#v17-breaking-changes) section.
 
-- **[API key budgets and model access](#v15-apikey-budgets)**: Cap the LLM spend of an individual API key in dollars or tokens, and limit which models the key can reach.
-- **[Native Gemini inbound API](#v15-gemini-inbound)**: Clients that are built on the Gemini and Vertex AI SDKs can call agentgateway in Gemini's native wire format.
-- **[Anthropic Messages to OpenAI Responses conversion](#v15-anthropic-responses)**: Send a client that speaks the Anthropic Messages API to a provider that advertises only the Responses format.
-- **[Egress proxying, TCP backends, and CONNECT tunneling](#v15-egress)**: Run agentgateway as an egress proxy for agent workloads.
-- **[Rebuilt logs and trajectory views](#v15-ui)**: Inspect multi-turn agent activity, tool calls, and results in the admin UI.
+- **[Model metadata and service-tier costs](#v17-catalog)**: The model catalog knows each model's context window, modalities, and capabilities, and shares them through `/v1/models` and CEL. Costs reflect the service tier that served each request.
+- **[New LLM APIs and providers](#v17-llm)**: Agentgateway speaks the OpenAI Decisions and TypeSafe SystemOne APIs natively, adds Perplexity, and lets virtual models choose a target by calling your own routing service.
+- **[Broader guardrails](#v17-guardrails)**: Vendor guardrails support `scope`, tool output is inspected by default, and MCP traffic can be filtered with CEL.
+- **[Agent sessions and analytics](#v17-observability)**: Agentgateway detects agent sessions automatically, and the new `agctl standalone` CLI summarizes tokens, cost, cache hit rate, and latency by model, user, or any logged attribute.
+- **[OIDC for browsers and API clients](#v17-security)**: One OIDC policy can accept both browser sessions and bearer ID tokens.
 
-## 🔥 Breaking changes {#v15-breaking-changes}
+## 🔥 Breaking changes {#v17-breaking-changes}
 
-### LLM input and total token counts include cache tokens
+Before you upgrade, review the breaking changes. In particular, standalone deployments now encrypt MCP sessions by default, prompt guards inspect tool outputs by default, and dynamic backends can no longer reach loopback or link-local addresses.
 
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2880 -->
+### Standalone encrypts MCP sessions with a key by default {#v17-session-key}
 
-LLM providers disagree about whether the input token count in a response includes the tokens that the provider read from or wrote to its prompt cache. Anthropic and Amazon Bedrock exclude cached tokens. OpenAI, Azure OpenAI, and Google Gemini include them. Agentgateway used to pass each provider's number through unchanged, so the same prompt produced a different count depending on which provider served it. Agentgateway now normalizes the counts so that they mean the same thing for every provider.
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4031 -->
 
-- `llm.inputTokens` is the total input count, including cache-read and cache-creation tokens.
-- `llm.totalTokens` is the normalized input count plus the output count.
-- `llm.providerInputTokens` and `llm.providerTotalTokens` are new fields that report the counts exactly as the provider sent them.
+Agentgateway allows defining an MCP session key that encrypts MCP session IDs. The agentgateway Kubernetes control plane already generated this key. Standalone deployments now match this.
 
-The `llm.cachedInputTokens` and `llm.cacheCreationInputTokens` fields do not change, and both are now always a subset of `llm.inputTokens`. Only the providers that previously excluded cached tokens report different values. Those providers are Anthropic, Amazon Bedrock, Anthropic models served through Vertex AI or GitHub Copilot, and custom providers that use the `messages` or `anthropicTokenCount` format. Cost tracking does not change, because the model cost catalog already priced cached tokens separately.
+When you set neither `SESSION_KEY` nor `config.session.key`, agentgateway generates a key. In `file` storage mode, the default, agentgateway writes the key to `config.session.key` in your configuration file. In `hybrid` mode, agentgateway stores the key in the database. In `readOnly` mode, or when agentgateway cannot write the configuration file, such as in the default `readonly` mode of the Helm chart, session IDs stay unencrypted and agentgateway logs a warning.
 
-**Actions to take**: The normalized counts reach every feature that reads a token count, including access logs, spans, metrics, token-based rate limits, and CEL expressions. To read the provider's unmodified value instead, use `llm.providerInputTokens` or `llm.providerTotalTokens`. Review each token-based rate limit that you sized against a provider that excluded cached tokens, because requests now consume the limit sooner. Annotate the upgrade in any dashboard that trends input tokens.
+If agentgateway generates a key during the upgrade, MCP sessions established before the upgrade are rejected, and clients must establish new sessions.
 
-To restore the previous behavior while you migrate, set the `AGENTGATEWAY_LEGACY_LLM_USAGE_TOKEN_SEMANTICS` environment variable to `true` for the agentgateway process. Agentgateway plans to remove this variable after version 1.5, so treat it as a short-term migration aid.
+**Actions to take**:
 
-For each token field and when to read it, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
+* If you keep your configuration file in version control, set `SESSION_KEY` before you upgrade, so that agentgateway does not write a secret into the file.
+* If you install with the Helm chart in the default `readonly` mode, set `session.secretName` to encrypt session IDs. For more information, see [Use an existing session key Secret]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
+* To keep sessions unencrypted, set `SESSION_KEY` or `config.session.key` to `disabled`.
 
-### JWT validation requires the `iss` claim, and `aud` when you configure audiences
+For more information, see [Session key]({{< link-hextra path="/integrations/mcp/servers/http/#session-key" >}}).
 
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2993 -->
+### Prompt guards inspect tool outputs by default {#v17-prompt-guard-scope}
 
-Agentgateway used to compare a JWT policy's `issuer` and `audiences` settings against the token's `iss` and `aud` claims only when the token contained them. A token that omitted a claim therefore passed validation. Agentgateway now requires the claim whenever the corresponding setting exists.
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3975 -->
 
-| Policy setting | 1.4.x and earlier | 1.5.x |
-| --- | --- | --- |
-| `issuer` | The `iss` claim is matched if the token has one | The `iss` claim is required and must match |
-| `audiences` set to a non-empty list | The `aud` claim is matched if the token has one | The `aud` claim is required and must match one entry |
-| `audiences` omitted or empty | Audience validation is disabled | Audience validation is disabled |
+All request prompt guards except webhooks now honor `scope`, including `openAIModeration`, `googleModelArmor`, and `azureContentSafety`. The default request scope now also includes `toolOutput`, so every request guard that uses the default scope also inspects tool results. Response guards still inspect `messages` by default.
 
-The `requiredClaims` field is unchanged and still defaults to `["exp"]`. The `iss` and `aud` requirements are added on top of whatever you list there, so an empty `requiredClaims` list no longer means that no claims are required.
+This change can produce new rejections or masking. It also increases the content that agentgateway sends to vendor guardrail APIs.
 
-**Actions to take**: Confirm that your identity provider issues an `iss` claim in the tokens that reach agentgateway. Most providers do. If you accept tokens that have no `aud` claim, remove `audiences` from the policy or set it to an empty list, because a non-empty list now rejects those tokens. For the policy fields, see [JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}).
-
-### AI policies on a backend merge with an attached policy
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2821 -->
-
-An AI policy set directly on a backend used to replace an attached AI policy in full. If the backend set even one field, every field of the attached policy was dropped, including prompt guards, prompt enrichment, defaults, transformations, model aliases, and prompt caching. The two policies now merge field by field, and the backend's value wins for a field that both of them set.
-
-**Actions to take**: Review each backend that sets an `ai` policy alongside an attached AI policy. A field that the attached policy sets, and the backend does not, now takes effect where it was previously ignored. Remove any field from the attached policy that you do not want the backend to inherit.
-
-### A listener that cannot bind now fails startup
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2588 -->
-
-When you start agentgateway with a static configuration file, a listener that cannot open its socket used to log a warning and leave the process running. A port that was already in use therefore looked like a healthy start. Agentgateway now exits with a non-zero status and reports the bind error. Configuration reloads and listeners that arrive over xDS keep the previous behavior, so a failed reload keeps the last good configuration instead of stopping the process.
-
-**Actions to take**: A port conflict that used to be silent now stops the process, and a supervisor that restarts agentgateway on exit turns it into a crash loop. Free the port or change the `bind` address in your configuration.
-
-### Managed API key metadata uses the reserved `agentgateway.dev/` prefix
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3139 -->
-
-API keys that you create in the admin UI or through the admin API carry metadata that agentgateway manages. That metadata moved to a reserved prefix so that agentgateway can add server-side fields, such as authenticated user information, without colliding with your own metadata.
-
-- The key identifier moved from `metadata.id` to `metadata["agentgateway.dev/id"]`.
-- A new `metadata["agentgateway.dev/createdAt"]` field records when the key was created.
-- Any metadata field that you supply with the `agentgateway.dev/` prefix is now rejected.
-
-**Actions to take**: Update any script or integration that reads `metadata.id` from an `llm.apiKey` resource. If your own key metadata uses the `agentgateway.dev/` prefix, rename those fields before you upgrade. For more information, see [API key authentication]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}).
-
-## ⚠️ Removed or deprecated {#v15-removed-deprecated}
-
-### The `MODEL_CATALOG_PATHS` environment variable is removed
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2772 -->
-
-Agentgateway no longer reads the `MODEL_CATALOG_PATHS` environment variable. The variable could not be reconciled with dynamic configuration reloading, and the same catalog sources can be set in the configuration file instead.
-
-**Actions to take**: Move each path from the environment variable to the `config.modelCatalog` list in your configuration file, as in the following example. Agentgateway silently ignores the environment variable, so a catalog that you load this way stops being applied after you upgrade.
+**Actions to take**: To keep the 1.6 behavior, set the scope of each request guard explicitly.
 
 ```yaml
-config:
-  modelCatalog:
-  - file: /etc/agentgateway/model-catalog/costs.json
+scope:
+- systemPrompt
+- messages
 ```
 
-For the catalog fields, see the [Configuration reference]({{< link-hextra path="/reference/configuration/" >}}).
-
-### The `agctl costs` command is renamed to `agctl catalog`
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2927 -->
-
-The `agctl` command that manages model catalogs is renamed from `agctl costs` to `agctl catalog`, because a catalog entry now carries more than pricing data. The subcommand and its flags do not change, and the command produces the same catalog JSON. The `agctl costs` command still runs the same code, but it is deprecated and reports that you must use `agctl catalog` instead. Agentgateway plans to remove `agctl costs` in a future release.
-
-**Actions to take**: Replace `agctl costs` with `agctl catalog` in any script or pipeline that generates a model catalog. For the flags and examples, see the [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}) reference.
-
-## 🌟 New features {#v15-new-features}
-
-### LLM {#v15-features-llm}
-
-#### API key budgets and model access {#v15-apikey-budgets}
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3143 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3107 -->
-
-An API key entry now takes a `budgets` list that caps LLM spend for that key, and an `allowedModels` list that limits which models the key can reach. A budget has a name, a limit in `USD` or `Tokens`, a rolling window, and an action to take when the key exceeds the limit. The `Block` action rejects the request, and the `Audit` action records the overage and lets the request through.
-
-```yaml
-policies:
-  apiKey:
-    keys:
-    - key: "$TEAM_A_KEY"
-      allowedModels:
-      - "gpt-5*"
-      - claude-sonnet-5
-      budgets:
-      - name: daily-spend
-        limit:
-          unit: USD
-          amount: 50
-        window:
-          rolling: 24h
-        onBudgetExceeded: Block
-```
-
-Windows align to the Unix epoch rather than to the first request, so `1h` follows UTC clock hours and `24h` starts at midnight UTC. Usage is charged after the LLM response, from the tokens or cost that the provider reports. A provider that does not report the unit that the budget needs is logged but cannot be charged or blocked after the fact. Budget state is held in memory and flushed to the database every five seconds, which keeps the database off the request path. A burst of traffic across replicas can therefore overshoot the limit.
-
-Budgets depend on a database, so they require the `hybrid` storage mode and are available in standalone mode only. Omit `allowedModels` to leave a key unconstrained, and set an empty list to deny every model. Both fields work with `key` and `keyHash` entries, and you can manage budgets in the admin UI.
-
-For the storage requirement, see [Store config in a database]({{< link-hextra path="/documentation/setup/storage/" >}}), and for key configuration, see [API key authentication]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}).
-
-#### Native Gemini inbound API {#v15-gemini-inbound}
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2963 -->
-
-Clients that are built on the Gemini or Vertex AI SDKs can now call agentgateway in Gemini's native wire format, rather than through an OpenAI-compatible endpoint. Two route types are added, and by default agentgateway maps paths to them automatically.
-
-| Route type | Default paths |
-| --- | --- |
-| `generateContent` | Paths that end in `:generateContent` or `:streamGenerateContent` |
-| `geminiCountTokens` | Paths that end in `:countTokens` |
-
-The model comes from the `models/{model}` path segment, so any `gemini-*` model works without per-model configuration. Streaming requires `alt=sse`, because Gemini's default JSON-array streaming mode is not supported. Prompt guards apply to `generateContent` and `streamGenerateContent`, and are skipped for `countTokens`. A Gemini request to a non-Gemini provider returns an explicit unsupported-conversion error.
-
-For the supported API types, see [LLM API types]({{< link-hextra path="/documentation/llm/api-types/" >}}).
-
-#### Anthropic Messages to OpenAI Responses conversion {#v15-anthropic-responses}
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2689 -->
-
-Agentgateway can now translate an Anthropic Messages request into an OpenAI Responses request, and translate the buffered or streamed reply back into the Messages format. Use it when a client sends `/v1/messages` but the provider that you route to advertises only the Responses format. The existing Messages-to-Completions path still takes precedence for providers that advertise both formats, so dual-format OpenAI and Azure OpenAI providers are unchanged.
-
-For the supported formats, see [LLM API types]({{< link-hextra path="/documentation/llm/api-types/" >}}).
-
-#### OpenAI inline moderation
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2519 -->
-
-An OpenAI provider can now carry a `moderation` block that agentgateway injects into chat completions and Responses requests, so that OpenAI moderates the request inline rather than in a separate call. The gateway sets the configuration, which means a client cannot turn moderation off or weaken it. You choose a moderation model and set `block` or `score` mode independently for input and output.
-
-```yaml
-llm:
-  models:
-  - name: "*"
-    provider:
-      openAI:
-        model: gpt-5
-        moderation:
-          model: omni-moderation-latest
-          policy:
-            input:
-              mode: block
-            output:
-              mode: score
-```
-
-This is separate from the existing `openAIModeration` prompt guard, which calls the Moderation API from the gateway. For that approach, see [OpenAI moderation]({{< link-hextra path="/documentation/llm/prompt-guards/moderation/" >}}).
-
-#### Prompt guards can scan tool input and output
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3000 -->
-
-A prompt guard now takes an optional `scope` list that selects which parts of an LLM request it inspects. The accepted values are `systemPrompt`, `messages`, `toolOutput`, and `toolInput`. Tool content is opt in, so a guard without a `scope` behaves as it did before. Scoping is currently supported by the regex guard.
-
-For the field, the caveats on masking opaque tool arguments, and examples, see [Prompt guards]({{< link-hextra path="/documentation/llm/prompt-guards/regex/" >}}).
-
-#### Transformations after provider conversion
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2912 -->
-
-Transformations run before agentgateway converts a request into the provider's format, so writing one meant understanding how that conversion works, and fields that the conversion adds could not be changed at all. A new `finalTransformation` field on a model, and a `finalTransformations` field on an AI policy, run after the conversion instead. You only need to know the shape of the target API.
-
-```yaml
-llm:
-  models:
-  - name: gpt-5.6-luna
-    provider:
-      reference: azure-provider
-    params:
-      model: gpt-5.6-luna
-    finalTransformation:
-      reasoning_effort: 'fail("remove")'
-      max_tokens: '600'
-```
-
-For more information, see [Transformations]({{< link-hextra path="/documentation/llm/transformations/" >}}).
-
-#### Other LLM improvements
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2927 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2830 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2934 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2820 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2766 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3058 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2858 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2856 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2848 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3097 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3015 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2850 -->
-
-- **Catalog tags**: A catalog entry carries a freeform `tags` list alongside its pricing rates and tiers, which is why `agctl costs` became `agctl catalog`. Use tags to record capability or routing information about a model and to select models in policies. The initial catalog refresh at startup is also fixed.
-- **Bedrock**: Amazon Nova multimodal embeddings and Cohere v4 embeddings are supported. This release also corrects `top_k` translation, handles image URLs consistently across input types, and mutates a guardrail payload in place so that the original structure is preserved.
-- **GitHub Copilot and DeepSeek**: Grok models are routed through the Responses API, and the DeepSeek preset advertises the Responses format.
-- **Prompt caching across formats**: OpenAI cache markers are translated into their Anthropic and Bedrock equivalents.
-- **Vertex AI embeddings**: `gemini-embedding-2` and later models are routed to the `:embedContent` endpoint, because Google no longer serves `:predict` for them. The `gemini-embedding-001` and `text-embedding-*` models stay on `:predict`. Because `:embedContent` embeds one input per call, a multi-input array now returns an explicit error instead of collapsing into a single vector.
-- **Token counting**: The count-tokens endpoint is routed by default, and an Anthropic thinking budget is capped by the request's maximum token count.
-- **Guardrail refactor**: Guardrails are restructured internally, and prompt guard logs record which pattern matched.
-- **Error handling**: Proxy errors are classified by the phase they occurred in, and the original upstream HTTP status code is preserved on an error response.
-
-For the list of supported providers, see the [LLM providers]({{< link-hextra path="/integrations/llm/providers/" >}}) docs, and for the command, see [`agctl catalog import`]({{< link-hextra path="/reference/agctl/agctl-catalog-import/" >}}).
-
-### Security {#v15-features-security}
-
-#### Signed JWT backend authentication
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2515 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2849 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2763 -->
-
-A new `backendAuth.jwtSign` method signs a JSON Web Token per request with a private key that you supply, and attaches it to the backend request. Use it for upstreams that require a keypair-signed JWT rather than a static credential, such as the Snowflake SQL API. Claim values accept CEL expressions, and a signing key that you reference by file path is reloaded when the file changes, so a key rotation does not require a restart.
-
-For the signing key, key ID, token lifetime, claims, placement, and supported algorithms, see [Signed JWT]({{< link-hextra path="/documentation/configuration/security/backend-authn/jwt-sign/" >}}).
-
-#### Connection-level external authorization
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3016 -->
-
-A new `networkExtAuthz` frontend policy calls an external authorization service once for each downstream connection, instead of once for each HTTP request. Use it to authorize a whole connection, including TCP traffic that carries no HTTP requests, and to avoid a per-request callout on a long-lived connection. It takes the same fields as the existing `extAuthz` policy, except that it calls the service over HTTP only. Set `protocol.http` explicitly, because the field defaults to `grpc` and agentgateway rejects a `networkExtAuthz` policy that uses it.
-
-For per-request authorization and the new policy, see [External authorization]({{< link-hextra path="/documentation/configuration/security/external-authz/#network-extauthz" >}}).
-
-#### Cross App Access and token exchange enhancements
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2770 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2750 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2892 -->
-
-- **Separate scopes per leg**: Cross App Access takes a new `accessTokenScopes` field, which sets the scopes for the access-token exchange independently of the scopes that request the OAuth Identity Assertion Authorization Grant (ID-JAG). Omit the field to inherit `scopes`. Set an empty list to omit the `scope` parameter entirely, which some authorization servers require, such as an Okta custom authorization server.
-- **Configurable subject token type**: Cross App Access takes `subjectToken.tokenType`, so a workload identity that authenticates with client credentials can exchange an access token. The default is still `id_token`.
-- **Optional `requested_token_type`**: The parameter is optional in OAuth token exchange, which matches [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693).
-
-For more information, see [Cross App Access]({{< link-hextra path="/documentation/configuration/security/backend-authn/cross-app-access/" >}}) and [OAuth token exchange]({{< link-hextra path="/documentation/configuration/security/backend-authn/oauth-token-exchange/" >}}).
-
-#### Sensitive request header redaction
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3078 -->
-
-A new `config.sensitiveHeaders` list names request headers whose values must not appear in trace or debug output. Agentgateway marks the headers as sensitive when the request arrives and re-marks them after request and backend CEL transformations, so a header that a transformation creates is also redacted. The real values are still forwarded upstream and are still available to CEL.
-
-For more information, see [Debug requests]({{< link-hextra path="/documentation/operations/trace-requests/" >}}).
-
-#### Other security improvements
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2640 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3106 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3022 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3144 -->
-
-- **SPIFFE Workload API identity**: Set `config.spiffe.endpoint` to a local SPIFFE Workload API socket, such as a SPIRE agent. Agentgateway then sources the mTLS identity and trust bundle from it instead of from a static certificate and key on disk. The X.509 SPIFFE Verifiable Identity Document (SVID) rotates without a restart. Listeners and backends then opt in individually with `tls.spiffe` and `backendTLS.spiffe`, and `backendTLS.subjectAltNames` verifies the upstream SPIFFE ID. The peer identity is available to policies as the `source.spiffeId` CEL attribute. For the fields, see the [Configuration reference]({{< link-hextra path="/reference/configuration/" >}}) and the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
-- **Preserve a validated JWT**: A JWT policy takes a `preserveToken` field. Set it to `true` to keep a successfully validated JWT in the location that it arrived in, so that a backend can read the original token. The default is `false`, which removes the token after validation, as earlier releases did.
-- **DNS rebinding protection for MCP backends**: Set `dnsRebindingProtection` on an MCP backend to reject requests whose `Host` or `Origin` header does not name a loopback address, which blocks DNS rebinding attacks against a locally bound MCP server. Protection is off by default. For the accepted hosts and an example, see [Connect to an MCP server over HTTP]({{< link-hextra path="/integrations/mcp/servers/http/" >}}).
-- **Client endpoint headers are stripped for inference routing**: The `x-gateway-destination-endpoint` header is an output of the endpoint picker, not an input that a client sets. Agentgateway now removes it from an incoming request before [inference routing]({{< link-hextra path="/documentation/inference/" >}}) runs. No action is needed, because the header was already overwritten in most paths.
-
-### MCP and A2A {#v15-features-mcp}
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3089 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3009 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2207 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2916 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3059 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2788 -->
-
-- **Authorization server metadata**: Agentgateway rewrites the issuer in the metadata that it serves, so a client that validates the issuer against the gateway address succeeds.
-- **Discovery failures are visible**: A discovery failure is reported rather than masked when the backend is in `failOpen` mode.
-- **Server-initiated requests**: A client's JSON-RPC response to a server-initiated request is routed back to the server that asked.
-- **More targets per backend**: An MCP backend accepts up to 128 targets, raised from 32.
-- **Trace context**: An MCP call's upstream trace context is derived from the gateway's active span, and the `rmcp` library is updated to 3.1.0.
-
-For more information, see the [MCP]({{< link-hextra path="/documentation/mcp/" >}}) docs.
-
-### Traffic management {#v15-features-traffic}
-
-#### Egress proxying, TCP backends, and CONNECT tunneling {#v15-egress}
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3013 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3095 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3014 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3124 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3098 -->
-
-This release fills in the pieces that agentgateway needs to serve as an egress proxy for agent workloads.
-
-- **Dynamic backends for TCP**: A TCP route can use a dynamic backend, so the destination comes from the connection rather than from static configuration.
-- **CEL target selection**: A dynamic backend takes an optional `target` CEL expression that computes the `host:port` to dial. Use it to read a destination that external processing returned in `extproc.*` metadata, instead of having external processing rewrite the request authority. Omit `target` to keep dialing the destination that the request names. For an example, see [External processing]({{< link-hextra path="/documentation/configuration/traffic-management/extproc/" >}}).
-- **Tunnel mode**: The `backendTunnel` policy takes a `mode` field. The default `auto` mode uses `CONNECT` for TLS and non-HTTP transports, and absolute-form requests for plaintext HTTP. The `connect` mode uses `CONNECT` for everything. You can also attach policies to the connection with the tunnel proxy itself, and `CONNECT` requests can be tunneled through a dynamic proxy backend.
-- **Forward proxy authentication**: A client can authenticate with the `Proxy-Authorization` header instead of `Authorization`. Agentgateway reads the credential from that header, strips it before the request goes upstream, and marks it sensitive so that its value is not logged. A failed `CONNECT` authentication returns a `407` response with a `Proxy-Authenticate` header, as the HTTP specification requires.
-- **Backend connection timeouts**: A backend can set `connectTimeout`, the `keepalives` settings, and the connection pool settings. The `requestTimeout` field sets the deadline for a response.
-
-For a worked example, see the [`traffic-egress-proxy` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-egress-proxy) in the agentgateway repository, and for the timeout fields, see [Timeouts]({{< link-hextra path="/documentation/configuration/resiliency/timeouts/" >}}).
-
-#### Session affinity
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2779 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2825 -->
-
-A new `sessionAffinity` backend policy pins requests that share an affinity value to the same endpoint, without any state shared between agentgateway replicas. A `source` CEL expression extracts the value, which is hashed and mapped to an endpoint by weighted rendezvous hashing, so every replica independently picks the same backend. Affinity is best-effort and applies only when no explicit inference or MCP destination exists.
-
-For the fields, the fallback behavior, common expressions, and examples, see [Session affinity]({{< link-hextra path="/documentation/configuration/backends/#session-affinity" >}}).
-
-#### CEL enhancements
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2845 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/1975 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2855 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2836 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2835 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2970 -->
-
-- **Every request policy is registered for CEL**: All request policies are available in the CEL context, not just a subset.
-- **Cost-class routing**: A worked example derives a cost class from the request body with plain CEL and routes the same public model name to different upstream models.
-- **Internal improvements**: A CEL error can be serialized to a string without leaking potentially private detail. Expression analysis can inspect call arity and function-versus-method usage. A parser bug is fixed, and `has()` takes a fast path for dynamic objects.
-
-For the full CEL surface, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
-
-### Operations {#v15-features-operations}
-
-#### Admin UI enhancements {#v15-ui}
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2888 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3148 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3149 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2683 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3138 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2986 -->
-
-- A redesigned logs view and conversation view.
-- A trajectory view for multi-turn agent activity, with tool call and result details.
-- The UI follows your system theme by default.
-- The CEL playground works when the UI is exposed through a gateway.
-- The LLM playground forwards its API key to MCP requests.
-
-For more information, see [Admin UI]({{< link-hextra path="/documentation/setup/ui/" >}}).
-
-#### Observability enhancements
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3079 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3027 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3068 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3100 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2920 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2925 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3141 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2110 -->
-
-- **Native histograms**: A new `config.histograms` field chooses which histogram representation to collect: `classic`, `native`, or `both`. Native histograms are exposed only through the Prometheus protobuf format. The default is `classic`, because native histograms add scrape overhead.
-- **Protobuf metrics**: The `/metrics` and `/stats/prometheus` endpoints negotiate the response format from the `Accept` header, so a scraper that asks for `application/vnd.google.protobuf` gets protobuf instead of text.
-- **Spans for every policy call**: Tracing emits an outbound span for the upstream call and for each policy callout, such as external authorization or a guardrail webhook. MCP and gRPC spans are named with protocol-specific information, and request tracing with `agctl` follows the same outbound calls.
-- **Explicit LLM payload logging**: Logging an LLM prompt or completion is now an explicit setting rather than a side effect of a CEL expression. Set `frontendPolicies.accessLog.database.llm` to `metadata` to store usage, timing, and cost without content, or to `full` to also store prompt and completion content. For more information, see [Log to a database]({{< link-hextra path="/documentation/observability/access-logs/database/" >}}).
-- **LLM token timing in access logs**: Access logs record time-to-first-token and related timing for LLM requests.
-- **CPU and heap profiles**: A new `agctl proxy profile` command collects pprof CPU and heap profiles from the admin endpoint.
-- **Generated metrics reference**: The metrics documentation is generated from the schema, so it stays in step with the code.
-
-For more information, see [Observability]({{< link-hextra path="/documentation/observability/" >}}) and the [`agctl proxy profile`]({{< link-hextra path="/reference/agctl/agctl-proxy-profile/" >}}) reference.
-
-#### Read-only configuration storage
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2988 -->
-
-A new `readOnly` value for `config.storage.mode` locks the admin UI and the admin API to reads. Every handler that mutates state returns a `403` response, including configuration file writes, resource create and delete, and a model catalog refresh. Read-only endpoints such as the CEL playground, the logs API, and every `GET` are unaffected, and the UI shows a banner and blocks the same write paths before it calls the API. You can also set the `UI_READ_ONLY` environment variable to `true`.
-
-If you deploy the standalone Helm chart, its `mode: readonly` value already serves configuration from a read-only ConfigMap. For the storage modes, see [Store config in a database]({{< link-hextra path="/documentation/setup/storage/" >}}).
-
-#### Other operations improvements
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2915 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2797 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3132 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2823 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2844 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2737 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2909 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3099 -->
-
-- **LiteLLM import**: The `agctl` importer now handles wildcard model names, including `*` and prefix and suffix wildcards, and imports LiteLLM centralized credentials from `credential_list` and `litellm_credential_name` as reusable providers and provider references. It reports an explicit finding for a wildcard or credential that agentgateway cannot represent safely. For more information, see [Import a configuration]({{< link-hextra path="/documentation/configuration/import/" >}}).
-- **Backend credential rotation**: A `backendAuth.key` that points at a file is reloaded when the file changes, so rotating a token no longer requires a restart or an unrelated configuration edit. The `backendTLS` and `jwtSign` key fields already behaved this way.
-- **Pod labels in the standalone Helm chart**: The chart can label the agentgateway pod, which platforms such as Azure workload identity require. For the chart values, see [Install with Helm]({{< link-hextra path="/documentation/setup/install/helm/" >}}).
-- **XDG config directory**: Agentgateway respects `XDG_CONFIG_HOME` when it looks for local configuration.
-- **Pluggable cryptography**: A `crypto` module centralizes random number generation, authenticated encryption with associated data (AEAD), digest, JWT, and TLS provider selection behind `crypto-*` build flags. A SymCrypt provider is available for builds that need it. AWS-LC remains the default.
-
-## 🐛 Fixes {#v15-fixes}
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3017 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2735 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3103 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2964 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2775 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2846 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2991 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3007 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2983 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3073 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2885 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2971 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2771 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2791 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2813 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2801 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3005 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2977 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2804 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3002 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3048 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/3140 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2661 -->
-
-**Security**
-
-- An invalid inline JWKS reports an error, and an invalid JWT produces a clearer message.
-- A file-mode `apiKey` policy keeps its keys when the field is omitted on an upsert.
-
-**MCP and A2A**
-
-- A2A interface URL rewriting is correct when a path rewrite policy is active, and A2A v1.0 nested payloads record response telemetry and the context ID.
-
-**LLM**
-
-- Bedrock virtual models no longer bypass the transformed model on the upstream path, and Bedrock streaming indexes, invalid function inputs, and image URL handling are fixed.
-- Gemini usage is extracted from the Cloud Code `response` envelope, and parallel tool calls are preserved across the Gemini and Completions conversions.
-- Anthropic streaming sets the role on the first delta, honors the final input usage, and no longer fails the whole request when a server tool errors.
-- A multi-turn request whose previous turn returned empty tool arguments no longer fails validation.
+Webhook guards do not support `scope`. They always inspect the system prompt and messages. For more information, see [Scope]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#scope" >}}).
+
+### CEL header lookups return every value of a repeated header {#v17-cel-headers}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3778 -->
+
+A CEL lookup such as `request.headers["x-example"]` now returns a list when the header appears more than once in the request. Previously, the result depended on whether agentgateway could optimize the expression internally. The same lookup could return a single value in one expression and a list in another. Expressions that read headers that appear only once are unaffected.
+
+**Actions to take**: Review CEL expressions that read request headers that a client can repeat, such as in authorization rules and transformations. Make sure that the expressions handle a list value. A comparison such as `request.headers["x-role"] == "guest"` returns `false` for a repeated header, so a client can skip a deny rule by sending the header twice. To read the first value, use `request.headers.raw()["x-role"][0]`. For more information, see [Repeated request headers]({{< link-hextra path="/reference/cel/variables/#repeated-headers" >}}).
+
+### Dynamic backends cannot connect to loopback or link-local addresses {#v17-dynamic-loopback}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3889 -->
+
+Dynamic backends now reject destinations that resolve to loopback, link-local, or unspecified addresses, such as cloud metadata servers. Agentgateway checks the address after DNS resolution and returns `503` for a rejected request.
+
+**Actions to take**: If a dynamic backend must reach a service that is local to the gateway, set `config.backend.allowDynamicLoopback: true`. For more information, see [Loopback and link-local destinations]({{< link-hextra path="/documentation/configuration/egress-proxy/#loopback-destinations" >}}).
+
+### Error responses hide internal details {#v17-error-details}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2162 -->
+
+Error responses that agentgateway generates now carry a generic message instead of the internal cause of the error. This keeps internal details, such as signing key IDs, file paths, and upstream addresses, from being exposed to clients. The HTTP status codes are unchanged. The `error` field of the access log and the request traces still contain the full cause.
+
+{{< reuse "agw-docs/pages/operations/client-error-messages.md" >}}
+
+**Actions to take**: If clients, tests, or alerts parse error response bodies or match their text, update them to match the generic messages or use the status code instead. To find the cause of an error, check the access log. To return the full details to clients while you debug in a trusted environment, set the `AGENTGATEWAY_UNSAFE_EXPOSE_ERROR_DETAILS` environment variable to `true`. Do not use this setting in production. For more information, see [Client-safe error responses]({{< link-hextra path="/documentation/operations/debug/#client-safe-error-responses" >}}).
+
+### Removed {#v17-removed}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4072 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4080 -->
+
+- **Messages-to-Completions preference**: The `AGENTGATEWAY_MESSAGES_PREFER_COMPLETIONS` environment variable is removed, as planned in 1.6. When a provider supports both formats, agentgateway always converts Anthropic Messages requests to the OpenAI Responses format. For an OpenAI-compatible server that does not implement `/v1/responses`, configure a `custom` provider that declares only the `completions` format. For more information, see [Provider format conversion]({{< link-hextra path="/documentation/llm/api-types/messages/#provider-format-conversion" >}}).
+
+### Other behavior changes {#v17-behavior-changes}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3864 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3661 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4061 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3826 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3812 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4029 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4002 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3964 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3925 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4011 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3973 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3815 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3802 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3873 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3897 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3793 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3957 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3928 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3831 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4090 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4091 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4097 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4163 -->
+
+- **Proxy environment variables**: Callouts, such as JWKS fetches, external authorization requests, and AWS and Azure credential fetches, now use the `HTTPS_PROXY`, `HTTP_PROXY`, `ALL_PROXY`, and `NO_PROXY` environment variables when `config.callouts.tunnel` is omitted. In 1.6, only Google Cloud Platform (GCP) credential fetches used these variables. If the environment that runs agentgateway exports these variables for other tools, callouts go through that proxy after you upgrade. To keep callouts direct, set `NO_PROXY` to `*`. For more information, see [Callout proxy]({{< link-hextra path="/documentation/configuration/callout-proxy/" >}}).
+- **Normalized service tier**: `llm.serviceTier` is now one of `standard`, `flex`, `priority`, or `reserved`, regardless of the name that the provider uses. A provider tier that agentgateway does not recognize leaves the value unset. Update CEL expressions and dashboards that compare against provider-specific values such as `default`. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
+- **Request log database migration**: At startup, agentgateway adds analytics columns to the request log database, SQLite or PostgreSQL, and backfills them from existing rows. The migration can take some time on large databases. After the migration, an earlier version such as 1.6 does not start on a migrated PostgreSQL database until you delete the new migration records. For more information, see [Schema migrations]({{< link-hextra path="/documentation/observability/access-logs/database/#schema-migrations" >}}).
+- **UI accepts bearer ID tokens**: An OIDC policy in `ui.policies.oidc` now defaults to `credentials: sessionOrBearer`. The UI accepts a bearer ID token in the `Authorization` header in addition to a browser session. To accept only browser sessions, as in 1.6, set `credentials: session` on the policy. For more information, see [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}).
+- **GenAI operation name**: The `gen_ai.operation.name` attribute in access logs and traces now reflects the request type, such as `generate_content`, `embeddings`, `rerank`, `realtime`, `decisions`, or `count_tokens`. Requests on a route with the `detect` route type record the operation that the request path implies, such as `ocr` or `image_generation`, or `unknown` for a path that agentgateway does not recognize. In 1.6, every request except Embeddings requests recorded `chat`. Update queries and dashboards that filter on `chat`. For more information, see [Operation names]({{< link-hextra path="/documentation/observability/traces/attribute-reference/#operation-names" >}}).
+- **Bedrock `tool_choice` and service tier**: Client `tool_choice` settings and the OpenAI `service_tier` values now reach Bedrock Converse instead of being dropped silently. Requests that force tool use on a model that does not support it, such as with extended thinking, or that ask for a tier that the model does not support, now return an error from Bedrock. For more information, see [Service tier]({{< link-hextra path="/integrations/llm/providers/bedrock/#service-tier" >}}).
+- **Token rate limits for non-chat APIs**: Token-based LLM rate limits now count usage from Embeddings, Rerank, Decisions, and SystemOne requests.
+- **LLM buffer size**: The 32 MiB default LLM request buffer now applies before request policies run instead of after.
+- **Webhook guardrail responses**: A webhook `pass` response that contains any field other than `reason` is now an error. So is a `mask` response whose messages contain extra fields, which previously passed the content unmasked. The error follows the guard's `failureMode`. For more information, see [Pass content from a webhook]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/#pass" >}}).
+- **Google Model Armor errors**: A non-success response from Model Armor is now a guard failure and follows the guard's `failureMode`.
+- **Backend mirrors**: Request mirrors that are attached to a backend now run after backend policies, so requests that backend authorization rejects are no longer mirrored. Mirrors that are attached to a route still run before backend policies.
+- **MCP OpenAPI paths**: A non-root path in the `host` URL or `path` field of an OpenAPI MCP target now overrides the server path prefix from the schema. Previously, the path was ignored. An omitted, empty, or root path keeps the schema server path. For more information, see [Override the schema server path]({{< link-hextra path="/integrations/mcp/servers/openapi/#override-schema-server-path" >}}).
+- **MCP OpenAPI responses**: Non-JSON responses from an OpenAPI MCP target are returned as typed MCP content, such as text, audio, or a binary resource, instead of a `{code, message}` wrapper. The HTTP status code of a `4xx` response is no longer part of the tool result. For more information, see [Tool response content]({{< link-hextra path="/integrations/mcp/servers/openapi/#tool-response-content" >}}).
+- **MCP session errors**: Stateful MCP requests with a session ID that the proxy cannot decode, such as after the session key changes, now return `404` instead of `400`. Clients then start a new session.
+- **gRPC health**: Errors that agentgateway itself returns to gRPC clients now record their `grpc-status`. Only server-side gRPC errors, such as `UNAVAILABLE` or `INTERNAL`, mark a backend unhealthy. A client-side gRPC status from an LLM provider no longer evicts the target from a failover group. This change matches how agentgateway treats `5xx` and `4xx` responses for HTTP.
+- **gRPC policy calls**: When a gRPC policy call, such as to an external processing server, fails before it reaches the service, agentgateway now reports the mapped gRPC status instead of `UNKNOWN`. For example, DNS errors, refused connections, and timeouts report `UNAVAILABLE`.
+- **Anthropic version header**: Agentgateway forwards the client's `anthropic-version` header instead of replacing it. When the client does not send the header, agentgateway still sets the default value `2023-06-01`.
+- **Decisions and SystemOne requests to custom providers**: A `custom` provider, including one without `formats`, now rejects `/v1/decisions` and `/v1/systemone` requests with `400` unless it declares the `decisions` or `systemOne` format. In 1.6, agentgateway forwarded them without conversion. For more information, see [Custom providers without a Decisions format]({{< link-hextra path="/documentation/llm/api-types/decisions/#custom-provider-requirements" >}}).
+- **CSRF `Origin` checks**: For a request without a `Sec-Fetch-Site` header, the CSRF policy now rejects `Origin: null` unless `additionalOrigins` includes `null`. In 1.6, agentgateway treated `Origin: null` as a missing origin and allowed the request. The same-origin check now compares only the host and ignores the scheme, so a TLS-terminating proxy in front of agentgateway no longer causes false rejections. For more information, see [CSRF]({{< link-hextra path="/documentation/configuration/security/csrf/" >}}).
+- **Environment variables in hybrid mode**: In `hybrid` storage mode, `${VAR}` in resources that you save through the UI or API now stays literal, except in the `params.apiKey` field of an LLM provider or model. In 1.6, agentgateway expanded it. Enter literal values, or set these fields in the configuration file. For more information, see [`hybrid` mode]({{< link-hextra path="/documentation/setup/storage/#binary-hybrid" >}}).
+- **Filter validation**: Invalid filter settings now fail configuration validation instead of failing each request. For example, a configuration with a request mirror `percentage` outside `0.0` to `1.0`, such as `percentage: 50`, or a direct response with both `body` and `bodyExpression` no longer loads. Invalid header names or values and invalid redirect or rewrite paths are also rejected. For more information, see [Mirroring]({{< link-hextra path="/documentation/configuration/resiliency/mirroring/" >}}).
+- **Chat Completions streams always include usage**: Streamed Chat Completions replies now always end with a usage chunk before `data: [DONE]`, and you cannot turn this chunk off. In 1.6, setting `stream_options.include_usage` to `false` turned off the usage chunk. Make sure that your client code handles the usage chunk. The usage chunk has an empty `choices` array, so code that reads `choices[0]` from every chunk throws an error when it reaches the usage chunk. For more information, see [Usage in streamed replies]({{< link-hextra path="/documentation/llm/api-types/completions/#usage-in-streamed-replies" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4156 -->
+
+## 🌟 New features {#v17-new-features}
+
+### LLM APIs and providers {#v17-llm}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3832 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3839 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3852 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3928 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4018 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3771 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3769 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3823 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4030 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3828 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3776 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4010 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3912 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4152 -->
+
+- **OpenAI Decisions and TypeSafe SystemOne**: Agentgateway supports the OpenAI Decisions and TypeSafe SystemOne APIs natively and translates between them. Set `provider: typesafe` to connect to TypeSafe. For more information, see [Decisions]({{< link-hextra path="/documentation/llm/api-types/decisions/" >}}) and [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}).
+- **Perplexity provider**: Set `provider: perplexity` in an `llm.models` entry to connect to Perplexity with built-in defaults. The provider accepts Responses and Messages requests, but not Chat Completions requests. For more information, see [Perplexity]({{< link-hextra path="/integrations/llm/providers/perplexity/" >}}).
+- **Callout router for virtual models**: A virtual model can select its target model by calling an external HTTP service. Set `routing.callout` in an `llm.virtualModels` entry, with an optional fallback model and response cache. For more information, see [Callout routing]({{< link-hextra path="/documentation/llm/virtual-models/#callout-routing" >}}).
+- **Per-model HTTP transformations**: Set `requestTransformation` on an `llm.models` entry, or in `llm.providers[].defaults` for every model of a provider, to modify the headers, body, and metadata of requests. A model's value replaces the provider default. For more information, see [LLM request transformation]({{< link-hextra path="/documentation/llm/transformations/#llm-request-transformation" >}}).
+- **Better format conversion**: Reasoning from vLLM, OpenRouter, and Bedrock is preserved in more conversions. Chat Completions requests to Anthropic send inline `file` parts as documents instead of dropping them, and a file part without inline data, such as a `file_id`, returns `400`. For more information, see [Encrypted reasoning]({{< link-hextra path="/integrations/llm/providers/bedrock/#encrypted-reasoning" >}}).
+- **More CEL during request policies**: Request-phase CEL expressions on LLM traffic can read `llm.requestModel` before provider overrides and `llmRequest` for the parsed JSON request body. For more information, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
+- **Audio endpoints**: Agentgateway detects `/v1/audio/transcriptions`, `/v1/audio/translations`, and `/v1/audio/speech` requests, so that policies, logs, and metrics apply to audio traffic. Transcription and translation requests record `audio_seconds` and can be priced per audio minute with the new `perAudioMinute` catalog rate. In CEL, read `llm.audioSeconds`, `llm.costRates.perAudioMinute`, and `llm.cost.audioDuration`. The built-in catalog includes per-minute rates for some OpenAI transcription models, such as `whisper-1`. Speech requests are not metered. For more information, see [Audio]({{< link-hextra path="/documentation/llm/api-types/audio/" >}}).
+
+### Model catalog and cost {#v17-catalog}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3960 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4016 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3965 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3981 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3661 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3825 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3977 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3970 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4088 -->
+
+The model catalog now describes models as well as pricing them. Catalog entries can include a display name, release date, lifecycle status, token limits, modalities, capabilities, and reasoning controls.
+
+- **Model metadata in `/v1/models`**: `/v1/models` returns the catalog metadata, so that clients can discover what each model supports. Clients can limit the list with the `limit` query parameter, or fetch one model at `/v1/models/<model-id>`. The following excerpt shows an entry.
+
+  ```json
+  {
+    "id": "gpt-5.5",
+    "object": "model",
+    "owned_by": "openai",
+    "name": "GPT-5.5",
+    "context_window": 1050000,
+    "max_input_tokens": 922000,
+    "max_tokens": 128000,
+    "architecture": {"input_modalities": ["text", "image", "file"], "output_modalities": ["text"]},
+    "capabilities": {"reasoning": true, "structured_outputs": true, "tools": true, "temperature": false},
+    "supported_parameters": ["max_tokens", "reasoning", "reasoning_effort", "response_format", "structured_outputs", "tool_choice", "tools"]
+  }
+  ```
+
+  For more information, see [Models]({{< link-hextra path="/documentation/llm/api-types/models/" >}}).
+- **Model metadata in CEL**: The catalog entry of the model that served a request is available in CEL as `llm.model`, such as `llm.model.limits.context`. Agentgateway sets `llm.model` when it calculates the cost of the response. The value is unset when the model has no catalog entry. For more information, see [Use cost data]({{< link-hextra path="/documentation/llm/cost-controls/costs/#use-cost-data" >}}).
+- **Service-tier pricing**: Pricing now accounts for the service tier that served each request. Agentgateway records the tier as `llm.serviceTier` for OpenAI, Azure, Anthropic, Bedrock, Vertex AI, and Gemini. A catalog pricing tier can set `serviceTier` alongside `contextOver`, so that flex or priority requests are priced at their actual rates. The built-in catalog includes service-tier prices for models such as those from OpenAI, Azure, and Vertex AI, and `agctl catalog import` adds Vertex AI Gemini tier rates from its default `vertex-pricing` source. You can configure rates for other models.
+
+  ```yaml
+  tiers:
+  - serviceTier: priority
+    rates: {input: "2.5", output: "15"}
+  - serviceTier: priority
+    contextOver: 272000
+    rates: {input: "5", output: "22.5"}
+  ```
+
+  For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/#advanced-catalog-format" >}}).
+- **1-hour and 12-hour cache pricing**: Cache writes with a longer time to live (TTL), such as Anthropic 1-hour and OpenAI 12-hour cache writes, are priced with the new `cacheWriteDetails` rates, keyed by TTL such as `1h` and `12h`. When a TTL has no rate, the `cacheWrite` rate applies. In CEL, read the cost of a TTL with brackets, such as `llm.cost.cacheWriteDetails['1h']`. For more information, see [Advanced: Catalog format]({{< link-hextra path="/documentation/llm/cost-controls/costs/#advanced-catalog-format" >}}).
+- **Budgets without a window**: An API key budget without a `window` accumulates usage for its lifetime, which provides a fixed spending limit. For more information, see [Per-key budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/per-key/" >}}).
+
+### Guardrails {#v17-guardrails}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3732 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3711 -->
+
+- **Reasoning and response scope**: Guards scan plaintext reasoning and thinking content as part of the `messages` scope. Response prompt guards support `scope`. For more information, see [Scope]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#scope" >}}).
+- **CEL processor for MCP guardrails**: Use `kind: expression` in `mcpGuardrails.processors` to reject or transform MCP requests and responses with CEL. No external policy server is required.
+
+  ```yaml
+  mcpGuardrails:
+    processors:
+    - kind: expression
+      methods: {"tools/call": request}
+      condition: mcp.params.name == 'restricted_tool'
+      reject: "This tool is unavailable"
+  ```
+
+  For more information, see [Set up CEL guardrails]({{< link-hextra path="/documentation/mcp/guardrails/cel/" >}}).
+
+### Security and identity {#v17-security}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3826 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3903 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3821 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3936 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3864 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4158 -->
+
+- **OIDC with bearer tokens**: Set `credentials: sessionOrBearer` on an OIDC policy to accept a bearer ID token as well as a browser session. One policy then covers both browser and API clients. With `credentials: permissive`, browsers still sign in, and other requests fall through to other authentication policies. Pair `permissive` with an `authorization` policy, because it does not reject unauthenticated requests by itself. For more information, see [Bearer tokens for API clients]({{< link-hextra path="/documentation/configuration/security/oidc/#bearer-id-tokens" >}}).
+- **Backend credentials from CEL**: A backend authentication key can be computed from a CEL expression, such as a value that an external authorization server returns. Set `backendAuth.key.expression`, or `expression` in a `backendAuth.credentials` entry. For more information, see [Compute the key from the request]({{< link-hextra path="/documentation/configuration/security/backend-authn/key/#key-expression" >}}).
+- **MCP authentication with token passthrough**: MCP authentication now works with a JWT policy that sets `preserveToken: true`. For more information, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn/" >}}).
+- **Callouts through a proxy**: Send the requests that agentgateway makes on its own behalf, such as JWKS fetches, OIDC discovery, external authorization, and cloud provider credential fetches, through an HTTP proxy. Set `config.callouts.tunnel`, or use the standard proxy environment variables. For more information, see [Callout proxy]({{< link-hextra path="/documentation/configuration/callout-proxy/" >}}).
+- **MCP authorization without an ID**: Agentgateway now rejects MCP requests other than `notifications/*` that have no usable JSON-RPC `id` with `400`. In 1.6, a `tools/call` without an `id` reached the MCP server without MCP authorization. For more information, see [MCP authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz/" >}}).
+
+### Observability {#v17-observability}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3850 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4061 -->
+
+- **Agent sessions**: Agentgateway detects the agent session that a request belongs to from well-known agent headers, such as `x-claude-code-session-id`. CEL expressions can read the session ID as `request.agent.session`, and the request log database records it as `agentgateway.session`. To identify sessions yourself, set `config.standardAttributes.session` to a CEL expression. For more information, see [Agent sessions]({{< link-hextra path="/reference/cel/variables/#agent-sessions" >}}).
+- **Richer analytics**: The request log database records cache read and write tokens, reasoning tokens, time to first token, and time per output token. `agctl standalone analytics` summarizes requests, errors, tokens, cost, time to first token, tokens per second, and cache hit rate. You can group the results by provider, model, status, user, or any logged attribute, and bucket them by time or into latency histograms.
+
+  ```sh
+  agctl standalone analytics --by provider,model --since 168h
+  agctl standalone analytics --by agentgateway.user --provider openai
+  agctl standalone analytics --by model,ttft
+  ```
+
+  For more information, see [Query analytics with agctl]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/#cli" >}}).
+
+### MCP {#v17-mcp}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3976 -->
+
+- **Session cleanup across replicas**: Stateful Streamable HTTP `DELETE` requests now resume the session before agentgateway closes the upstream sessions. Any replica with the same session key can close the upstream sessions.
+
+### Traffic management and operations {#v17-operations}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3797 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3833 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4012 -->
+
+- **Native histogram scraping**: The PodMonitor of the standalone Helm chart supports native histogram scraping, relabelings, and metric relabelings. Native histogram scraping is off by default and requires Prometheus v3.8.0 or later and Prometheus Operator v0.88.0 or later. For more information, see [Scrape native histograms]({{< link-hextra path="/documentation/observability/metrics/prometheus/#native-histograms" >}}).
+- **Graceful HTTP/1 drain**: When agentgateway drains or a connection reaches its maximum connection duration, HTTP/1 clients receive `Connection: close` on the next response, so that they close the connection cleanly. For more information, see [Shutdown and drain]({{< link-hextra path="/documentation/configuration/static-configuration/#shutdown-drain" >}}).
+- **Hostname destinations from an endpoint picker**: Set `destinationMode: passthrough` in `inferenceRouting` so that an endpoint picker (EPP) can select a DNS hostname, such as a load balancer in another cluster. For more information, see [Hostname destinations]({{< link-hextra path="/documentation/llm/inference/#hostname-destinations" >}}).
+
+### CLI and UI {#v17-cli-ui}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4032 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3994 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4008 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4004 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4013 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3803 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4020 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3923 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3919 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3038 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3179 -->
+
+- **`agctl standalone`**: Manage a standalone agentgateway through its admin API. Use `get`, `apply`, and `delete` for resources such as models, policies, and MCP targets. Use `keys` and `budgets` to manage API keys and check their budgets. For more information, see [Manage resources with agctl]({{< link-hextra path="/documentation/operations/config-resources/#agctl" >}}).
+- **LiteLLM fallbacks and cooldowns**: `agentgateway import --from litellm` converts LiteLLM `default_fallbacks` into priority-based failover, and `allowed_fails` and `cooldown_time` into model health eviction. For more information, see [Import fallbacks]({{< link-hextra path="/documentation/configuration/import/#fallbacks" >}}).
+- **Raw editing**: The form editors in the UI have a raw YAML mode. Fields that the form does not support are kept when you save. For more information, see [Edit a resource as YAML]({{< link-hextra path="/documentation/setup/ui/launch-ui/#raw-mode" >}}).
+- **More UI improvements**: Required fields, schema help, and errors appear next to each field. A top-level **Settings** page groups gateway-wide settings, Client Setup includes a recipe for Continue, you can rotate an API key with an auto-generated value, and the filters on the **Logs** and **Analytics** pages are searchable. For more information, see [Settings]({{< link-hextra path="/documentation/setup/ui/launch-ui/#tour-settings" >}}).
+
+## 🐛 Fixes {#v17-fixes}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3940 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3721 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3759 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3764 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3853 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3920 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3676 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3899 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3888 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3893 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3774 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3786 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3894 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4062 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4057 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3892 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3863 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4050 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4067 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4096 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4059 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3878 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3966 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4105 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4109 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3898 -->
 
 **Traffic management**
 
-- The `x-ratelimit-limit`, `x-ratelimit-remaining`, and `x-ratelimit-reset` headers are now returned on every rate-limited response, for both local and remote rate limiting, rather than only on some paths. Clients that back off based on those headers behave correctly when an LLM token limit is what rejected the request. For the headers, see [Rate limits]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/" >}}).
-- Listener port swaps are reconciled dynamically, and a bind that transitions to an internal bind is stopped.
-- Invalid header modifications are rejected, and route policy application is more consistent.
+- External authorization with `includeRequestBody` and no `maxRequestBytes` no longer rejects every request that has a body with `413`. The limit defaults to 8192 bytes.
+- CEL calls such as `contains(a, b)`, `startsWith`, `endsWith`, and `matches` now read the second argument. Previously, they ignored it, so `contains(x, y)` always returned `true`.
+- Retry policies can set `attempts: 0` to disable retries, and omitted retry attempts still default to one retry. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4180 -->
+<!-- Held for the 1.8 release cut, not in the triage keep list. Restore or delete then:
+- External authorization and rate-limit trace logs no longer include response header, query-parameter, or body values that might contain credentials. (ref: https://github.com/agentgateway/agentgateway/pull/4139)
+- Substrate TLS passthrough egress that does not match an allowed destination is blocked at ClientHello instead of completing TLS and returning HTTP `403`. (ref: https://github.com/agentgateway/agentgateway/pull/4093)
+-->
+
+**LLM**
+
+- Usage and cost now include the reasoning tokens of OpenAI-compatible responses, such as from Gemini, the input and cache tokens of streamed Anthropic responses on `detect` routes, and every iteration of Anthropic responses that report `usage.iterations`, such as for server-side compaction. Previously, these tokens were not counted.
+- Bedrock conversion keeps prompt-cache markers when it drops unsupported content, passes Anthropic cache TTLs to Bedrock cache points, and no longer invalidates the prompt cache on mid-stream system messages.
+- Built-in OpenAI-compatible providers, such as Groq and DeepInfra, no longer duplicate the base path, such as `/v1/v1/...`, on Detect and Passthrough routes.
+- Gemini tool schemas that use `oneOf` no longer return empty tool calls. Messages and Responses requests keep the Gemini 3 thought signature, so tool loops no longer fail with `400`.
+- Passthrough no longer fails on SSE streams with an unterminated final event.
+- Claude models on Azure AI Foundry now follow the Anthropic prompt-cache token convention for normalized token counts and cost.
+- A route-level API key budget no longer replaces a gateway-level budget.
+- The built-in model catalog keeps deprecated models that providers still serve, so that requests to these models are still priced. `agctl catalog import` now includes deprecated models by default. To leave them out, set `--legacy=false`.
+
+**MCP**
+
+- Backend authorization rules for MCP requests evaluate transformed tool names after route-level body transformations run.
+- Duplicate MCP target names now fail configuration validation. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4160 -->
+- MCP authentication derives JWKS URLs without a double slash when an issuer value ends with `/`.
+- MCP streamable HTTP `POST` requests can list `application/json` and `text/event-stream` in separate `Accept` header lines instead of one comma-separated value.
+- MCP responses now honor the `responseIdleTimeout` response idle timeout, which previously did not apply on MCP routes. A response, including an SSE stream, that sends no data for longer than the timeout is now ended.
+- MCP target conditions are now checked on each request of a session, not only when the session is initialized. A request whose conditions select different targets than the session returns `404`, and the client starts a new session. For more information, see [Target conditions]({{< link-hextra path="/integrations/mcp/servers/virtual/#target-conditions" >}}).
+- A configuration reload that races with MCP session creation no longer hangs agentgateway.
+- Reused stateful MCP sessions now apply the MCP guardrails of the current route, as they already did for MCP authorization. A request with an encrypted session ID that a different MCP backend issued returns `404`, and the client starts a new session. Previously, a session could skip the guardrails of another route or reach another backend.
+
+**UI**
+
+- The MCP and LLM playgrounds no longer send the credentials of the signed-in session implicitly.
 
 **Operations**
 
-- A negative duration is clamped to zero instead of being rejected, and upstream connect duration is recorded at full precision.
-- The admin UI analytics summary no longer loops its request.
-
-For the complete list of fixes, see the [GitHub release notes](https://github.com/agentgateway/agentgateway/releases).
+- Standalone configuration reloads now track files that agentgateway reads during parsing, such as `backendTLS.root` certificate files, `params.apiKey` files, htpasswd files, GCP credentials, and OAuth client credentials, so later file changes are picked up without a process restart.
+- `/config_dump` now redacts database URLs, which previously showed the password.
+- The metrics endpoint now sets the `Content-Type` header to `application/openmetrics-text` by default. Previously, scrapers that did not request OpenMetrics received `Content-Type: text/plain` and could parse the response as classic Prometheus text. For example, the Datadog Agent without `use_latest_spec: true` dropped every counter metric without an error. Browsers still receive `text/plain` so that they display the metrics. For more information, see [Metrics format]({{< link-hextra path="/documentation/observability/metrics/overview/#metrics-format" >}}).

@@ -77,6 +77,10 @@ For more information, see [Inject response headers]({{< link-hextra path="/docum
 
 Use body transformations to replace the entire body of a request or response with a new value. The `body` field takes a single CEL expression that must evaluate to a string. You can build the new body from static values, CEL functions such as `json()` and `toJson()`, or context variables such as `request.body` or `response.body`.
 
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+For body transformations, `null` has a special meaning: the original body is left unchanged. To send JSON `null`, return the string `"null"`. To clear the body, return an empty string. If the expression fails, the transformation returns an error before the body is replaced.
+{{< /version >}}
+
 Response body example to construct a JSON response body from request context variables:
 
 ```yaml
@@ -143,7 +147,7 @@ Use these patterns to build expressions for header values, body content, and con
 
 Context variables give CEL expressions access to information about the current request, response, and connection. They are populated automatically by agentgateway at runtime so you do not need to declare or configure them. Use them to read values such as headers, path, method, JWT claims, or LLM model names and inject them into headers, bodies, or conditions.
 
-Variables are only populated when they are relevant to the current request. For example, `jwt` is only present when a JWT has been validated, and `llm` is only present when the route is backed by an LLM provider. Referencing an absent variable in a CEL expression produces an error. Use `default(expression, fallback)` to avoid this error. For a complete example that forwards validated JWT claims to a backend and routes on them, see [Use JWT claims in transformations]({{< link-hextra path="/documentation/security/jwt/setup/#jwt-claims-transformations" >}}).
+Variables are only populated when they are relevant to the current request. For example, `jwt` is only present when a JWT has been validated, and `llm` is only present when the route is backed by an LLM provider. Referencing an absent variable in a CEL expression produces an error. Use `default(expression, fallback)` to avoid this error. For a complete example that forwards validated JWT claims to a backend and routes on them, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Use JWT claims in transformations]({{< link-hextra path="/documentation/security/extauth/jwt/setup/#jwt-claims-transformations" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Use JWT claims in transformations]({{< link-hextra path="/documentation/security/jwt/setup/#jwt-claims-transformations" >}}){{< /version >}}.
 
 Not all variables are available in every policy type. The table below lists which variables are available depending on where the CEL expression is evaluated.
 

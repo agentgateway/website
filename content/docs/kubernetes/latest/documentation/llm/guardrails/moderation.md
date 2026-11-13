@@ -106,6 +106,29 @@ In this configuration, agentgateway calls the Moderation API for each request an
    Content blocked by moderation policy
    ```
 
+## Guard scope {#scope}
+
+By default, the moderation prompt guard sends the system prompt, message text, and tool call results to the Moderation API. Set `scope` to change which text it sends.
+
+This example checks only tool call results.
+
+```yaml
+promptGuard:
+  request:
+  - scope:
+    - ToolOutput
+    openAIModeration:
+      policies:
+        auth:
+          secretRef:
+            name: openai-secret
+      model: omni-moderation-latest
+```
+
+If no text is in scope, the guard skips the API call and lets the request continue. The `scope` field does not apply to inline moderation.
+
+For supported values and restrictions, see [Guard scope]({{< link-hextra path="/documentation/llm/guardrails/overview/#scope" >}}).
+
 ## Moderate content inline on the OpenAI provider
 
 In this configuration, agentgateway adds a `moderation` parameter to each request that it sends to OpenAI, and OpenAI moderates the content as part of the completion. No separate call to the Moderation API is made.
@@ -140,6 +163,7 @@ Because the gateway sets the parameter, a client cannot weaken the moderation th
          routes:
            "/v1/chat/completions": "Completions"
            "/v1/responses": "Responses"
+           "/v1/messages": "Messages"
    EOF
    ```
 
@@ -238,7 +262,7 @@ Because the gateway sets the parameter, a client cannot weaken the moderation th
 Inline moderation applies only where agentgateway builds the request that it sends to OpenAI. The following conditions apply.
 
 * **The provider must be OpenAI.** The `moderation` field exists only on the `openai` provider. Azure OpenAI is a separate provider and has no such field. To moderate traffic to any other provider, use the moderation prompt guard instead.
-* **The route type must be `Completions` or `Responses`.** Requests on a `Passthrough` or `Detect` route reach OpenAI unchanged, so the moderation parameter is not added. The [OpenAI provider guide]({{< link-hextra path="/integrations/llm/providers/openai/" >}}) sets `"*": "Passthrough"` as a catch-all, so give the chat completions and responses paths an explicit route type, as shown in the preceding example.
+* **The route type must be `Completions`, `Responses`, or `Messages`.** Agentgateway converts a `Messages` request to the OpenAI Responses or Chat Completions format, and the converted request carries the moderation parameter. Requests on a `Passthrough` or `Detect` route reach OpenAI unchanged, so the moderation parameter is not added. The [OpenAI provider guide]({{< link-hextra path="/integrations/llm/providers/openai/" >}}) sets `"*": "Passthrough"` as a catch-all, so give the chat completions, responses, and messages paths an explicit route type, as shown in the preceding example.
 * **Clients keep their own `moderation` value when you omit the field.** If you do not configure `moderation`, a `moderation` value that a client sends passes through to OpenAI unchanged. OpenAI requires `moderation.model`, so a client value that omits it fails with `Missing required parameter: 'moderation.model'`. Configuring `moderation` on the backend avoids this, because agentgateway always sends a model.
 * **Moderation results reach the client only in OpenAI response formats.** A client that uses a different API format, such as the Anthropic Messages API, does not receive the moderation results.
 

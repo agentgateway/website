@@ -1,0 +1,62 @@
+Trace the next request handled by an agentgateway pod or local instance.
+
+### Synopsis
+
+Start an agentgateway debug trace, render it in a TUI or JSONL, and optionally trigger the traced request against a pod or a local instance.
+
+```
+agctl proxy trace [resource] [-- <curl args...>] [flags]
+```
+
+### Examples
+
+```
+  agctl proxy trace
+  
+  # Watch for the next request on a pod and trace it, displaying the result in a TUI
+  agctl proxy trace gateway/my-gateway
+  
+  # Watch for the next request on a pod and trace it, displaying the result in a JSONL format
+  agctl proxy trace --raw
+  
+  # Enable tracing and send a request to the gateway. The <host> part of the request is only used for setting the Hostname of the request,
+  # and is not used for DNS resolution.
+  agctl proxy trace --port 80 -- http://host/some/path
+  
+  # Enable tracing and send a request to the gateway running locally.
+  agctl proxy trace --local --port 8080 -- http://host/some/path
+  
+  # Render trace JSONL from a file or stdin instead of opening a live trace.
+  agctl proxy trace --file trace.jsonl
+  agctl proxy trace --file - --raw
+  
+  # Watch for the next request matching a CEL expression.
+  agctl proxy trace --expression 'request.path == "/healthz"'
+  
+  # Enable tracing and send a request to the gateway, with some curl arguments.
+  agctl proxy trace gateway/my-gateway --raw --port 80 -- http://host/some/path -H "Authorization: Bearer sk-123"
+```
+
+### Options
+
+```
+      --expression string      CEL expression for selecting which request to trace
+  -f, --file string            Trace JSONL file to render, or - for stdin
+  -h, --help                   help for trace
+      --local                  Trace against a local agentgateway instance on 127.0.0.1
+  -n, --namespace string       Namespace to use when resolving resources
+      --port int               Gateway listener port to use when triggering a request
+      --proxy-admin-port int   Agentgateway admin port (default 15000)
+      --raw                    Print trace events as JSONL instead of opening the TUI
+```
+
+### Options inherited from parent commands
+
+```
+  -k, --kubeconfig string   kubeconfig
+```
+
+### SEE ALSO
+
+* [agctl proxy](../agctl-proxy/)	 - Inspect and manage the agentgateway proxy
+

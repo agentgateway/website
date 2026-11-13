@@ -150,7 +150,7 @@ metadata:
   name: ambient-ingress
   namespace: agentgateway-system
 spec:
-  gatewayClassName: agentgateway
+  gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
   listeners:
   - name: http
     port: 80
@@ -245,6 +245,12 @@ Confirm that pod-to-pod traffic between the agentgateway ingress proxy and the h
      grep 'dst.namespace="httpbin"'
    ```
 
+   ztunnel writes an access log entry when a connection closes, not when it opens. The ingress proxy keeps its connection to httpbin open between requests, so the entry might not appear right away. If the command prints nothing, restart the proxy to close the connection, and then run the command again.
+   ```sh
+   kubectl -n agentgateway-system rollout restart deployment/ambient-ingress
+   kubectl -n agentgateway-system rollout status deployment/ambient-ingress
+   ```
+
 3. Confirm that `src.identity` and `dst.identity` are SPIFFE URIs and that `dst.hbone_addr` is set. Both fields must be present.
 
    Example output:
@@ -264,15 +270,15 @@ kubectl -n istio-system exec deploy/prometheus -- sh -c 'wget -qO- "http://local
 
 Once the base flow works, layer additional agentgateway policies on the ingress `Gateway` or the `HTTPRoute` to control and observe traffic before it reaches your ambient-meshed backends:
 
-1. Client authentication and authorization, such as [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) and [authorization policies]({{< link-hextra path="/documentation/security/authorization/" >}}).
+1. Client authentication and authorization, such as {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/security/extauth/jwt/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}){{< /version >}} and [authorization policies]({{< link-hextra path="/documentation/security/authorization/" >}}).
   This lets you enforce identity-based access to backends behind the same ingress gateway.
-2. API key or basic auth, such as [API key auth]({{< link-hextra path="/documentation/security/apikey/" >}}) or [basic auth]({{< link-hextra path="/documentation/security/extauth/basic/" >}}).
+2. API key or basic auth, such as {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[API key auth]({{< link-hextra path="/documentation/security/extauth/apikey/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[API key auth]({{< link-hextra path="/documentation/security/apikey/" >}}){{< /version >}} or [basic auth]({{< link-hextra path="/documentation/security/extauth/basic/" >}}).
   Useful when clients cannot use OIDC or when you issue per-team ingress keys.
-3. Rate limiting, such as [HTTP rate limiting]({{< link-hextra path="/documentation/security/rate-limit-http/" >}}) or [global rate limiting]({{< link-hextra path="/documentation/security/rate-limit-global/" >}}).
+3. Rate limiting, such as {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[HTTP rate limiting]({{< link-hextra path="/documentation/security/rate-limit/local/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[HTTP rate limiting]({{< link-hextra path="/documentation/security/rate-limit-http/" >}}){{< /version >}} or {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[global rate limiting]({{< link-hextra path="/documentation/security/rate-limit/global/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[global rate limiting]({{< link-hextra path="/documentation/security/rate-limit-global/" >}}){{< /version >}}.
   Protects backends from spikes and abusive clients.
 4. Traffic shaping and resilience, such as [traffic splitting]({{< link-hextra path="/documentation/traffic-management/traffic-split/" >}}), [retries]({{< link-hextra path="/documentation/resiliency/retry/retry/" >}}), and [request timeouts]({{< link-hextra path="/documentation/resiliency/timeouts/request/" >}}).
   Improves reliability of ingress traffic to ambient backends.
-5. Observability, such as [access logs]({{< link-hextra path="/documentation/security/access-logging/" >}}) and [tracing]({{< link-hextra path="/documentation/observability/tracing/" >}}).
+5. Observability, such as [access logs]({{< link-hextra path="/documentation/security/access-logging/" >}}) and [tracing]({{< link-hextra path="/documentation/observability/traces/" >}}).
   Gives per-request visibility into ingress traffic for compliance and incident response.
 
 ## Cleanup

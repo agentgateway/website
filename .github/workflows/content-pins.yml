@@ -9,8 +9,8 @@
 # Archiving a version means repointing its stub from the moving path to the frozen
 # one. Skipping that step is invisible -- the page still builds and still renders a
 # plausible values table, just for the wrong release -- so it needs a check rather
-# than a checklist. Ten published pages are in that state today, under
-# content/docs/kubernetes/1.0.x through 1.4.x. The check also catches a stub pointing
+# than a checklist. Eight published pages are in that state today, under
+# content/docs/kubernetes/1.0.x through 1.3.x. The check also catches a stub pointing
 # at another version's snapshot, and one pointing at a snapshot that does not exist,
 # which is the likely mistake during a version rotation.
 #

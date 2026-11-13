@@ -16,13 +16,13 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
 
 1. Export your Anthropic API key.
 
-   ```bash {paths="claude-code-k8s"}
+   ```bash
    export ANTHROPIC_API_KEY="sk-ant-your-key-here"
    ```
 
 2. Create a Kubernetes secret for your API key. For other authentication methods, see [API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
 
-   ```bash {paths="claude-code-k8s"}
+   ```bash
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Secret
@@ -42,7 +42,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
    {{% tab name="Flexible model (recommended)" %}}
    Allow Claude Code to use any model. The `anthropic: {}` syntax means no model is pinned.
 
-   ```bash {paths="claude-code-k8s"}
+   ```bash
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -66,7 +66,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
    {{% /tab %}}
 
    {{% tab name="Fixed model" %}}
-   Pin the backend to a specific model. The model must match what Claude Code is configured to use, because Claude Code sends the model name in API requests and agentgateway rejects mismatches.
+   Pin the backend to a specific model. Agentgateway replaces Claude Code's requested model with the pinned model on every request.
 
    ```bash
    kubectl apply -f- <<EOF
@@ -94,28 +94,9 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
 
    {{< /tabs >}}
 
-   {{< doc-test paths="claude-code-k8s" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for anthropic backend to be accepted
-     wait:
-       target:
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-         metadata:
-           namespace: agentgateway-system
-           name: anthropic
-       jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 60
-         intervalSeconds: 5
-   EOF
-   {{< /doc-test >}}
-
 4. Create an HTTPRoute to forward all traffic to the Anthropic backend. This route uses a `/` path prefix so that all requests, including `/v1/messages` and `/v1/models`, are forwarded to the backend.
 
-   ```bash {paths="claude-code-k8s"}
+   ```bash
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -138,50 +119,6 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-
-{{< doc-test paths="claude-code-k8s" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for claude HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: agentgateway-system
-        name: claude
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="claude-code-k8s" >}}
-for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null -w "%{http_code}" -X POST "http://${INGRESS_GW_ADDRESS}:80/v1/messages" -H "Content-Type: application/json" -d '{"model":"claude-haiku-4-5-20251001","max_tokens":10,"messages":[{"role":"user","content":"hi"}]}' && break
-  sleep 2
-done
-{{< /doc-test >}}
-
-{{< doc-test paths="claude-code-k8s" >}}
-YAMLTest -f - <<'EOF'
-- name: verify Anthropic messages endpoint is routed through gateway
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /v1/messages
-    method: POST
-    headers:
-      Content-Type: application/json
-    body: '{"model":"claude-haiku-4-5-20251001","max_tokens":10,"messages":[{"role":"user","content":"hi"}]}'
-  source:
-    type: local
-  expect:
-    statusCode: 401
-EOF
-{{< /doc-test >}}
 
 ## Configure Claude Code
 
@@ -232,12 +169,6 @@ export ANTHROPIC_BASE_URL="http://localhost:8080"
 
    All requests, including prompts, tool calls, and file reads, flow through agentgateway.
 
-{{< doc-test paths="claude-code-k8s" >}}
-kubectl delete agentgatewaybackend anthropic -n agentgateway-system --ignore-not-found
-kubectl delete httproute claude -n agentgateway-system --ignore-not-found
-kubectl delete secret anthropic-secret -n agentgateway-system --ignore-not-found
-{{< /doc-test >}}
-
 ## Teams account
 
 If you have a Claude Teams or Pro account, use this configuration instead of the API key setup above. No API key is required — authentication is handled by your Claude subscription via OAuth.
@@ -284,7 +215,7 @@ If you have a Claude Teams or Pro account, use this configuration instead of the
    EOF
    ```
 
-3. Create an `HTTPRoute` that matches the `/claude` path prefix and rewrites it to `/` before forwarding to the backend.
+3. Create an `HTTPRoute` that forwards all traffic to the backend. If you created the `claude` HTTPRoute in the API key setup, delete it first, because both routes match the `/` path prefix.
 
    ```bash
    kubectl apply -f- <<EOF
@@ -301,25 +232,19 @@ If you have a Claude Teams or Pro account, use this configuration instead of the
        - matches:
          - path:
              type: PathPrefix
-             value: /claude
+             value: /
          backendRefs:
          - name: anthropic-teams
            namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
            group: {{< reuse "agw-docs/snippets/group.md" >}}
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-         filters:
-         - type: URLRewrite
-           urlRewrite:
-             path:
-               type: ReplacePrefixMatch
-               replacePrefixMatch: /
    EOF
    ```
 
-4. Set the `ANTHROPIC_BASE_URL` environment variable to point Claude Code at the `/claude` path.
+4. Set the `ANTHROPIC_BASE_URL` environment variable to point Claude Code at your gateway address.
 
    ```bash
-   export ANTHROPIC_BASE_URL="http://$INGRESS_GW_ADDRESS/claude"
+   export ANTHROPIC_BASE_URL="http://$INGRESS_GW_ADDRESS"
    ```
 
 5. Verify the connection.

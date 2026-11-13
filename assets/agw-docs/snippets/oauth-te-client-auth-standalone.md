@@ -1,0 +1,62 @@
+The `clientAuth` field decides how agentgateway identifies itself to the token endpoint. Set `method` to one of three values. Omit `clientAuth` entirely and agentgateway sends no client authentication fields, which suits a public client or a token endpoint that authenticates by other means.
+
+{{< tabs >}}
+{{% tab name="clientSecretBasic" %}}
+Send the client ID and secret in the HTTP Basic `Authorization` header ([RFC 6749 §2.3.1](https://datatracker.ietf.org/doc/html/rfc6749#section-2.3.1)). This is the default method, and the one most authorization servers expect.
+
+```yaml
+clientAuth:
+  method: clientSecretBasic
+  clientId: $CLIENT_ID
+  clientSecret: $CLIENT_SECRET
+```
+{{% /tab %}}
+{{% tab name="clientSecretPost" %}}
+Send the client ID and secret in the form body of the request. Some servers such as Microsoft Entra's on-behalf-of flow accept only this method.
+
+```yaml
+clientAuth:
+  method: clientSecretPost
+  clientId: $CLIENT_ID
+  clientSecret: $CLIENT_SECRET
+```
+{{% /tab %}}
+{{% tab name="privateKeyJwt" %}}
+Send a signed client assertion instead of a shared secret ([RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523)). Agentgateway signs a short-lived JWT with your private key on each token request, so no secret is stored in the configuration or transmitted to the authorization server.
+
+```yaml
+clientAuth:
+  method: privateKeyJwt
+  clientId: $CLIENT_ID
+  signingKey:
+    file: /path/to/client-assertion-key.pem
+  alg: ES256
+  kid: my-client-key
+  assertionAudience: https://idp.example.com/oauth2/v1/token
+```
+{{% /tab %}}
+{{< /tabs >}}
+
+### Sign the client assertion with a private key
+
+Use `privateKeyJwt` when the authorization server registers your client with a public key rather than a secret. Register the matching public key or certificate with the authorization server first, then point the `signingKey` field at the private key. This method is often required for a confidential client that must not hold a shared secret. Servers such as Okta and Microsoft Entra both support this method.
+
+{{< reuse "agw-docs/snippets/review-table.md" >}}
+
+| Field | Description |
+| -- | -- |
+| `clientId` | Required client ID that identifies agentgateway at the authorization server. |
+| `signingKey` | Required PEM-encoded RSA or EC private key, either the PEM text or `{file: <path>}`. |
+| `assertionAudience` | Required `aud` claim of the assertion. Most servers require the URL of the token endpoint itself. |
+| `alg` | JWS signing algorithm: `RS256` (default), `RS384`, `RS512`, `PS256`, `ES256`, or `ES384`. The algorithm must match the key family. The `RS` and `PS` algorithms need an RSA key, and the `ES` algorithms need an EC key. |
+| `kid` | Optional `kid` header that agentgateway stamps on the assertion. Set it when the authorization server registers more than one key for the client. |
+| `certificate` | Optional PEM-encoded X.509 certificate chain, leaf first. Set it for a server that validates the assertion against a certificate rather than a bare key. |
+| `certificateHeader` | JWS certificate header that agentgateway emits from `certificate`. Required when `certificate` is set. |
+
+> [!NOTE]
+> The `privateKeyJwt` method is not the same as the `jwtSign` backend authentication method. Both sign a JWT with your private key, and they share the implementation, but `privateKeyJwt` authenticates agentgateway to the token endpoint, while [`jwtSign`]({{< link-hextra path="/documentation/configuration/security/backend-authn/jwt-sign/" >}}) sends a signed JWT to the backend itself.
+
+Two details are worth knowing before you rely on the method.
+
+* **The method names are camelCase here.** The Kubernetes custom resources spell the same values in PascalCase, as `ClientSecretBasic`, `ClientSecretPost`, and `PrivateKeyJwt`. Agentgateway rejects the PascalCase spelling.
+* **The leaf public key of `certificate` must match `signingKey`.** A mismatch is logged and does not stop the configuration from loading, so the failure appears as a rejected assertion at the token endpoint rather than as a startup error.{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} When `clientSecret`, `signingKey`, or `certificate` is set as `{file: <path>}`, agentgateway watches the file and reloads the configuration when it changes. To rotate the key, replace the key file and the certificate file together, because a reload between the two only logs the mismatch.{{< /version >}}

@@ -20,20 +20,27 @@ You can access the agentgateway metrics endpoint to view MCP-specific metrics, s
    * `method`: The MCP method that was invoked, such as `tools/call` or `tools/list`.
    * `resource`: The name of the tool or resource that was accessed.
    * `resource_type`: The type of resource, such as `tool`, `prompt`, or `resource`.
+   * `outcome`: How the request ended. Agentgateway checks the following conditions in order and uses the first value that matches. For example, a response with a 5xx HTTP status that also carries a JSON-RPC error is counted as `gateway_error`, not `protocol_error`.
+     1. `gateway_error`: Agentgateway returned an error for the request, or the response has a 4xx or 5xx HTTP status.
+     2. `protocol_error`: The response is a JSON-RPC error.
+     3. `tool_error`: The request is a `tools/call` request, and the tool result sets `isError: true`.
+     4. `success`: The request is a `tools/call` request with a tool result that does not set `isError: true`, or the request uses any other method and the response has a 2xx HTTP status.
+     5. `unknown`: The request does not match any of the previous conditions. For example, a `tools/call` request that has no tool result is counted as `unknown`, even if the response has a 2xx HTTP status.
 
-   To count only tool calls, filter the metric on the `method` label.
+   To count only tool calls, filter the metric on the `method` label. To find failing tools, filter on the `outcome` label, such as `outcome="tool_error"`.
 
 ## View traces
 
 1. {{< reuse "agw-docs/snippets/jaeger.md" >}}
 
-2. Configure your agentgateway proxy to emit traces and send them to the built-in OpenTelemetry collector agent. This example uses static tracing configuration. For per-route dynamic tracing configuration, see [Dynamic tracing]({{< link-hextra path="/documentation/observability/traces/setup/" >}}). 
+2. Configure your agentgateway proxy to emit traces and send them to the built-in OpenTelemetry collector agent. This example uses a frontend tracing policy. For sampling and exporter options, see [Configure tracing]({{< link-hextra path="/documentation/observability/traces/setup/" >}}).
    ```yaml
    cat <<EOF > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   config:  
+   # yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
+   frontendPolicies:
      tracing:
-       otlpEndpoint: http://localhost:4317
+       host: localhost:4317
+       protocol: grpc
        randomSampling: true
    mcp:
      port: 3000
@@ -50,9 +57,9 @@ You can access the agentgateway metrics endpoint to view MCP-specific metrics, s
    agentgateway -f config.yaml
    ```
 
-4. Open the [agentgateway playground](http://localhost:15000/ui/playground/) and click **Connect**. Then, select a tool, such as `echo`, enter any message, and click **Run Tool**. 
+4. Open the [agentgateway playground](http://localhost:15000/ui/mcp/playground/) and click **Connect**. Then, select a tool, such as `echo`, enter any message, and click **Run Tool**. 
 
-5. Open the [Jaeger UI](http://localhost:16686/search) and select the `call_tool` operation. Then, verify that you can see traces for your MCP tool call. 
+5. Open the [Jaeger UI](http://localhost:16686/search) and select the `tools/call everything_echo` operation. Then, verify that you can see traces for your MCP tool call. Operation names use the `<method> <target>_<tool>` format.
    
 
 ## View logs
@@ -93,12 +100,29 @@ The following CEL variables are available in access log policies but are **not**
 
 | Variable | Availability | Description |
 |----------|-------------|-------------|
-| `mcp.methodName` | Post-request | The MCP JSON-RPC method name, such as `tools/call` or `tools/list`. |
+| `mcp.methodName` | Request-time | The MCP JSON-RPC method name, such as `tools/call` or `tools/list`. |
 | `mcp.sessionId` | Post-request | The MCP session ID. |
 | `mcp.tool.name` | Request-time | The name of the tool being called. |
 | `mcp.tool.target` | Request-time | The target backend handling the tool call. |
 | `mcp.tool.arguments` | Post-request | The JSON arguments passed to the tool call. |
 | `mcp.tool.result` | Post-request | The tool call result payload. |
 | `mcp.tool.error` | Post-request | The tool call error payload. |
+| `mcp.toolsList` | Post-request | The `tools/list` result returned to the client. |
+| `mcp.promptsList` | Post-request | The `prompts/list` result returned to the client. |
+| `mcp.resourcesList` | Post-request | The `resources/list` result returned to the client. |
+| `mcp.resourceTemplatesList` | Post-request | The `resources/templates/list` result returned to the client. |
+
+The list result variables hold the list that the client receives, not the raw response from each MCP server. Entries that MCP authorization policies deny are removed. For a backend with multiple targets, the list is merged across targets, and names can carry a target prefix. For example, the following access log policy adds the tool list to the log entry for each `tools/list` request:
+
+```yaml
+frontendPolicies:
+  accessLog:
+    filter: 'mcp.methodName == "tools/list"'
+    add:
+      tools: 'mcp.toolsList'
+```
+
+> [!CAUTION]
+> List results can be large, and the whole payload is written to each matching log entry. Filter on the method name so that only the list requests you need are logged.
 
 For the full list of CEL variables, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables" >}}).

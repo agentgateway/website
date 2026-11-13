@@ -1,5 +1,6 @@
 ## Core HTTP attributes
 
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
 | Attribute | Description |
 |-----------|-------------|
 | `gateway` | Gateway name |
@@ -9,13 +10,39 @@
 | `protocol` | Backend protocol (for example, `llm`, `mcp`, `http`) |
 | `http.method` | HTTP request method |
 | `http.host` | Request host |
-| `http.path` | Request path |
+| `http.path` | Request path, including the query string |
 | `http.status` | Response status code |
-| `http.version` | HTTP version |
-| `src.addr` | Client source address |
+| `http.version` | HTTP version, such as `HTTP/1.1` |
+| `src.addr` | Client source address and port |
+| `url.scheme` | Request scheme, such as `http` or `https` |
+| `network.protocol.version` | HTTP protocol version, such as `1.1` or `2` |
 | `trace.id` | Trace ID of the outgoing span |
 | `span.id` | Span ID of the outgoing span |
 | `duration` | Request duration |
+{{% /version %}}
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+The request span uses the [OpenTelemetry semantic convention names](https://opentelemetry.io/docs/specs/semconv/http/http-spans/) for HTTP attributes. Stdout access logs keep the earlier `http.method`, `http.host`, `http.path`, `http.version`, `http.status`, and `src.addr` names, and so do the child spans for outbound calls, such as [policy call child spans](#policy-child-spans). To remove a request span attribute, use the name in this table, such as `client.address`.
+
+| Attribute | Description |
+|-----------|-------------|
+| `gateway` | Gateway name |
+| `listener` | Listener name |
+| `route` | Route name |
+| `endpoint` | Backend endpoint address |
+| `protocol` | Backend protocol (for example, `llm`, `mcp`, `http`) |
+| `http.request.method` | HTTP request method |
+| `server.address` | Request host |
+| `server.port` | Request port. Set only when the request authority includes a port. |
+| `url.scheme` | Request scheme, such as `http` or `https` |
+| `url.path` | Request path, without the query string |
+| `url.query` | Query string. Set only when the request has one. |
+| `http.response.status_code` | Response status code |
+| `network.protocol.version` | HTTP protocol version, such as `1.1` or `2` |
+| `client.address` | Client IP address |
+| `trace.id` | Trace ID of the outgoing span |
+| `span.id` | Span ID of the outgoing span |
+| `duration` | Request duration |
+{{% /version %}}
 
 ## Conditional attributes
 
@@ -38,12 +65,41 @@ These attributes follow the [OTel semantic conventions for generative AI spans](
 
 | Attribute | Description |
 |-----------|-------------|
-| `gen_ai.operation.name` | Operation type (for example, `chat`) |
+| `gen_ai.operation.name` | Operation type, such as `chat` or `embeddings` |
 | `gen_ai.provider.name` | LLM provider (for example, `openai`) |
 | `gen_ai.request.model` | Requested model |
 | `gen_ai.response.model` | Model that served the response |
 | `gen_ai.usage.input_tokens` | Input token count |
-| `gen_ai.usage.output_tokens` | Output token count |
+| `gen_ai.usage.output_tokens` | Output token count |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+| `gen_ai.usage.audio_seconds` | Audio duration in seconds for transcription and translation requests |{{< /version >}}
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+LLM requests that model routing serves also carry the `agw.ai.original_model` attribute. Model routing serves {{< conditional-text include-if="kubernetes" >}}`{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources{{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}the `llm.models` configuration, including virtual models{{< /conditional-text >}}. The attribute records the model name that the client sent, and `gen_ai.request.model` records the model that reaches the provider after routing. Use the two values together to see which target served a request for a virtual model. Access logs carry the same attribute, including for requests that fail routing, such as a request for a model that does not exist.
+{{% /version %}}
+
+{{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
+### Operation names {#operation-names}
+
+The route type determines the `gen_ai.operation.name` attribute. For `detect` routes, the request path determines it instead. Access logs, the `gen_ai_operation_name` metric label, and the request log database use the same values.
+
+| Value | Route type | Request path on a `detect` route |
+|-------|------------|----------------------------------|
+| `chat` | OpenAI Chat Completions, OpenAI Responses, and Anthropic Messages | `/v1/chat/completions`, `/v1/responses`, or `/v1/messages` |
+| `generate_content` | Gemini `generateContent` and `streamGenerateContent` | A Gemini or Vertex AI `:generateContent` or `:streamGenerateContent` path |
+| `embeddings` | OpenAI Embeddings | `/v1/embeddings` |
+| `rerank` | Rerank | `/v1/rerank` or `/v2/rerank` |
+| `realtime` | OpenAI Realtime | None |
+| `decisions` | Decisions and SystemOne | `/v1/decisions` or `/v1/systemone` |
+| `count_tokens` | Anthropic and Gemini token count | `/v1/messages/count_tokens`, or a Gemini or Vertex AI `:countTokens` path |
+| `image_generation` | None | `/v1/images/generations`, `/v1/images/edits`, or `/v1/images/variations` |
+| `ocr` | None | `/v1/ocr` |
+| `transcription` | None | `/v1/audio/transcriptions` or `/v1/audio/translations` |
+| `speech` | None | `/v1/audio/speech` |
+| `compaction` | None | `/v1/responses/compact` |
+| `unknown` | None | Any other path |
+
+Passthrough routes omit `gen_ai.operation.name`.
+{{% /version %}}
 
 ## MCP attributes
 

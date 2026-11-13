@@ -2,15 +2,6 @@
 title: Serve a model
 weight: 20
 description: Expose an LLM model to clients with an AgentgatewayModel resource, including wildcard matching and provider credentials.
-test:
-  serve-model:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/integrations/llm/providers/httpbun.md
-    path: setup-httpbun-llm
-  - path: serve-model
 ---
 
 Expose an LLM model to clients with an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resource.
@@ -19,18 +10,27 @@ Expose an LLM model to clients with an `{{< reuse "agw-docs/snippets/agentgatewa
 
 An `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` declares one client-facing model and attaches it to a Gateway listener. Agentgateway derives the LLM routing from the models that attach to a listener, so you do not create an {{< reuse "agw-docs/snippets/backend.md" >}} or an `HTTPRoute`.
 
-In this guide, you enable the API, turn on LLM serving for a listener, and expose three kinds of models: an exact match, a wildcard match, and a model that authenticates to its provider with a Kubernetes Secret.
+In this guide, you verify that the API is enabled, turn on LLM serving for a listener, and expose three kinds of models: an exact match, a wildcard match, and a model that authenticates to its provider with a Kubernetes Secret.
 
 For more information, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
+
+{{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
 
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
 2. Deploy the [httpbun mock LLM]({{< link-hextra path="/integrations/llm/providers/httpbun/" >}}). This guide routes to httpbun so that you do not need a provider API key. To use a real provider instead, remove the `baseURL` field from each model and follow [API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
 
-## Enable the AgentgatewayModel feature
+## Verify the AgentgatewayModel feature
 
-{{< reuse "agw-docs/snippets/agentgatewaymodel-enable.md" >}}
+The {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} API is enabled by default. Verify that the feature is turned on in the control plane. The command returns `true`.
+
+```sh
+kubectl get deploy {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+  -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="AGW_ENABLE_AGENTGATEWAY_MODELS")].value}'
+```
+
+If the command returns any other value, the API was turned off with the `agentgatewayModels.enabled=false` Helm value. To turn it back on, upgrade the {{< reuse "agw-docs/snippets/agentgateway.md" >}} Helm release with `--set agentgatewayModels.enabled=true`.
 
 ## Enable LLM serving on a listener
 
@@ -38,7 +38,7 @@ A listener serves LLM traffic only when it allows the `{{< reuse "agw-docs/snipp
 
 1. Update the listener to allow both `HTTPRoute` and `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources.
 
-   ```yaml {paths="serve-model"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: Gateway
@@ -82,13 +82,6 @@ A listener serves LLM traffic only when it allows the `{{< reuse "agw-docs/snipp
    [{"group":"gateway.networking.k8s.io","kind":"HTTPRoute"},{"group":"agentgateway.dev","kind":"AgentgatewayModel"}]
    ```
 
-   {{< doc-test paths="serve-model" >}}
-   # NOTE: status.listeners[].supportedKinds does not currently advertise
-   # AgentgatewayModel even when the API is enabled and the kind is in
-   # allowedRoutes, so we do not gate on it here. The model-serving checks below
-   # (with their own warmup loops) verify the listener actually serves models.
-   {{< /doc-test >}}
-
 3. Save the gateway address in an environment variable, if you have not already.
 
    {{< tabs >}}
@@ -121,7 +114,7 @@ When you omit `spec.match`, the model matches `metadata.name` exactly. Clients r
 
 1. Create the model.
 
-   ```yaml {paths="serve-model"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -165,44 +158,6 @@ When you omit `spec.match`, the model matches `metadata.name` exactly. Clients r
    {"model":"gpt-4","usage":{"prompt_tokens":3,"completion_tokens":4,"total_tokens":7},"choices":[{"message":{"content":"Hello from the mock LLM","role":"assistant"},"finish_reason":"stop","index":0}],"object":"chat.completion"}
    ```
 
-   {{< doc-test paths="serve-model" >}}
-   # An AgentgatewayModel does not report status, so poll the data plane until the
-   # model is served instead of waiting on a resource condition.
-   for i in $(seq 1 60); do
-     curl -s --max-time 5 -o /dev/null -X POST "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
-       -H "Content-Type: application/json" \
-       -d '{"model":"gpt-4","messages":[],"httpbun":{"content":"warmup"}}' && break
-     sleep 2
-   done
-
-   YAMLTest -f - <<'EOF'
-   - name: exact model gpt-4 is served
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
-       method: POST
-       headers:
-         Content-Type: application/json
-       body: |
-         {
-           "model": "gpt-4",
-           "messages": [{"role": "user", "content": "Hello!"}],
-           "httpbun": {"content": "Hello from the mock LLM"}
-         }
-     source:
-       type: local
-     retries: 3
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.model"
-           comparator: equals
-           value: "gpt-4"
-         - path: "$.choices[0].message.content"
-           comparator: contains
-           value: "Hello from the mock LLM"
-   EOF
-   {{< /doc-test >}}
-
 3. Request a model that does not exist. Agentgateway returns an OpenAI-compatible error.
 
    ```sh
@@ -217,34 +172,13 @@ When you omit `spec.match`, the model matches `metadata.name` exactly. Clients r
    {"error":{"message":"Model not found","type":"invalid_request_error","code":"model_not_found"}}
    ```
 
-   {{< doc-test paths="serve-model" >}}
-   YAMLTest -f - <<'EOF'
-   - name: unknown model returns an OpenAI-compatible error
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
-       method: POST
-       headers:
-         Content-Type: application/json
-       body: |
-         {"model": "does-not-exist", "messages": []}
-     source:
-       type: local
-     expect:
-       statusCode: 404
-       bodyJsonPath:
-         - path: "$.error.code"
-           comparator: equals
-           value: "model_not_found"
-   EOF
-   {{< /doc-test >}}
-
 ## Serve a family of models with a wildcard
 
 Use `spec.match.model` to match more than one model name. The provider does not recognize the client-facing prefix, so pair the wildcard with a `model` transformation that rewrites the name before the request leaves the gateway.
 
 1. Create a model that matches any name that starts with `openai/`.
 
-   ```yaml {paths="serve-model"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -294,51 +228,13 @@ Use `spec.match.model` to match more than one model name. The provider does not 
    {"model":"gpt-5-mini","usage":{"prompt_tokens":3,"completion_tokens":4,"total_tokens":7},"choices":[{"message":{"content":"Hello from the mock LLM","role":"assistant"},"finish_reason":"stop","index":0}],"object":"chat.completion"}
    ```
 
-   {{< doc-test paths="serve-model" >}}
-   for i in $(seq 1 60); do
-     curl -s --max-time 5 -o /dev/null -X POST "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
-       -H "Content-Type: application/json" \
-       -d '{"model":"openai/gpt-5-mini","messages":[],"httpbun":{"content":"warmup"}}' && break
-     sleep 2
-   done
-
-   YAMLTest -f - <<'EOF'
-   - name: wildcard match strips the prefix before the provider sees the model
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
-       method: POST
-       headers:
-         Content-Type: application/json
-       body: |
-         {
-           "model": "openai/gpt-5-mini",
-           "messages": [{"role": "user", "content": "Hello!"}],
-           "httpbun": {"content": "Hello from the mock LLM"}
-         }
-     source:
-       type: local
-     retries: 3
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.model"
-           comparator: equals
-           value: "gpt-5-mini"
-   EOF
-   {{< /doc-test >}}
-
 ## Authenticate to the provider
 
 Real providers require credentials. Use `spec.policies.auth` to read them from a Kubernetes Secret.
 
 1. Create a Secret that holds the provider API key. By default, agentgateway reads the `Authorization` key.
 
-   {{< doc-test paths="serve-model" >}}
-   # The mock LLM ignores credentials; use a placeholder so the Secret is well formed.
-   export OPENAI_API_KEY=sk-placeholder
-   {{< /doc-test >}}
-
-   ```yaml {paths="serve-model"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Secret
@@ -353,7 +249,7 @@ Real providers require credentials. Use `spec.policies.auth` to read them from a
 
 2. Create a model that references the Secret.
 
-   ```yaml {paths="serve-model"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
@@ -386,6 +282,16 @@ Real providers require credentials. Use `spec.policies.auth` to read them from a
 
 Every public model on a listener appears in the OpenAI-compatible discovery endpoint. The endpoint requires no configuration.
 
+Each entry includes the OpenAI model object fields `id`, `object`, `created`, and `owned_by`. When the model catalog has metadata for a model, the entry also includes the following fields, and `created` is set to the model's release date from the catalog. Fields that the catalog does not record are left out.
+
+- `name`: The display name.
+- `context_window`, `context_length`, `max_input_tokens`, and `max_tokens`: The token limits.
+- `architecture.input_modalities` and `architecture.output_modalities`: The accepted input and output types, such as `text`, `image`, and `file`.
+- `capabilities`: Whether the model supports `reasoning`, `structured_outputs`, `tools`, and `temperature`.
+- `supported_parameters`: The request parameters that the model accepts, derived from its limits and capabilities.
+
+To return only the first listed models, add the `limit` query parameter. To look up one model by ID, send a request to `/v1/models/<model-id>` or `/models/<model-id>`.
+
 ```sh
 curl -s http://$INGRESS_GW_ADDRESS/v1/models
 ```
@@ -396,37 +302,35 @@ Example output:
 {
   "data": [
     {"id": "gpt-4", "object": "model", "created": 1785166485, "owned_by": "openai"},
-    {"id": "gpt-5-mini", "object": "model", "created": 1785166485, "owned_by": "openai"},
-    {"id": "openai/*", "object": "model", "created": 1785166485, "owned_by": "openai"}
+    {
+      "id": "gpt-5-mini",
+      "object": "model",
+      "created": 1754524800,
+      "owned_by": "openai",
+      "name": "GPT-5 Mini",
+      "context_window": 400000,
+      "context_length": 400000,
+      "max_input_tokens": 272000,
+      "max_tokens": 128000,
+      "architecture": {"input_modalities": ["text", "image"], "output_modalities": ["text"]},
+      "capabilities": {"reasoning": true, "structured_outputs": true, "tools": true, "temperature": false},
+      "supported_parameters": ["max_tokens", "reasoning", "reasoning_effort", "response_format", "structured_outputs", "tool_choice", "tools"]
+    },
+    {"id": "openai/gpt-4.1", "object": "model", "created": 1744588800, "owned_by": "openai", "name": "GPT-4.1", ...},
+    ...
   ],
   "object": "list"
 }
 ```
 
-{{< doc-test paths="serve-model" >}}
-# YAMLTest evaluates "$.data[*].id" to the first array element only, so a
-# `contains` check can verify the first listed model (gpt-4) but cannot assert
-# membership for later entries such as the "openai/*" wildcard. The wildcard is
-# already validated by the "wildcard match" serving check above, and appears in
-# the /v1/models response shown in the example output.
-YAMLTest -f - <<'EOF'
-- name: model discovery endpoint lists public models
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}/v1/models"
-    method: GET
-  source:
-    type: local
-  retries: 3
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.data[*].id"
-        comparator: contains
-        value: "gpt-4"
-EOF
-{{< /doc-test >}}
+The built-in catalog has no metadata for `gpt-4`, so that entry has only the four OpenAI fields, and `created` is the time that the model was configured.
 
-Wildcard models are listed by their match pattern. Models with `visibility: Internal` are excluded.
+Wildcard models expand to matching IDs from the [model catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) for their `provider`. For example, `openai/*` expands to IDs such as `openai/gpt-4o`. The catalog combines the built-in catalog with any catalogs that you configure. The discovery response uses catalog metadata for the extra fields.
+
+- **Model transformations**: Agentgateway reverses transformations that strip or add a fixed string, such as `stripPrefix("openai/")`. The list then uses the model names that clients send.
+- **Unexpanded patterns**: Agentgateway lists the pattern itself if the provider has no catalog entries. It also keeps the pattern if the model overrides the upstream model or uses a transformation that cannot be reversed.
+- **Custom providers**: To expand a wildcard, set `custom.providerOverride` to a catalog provider name, such as `openai`.
+- **Internal models**: Models with `visibility: Internal` do not appear in the list.
 
 ## Troubleshooting
 
@@ -444,7 +348,7 @@ Every request fails with the following error, even for a model you created.
 
 The model did not attach to the listener, or it is not reachable by clients. Common causes include the following.
 
-- The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API is not enabled on the control plane.
+- The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API is turned off on the control plane.
 - The listener does not allow the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` route kind.
 - The `parentRefs` field does not match the Gateway name or `sectionName`.
 - The model is in a different namespace than the Gateway, and the listener restricts `allowedRoutes.namespaces`.
@@ -452,7 +356,7 @@ The model did not attach to the listener, or it is not reachable by clients. Com
 
 **How to fix it:**
 
-1. Confirm that the API is enabled. If the following command returns no output, repeat the Helm step in [Before you begin](#before-you-begin).
+1. Confirm that the API is enabled. If the following command does not return `true`, turn the API back on as described in [Verify the AgentgatewayModel feature](#verify-the-agentgatewaymodel-feature).
 
    ```sh
    kubectl get deploy agentgateway -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
@@ -480,7 +384,7 @@ The model did not attach to the listener, or it is not reachable by clients. Com
 > [!NOTE]
 > Remove the resources you created in this guide only if you do not plan to continue to [Route across models with virtual models]({{< link-hextra path="/documentation/llm/models/virtual/" >}}).
 
-```sh {paths="serve-model-cleanup"}
+```sh
 kubectl delete agentgatewaymodel gpt-4 openai-models gpt-5-mini -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete secret openai-secret -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

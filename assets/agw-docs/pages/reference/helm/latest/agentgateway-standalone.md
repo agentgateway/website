@@ -1,15 +1,21 @@
 
+## Source Code
+
+* <https://github.com/agentgateway/agentgateway>
+
 ## Values
 
 | Key | Type | Description |
 |-----|------|-------------|
 | affinity | object | The affinity rules for scheduling the agentgateway proxy pod.<br/><br/>The default value is `{}`. |
+| autoscaling | object | Configures HorizontalPodAutoscaler for your Deployment.<br/><br/>The default value is `{"annotations":{},"behavior":{},"enabled":false,"maxReplicas":3,"minReplicas":1,"targetCPUUtilizationPercentage":80,"targetMemoryUtilizationPercentage":80}`. |
 | commonLabels | object | Additional labels to add to all resources that the Helm chart creates.<br/><br/>The default value is `{}`. |
-| config | object | The standalone agentgateway configuration to serve, in the same format as a local agentgateway config file. The chart manages the 'config.storage' and 'config.database' sections for you based on the 'mode' value, so do not set them here.<br/><br/>The default value is `{}`. |
+| config | object | The standalone agentgateway configuration to serve, in the same format as a local agentgateway config file. Changes outside the nested 'config' section, plus 'config.modelCatalog', are applied without restarting the pods. Changes to other nested 'config' settings restart the pods because agentgateway reads them only at startup. The chart manages the 'config.storage' and 'config.database' sections for you based on the 'mode' value, so do not set them here.<br/><br/>The default value is `{}`. |
 | database.postgres.url | string | The PostgreSQL connection string that the the chart renders into the ConfigMap. Required in database mode.<br/><br/>The default value is `""`. |
 | dnsConfig | object | The DNS configuration for the agentgateway proxy pod, which is merged with the settings that the kubelet derives from the pod's dnsPolicy. For example, 'options: [{name: ndots, value: "3"}]'.<br/><br/>The default value is `{}`. |
 | extraContainers | list | Additional containers to run in the agentgateway proxy pod, such as a sidecar.<br/><br/>The default value is `[]`. |
 | extraEnv | list | Additional environment variables to set on the agentgateway proxy container.<br/><br/>The default value is `[]`. |
+| extraInitContainers | list | Additional init containers to run in the agentgateway proxy pod.<br/><br/>The default value is `[]`. |
 | extraVolumeMounts | list | Additional volume mounts to add to the agentgateway proxy container.<br/><br/>The default value is `[]`. |
 | extraVolumes | list | Additional volumes to add to the agentgateway proxy pod.<br/><br/>The default value is `[]`. |
 | fullnameOverride | string | Override the full name of the resources that the Helm chart creates.<br/><br/>The default value is `""`. |
@@ -47,11 +53,19 @@
 | monitoring.extraLabels | object | Additional labels to add to the PodMonitor.<br/><br/>The default value is `{}`. |
 | monitoring.podMonitor.enabled | bool | Create the PodMonitor resource.<br/><br/>The default value is `true`. |
 | monitoring.podMonitor.interval | string | How often Prometheus scrapes the agentgateway proxy's metrics.<br/><br/>The default value is `"15s"`. |
+| monitoring.podMonitor.metricRelabelings | list | Relabeling rules applied to scraped metrics before ingestion.    See the [Prometheus metric_relabel_configs docs](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs).<br/><br/>The default value is `[]`. |
+| monitoring.podMonitor.relabelings | list | Relabeling rules applied to the scrape target before metrics are ingested.    See the [Prometheus relabel_config docs](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config).<br/><br/>The default value is `[]`. |
+| monitoring.podMonitor.scrapeClassicHistograms | bool | Scrape classic (legacy bucket) histograms.<br/><br/>The default value is `true`. |
+| monitoring.podMonitor.scrapeNativeHistograms | bool | Scrape native (exponential, high-resolution) histograms. Requires Prometheus >= v3.8.0.<br/><br/>The default value is `false`. |
 | nameOverride | string | Override the name to the Helm base release, which by default is 'agentgateway-standalone'.<br/><br/>The default value is `""`. |
 | namespaceOverride | string | Install the agentgateway resources in a different namespace than the Helm release namespace.<br/><br/>The default value is `""`. |
 | nodeSelector | object | The node labels that a node must have for the agentgateway proxy pod to be scheduled on it.<br/><br/>The default value is `{}`. |
-| oidc.cookieSecretName | string | The name of an existing secret that has the 'OIDC_COOKIE_SECRET' key. If unset, the chart references a '<release name>-oidc' secret as an optional secret.<br/><br/>The default value is `""`. |
+| oidc.cookieSecretName | string | The name of an existing secret that has the 'OIDC_COOKIE_SECRET' key. Defaults to '<release name>-oidc'. The secret is required when 'oidc.enabled' is true.<br/><br/>The default value is `""`. |
+| oidc.enabled | bool | Inject the OIDC cookie secret environment variable. Enable this when configuring OIDC authentication.<br/><br/>The default value is `false`. |
 | podAnnotations | object | Annotations to add to the agentgateway proxy pod. The defaults let Prometheus scrape the proxy's metrics endpoint.<br/><br/>The default value is `{"prometheus.io/path":"/metrics","prometheus.io/port":"15020","prometheus.io/scrape":"true"}`. |
+| podDisruptionBudget | object | podDisruptionBudget allows you to define minimum and maximum available pods during voluntary disruptions.<br/><br/>The default value is `{"enabled":false,"maxUnavailable":"","minAvailable":1,"unhealthyPodEvictionPolicy":""}`. |
+| podDisruptionBudget.maxUnavailable | string | Takes precedence over minAvailable when set to a non-zero number or non-empty string.<br/><br/>The default value is `""`. |
+| podDisruptionBudget.unhealthyPodEvictionPolicy | string | UnhealthyPodEvictionPolicy defines the criteria for when unhealthy pods should be considered for eviction.<br/><br/>The default value is `""`. |
 | podLabels | object | Labels to add to the agentgateway proxy pod.<br/><br/>The default value is `{}`. |
 | podSecurityContext | object | The pod-level security context for the agentgateway proxy pod.<br/><br/>The default value is `{}`. |
 | replicaCount | int | The number of agentgateway proxy pods to run. Both storage modes support multiple replicas.<br/><br/>The default value is `1`. |
@@ -61,5 +75,6 @@
 | serviceAccount.annotations | object | Annotations to add to the service account. Use these annotations to bind a cloud IAM role to the pod, such as 'eks.amazonaws.com/role-arn' for IAM roles for service accounts (IRSA) on Amazon EKS, or 'iam.gke.io/gcp-service-account' for Workload Identity on Google GKE.<br/><br/>The default value is `{}`. |
 | serviceAccount.create | bool | Create a service account for the agentgateway proxy pod. The proxy needs no Kubernetes API permissions, so this service account is only a pod identity, such as for binding a cloud IAM role or attaching image pull secrets. Set to false to use a service account that you manage outside the chart, such as when your cluster policy does not allow Helm releases to create identities, and set 'name' to that service account.<br/><br/>The default value is `true`. |
 | serviceAccount.name | string | The name of the service account. If 'create' is true, this value names the service account that the chart creates, and defaults to the name of the Helm release. If 'create' is false, this value must name a service account that already exists in the release namespace, because the chart does not create one. Note that if 'create' is false and you leave this value unset, the pod runs with the namespace's 'default' service account.<br/><br/>The default value is `""`. |
+| session.secretName | string | The name of an existing secret that has the 'key' entry used for the session key.<br/><br/>The default value is `""`. |
 | strategy | object | Override the Kubernetes Deployment strategy for the agentgateway proxy.<br/><br/>The default value is `{}`. |
 | tolerations | list | The tolerations to apply to the agentgateway proxy pod.<br/><br/>The default value is `[]`. |

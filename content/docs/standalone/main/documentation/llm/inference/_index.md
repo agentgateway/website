@@ -2,8 +2,8 @@
 title: Inference routing
 weight: 50
 description: Configure Kubernetes Gateway API or standalone inference routing for AI workloads.
-url: /docs/standalone/main/documentation/inference/
-test: skip
+aliases:
+  - ../inference/
 ---
 
 Agentgateway supports the Kubernetes Gateway API Inference Extension in two
@@ -20,9 +20,7 @@ endpoint for each inference request.
 Use this mode when you want Gateway API integration, `InferencePool` resources,
 traffic splitting, route matching, and other Kubernetes networking features.
 
-{{< cards>}}
-  {{< card link="/docs/kubernetes/main/documentation/inference/" title="Set up Kubernetes inference routing" >}}
-{{< /cards >}}
+{{% upstream %}}[Set up Kubernetes inference routing](/docs/kubernetes/main/documentation/llm/inference/).{{% /upstream %}}{{% downstream %}}[Set up Kubernetes inference routing](/docs/kubernetes/latest/documentation/llm/inference/).{{% /downstream %}}
 
 ## Standalone request scheduler mode
 
@@ -50,6 +48,67 @@ service in `services`, and the route backend references it as
 
 {{% github-yaml url="https://agentgateway.dev/examples/llm-standalone-epp/config.yaml" %}}
 
-{{< cards>}}
-  {{< card link="https://github.com/agentgateway/agentgateway/blob/main/examples/llm-standalone-epp/README.md" title="Agentgateway llm-standalone-epp example" icon="external-link" >}}
-{{< /cards >}}
+See the [agentgateway llm-standalone-epp example](https://github.com/agentgateway/agentgateway/blob/main/examples/llm-standalone-epp/README.md).
+
+### Hostname destinations {#hostname-destinations}
+
+The EPP returns the selected endpoint as `host:port` in the `x-gateway-destination-endpoint` header. The host can be an IP address or a DNS hostname, such as `model-east.example.com:443`.
+
+A hostname lets a global EPP route requests to a shared gateway or cloud load balancer in another cluster.
+
+Set `destinationMode` to control which destinations agentgateway accepts.
+
+| `destinationMode` | IP address | DNS hostname |
+|-------------------|------------|--------------|
+| `validated` (default) | Accepted when the address matches an endpoint of the local service. | Rejected with `503`: hostnames cannot match local endpoints. The log indicates that `passthrough` mode is required. |
+| `passthrough` | Accepted. | Accepted. Agentgateway resolves the hostname through DNS. |
+
+Both modes reject `unix:` socket paths. An EPP cannot route requests to a local socket.
+
+The following configuration accepts hostname destinations. The EPP itself is also reached by hostname.
+
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+services:
+- name: my-model
+  namespace: default
+  hostname: my-model
+  vips: []
+  ports:
+    "8000": 8000
+gateways:
+  default:
+    port: 4000
+routes:
+- name: standalone-epp
+  matches:
+  - path:
+      pathPrefix: /v1/chat/completions
+  backends:
+  - service:
+      name: default/my-model
+      port: 8000
+    policies:
+      inferenceRouting:
+        endpointPicker:
+          host: epp.example.internal:9002
+        destinationMode: passthrough
+```
+
+| Setting | Description |
+|---------|-------------|
+| `services` | The synthetic service that the route backend references. The EPP picks the real endpoint, so the service lists no addresses. |
+| `inferenceRouting.endpointPicker.host` | The address of the EPP, as `host:port`. |
+| `inferenceRouting.destinationMode` | Set to `passthrough` (lowercase) to accept hostname destinations. |
+
+Check the configuration before you start agentgateway.
+
+```sh
+agentgateway --validate-only -f config.yaml
+```
+
+Example output:
+
+```console
+Configuration is valid!
+```

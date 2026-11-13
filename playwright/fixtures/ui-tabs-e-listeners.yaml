@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Fixture for tests/ui-tabs-e-listeners.spec.ts: the "UI" tabs in configuration/listeners.md.
+# The web (443) and tls (8443) gateways are already switched to "Multiple listeners", as the
+# guide's steps do before they edit a listener, so each has a listener1 entry and an
+# Add listener button. The ports match the guide, because the gateway cards behind the
+# drawers show them. Nothing is saved, so the certificate paths that the drawers are filled
+# with never need to exist.
+gateways:
+  web:
+    port: 443
+    listeners:
+    - name: listener1
+  tls:
+    port: 8443
+    listeners:
+    - name: listener1
+routes: []

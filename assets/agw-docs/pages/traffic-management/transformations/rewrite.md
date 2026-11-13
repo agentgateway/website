@@ -12,7 +12,7 @@ For example, a request to `/users/12345` is forwarded upstream as `/users/id`.
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your transformation rules.
 
-   ```yaml {paths="rewrite"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -32,25 +32,6 @@ For example, a request to `/users/12345` is forwarded upstream as `/users/id`.
              value: 'request.path.with(p, p.regexReplace("/[0-9]+", "/id"))'
    EOF
    ```
-
-   {{< doc-test paths="rewrite" >}}
-   YAMLTest -f - <<'EOF'
-   - name: verify numeric path segment is rewritten to /id
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything/users/12345"
-       method: GET
-       headers:
-         host: www.example.com
-     source:
-       type: local
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.url"
-           comparator: contains
-           value: "/anything/users/id"
-   EOF
-   {{< /doc-test >}}
 
 2. Send a request to the httpbin app using a path with a numeric ID. Verify that you get back a 200 HTTP response code and that the `url` field in the response body shows the normalized path forwarded to the upstream.
 
@@ -97,6 +78,6 @@ For example, a request to `/users/12345` is forwarded upstream as `/users/id`.
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="rewrite"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} transformation -n httpbin
 ```

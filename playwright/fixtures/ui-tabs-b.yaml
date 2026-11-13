@@ -1,0 +1,87 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Fixture for tests/ui-tabs-b.spec.ts: the "UI" tab captures in the standalone LLM core guides
+# (llm/about, api-keys, virtual-models, transformations, cost-controls/budget-limits/per-key,
+# and the cost catalog snippet). Run with CAPTURE_MODE=fixture FIXTURE=ui-tabs-b.yaml.
+#
+# Nothing here is ever called: every drawer is filled in and never saved, so the providers and
+# keys are throwaway literals and no backend runs.
+#
+#   - config.database: the Budgets section of the virtual key drawer shows a "Database
+#     required" warning without it. /config is the launcher's mounted runtime dir.
+#   - llm.policies.apiKey: per-key.md has the reader enable strict API key auth before
+#     creating keys. Enabling it in the UI would save, so the fixture starts with it enabled
+#     and no keys, which is the state the guide reaches after that step.
+#   - llm.models: the union of the models that the virtual-models.md UI tabs start with (the
+#     target dropdowns list them), plus the "*" model that transformations.md and per-key.md
+#     edit.
+config:
+  database:
+    url: "sqlite:///config/budgets.db?mode=rwc"
+llm:
+  policies:
+    apiKey:
+      mode: strict
+      keys: []
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "sk-fixture-not-a-real-key"
+  # virtual-models.md, "Weighted routing"
+  - name: gpt-4o-public
+    visibility: public
+    provider: openAI
+    params:
+      model: gpt-4o
+      apiKey: "sk-fixture-not-a-real-key"
+  - name: gpt-4o-primary
+    visibility: internal
+    provider: openAI
+    params:
+      model: gpt-4o
+      apiKey: "sk-fixture-not-a-real-key"
+  - name: gpt-4o-fallback
+    visibility: internal
+    provider: openAI
+    params:
+      model: gpt-4o-mini
+      apiKey: "sk-fixture-not-a-real-key"
+  # virtual-models.md, "Failover routing"
+  - name: claude-primary
+    visibility: internal
+    provider: anthropic
+    params:
+      model: claude-sonnet-4-0
+      apiKey: "sk-fixture-not-a-real-key"
+  - name: claude-backup-a
+    visibility: internal
+    provider: anthropic
+    params:
+      model: claude-3-5-haiku-20241022
+      apiKey: "sk-fixture-not-a-real-key"
+  - name: claude-backup-b
+    visibility: internal
+    provider: anthropic
+    params:
+      model: claude-3-5-haiku-20241022
+      apiKey: "sk-fixture-not-a-real-key"
+  # virtual-models.md, "Conditional routing"
+  - name: openai-public
+    visibility: public
+    provider: openAI
+    params:
+      model: gpt-4o-mini
+      apiKey: "sk-fixture-not-a-real-key"
+  - name: openai-fast
+    visibility: internal
+    provider: openAI
+    params:
+      model: gpt-4o-mini
+      apiKey: "sk-fixture-not-a-real-key"
+  - name: openai-smart
+    visibility: internal
+    provider: openAI
+    params:
+      model: gpt-4o
+      apiKey: "sk-fixture-not-a-real-key"

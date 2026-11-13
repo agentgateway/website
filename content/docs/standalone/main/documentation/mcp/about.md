@@ -3,7 +3,6 @@ title: About
 weight: 10 
 description: Learn about Model Context Protocol and enterprise adoption challenges
 next: /mcp/configuration-modes
-test: skip
 ---
 
 Learn more about MCP and common challenges when adopting MCP in enterprise environments. 

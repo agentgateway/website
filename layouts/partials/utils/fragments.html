@@ -10,12 +10,12 @@
     {{ if eq $h1.Title "" }}
       {{ $headingKeys = $headingKeys | append $h1.Title }}
     {{ else }}
-      {{ $headingKeys = $headingKeys | append (printf "%s#%s" $h1.ID $h1.Title) }}
+      {{ $headingKeys = $headingKeys | append (printf "%s#%s" $h1.ID ($h1.Title | plainify | htmlUnescape)) }}
     {{ end }}
     {{ $headingTitles = $headingTitles | append (printf "# %s" $h1.Title) }}
 
     {{ range $h2 := $h1.Headings }}
-      {{ $headingKeys = $headingKeys | append (printf "%s#%s" $h2.ID $h2.Title) }}
+      {{ $headingKeys = $headingKeys | append (printf "%s#%s" $h2.ID ($h2.Title | plainify | htmlUnescape)) }}
       {{ $headingTitles = $headingTitles | append (printf "## %s" $h2.Title) }}
     {{ end }}
   {{ end }}

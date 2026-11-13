@@ -1,8 +1,12 @@
 ## About
 
-To require users to authenticate, apply a browser [OIDC]({{< link-hextra path="/documentation/configuration/security/oidc/" >}}) policy to the gateway that serves the UI. Unauthenticated requests are redirected to your identity provider (IdP) to log in, and only requests that pass the policies in `ui.policies` reach the UI.
+To require users to authenticate, apply a browser {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[OIDC]({{< link-hextra path="/documentation/configuration/security/authentication/oidc/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[OIDC]({{< link-hextra path="/documentation/configuration/security/oidc/" >}}){{< /version >}} policy to the gateway that serves the UI. Unauthenticated requests are redirected to your identity provider (IdP) to log in, and only requests that pass the policies in `ui.policies` reach the UI.
 
-The `ui.policies` section takes the same policies that a route takes, so you can also use [JWT]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}), [basic]({{< link-hextra path="/documentation/configuration/security/basic-authn/" >}}), or [API key]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}) authentication for programmatic access. To restrict which authenticated users get in, add an [authorization policy]({{< link-hextra path="/documentation/configuration/security/http-authz/" >}}) alongside the authentication policy.
+The `ui.policies` section takes the same policies that a route takes, so you can also use {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT]({{< link-hextra path="/documentation/configuration/security/authentication/jwt-authn/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}){{< /version >}}, {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[basic]({{< link-hextra path="/documentation/configuration/security/authentication/basic-authn/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[basic]({{< link-hextra path="/documentation/configuration/security/basic-authn/" >}}){{< /version >}}, or {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[API key]({{< link-hextra path="/documentation/configuration/security/authentication/apikey-authn/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[API key]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}){{< /version >}} authentication for programmatic access. To restrict which authenticated users get in, add an {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[authorization policy]({{< link-hextra path="/documentation/configuration/security/authorization/http-authz/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[authorization policy]({{< link-hextra path="/documentation/configuration/security/http-authz/" >}}){{< /version >}} alongside the authentication policy. To send the access decision to your own policy service, such as Open Policy Agent (OPA), use an {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[external authorization]({{< link-hextra path="/documentation/configuration/security/authorization/external-authz/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[external authorization]({{< link-hextra path="/documentation/configuration/security/external-authz/" >}}){{< /version >}} (`extAuthz`) policy. The `ui.policies` section also accepts [cross-origin resource sharing (CORS)]({{< link-hextra path="/documentation/configuration/security/cors/" >}}) and [cross-site request forgery (CSRF)]({{< link-hextra path="/documentation/configuration/security/csrf/" >}}) policies.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+The `oidc` policy in `ui.policies` also accepts bearer ID tokens, so CLI clients can call the UI's API without a browser session. The client sends an ID token from the same identity provider and client in the `Authorization: Bearer <token>` header. This default is `credentials: sessionOrBearer`. To accept only browser sessions, set `credentials: session`. For more information, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Bearer tokens for API clients]({{< link-hextra path="/documentation/configuration/security/authentication/oidc/#bearer-id-tokens" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Bearer tokens for API clients]({{< link-hextra path="/documentation/configuration/security/oidc/#bearer-id-tokens" >}}){{< /version >}}.
+{{< /version >}}
 
 > [!NOTE]
 > A policy in `ui.policies` applies only to the gateways that the `ui` section lists. It does not apply to the copy of the UI on the admin interface, which stays unauthenticated. That is safe by default, because the admin address is loopback-only, but it is a reason not to move it. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/documentation/setup/ui/#admin-interface" >}}).
@@ -15,83 +19,56 @@ The `ui.policies` section takes the same policies that a route takes, so you can
 
 ## Binary and Docker {#secure-binary-docker}
 
-1. Set the `OIDC_COOKIE_SECRET` environment variable. Agentgateway requires this value to encrypt session cookies whenever an `oidc` policy is configured, and refuses to start without it. The key is an AES-256-GCM key, which is 32 random bytes encoded as 64 hexadecimal characters. It is a random value that you generate, not a value that your identity provider gives you.
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+You can add the policies in the UI or in your configuration file.
 
-   ```bash
-   export OIDC_COOKIE_SECRET="$(openssl rand -hex 32)"
-   ```
+{{< tabs >}}
+{{% tab name="UI" %}}
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}). UI access policies also require the UI to be on a gateway, such as the `ui-gateway` from [Serve the UI on its own gateway]({{< link-hextra path="/documentation/setup/ui/gateway-ui/" >}}).
 
-2. Save the details of the UI client that you created in your IdP as environment variables. The redirect URI must match the address that you serve the UI on, and it must be registered as a valid redirect URI in your IdP. The following example uses a local address so that you can test the login flow first. When you expose the UI on a hostname, change this value to that hostname and register it in your IdP.
+1. Set the environment variables for the session cookie key and the UI client that you created in your IdP.
+   * `OIDC_COOKIE_SECRET` is an AES-256-GCM key that agentgateway uses to encrypt session cookies. Generate 32 random bytes, encoded as 64 hexadecimal characters. If this key is missing, agentgateway does not start with an `oidc` policy.
+   * `REDIRECT_URI` must match the address that you serve the UI on, and it must be registered as a valid redirect URI in your IdP.
 
    ```sh
+   export OIDC_COOKIE_SECRET="$(openssl rand -hex 32)"
    export ISSUER_URL=https://keycloak.example.com/realms/agentgateway
    export UI_CLIENT_ID=agentgateway-ui
    export UI_CLIENT_SECRET=<client-secret>
    export REDIRECT_URI=http://localhost:4001/oauth/callback
    ```
 
-3. Add an `oidc` policy to the `ui` section of your configuration file. The following example redirects unauthenticated users on the `ui-gateway` to the OIDC provider to log in. The optional `authorization` policy further restricts access to users whose email address ends in `@example.com`.
+2. Restart agentgateway from the same shell, so that agentgateway has these variables in its environment. In `hybrid` storage mode, agentgateway needs only `OIDC_COOKIE_SECRET`, because you enter the other values in the UI as literals in a later step. In Docker, add `-e OIDC_COOKIE_SECRET -e ISSUER_URL -e UI_CLIENT_ID -e UI_CLIENT_SECRET -e REDIRECT_URI` to your `docker run` command. For the full command, see the **Docker** tab in the **Config file** tab.
+3. Open the **Settings** > **UI** page on the admin interface, such as [http://localhost:15000/ui/settings/ui](http://localhost:15000/ui/settings/ui). The policies do not apply to the admin interface, so you keep access while you edit them. Confirm that the **Public gateway** dropdown shows `ui-gateway`.
+4. In the **UI access policies** section, click the **OIDC** card, and configure the following fields. In `file` storage mode, you can enter environment variable references, which agentgateway expands when it loads the configuration. This way, the client secret is not written into the file.
 
-   Agentgateway expands environment variables in the configuration file when it loads the file, so you can refer to the values that you exported in the previous step instead of writing the client secret into the file.
+   In `hybrid` storage mode, agentgateway stores the values as you enter them and does not expand environment variable references, so the screenshots and the following references do not apply. Enter the literal values instead, which also stores the client secret in the database. To keep the client secret out of the database, set the OIDC policy in your configuration file as shown in the **Config file** tab. A reference in the **Issuer** field fails the save with an error such as `invalid discovery uri derived from issuer '${ISSUER_URL}'`. For more information, see [`hybrid` mode]({{< link-hextra path="/documentation/setup/storage/#binary-hybrid" >}}).
 
-   ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   gateways:
-     default:
-       port: 4000
-     ui-gateway:
-       port: 4001
-   ui:
-     gateways: [ui-gateway]
-     policies:
-       oidc:
-         issuer: ${ISSUER_URL}
-         clientId: ${UI_CLIENT_ID}
-         clientSecret: ${UI_CLIENT_SECRET}
-         redirectURI: ${REDIRECT_URI}
-         scopes:
-         - profile
-         - email
-       authorization:
-         rules:
-         - allow: jwt.email.endsWith("@example.com")
-   ```
+   1. **Issuer**: `${ISSUER_URL}`, or in `hybrid` mode, your issuer URL
+   2. **Client ID**: `${UI_CLIENT_ID}`, or in `hybrid` mode, your client ID
+   3. **Client secret**: `${UI_CLIENT_SECRET}`, or in `hybrid` mode, your client secret
+   4. **Redirect URI**: `${REDIRECT_URI}`, or in `hybrid` mode, your redirect URI
+   5. **Additional scopes**: Click the `profile` and `email` suggestions.
 
-   > [!TIP]
-   > For the full list of `oidc` policy fields and a complete runnable Keycloak setup, see [OIDC browser authentication]({{< link-hextra path="/documentation/configuration/security/oidc" >}}) and the [`traffic-unified-gateway` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-unified-gateway) in the agentgateway repository.
+   {{< reuse-image src="img/ui-settings-oidc.png" srcDark="img/ui-settings-oidc-dark.png" alt="UI OIDC settings drawer with the issuer URL from the ISSUER_URL environment variable" >}}
 
-4. Start agentgateway with the updated config.
+   {{< reuse-image src="img/ui-settings-oidc-client.png" srcDark="img/ui-settings-oidc-client-dark.png" alt="UI OIDC settings drawer scrolled to the client ID, client secret, and redirect URI environment variables and the profile and email scopes" >}}
 
-   {{< tabs >}}
-   {{% tab name="Binary" %}}
-   ```sh
-   agentgateway -f config.yaml
-   ```
-   {{% /tab %}}
-   {{% tab name="Docker" %}}
-   Pass each environment variable to the container with `-e`. The container gets its own environment, so the values that you exported in your shell are not available inside it unless you pass them.
-
-   ```sh
-   docker run -d \
-     --name agentgateway \
-     --user "$(id -u):$(id -g)" \
-     -v "$PWD/config.yaml:/config.yaml" \
-     -p 4000:4000 -p 4001:4001 \
-     -e OIDC_COOKIE_SECRET \
-     -e ISSUER_URL \
-     -e UI_CLIENT_ID \
-     -e UI_CLIENT_SECRET \
-     -e REDIRECT_URI \
-     {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/versions/image-tag.md" >}} \
-     -f /config.yaml
-   ```
-
-   > [!IMPORTANT]
-   > The container must be able to resolve and reach the `ISSUER_URL` value, and so must the browser, because agentgateway redirects the browser to that address to log in. An issuer on `localhost` refers to the container itself, not to your host. Use the IdP's routable address in both places.
-   {{% /tab %}}
-   {{< /tabs >}}
-
-5. Open the UI at the gateway's address, such as [http://localhost:4001/ui/](http://localhost:4001/ui/). Instead of loading the UI directly, agentgateway redirects you to the OIDC provider to log in. After you authenticate, you are returned to the UI.
+5. Click **Save policy**. The save fails if agentgateway cannot fetch the OIDC discovery document from the issuer. In `file` storage mode, the save also fails if a referenced environment variable is not set.
+6. Optional: Restrict access to users whose email address ends in `@example.com`.
+   1. Click the **Authorization** card, and click **Add rule**.
+   2. Keep **Allow** as the effect, and replace the example expression with `jwt.email.endsWith("@example.com")`.
+   3. Click **Save policy**.
+7. Open the UI at the gateway's address, such as [http://localhost:4001/ui/](http://localhost:4001/ui/). Instead of loading the UI, agentgateway shows a **Sign in** page. Click **Sign in with SSO** to log in with your OIDC provider. After you authenticate, you are returned to the UI.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/standalone/setup/ui/secure-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< reuse "agw-docs/standalone/setup/ui/secure-config.md" >}}
+{{% /version %}}
 
 ## Helm {#secure-helm}
 
@@ -120,6 +97,10 @@ The `ui.policies` section takes the same policies that a route takes, so you can
 
 3. Add the OIDC policy to the `ui` section, point the chart at the Secret, and pass the client secret to the pod as an environment variable.
 
+   {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+   Set the chart value `oidc.enabled: true` to inject `OIDC_COOKIE_SECRET` from the named Secret. Setting only `oidc.cookieSecretName` does not inject the key, and agentgateway cannot start with an OIDC policy without it.
+   {{< /version >}}
+
    The heredoc in this step is unquoted, so your shell substitutes the issuer, client ID, and redirect URI as it writes the file. The `\$UI_CLIENT_SECRET` reference is escaped, so it stays in the file as a literal `$UI_CLIENT_SECRET` that agentgateway resolves from the pod environment at startup. This way, the client secret stays in the Secret instead of the ConfigMap.
 
    ```yaml
@@ -147,7 +128,8 @@ The `ui.policies` section takes the same policies that a route takes, so you can
            pathPrefix: /
        backends:
        - host: httpbin.httpbin.svc.cluster.local:8000
-   oidc:
+   oidc:{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+     enabled: true{{< /version >}}
      cookieSecretName: agentgateway-ui-secrets
    extraEnv:
    - name: UI_CLIENT_SECRET
@@ -189,7 +171,123 @@ The `ui.policies` section takes the same policies that a route takes, so you can
 > [!IMPORTANT]
 > Agentgateway fetches the OIDC discovery document at startup, so the issuer must be reachable from the pod. When the fetch fails, the pod does not start, and the logs report `failed to decode oidc discovery response from uri`. If the pod enters `CrashLoopBackOff` after you add the policy, check the issuer URL and any egress restrictions.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+## Choose what users can do {#access-model}
+
+The policies in `ui.policies` decide what users can do after they log in, so you can match UI access to the teams in your IdP. Each request to a UI page or the UI API passes through the policies. By default, a user who logs in gets full access, which suits a small team of administrators. Full access includes saving configuration changes, managing all virtual keys, and editing `ui.policies`.
+
+To give different users different access, choose one of the following options.
+
+| Option | Effect |
+| -- | -- |
+| Authorization rules | Define your own roles from IdP claims, the request method, and the request path. For example, one group can save changes, and every other user can view. For more information, see [Set up an admin group](#admin-group). |
+| `extAuthz` policy | Your own authorization service, such as OPA, decides each UI request with any per-user rules that you write. For more information, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[External authorization]({{< link-hextra path="/documentation/configuration/security/authorization/external-authz/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[External authorization]({{< link-hextra path="/documentation/configuration/security/external-authz/" >}}){{< /version >}}. |
+| `readOnly` storage mode | Every user can view the UI and all configuration changes go through your configuration file. For more information, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/#binary-readonly" >}}). |
+
+### Set up an admin group {#admin-group}
+
+Add `allow` rules to the `authorization` policy in `ui.policies` to let one group of users save changes while every other user can view. The following example gives members of the `agentgateway-admins` group full access. Before you add the rules, check that your IdP adds a `groups` claim to the ID token. Without the claim, the group rule does not match, and saves from the UI on the gateway return a `403` response. The claim name and the group names depend on your IdP configuration.
+
+The example uses the following rules.
+
+| Rule | Effect |
+| -- | -- |
+| `"agentgateway-admins" in jwt.groups` | Members of the group have full access, including saving changes. |
+| `request.method == "GET"` | Every other user can open the UI pages and read the configuration, including any secrets that the configuration file stores inline, such as virtual keys, provider API keys, and OIDC client secrets. To hide secrets, narrow this rule to the paths that users need, or use an `extAuthz` policy. |
+| `request.path.startsWith("/api/logs/") \|\| request.path == "/api/cel"` | Every other user can also search and stream request logs, view analytics, and use the Common Expression Language (CEL) playground. These pages query data with `POST` requests, so this rule includes them in view access. |
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. In a Helm installation, port-forward the admin port.
+
+   ```sh
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     deploy/{{< reuse "agw-docs/standalone/helm-standalone-release.md" >}} 15000:15000
+   ```
+
+2. Open the **Settings** > **UI** page on the admin interface, such as [http://localhost:15000/ui/settings/ui](http://localhost:15000/ui/settings/ui).
+3. In the **UI access policies** section, click the **Authorization** card.
+4. For each rule in the table, click **Add rule**, keep **Allow** as the effect, and enter the expression.
+5. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< reuse "agw-docs/standalone/setup/ui/secure-admin-group-config.md" >}}
+{{% /tab %}}
+{{< /tabs >}}
+{{% /version %}}
+{{% version include-if="1.6.x" %}}
+{{< reuse "agw-docs/standalone/setup/ui/secure-admin-group-config.md" >}}
+{{% /version %}}
+
+#### Verify the rules
+
+1. Log in to the UI on the gateway as a member of the `agentgateway-admins` group, and save a change to verify that the group rule matches. If the save returns a `403` response, check the name and values of the `groups` claim in your IdP, and update the rule.
+2. Log in to the UI as a user outside the group, and verify that you can browse the UI. When you save a change, the gateway returns a `403` response, because only members of the group can save changes, including changes to `ui.policies`.
+
+## Choose how users are identified {#signed-in-user}
+
+Agentgateway identifies the user of each request with the `agentgateway.user` attribute. Request logs, analytics, and [virtual key owners]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#key-owners" >}}) record this value. By default, the value comes from the first of the following sources that has a value:
+
+1. The metadata of a virtual key, in this order: `agentgateway.dev/owner`, `user`, `name`, then `owner`
+2. The `sub` claim, then the `email` claim, of a JWT or an OIDC session
+3. The username of a basic authentication request
+4. The client identity of a mutual TLS (mTLS) connection, such as the workload identity or the common name of the client certificate
+
+You choose which value identifies your users. Many IdPs set the `sub` claim to a stable ID, such as the UUID `1ed4bac1-9a81-4867-a81f-04cfc58bf0b2` in Keycloak. To record email addresses instead, set the user attribute to the following CEL expression.
+
+Your expression replaces the whole default order, not only the JWT part. For example, if you set the attribute to `jwt.email` alone, requests that use a virtual key no longer record a user. Key owners then stop appearing in request logs. The following expression keeps the default order and checks the `email` claim before the `sub` claim.
+
+```txt
+coalesce(apiKey["agentgateway.dev/owner"], apiKey.user, apiKey.name, apiKey.owner, jwt.email, jwt.sub, basicAuth.username, source.identity.namespace + "/" + source.identity.serviceAccount, source.subjectCn, null)
+```
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Logs** page, and click **Settings**.
+2. In the **Request log identity** section of the **Log settings** drawer, enter the expression in the **User attribute** field.
+3. Click **Save settings**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+Set the `standardAttributes.user` field in the `config` section of your configuration file to the expression. In a Helm installation, the field is `config.config.standardAttributes.user` in your values file, because the `config` value holds the whole configuration file.
+
+```yaml
+config:
+  standardAttributes:
+    user: 'coalesce(apiKey["agentgateway.dev/owner"], apiKey.user, apiKey.name, apiKey.owner, jwt.email, jwt.sub, basicAuth.username, source.identity.namespace + "/" + source.identity.serviceAccount, source.subjectCn, null)'
+```
+{{% /tab %}}
+{{< /tabs >}}
+
+You can set the field to any CEL expression that returns a string. The account menu shows the user's name and email address from the `name` (or `preferred_username`) and `email` claims, so your expression changes the menu only when the token has neither. For an OIDC session, if your expression returns no value, agentgateway uses the `sub` claim instead, so the account menu and **Sign out** stay available.
+
+
+#### Verify the changes
+Open the `/api/runtime` endpoint in the browser where you are logged in to the UI, such as [http://localhost:4001/api/runtime](http://localhost:4001/api/runtime). The `subject` field of the `user` object shows the value that agentgateway records for your requests.
+
+```json
+"user": {
+  "subject": "alice@example.com",
+  "name": "Alice Admin",
+  "email": "alice@example.com",
+  "canLogout": true
+}
+```
+
+{{< /version >}}
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+## Authenticate CLI access {#agctl}
+
+To call the resource API of the UI from the command line, configure an [agctl connection profile]({{< link-hextra path="/documentation/operations/config-resources/#save-connection-profiles" >}}) with an exec credential plugin. The authentication policy of the API must accept the credential that the plugin returns, such as a JWT bearer token. A browser OIDC session does not authenticate CLI requests.
+
+To verify the connection, run `agctl standalone --gateway <profile-name> get all`. Set the URL of the profile to the authenticated gateway, without `/ui` or `/api`. The admin address remains a separate access path without authentication, as described earlier on this page.
+{{< /version >}}
+
 ## Next steps
 
 * [Expose the UI]({{< link-hextra path="/documentation/setup/ui/expose-ui/" >}}) on your own HTTPS hostname, now that a login is required.
 * [Choose where configuration is stored]({{< link-hextra path="/documentation/setup/storage/" >}}) so that the UI can save your changes.
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+* [See who owns each virtual key]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#key-owners" >}}) and how the owner affects request logs.
+{{< /version >}}

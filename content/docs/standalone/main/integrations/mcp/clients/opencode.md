@@ -6,6 +6,8 @@ description: Connect OpenCode to agentgateway
 
 Configure OpenCode, the open source AI coding assistant, to use agentgateway as an MCP server.
 
+To route OpenCode's LLM requests through agentgateway, see [OpenCode LLM client]({{< link-hextra path="/integrations/llm/clients/opencode/" >}}).
+
 ## Before you begin
 
 {{< reuse "agw-docs/standalone/prereq-mcp-clients.md" >}}
@@ -20,7 +22,7 @@ Add agentgateway to your OpenCode configuration file `opencode.json`:
   "mcp": {
     "agentgateway": {
       "type": "remote",
-      "url": "http://localhost:3000/mcp/http"
+      "url": "http://localhost:3000/mcp"
     }
   }
 }
@@ -36,7 +38,7 @@ For project-specific configuration, create `opencode.json` in your project root:
   "mcp": {
     "agentgateway": {
       "type": "remote",
-      "url": "http://localhost:3000/mcp/http"
+      "url": "http://localhost:3000/mcp"
     }
   }
 }
@@ -52,7 +54,7 @@ Include authentication if required:
   "mcp": {
     "agentgateway": {
       "type": "remote",
-      "url": "http://localhost:3000/mcp/http",
+      "url": "http://localhost:3000/mcp",
       "headers": {
         "Authorization": "Bearer your-token-here"
       }

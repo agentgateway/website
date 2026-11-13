@@ -1,15 +1,20 @@
 
+## Source Code
+
+* <https://github.com/agentgateway/agentgateway>
+
 ## Values
 
 | Key | Type | Description |
 |-----|------|-------------|
 | affinity | object | Set affinity rules for pod scheduling, such as 'nodeAffinity:'.<br/><br/>The default value is `{}`. |
-| agentgatewayModels | object | Configure the experimental AgentgatewayModel API.<br/><br/>The default value is `{"enabled":false}`. |
-| agentgatewayModels.enabled | bool | Enable AgentgatewayModel support in the agentgateway controller.<br/><br/>The default value is `false`. |
+| agentgatewayModels | object | Configure the AgentgatewayModel API.<br/><br/>The default value is `{"enabled":true}`. |
+| agentgatewayModels.enabled | bool | Enable AgentgatewayModel support in the agentgateway controller.<br/><br/>The default value is `true`. |
 | commonLabels | object | Additional labels to add to all resources created by the Helm chart.<br/><br/>The default value is `{}`. |
-| controller | object | Configure the agentgateway control plane deployment.<br/><br/>The default value is `{"extraContainers":[],"extraEnv":{},"extraVolumeMounts":[],"extraVolumes":[],"horizontalPodAutoscaler":{},"image":{"pullPolicy":"","registry":"","repository":"controller","tag":""},"logLevel":"info","podDisruptionBudget":{},"priorityClassName":"","replicaCount":1,"revisionHistoryLimit":null,"service":{"allocateLoadBalancerNodePorts":null,"annotations":{},"clusterIP":"","clusterIPs":[],"enabled":true,"externalIPs":[],"externalName":"","externalTrafficPolicy":"","extraLabels":{},"healthCheckNodePort":null,"internalTrafficPolicy":"","ipFamilies":[],"ipFamilyPolicy":"","loadBalancerClass":"","loadBalancerIP":"","loadBalancerSourceRanges":[],"ports":{"agwGrpc":9978,"health":9093,"metrics":9092},"publishNotReadyAddresses":false,"sessionAffinity":"","sessionAffinityConfig":{},"trafficDistribution":"","type":"ClusterIP"},"strategy":{},"verticalPodAutoscaler":{},"xds":{"mode":"tls"}}`. |
+| controller | object | Configure the agentgateway control plane deployment.<br/><br/>The default value is `{"extraContainers":[],"extraEnv":{},"extraInitContainers":[],"extraVolumeMounts":[],"extraVolumes":[],"horizontalPodAutoscaler":{},"image":{"pullPolicy":"","registry":"","repository":"controller","tag":""},"logLevel":"info","podDisruptionBudget":{},"priorityClassName":"","replicaCount":1,"revisionHistoryLimit":null,"service":{"allocateLoadBalancerNodePorts":null,"annotations":{},"clusterIP":"","clusterIPs":[],"enabled":true,"externalIPs":[],"externalName":"","externalTrafficPolicy":"","extraLabels":{},"healthCheckNodePort":null,"internalTrafficPolicy":"","ipFamilies":[],"ipFamilyPolicy":"","loadBalancerClass":"","loadBalancerIP":"","loadBalancerSourceRanges":[],"ports":{"agwGrpc":9978,"health":9093,"metrics":9092},"publishNotReadyAddresses":false,"sessionAffinity":"","sessionAffinityConfig":{},"trafficDistribution":"","type":"ClusterIP"},"strategy":{},"verticalPodAutoscaler":{},"xds":{"mode":"tls"}}`. |
 | controller.extraContainers | list | Add extra sidecar containers to the controller pod.<br/><br/>The default value is `[]`. |
 | controller.extraEnv | object | Add extra environment variables to the controller container. Supports either a direct scalar value: extraEnv:   LOG_FORMAT: json Or Kubernetes valueFrom sources: extraEnv:   API_TOKEN:     valueFrom:       secretKeyRef:         name: agentgateway-secrets         key: apiToken.<br/><br/>The default value is `{}`. |
+| controller.extraInitContainers | list | Add extra init containers to the controller pod.<br/><br/>The default value is `[]`. |
 | controller.extraVolumeMounts | list | Add extra volume mounts to the controller container.<br/><br/>The default value is `[]`. |
 | controller.extraVolumes | list | Add extra volumes to the controller pod.<br/><br/>The default value is `[]`. |
 | controller.horizontalPodAutoscaler | object | Set horizontal pod autoscaler for the controller. Note that this does not    affect the data plane. The scaleTargetRef is automatically configured to    target the controller deployment. E.g.:  horizontalPodAutoscaler:   minReplicas: 1   maxReplicas: 5   metrics:     - type: Resource       resource:         name: cpu         target:           type: Utilization           averageUtilization: 80.<br/><br/>The default value is `{}`. |
@@ -64,23 +69,34 @@
 | imagePullSecrets | list | Set a list of image pull secrets for Kubernetes to use when pulling container images from your own private registry instead of the default agentgateway registry.<br/><br/>The default value is `[]`. |
 | inferenceExtension | object | Configure the integration with the Gateway API Inference Extension project, which lets you use agentgateway to route to AI inference workloads like LLMs that run locally in your Kubernetes cluster. Documentation for Inference Extension can be found here: https://agentgateway.dev/docs/kubernetes/latest/documentation/llm/inference/.<br/><br/>The default value is `{"enabled":false}`. |
 | inferenceExtension.enabled | bool | Enable Inference Extension support in the agentgateway controller.<br/><br/>The default value is `false`. |
-| istio | object | Control-plane-wide Istio mesh defaults.<br/><br/>The default value is `{"autoEnabled":false,"caAddress":"","clusterId":"","namespace":"","network":"","revision":""}`. |
+| istio | object | Control-plane-wide Istio mesh defaults.<br/><br/>The default value is `{"autoEnabled":false,"caAddress":"","clusterId":"","enabled":true,"namespace":"","network":"","revision":""}`. |
 | istio.autoEnabled | bool | Enable Istio integration by default on all built-in-class gateways.    When false (default), gateways opt in via AgentgatewayParameters spec.istio;    when true, individual gateways can opt out via spec.istio.enabled=false.<br/><br/>The default value is `false`. |
 | istio.caAddress | string | Istio CA address override;    Defaults to "https://istiod.istio-system.svc:15012".<br/><br/>The default value is `""`. |
 | istio.clusterId | string | Istio cluster ID (the istiod multiCluster clusterName) for mesh-integrated gateways.<br/><br/>The default value is `""`. |
+| istio.enabled | bool | Grant the controller permission to discover Istio ServiceEntry and WorkloadEntry resources.    Set to false only when the Istio CRDs are not installed. This controls RBAC generation; it    does not disable Istio integration in the controller.<br/><br/>The default value is `true`. |
 | istio.namespace | string | Namespace where the Istio control plane the controller integrates with is installed.    Defaults to "istio-system".<br/><br/>The default value is `""`. |
 | istio.network | string | Istio network for mesh-integrated gateways.<br/><br/>The default value is `""`. |
 | istio.revision | string | Revision of the Istio control plane the controller integrates with.   If unset, the default revision is used.<br/><br/>The default value is `""`. |
-| monitoring | object | Configure Prometheus and Grafana monitoring resources.<br/><br/>The default value is `{"enabled":false,"grafanaDashboard":{"enabled":true,"labels":{"grafana_dashboard":"1"}},"proxy":{"gatewayClassNames":["agentgateway"],"namespaceSelector":{},"podMonitor":{"enabled":true}},"serviceMonitor":{"enabled":true,"extraLabels":{},"interval":"15s"}}`. |
+| monitoring | object | Configure Prometheus and Grafana monitoring resources.<br/><br/>The default value is `{"enabled":false,"grafanaDashboard":{"annotations":{},"enabled":true,"labels":{"grafana_dashboard":"1"}},"proxy":{"gatewayClassNames":["agentgateway"],"namespaceSelector":{},"podMonitor":{"enabled":true,"metricRelabelings":[],"podTargetLabels":["gateway.networking.k8s.io/gateway-name"],"relabelings":[],"scrapeClassicHistograms":true,"scrapeNativeHistograms":false}},"serviceMonitor":{"enabled":true,"extraLabels":{},"interval":"15s","metricRelabelings":[],"relabelings":[],"scrapeClassicHistograms":true,"scrapeNativeHistograms":false}}`. |
 | monitoring.enabled | bool | Create monitoring resources (ServiceMonitors and Grafana dashboard ConfigMap). Requires the Prometheus Operator CRDs to be installed in the cluster.<br/><br/>The default value is `false`. |
+| monitoring.grafanaDashboard.annotations | object | Annotations on the dashboard ConfigMap. Provisioners that place a dashboard    by display name read the folder, and sometimes the organization, from an    annotation rather than a label, because a label value admits no spaces    (e.g. grafana_folder: "Platform gateways").<br/><br/>The default value is `{}`. |
 | monitoring.grafanaDashboard.enabled | bool | Create the Grafana dashboard ConfigMap.<br/><br/>The default value is `true`. |
 | monitoring.grafanaDashboard.labels | object | Labels that the Grafana sidecar uses to discover dashboards.<br/><br/>The default value is `{"grafana_dashboard":"1"}`. |
 | monitoring.proxy.gatewayClassNames | list | GatewayClass names whose proxy pods are selected by the proxy PodMonitor.<br/><br/>The default value is `["agentgateway"]`. |
 | monitoring.proxy.namespaceSelector | object | Namespace selector used by the proxy PodMonitor. Defaults to the release namespace only.<br/><br/>The default value is `{}`. |
 | monitoring.proxy.podMonitor.enabled | bool | Create a PodMonitor that scrapes provisioned proxy pods on the pod's    metrics port (15020) directly, without requiring a metrics port on the    provisioned Service.<br/><br/>The default value is `true`. |
+| monitoring.proxy.podMonitor.metricRelabelings | list | Relabeling rules applied to scraped metrics before ingestion.    See the [Prometheus metric_relabel_configs docs](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs).<br/><br/>The default value is `[]`. |
+| monitoring.proxy.podMonitor.podTargetLabels | list | Pod labels copied onto scraped proxy metrics. The gateway name is required    by the bundled Grafana dashboard for gateway discovery and filtering.<br/><br/>The default value is `["gateway.networking.k8s.io/gateway-name"]`. |
+| monitoring.proxy.podMonitor.relabelings | list | Relabeling rules applied to the scrape target before metrics are ingested.    See the [Prometheus relabel_config docs](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config).<br/><br/>The default value is `[]`. |
+| monitoring.proxy.podMonitor.scrapeClassicHistograms | bool | Scrape classic (legacy bucket) histograms.<br/><br/>The default value is `true`. |
+| monitoring.proxy.podMonitor.scrapeNativeHistograms | bool | Scrape native (exponential, high-resolution) histograms. Requires Prometheus >= v3.8.0.<br/><br/>The default value is `false`. |
 | monitoring.serviceMonitor.enabled | bool | Create the controller ServiceMonitor.<br/><br/>The default value is `true`. |
 | monitoring.serviceMonitor.extraLabels | object | Additional labels to add to the controller ServiceMonitor and the proxy PodMonitor (e.g. release: prometheus).<br/><br/>The default value is `{}`. |
 | monitoring.serviceMonitor.interval | string | Scrape interval for the controller ServiceMonitor and the proxy PodMonitor.<br/><br/>The default value is `"15s"`. |
+| monitoring.serviceMonitor.metricRelabelings | list | Relabeling rules applied to scraped metrics before ingestion.    See the [Prometheus metric_relabel_configs docs](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs).<br/><br/>The default value is `[]`. |
+| monitoring.serviceMonitor.relabelings | list | Relabeling rules applied to the scrape target before metrics are ingested.    See the [Prometheus relabel_config docs](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config).<br/><br/>The default value is `[]`. |
+| monitoring.serviceMonitor.scrapeClassicHistograms | bool | Scrape classic (legacy bucket) histograms.<br/><br/>The default value is `true`. |
+| monitoring.serviceMonitor.scrapeNativeHistograms | bool | Scrape native (exponential, high-resolution) histograms. Requires Prometheus >= v3.8.0.<br/><br/>The default value is `false`. |
 | nameOverride | string | Add a name to the default Helm base release, which is 'agentgateway'. If you set 'nameOverride: "foo", the name of the resources that the Helm release creates become 'agentgateway-foo', such as the deployment, service, and service account for the agentgateway control plane in the agentgateway-system namespace.<br/><br/>The default value is `""`. |
 | nodeSelector | object | Set node selector labels for pod scheduling, such as 'kubernetes.io/arch: amd64'.<br/><br/>The default value is `{}`. |
 | podAnnotations | object | Add annotations to the agentgateway pods.<br/><br/>The default value is `{"prometheus.io/scrape":"true"}`. |
@@ -90,7 +106,7 @@
 | proxy.image.registry | string | Set the default image registry. Set to override the global value.<br/><br/>The default value is `""`. |
 | proxy.image.repository | string | Set the default image repository.<br/><br/>The default value is `"agentgateway"`. |
 | proxy.image.tag | string | Set the default image tag.<br/><br/>The default value is `""`. |
-| rbac | object | Configure the RBAC permissions created for the controller.<br/><br/>The default value is `{"gatewayNamespaces":[]}`. |
+| rbac | object | Configure the RBAC permissions created for the controller.<br/><br/>The default value is `{"create":true,"gatewayNamespaces":[]}`. |
 | rbac.gatewayNamespaces | list | Restrict namespaced write permissions to these namespaces. The namespaces must already exist. An empty list preserves the default cluster-wide write access. Cluster-wide read permissions and writes to cluster-scoped resources are unaffected. Restricting this list means only Gateways in these namespaces can be used.<br/><br/>The default value is `[]`. |
 | resources | object | Configure resource requests and limits for the container, such as 'limits.cpu: 100m' or 'requests.memory: 128Mi'.<br/><br/>The default value is `{"requests":{"cpu":"100m","memory":"128Mi"}}`. |
 | securityContext | object | Set the container-level security context, such as 'runAsNonRoot: true'.<br/><br/>The default value is `{}`. |
@@ -100,3 +116,5 @@
 | serviceAccount.name | string | Set the name of the service account to use. If not set and create is true, a name is generated using the fullname template.<br/><br/>The default value is `""`. |
 | tolerations | list | Set tolerations for pod scheduling, such as 'key: "nvidia.com/gpu"'.<br/><br/>The default value is `[]`. |
 | topologySpreadConstraints | list | Configure how controller pods are spread across topology domains, such as nodes or zones.<br/><br/>The default value is `[]`. |
+| xBackend | object | Configure the experimental Gateway API XBackend resource.<br/><br/>The default value is `{"enabled":false}`. |
+| xBackend.enabled | bool | Enable XBackend support in the agentgateway controller.<br/><br/>The default value is `false`. |

@@ -6,13 +6,25 @@ For a general overview of how policies are structured, see [Policy sections]({{<
 
 Agentgateway uses the `authorization` field inside an {{< reuse "agw-docs/snippets/policy.md" >}} to evaluate whether an incoming request should be allowed or rejected. Authorization rules are expressed as [Common Expression Language (CEL)]({{< link-hextra path="/reference/cel/" >}}) expressions, which let you match on request headers, JWT claims, source IP addresses, MCP tool names, and more.
 
-The `authorization` field can appear in three places in a Kubernetes policy:
+The following table lists the authorization fields in an {{< reuse "agw-docs/snippets/policy.md" >}}:
 
 | Policy section | Field path | Use case |
 |---|---|---|
 | `traffic` | `spec.traffic.authorization` | Control access to HTTP routes, LLM backends, or general traffic. |
-| `frontend` | `spec.frontend.networkAuthorization` | Layer 4 network-level authorization on downstream connections (such as source IP filtering). |
+| `frontend` | `spec.frontend.networkAuthorization` | Layer 4 network-level authorization on downstream connections (such as source IP filtering). |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+| `backend` | `spec.backend.authorization` | Control access after route selection, using the request for the selected destination backend. |{{< /version >}}
 | `backend.mcp` | `spec.backend.mcp.authorization` | Control access to specific MCP servers or tools. |
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+You can also configure backend authorization inline on an {{< reuse "agw-docs/snippets/backend.md" >}}:
+
+| Field path | Scope |
+|---|---|
+| `spec.policies.authorization` | The whole backend. |
+| `spec.ai.groups[].providers[].policies.authorization` | One AI provider in a backend group. |
+
+Backend authorization runs after the destination backend or AI provider is selected. Traffic authorization runs earlier, during traffic policy processing. Both inline fields use the same `action` and `policy.matchExpressions` structure as `spec.backend.authorization`. For an example, see [Authorize requests to a selected backend](#backend-authorization). For inline and attached policy precedence, see [Inline AI and authorization policies on a backend]({{< link-hextra path="/documentation/about/policies/target-merge/#backend-ai" >}}).
+{{< /version >}}
 
 > [!NOTE]
 > In standalone deployment mode, the frontend network authorization path is `frontendPolicies.networkAuthorization`.
@@ -54,7 +66,7 @@ This section walks you through an end-to-end authorization setup that allows req
 
 Apply an {{< reuse "agw-docs/snippets/policy.md" >}} that validates JWTs and allows only requests from the user `alice`.
 
-```yaml {paths="authorization"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -81,30 +93,11 @@ spec:
 EOF
 ```
 
-{{< doc-test paths="authorization" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for the authorization policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: agentgateway-system
-        name: authz-guide
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
 {{< reuse "agw-docs/snippets/review-table.md" >}}
 
 | Field | Description |
 |---|---|
-| `jwtAuthentication` | Validates the JWT on the incoming request. Authorization expressions that reference `jwt` require this section, because the `jwt` context exists only after a token is verified. In this example, a local JWKS is provided inline. For more options, see [JWT auth]({{< link-hextra path="/documentation/security/jwt/" >}}). |
+| `jwtAuthentication` | Validates the JWT on the incoming request. Authorization expressions that reference `jwt` require this section, because the `jwt` context exists only after a token is verified. In this example, a local JWKS is provided inline. For more options, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT auth]({{< link-hextra path="/documentation/security/extauth/jwt/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT auth]({{< link-hextra path="/documentation/security/jwt/" >}}){{< /version >}}. |
 | `authorization.action` | The authorization action to take. Use `Allow` for allowlisting. |
 | `authorization.policy.matchExpressions` | A list of CEL expressions. For an `Allow` action, at least one expression must match (OR logic). For a `Require` action, all expressions must evaluate to `true` (AND logic). |
 
@@ -118,13 +111,13 @@ You can optionally create other JWT tokens by using the [JWT generator tool](htt
 
 1. Save the JWT token for Alice, whose `sub` claim is `alice`.
 
-   ```sh {paths="authorization"}
+   ```sh
    export ALICE_JWT="eyJhbGciOiJSUzI1NiIsImtpZCI6IjU4OTE2NDUwMzIxNTk4OTQzODMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJzb2xvLmlvIiwic3ViIjoiYWxpY2UiLCJleHAiOjIwNzM2NzA0ODIsIm5iZiI6MTc2NjA4NjQ4MiwiaWF0IjoxNzY2MDg2NDgyfQ.C-KYZsfWwlwRw4cKHXWmjN5bwWD80P0CVYP6-mT5sX6BH3AR1xNrOApPF9X0plwVD4_AsWzVo435j1AmgBzPwIjhHPKtxXycaKEwSEHYFesyi-XCEJtaQZZVcjOJOs-12L2ZJeM_csk9EqKKSx0oj3jj6BciqBnLn6_hK9sEtoGenEVWEdOpkjRQBxk1m-rVZNY2IvxXMuj9C7jGXv_Sn3cU5w6arXWUsdoQtYTl5tmuF15nkD3DnQfLjDyz59FTKXUR_QkhXV81amejrDSTroJ42_RLC9ABXqdMORCe-Hus-f1utLURfAYGvmnEVeYJO8BFhedTR6lFLnVS0u2Fpw"
    ```
 
 2. Save the JWT token for Bob, whose `sub` claim is `bob`.
 
-   ```sh {paths="authorization"}
+   ```sh
    export BOB_JWT="eyJhbGciOiJSUzI1NiIsImtpZCI6IjU4OTE2NDUwMzIxNTk4OTQzODMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJzb2xvLmlvIiwic3ViIjoiYm9iIiwiZXhwIjoyMDczNjcwNDgyLCJuYmYiOjE3NjYwODY0ODIsImlhdCI6MTc2NjA4NjQ4Mn0.ZHAw7nbANhnYvBBknN9_ORCQZ934Vv_vAelx8odC3bsC5Yesif7ZSsnEp9zFjGG6wBvvV3LrtuBuWx9mTYUZS6rwWUKsvDXyheZXYRmXndOqpY0gcJJaulGGqXncQDkmqDA7ZeJLG1s0a6shMXRs6BbV370mYpu8-1dZdtikyVL3pC27QNei35JhfqdYuMw1fMptTVzypx437l9j2htxqtIVgdWUc1iKD9kNKpkJ5O6SNbi6xm267jZ3V_Ns75p_UjLq7krQIUl1W0mB0ywzosFkrRcyXsBsljXec468hgHEARW2lec8FEe-i6uqRuVkFD-AeXMfPhXzqdwysjG_og"
    ```
 
@@ -151,16 +144,6 @@ You can optionally create other JWT tokens by using the [JWT generator tool](htt
    HTTP/1.1 401 Unauthorized
    ```
 
-   {{< doc-test paths="authorization" >}}
-   code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
-     "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com")
-   if [ "$code" != "401" ]; then
-     echo "expected 401 for a request with no JWT, got $code"
-     exit 1
-   fi
-   echo "OK: request with no JWT returned 401"
-   {{< /doc-test >}}
-
 2. Send a request with Bob's JWT. The token is valid, so authentication succeeds, but the `sub` claim does not match the `Allow` expression. You get back a `403 Forbidden` response.
 
    {{< tabs >}}
@@ -183,17 +166,6 @@ You can optionally create other JWT tokens by using the [JWT generator tool](htt
    ```
    HTTP/1.1 403 Forbidden
    ```
-
-   {{< doc-test paths="authorization" >}}
-   code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
-     "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" \
-     -H "Authorization: Bearer ${BOB_JWT}")
-   if [ "$code" != "403" ]; then
-     echo "expected 403 for Bob's JWT, got $code"
-     exit 1
-   fi
-   echo "OK: valid JWT that does not match the Allow rule returned 403"
-   {{< /doc-test >}}
 
 3. Send a request with Alice's JWT. The token is valid and the `sub` claim matches the `Allow` expression, so the request succeeds.
 
@@ -218,18 +190,81 @@ You can optionally create other JWT tokens by using the [JWT generator tool](htt
    HTTP/1.1 200 OK
    ```
 
-   {{< doc-test paths="authorization" >}}
-   code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
-     "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" \
-     -H "Authorization: Bearer ${ALICE_JWT}")
-   if [ "$code" != "200" ]; then
-     echo "expected 200 for Alice's JWT, got $code"
-     exit 1
-   fi
-   echo "OK: valid JWT that matches the Allow rule returned 200"
-   {{< /doc-test >}}
-
 ## More examples
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+### Authorize requests to a selected backend {#backend-authorization}
+
+Complete [Setup and test authorization](#setup-and-test-authorization) first, and keep the Gateway's JWT and traffic authorization policy in place. The following backend policy allows only `GET` requests to the httpbin Service. The Gateway's traffic policy still requires Alice's JWT. After agentgateway selects httpbin as the destination, the backend policy also checks the request method.
+
+1. Create a policy in the same namespace as the httpbin Service that it targets.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: httpbin-backend-authz
+     namespace: httpbin
+   spec:
+     targetRefs:
+     - group: ""
+       kind: Service
+       name: httpbin
+     backend:
+       authorization:
+         action: Allow
+         policy:
+           matchExpressions:
+           - "request.method == 'GET'"
+   EOF
+   ```
+
+   | Field | Description |
+   |---|---|
+   | `spec.targetRefs` | Targets the httpbin Service in the policy's namespace. The policy applies when a route selects that Service as its backend. |
+   | `spec.backend.authorization.action` | `Allow` requires at least one expression to match. |
+   | `spec.backend.authorization.policy.matchExpressions` | Allows only requests whose HTTP method is `GET`. |
+
+2. Send a `GET` and a `POST` request with Alice's JWT. The `GET` request satisfies both policies and returns `200`. The `POST` request passes the Gateway's JWT and traffic authorization checks, but the backend policy denies it with `403`.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -s -o /dev/null -w '%{http_code}\n' \
+     "http://${INGRESS_GW_ADDRESS}:80/headers" \
+     -H 'host: www.example.com' -H "Authorization: Bearer ${ALICE_JWT}"
+   curl -s -o /dev/null -w '%{http_code}\n' -X POST \
+     "http://${INGRESS_GW_ADDRESS}:80/headers" \
+     -H 'host: www.example.com' -H "Authorization: Bearer ${ALICE_JWT}"
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -s -o /dev/null -w '%{http_code}\n' \
+     http://localhost:8080/headers \
+     -H 'host: www.example.com' -H "Authorization: Bearer ${ALICE_JWT}"
+   curl -s -o /dev/null -w '%{http_code}\n' -X POST \
+     http://localhost:8080/headers \
+     -H 'host: www.example.com' -H "Authorization: Bearer ${ALICE_JWT}"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+
+   ```console
+   200
+   403
+   ```
+
+3. Delete the backend policy when you finish testing. The Gateway's JWT and traffic authorization policy continues to apply.
+
+   ```sh
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} httpbin-backend-authz -n httpbin
+   ```
+
+{{< /version >}}
 
 ### Combine Allow with Require
 
@@ -318,6 +353,141 @@ traffic:
 
 For Layer 4 network-level filtering on downstream connections, use `spec.frontend.networkAuthorization` instead.
 
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+
+### Restrict network access by TLS SNI
+
+In a `spec.frontend.networkAuthorization` policy, use the `destination.hostname` variable to admit only TLS connections for a specific Server Name Indication (SNI) hostname.
+
+1. Create a self-signed TLS certificate for two hostnames, `db.internal.example.com` and `other.internal.example.com`, and store it in a Kubernetes secret.
+
+   ```sh
+   mkdir -p example_certs
+   openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 \
+     -subj "/CN=db.internal.example.com" \
+     -addext "subjectAltName=DNS:db.internal.example.com,DNS:other.internal.example.com" \
+     -keyout example_certs/internal.example.com.key -out example_certs/internal.example.com.crt
+   kubectl create secret tls tls-sni-cert -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --key example_certs/internal.example.com.key --cert example_certs/internal.example.com.crt
+   ```
+
+2. Create a Gateway with a TLS listener that terminates TLS, and a TLSRoute that forwards the decrypted traffic to the httpbin sample app. agentgateway sets `destination.hostname` only on listeners with `protocol: TLS`. On HTTP and HTTPS listeners, the variable is always unset, even when the client sends SNI.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: Gateway
+   metadata:
+     name: tls-sni
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
+     listeners:
+     - name: tls
+       protocol: TLS
+       port: 8443
+       tls:
+         mode: Terminate
+         certificateRefs:
+         - name: tls-sni-cert
+           kind: Secret
+       allowedRoutes:
+         namespaces:
+           from: All
+   ---
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: TLSRoute
+   metadata:
+     name: tls-sni
+     namespace: httpbin
+   spec:
+     parentRefs:
+     - name: tls-sni
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     hostnames:
+     - "*.internal.example.com"
+     rules:
+     - backendRefs:
+       - name: httpbin
+         port: 8000
+   EOF
+   ```
+
+3. Apply a network authorization policy to the Gateway that requires the `db.internal.example.com` SNI hostname. `destination.hostname` is unset when a client sends no SNI, and a `Require` expression that references an unset variable never matches, so the policy denies every connection without SNI. The policy also denies every connection to an HTTP or HTTPS listener on the Gateway that you target, so target only a Gateway whose listeners use `protocol: TLS`.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: tls-sni
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: tls-sni
+     frontend:
+       networkAuthorization:
+         action: Require
+         policy:
+           matchExpressions:
+             - "destination.hostname == 'db.internal.example.com'"
+   EOF
+   ```
+
+4. Port-forward the Gateway on port 8443.
+
+   ```sh
+   kubectl port-forward deployment/tls-sni -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8443:8443
+   ```
+
+5. In another terminal, send a request with each SNI hostname. The `--http1.1` option is required because agentgateway forwards the decrypted TCP stream to httpbin as is, so the client must not negotiate HTTP/2 in the TLS handshake.
+
+   * `db.internal.example.com`: The connection is admitted and httpbin returns a 200 HTTP response code.
+     ```sh
+     curl -s -o /dev/null -w '%{http_code}\n' --http1.1 \
+       --cacert example_certs/internal.example.com.crt \
+       --resolve db.internal.example.com:8443:127.0.0.1 \
+       https://db.internal.example.com:8443/headers
+     ```
+     Example output:
+     ```console
+     200
+     ```
+
+   * `other.internal.example.com`: The TLSRoute matches the hostname, but the policy rejects the connection before any data is proxied.
+     ```sh
+     curl -s -o /dev/null -w '%{http_code}\n' --http1.1 \
+       --cacert example_certs/internal.example.com.crt \
+       --resolve other.internal.example.com:8443:127.0.0.1 \
+       https://other.internal.example.com:8443/headers
+     ```
+     Example output:
+     ```console
+     000
+     ```
+
+     The proxy logs record the denial.
+     ```sh
+     kubectl logs deployment/tls-sni -n {{< reuse "agw-docs/snippets/namespace.md" >}} | grep "authorization failed"
+     ```
+     Example output:
+     ```console
+     2026-09-24T16:15:16.736075Z	error	request src.addr=10.244.0.1:54721 tls.sni=other.internal.example.com protocol=tcp error="authorization failed" duration=0ms
+     ```
+
+6. Stop the port-forward, and delete the resources that you created.
+
+   ```sh
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} tls-sni -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete tlsroute tls-sni -n httpbin
+   kubectl delete gateway tls-sni -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete secret tls-sni-cert -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+{{< /version >}}
+
 ### MCP authorization
 
 You can apply authorization policies specifically to MCP servers using the `spec.backend.mcp.authorization` field in an {{< reuse "agw-docs/snippets/policy.md" >}}. This lets you control which clients or JWT token holders can access specific MCP tools.
@@ -330,7 +500,7 @@ To use JWT claims in authorization policies, you first need to configure JWT aut
 
 After the gateway validates a JWT, the decoded claims are available in CEL expressions as top-level fields on `jwt`, such as `jwt.sub` or `jwt.group`.
 
-For setup instructions and examples, see [JWT auth]({{< link-hextra path="/documentation/security/jwt/" >}}).
+For setup instructions and examples, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT auth]({{< link-hextra path="/documentation/security/extauth/jwt/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT auth]({{< link-hextra path="/documentation/security/jwt/" >}}){{< /version >}}.
 
 For a list of available JWT variables, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables/" >}}).
 

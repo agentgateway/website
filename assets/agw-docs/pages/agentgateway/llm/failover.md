@@ -2,7 +2,7 @@ Prioritize the failover of requests across different models from an LLM provider
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
 > [!NOTE]
-> **Model-centric alternative**: You can also configure failover with the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API, by using a virtual model with `virtualModel.failover` instead of an {{< reuse "agw-docs/snippets/backend.md" >}} with priority groups. For more information, see [Virtual models]({{< link-hextra path="/documentation/llm/models/virtual/" >}}).
+> **Model-centric alternative**: You can also configure failover with the {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}experimental {{< /version >}}`{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API, by using a virtual model with `virtualModel.failover` instead of an {{< reuse "agw-docs/snippets/backend.md" >}} with priority groups. For more information, see [Virtual models]({{< link-hextra path="/documentation/llm/models/virtual/" >}}).
 {{< /version >}}
 
 ## About failover {#about}
@@ -14,7 +14,11 @@ For {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can set up failover a
 Failover in {{< reuse "agw-docs/snippets/agentgateway.md" >}} has two parts:
 
 - **Priority groups** in the {{< reuse "agw-docs/snippets/backend.md" >}} define the failover order. Each group is a tier. Models within the same group are load balanced equally. When all models in a group are evicted, requests fail over to the next group.
-- **A health policy** in an {{< reuse "agw-docs/snippets/policy.md" >}} defines what counts as an unhealthy response (such as 5xx errors or 429 rate limits) and how to evict unhealthy backends. Without a health policy, backends are not evicted and failover does not occur.
+- **A health policy** in an {{< reuse "agw-docs/snippets/policy.md" >}} defines what counts as an unhealthy response (such as 5xx errors or 429 rate limits) and how to evict unhealthy backends. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Without a health policy, backends are not evicted and failover does not occur.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Without a health policy, an {{< reuse "agw-docs/snippets/backend.md" >}} with more than one priority group uses default eviction, as described after this list.{{< /version >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+When no health policy targets an {{< reuse "agw-docs/snippets/backend.md" >}} that has more than one priority group, default eviction applies. A single 5xx response or connection failure evicts the backend for 3 seconds, and each repeated eviction lasts longer. To classify more responses as unhealthy, such as 429, or to tune eviction, add a health policy. A health policy replaces the default eviction instead of adding to it. If the health policy has no `eviction` block, a backend is evicted only when a retry policy's `backoff`, or a `Retry-After` header on a response that the policy classifies as unhealthy, supplies an eviction duration. To keep the default eviction settings in your health policy, set `eviction: {}`.
+{{< /version >}}
 
 This approach increases the resiliency of your network environment by ensuring that apps that call LLMs can keep working without problems, even if one model has issues.
 
@@ -79,7 +83,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: model-failover
@@ -126,7 +130,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: model-failover
@@ -177,7 +181,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: model-failover
@@ -228,13 +232,13 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
        backendRefs:
        - name: model-failover
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
    
 
-3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with a health policy that targets the {{< reuse "agw-docs/snippets/backend.md" >}}. The health policy defines which responses are considered unhealthy and how to evict backends. Without this policy, backends are not evicted and failover does not occur.
+3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with a health policy that targets the {{< reuse "agw-docs/snippets/backend.md" >}}. The health policy defines which responses are considered unhealthy and how to evict backends. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Without this policy, backends are not evicted and failover does not occur.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Without this policy, default eviction still fails over on 5xx responses and connection failures. The policy replaces the default eviction, so each of the following examples sets its own `eviction` settings. The first example also evicts on 429 rate-limit responses.{{< /version >}}
 
    The `unhealthyCondition` field is an optional [CEL expression](https://github.com/cel-expr/cel-spec) that classifies each response. When you set it, `true` means the response counts as unhealthy toward eviction. The `eviction` settings control how many failures and how long an unhealthy backend stays out of its priority group.
 
@@ -252,7 +256,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
-     - group: agentgateway.dev
+     - group: {{< reuse "agw-docs/snippets/group.md" >}}
        kind: {{< reuse "agw-docs/snippets/backend.md" >}}
        name: model-failover
      backend:
@@ -278,7 +282,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
-     - group: agentgateway.dev
+     - group: {{< reuse "agw-docs/snippets/group.md" >}}
        kind: {{< reuse "agw-docs/snippets/backend.md" >}}
        name: model-failover
      backend:
@@ -352,7 +356,7 @@ One httpbun deployment serves both endpoints, so a single mock LLM acts as both 
 
 1. Deploy the httpbun mock LLM.
 
-   ```bash {paths="failover"}
+   ```bash
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -398,13 +402,9 @@ One httpbun deployment serves both endpoints, so a single mock LLM acts as both 
    EOF
    ```
 
-   {{< doc-test paths="failover" >}}
-   kubectl rollout status deployment/httpbun -n default --timeout=180s
-   {{< /doc-test >}}
-
 2. Create an {{< reuse "agw-docs/snippets/backend.md" >}} with a failing primary group and a healthy fallback group. Each group names a different model, so the response tells you which group served the request.
 
-   ```yaml {paths="failover"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -431,28 +431,9 @@ One httpbun deployment serves both endpoints, so a single mock LLM acts as both 
    EOF
    ```
 
-   {{< doc-test paths="failover" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for failover-demo backend to be accepted
-     wait:
-       target:
-         kind: AgentgatewayBackend
-         metadata:
-           namespace: agentgateway-system
-           name: failover-demo
-       jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 60
-         intervalSeconds: 2
-   EOF
-   {{< /doc-test >}}
-
 3. Create an HTTPRoute that sends the `/failover-demo` path to the {{< reuse "agw-docs/snippets/backend.md" >}}. Each provider sets its own upstream path, so this route needs no URLRewrite filter.
 
-   ```yaml {paths="failover"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -476,42 +457,9 @@ One httpbun deployment serves both endpoints, so a single mock LLM acts as both 
    EOF
    ```
 
-   {{< doc-test paths="failover" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for failover-demo HTTPRoute to be accepted
-     wait:
-       target:
-         kind: HTTPRoute
-         metadata:
-           namespace: agentgateway-system
-           name: failover-demo
-       jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 60
-         intervalSeconds: 2
-   - name: wait for failover-demo HTTPRoute refs to be resolved
-     wait:
-       target:
-         kind: HTTPRoute
-         metadata:
-           namespace: agentgateway-system
-           name: failover-demo
-       jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 60
-         intervalSeconds: 2
-   EOF
-   {{< /doc-test >}}
-
 4. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with a health policy that evicts a backend on the first server error. To keep the sequence short, this example sets `consecutiveFailures` to `1` and a `duration` of `10s`.
 
-   ```yaml {paths="failover"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -532,25 +480,6 @@ One httpbun deployment serves both endpoints, so a single mock LLM acts as both 
    EOF
    ```
 
-   {{< doc-test paths="failover" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for failover-demo-health policy to be accepted
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: agentgateway-system
-           name: failover-demo-health
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 120
-         intervalSeconds: 2
-   EOF
-   {{< /doc-test >}}
-
 5. Save the gateway address in an environment variable.
 
    {{< tabs >}}
@@ -567,47 +496,6 @@ One httpbun deployment serves both endpoints, so a single mock LLM acts as both 
    ```
    {{% /tab %}}
    {{< /tabs >}}
-
-   {{< doc-test paths="failover" >}}
-   # Resolve the gateway address the same way the LoadBalancer tab does.
-   export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
-
-   # The first request must reach the failing primary group and return a 500.
-   # This is the eviction trigger, so it has to happen before the assertion below.
-   FIRST_CODE=$(curl -s -o /dev/null -w '%{http_code}' "http://${INGRESS_GW_ADDRESS}/failover-demo" \
-     -H 'content-type: application/json' \
-     -d '{"messages": [{"role": "user", "content": "Say hello."}]}')
-   if [ "$FIRST_CODE" != "500" ]; then
-     echo "expected HTTP 500 from the primary group on the first request, got ${FIRST_CODE}"
-     exit 1
-   fi
-   {{< /doc-test >}}
-
-   {{< doc-test paths="failover" >}}
-   # After the primary group is evicted, requests must fail over to healthy-fallback,
-   # which is the only provider configured with the gpt-4o-mini model.
-   YAMLTest -f - <<'EOF'
-   - name: verify failover reaches the fallback group
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}/failover-demo"
-       method: POST
-       headers:
-         Content-Type: application/json
-       body: |
-         {
-           "messages": [{"role": "user", "content": "Say hello."}]
-         }
-     source:
-       type: local
-     retries: 3
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.model"
-           comparator: equals
-           value: "gpt-4o-mini"
-   EOF
-   {{< /doc-test >}}
 
 6. Send five requests in sequence. The command prints the status code and the model that answered each request.
 
@@ -659,7 +547,7 @@ One httpbun deployment serves both endpoints, so a single mock LLM acts as both 
 
 In the preceding sequence the client receives the 500 from request 1. To fail over without passing that error back to the client, add a [retry policy]({{< link-hextra path="/documentation/resiliency/retry/" >}}) alongside the health policy.
 
-```yaml {paths="failover"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -688,46 +576,13 @@ request 2: HTTP 200, model gpt-4o-mini
 request 3: HTTP 200, model gpt-4o-mini
 ```
 
-{{< doc-test paths="failover" >}}
-# Restart the proxy so that the primary group starts healthy again. Without this
-# reset the primary is still evicted from the previous step, and a 200 would prove
-# nothing about the retry policy.
-kubectl rollout restart deployment/agentgateway-proxy -n agentgateway-system
-kubectl rollout status deployment/agentgateway-proxy -n agentgateway-system --timeout=180s
-sleep 10
-export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
-
-# With the retry policy in place, the very first request must succeed on the
-# fallback group instead of returning the primary group's 500.
-YAMLTest -f - <<'EOF'
-- name: verify the retry policy hides the primary group failure
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}/failover-demo"
-    method: POST
-    headers:
-      Content-Type: application/json
-    body: |
-      {
-        "messages": [{"role": "user", "content": "Say hello."}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.model"
-        comparator: equals
-        value: "gpt-4o-mini"
-EOF
-{{< /doc-test >}}
-
 Retries and eviction do different jobs here, and transparent failover needs both.
 
 * Eviction removes the failing backend from its priority group, which is what sends the next attempt to a different group.
 * The retry supplies that next attempt inside the same client request, so the client never sees the 500.
 
 > [!IMPORTANT]
-> A retry policy on its own does not fail over. Without a health policy, no backend is evicted, so every retry returns to the same highest-priority group and the client still receives the error. To fail over transparently, configure both policies.
+> A retry fails over only when the failing backend is evicted first. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Without a health policy, no backend is evicted, so every retry returns to the same highest-priority group and the client still receives the error. To fail over transparently, configure both policies.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}Without a health policy, default eviction covers 5xx responses and connection failures, so a retry policy on its own fails over on those errors. To retry on other responses, such as 429, add a health policy that classifies them as unhealthy. If that health policy has no `eviction` block, set `backoff` on the retry policy. Otherwise, the backend is not evicted, every retry returns to the same highest-priority group, and the client still receives the error.{{< /version >}}
 
 ## Cleanup
 
@@ -751,15 +606,6 @@ kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} failover-demo -n {{<
 kubectl delete deployment httpbun -n default --ignore-not-found
 kubectl delete service httpbun -n default --ignore-not-found
 ```
-
-{{< doc-test paths="failover" >}}
-# Remove only what this scenario created. The httpbun deployment is left in place,
-# because the setup-httpbun-llm prerequisite created it and other scenarios use it.
-kubectl delete AgentgatewayPolicy failover-demo-health -n agentgateway-system --ignore-not-found
-kubectl delete AgentgatewayPolicy failover-demo-retry -n agentgateway-system --ignore-not-found
-kubectl delete httproute failover-demo -n agentgateway-system --ignore-not-found
-kubectl delete AgentgatewayBackend failover-demo -n agentgateway-system --ignore-not-found
-{{< /doc-test >}}
 
 ## Next
 

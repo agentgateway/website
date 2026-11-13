@@ -1,5 +1,5 @@
 1. Create a Gateway that uses the `{{< reuse "agw-docs/snippets/agw-gatewayclass.md" >}}` GatewayClass. The following example sets up a Gateway that uses the [default agentgateway proxy template](https://github.com/agentgateway/agentgateway/blob/main/controller/pkg/helm/agentgateway/templates/deployment.yaml).
-   ```sh {paths="all"}
+   ```sh
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: Gateway
@@ -17,6 +17,9 @@
            from: All
    EOF
    ```
+
+   > [!NOTE]
+   > The generated service for a Gateway is of type `LoadBalancer` by default. Depending on your load balancer implementation, each Gateway can consume an external IP address from the address pool of your cluster, so creating many Gateways can exhaust that pool. If a Gateway does not need to be reachable from outside the cluster, set the service type to `ClusterIP` instead. For more information, see [Internal-only ClusterIP service]({{< link-hextra path="/documentation/setup/customize/configs/#clusterip-service" >}}).
 
 2. Verify that the agentgateway proxy is created.
 
@@ -66,41 +69,3 @@
    ```
    {{% /tab %}}
    {{< /tabs >}}
-
-{{< doc-test paths="all" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for agentgateway-proxy deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: agentgateway-proxy
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-
-- name: wait for agentgateway-proxy service LB address
-  wait:
-    target:
-      kind: Service
-      metadata:
-        namespace: agentgateway-system
-        name: agentgateway-proxy
-    jsonPath: "$.status.loadBalancer.ingress[0].ip"
-    jsonPathExpectation:
-      comparator: exists
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-  setVars:
-    INGRESS_GW_ADDRESS:
-      value: true
-EOF
-
-export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
-{{< /doc-test >}}

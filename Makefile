@@ -39,27 +39,71 @@ deps:
 # Doc tests run code blocks from markdown against a cluster. These targets support
 # generating scripts, running tests, fetching CI results, and injecting pass/fail
 # status into the markdown for the "Verified" badge.
+#
+# The scripts themselves live in the docs-tests repo, not here -- override
+# DOCS_TESTS_DIR if you haven't cloned it as a sibling of this repo. If the
+# directory doesn't exist, the targets below clone it, which is how Cloudflare
+# Pages gets the scripts: its build checks out only this repo.
 #----------------------------------------------------------------------------------
+
+DOCS_TESTS_DIR ?= ../docs-tests
+DOCS_TESTS_REPO ?= https://github.com/solo-io/docs-tests.git
+
+# Local CLI smoke tests use main binaries and a mock LLM, without a cluster.
+# Override PYTHON to select an environment with PyYAML installed.
+PYTHON ?= python3
+.PHONY: test-agctl-standalone
+test-agctl-standalone:
+	$(PYTHON) scripts/test-agctl-standalone.py
+
+# Clone docs-tests if it's missing. An existing checkout is left alone.
+$(DOCS_TESTS_DIR):
+	git clone --depth 1 $(DOCS_TESTS_REPO) $(DOCS_TESTS_DIR)
+
+# Test markup lives in docs-tests as annotations, not in these pages. The test
+# targets copy this working tree (uncommitted edits included) to
+# DOC_TESTS_TREE, attach the annotations to the copy, and run against it, so
+# your own pages are never rewritten. The runner writes inside the copy, so
+# its out/tests/ is copied back to ./out/tests/ afterwards, even when a test
+# fails. Scenarios whose markup did not attach are skipped with a warning;
+# out/annotations/attach-report.json lists them.
+DOC_TESTS_TREE ?= out/doc-tests-tree
+DOC_TESTS_ANNOTATIONS ?= $(DOCS_TESTS_DIR)/products/agentgateway/annotations
+# DOC_TESTS_ARGS passes extra runner options, for example to run one page or
+# one scenario: DOC_TESTS_ARGS='--file content/docs/<page>.md --test <name>'.
+DOC_TESTS_ARGS ?=
+DOC_TESTS_RUN = python3 $(DOCS_TESTS_DIR)/scripts/doc_test_run.py --repo-root $(DOC_TESTS_TREE) \
+	--docs-tests-root $(DOCS_TESTS_DIR) \
+	--annotation-report $(CURDIR)/out/annotations/attach-report.json $(DOC_TESTS_ARGS)
+DOC_TESTS_COPY_BACK = mkdir -p out/tests && rsync -a $(DOC_TESTS_TREE)/out/tests/ out/tests/
+
+# Copy the working tree and attach the test annotations to the copy
+.PHONY: test-attach
+test-attach: deps | $(DOCS_TESTS_DIR)
+	rsync -a --delete --exclude .git --exclude node_modules --exclude public \
+		--exclude resources --exclude out ./ $(DOC_TESTS_TREE)/
+	python3 $(DOCS_TESTS_DIR)/scripts/annotations.py attach --repo $(DOC_TESTS_TREE) \
+		--annotations $(DOC_TESTS_ANNOTATIONS) --report $(CURDIR)/out/annotations/attach-report.json
 
 # Generate doc test scripts from markdown (no cluster needed)
 .PHONY: test-generate
-test-generate: deps
-	python3 scripts/doc_test_run.py --generate-only
+test-generate: test-attach
+	$(DOC_TESTS_RUN) --generate-only; status=$$?; $(DOC_TESTS_COPY_BACK); exit $$status
 
 # Run all doc tests (requires kubeconfig / cluster access)
 .PHONY: test-run
-test-run: deps
-	python3 scripts/doc_test_run.py
+test-run: test-attach
+	$(DOC_TESTS_RUN); status=$$?; $(DOC_TESTS_COPY_BACK); exit $$status
 
 # Download latest doc test results from GitHub Actions (main)
 .PHONY: test-artifacts-fetch
-test-artifacts-fetch:
-	bash scripts/doc_test_fetch_artifacts.sh
+test-artifacts-fetch: | $(DOCS_TESTS_DIR)
+	bash $(DOCS_TESTS_DIR)/scripts/doc_test_fetch_artifacts.sh
 
 # Write test pass/fail status into markdown front matter (for Verified badge)
 .PHONY: test-status
-test-status: deps
-	python3 scripts/doc_test_inject_status.py
+test-status: deps | $(DOCS_TESTS_DIR)
+	python3 $(DOCS_TESTS_DIR)/scripts/doc_test_inject_status.py --repo-root .
 
 
 #----------------------------------------------------------------------------------
@@ -67,19 +111,57 @@ test-status: deps
 #----------------------------------------------------------------------------------
 
 # Build the static site into public/ (production: GC, minify)
+# The site's CSS goes through PostCSS + Tailwind from node_modules. Without them
+# Hugo fails deep in a template with "Cannot find module 'tailwindcss/nesting'",
+# which does not say what to do. A fresh clone or git worktree has no
+# node_modules, so check first and say so plainly.
+.PHONY: check-node-deps
+check-node-deps:
+	@test -d node_modules/tailwindcss || { echo "node_modules is missing. Run 'npm install' in $(CURDIR) first."; exit 1; }
+
+# On a Cloudflare Pages preview (CF_PAGES is set and the branch isn't main), skip
+# the version trees that aren't in hugo.yaml's `params.versions`, unless the
+# branch changed one of them. Production (main) and plain local builds still
+# build everything. PREVIEW=1 tries the preview build locally.
+PREVIEW ?= $(if $(CF_PAGES),$(filter-out main,$(CF_PAGES_BRANCH)))
+
+# pr-tracker-* branches come in batches and fill the Cloudflare build queue, so
+# their previews build only the version trees the branch changed (plus the first
+# listed version when it also changes shared files), without the search index. Try it locally with PREVIEW=1 CF_PAGES_BRANCH=pr-tracker-x.
+PR_TRACKER_PREVIEW ?= $(if $(PREVIEW),$(filter pr-tracker-%,$(CF_PAGES_BRANCH)))
+
 .PHONY: build
-build:
-	hugo --gc --minify
+build: check-node-deps
+	$(if $(PREVIEW),pip3 install -q pyyaml || true)
+	$(if $(PREVIEW),python3 scripts/local-version-config.py --preview-base origin/main $(if $(PR_TRACKER_PREVIEW),--only-changed))
+	$(if $(PR_TRACKER_PREVIEW),HUGO_PARAMS_SEARCH_ENABLE=false )hugo --gc --minify $(if $(PREVIEW),--config hugo.yaml$(COMMA)hugo-local-versions.yaml)
+
+# The local servers build only the versions listed in hugo.yaml's
+# `params.versions`. content/docs/ also holds every older version tree, which
+# production still publishes. scripts/local-version-config.py derives the skip list from hugo.yaml and
+# writes hugo-local-versions.yaml (gitignored). FULL=1 builds everything.
+# VERSION=<linkVersion> builds only that listed version (VERSION=latest for the
+# `latest` entry), for a faster preview.
+COMMA := ,
+LOCAL_VERSIONS_CONFIG = $(if $(FULL),,--config hugo.yaml,hugo-local-versions.yaml)
+
+# NO_SEARCH=1 builds without the search index (the search box does nothing),
+# for a faster preview.
+NO_SEARCH_ENV = $(if $(NO_SEARCH),HUGO_PARAMS_SEARCH_ENABLE=false )
+
+.PHONY: local-version-config
+local-version-config:
+	@$(if $(FULL),:,python3 scripts/local-version-config.py $(if $(VERSION),--version $(VERSION)))
 
 # Start local dev server (drafts and future-dated content shown)
 .PHONY: serve
-serve:
-	hugo160 server --buildDrafts --buildFuture
+serve: check-node-deps local-version-config
+	$(NO_SEARCH_ENV)hugo server --buildDrafts --buildFuture $(LOCAL_VERSIONS_CONFIG)
 
 # Start local server with production-like build (GC, minify, no drafts)
 .PHONY: serve-prod
-serve-prod:
-	hugo160 server --gc --minify
+serve-prod: check-node-deps local-version-config
+	$(NO_SEARCH_ENV)hugo server --gc --minify $(LOCAL_VERSIONS_CONFIG)
 
 # Alias for serve (drafts and future-dated content shown)
 .PHONY: server
@@ -138,7 +220,7 @@ framework-test-install:
 framework-test:
 	@$(MAKE) _framework_test_preflight
 	rm -rf public
-	hugo160 --gc --minify > .build.log 2>&1
+	hugo --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test; \
 		result=$$?; $(SHOW_REPORT); exit $$result)
@@ -149,7 +231,7 @@ framework-test:
 framework-test-static:
 	@$(MAKE) _framework_test_preflight
 	rm -rf public
-	hugo160 --gc --minify > .build.log 2>&1
+	hugo --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test --project=static; \
 		result=$$?; $(SHOW_REPORT); exit $$result)
@@ -162,7 +244,7 @@ framework-test-static:
 framework-test-content:
 	@$(MAKE) _framework_test_preflight
 	rm -rf public
-	hugo160 --gc --minify > .build.log 2>&1
+	hugo --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test --project=content; \
 		result=$$?; npx playwright show-report; exit $$result)
@@ -175,7 +257,7 @@ framework-test-content:
 framework-test-browser:
 	@$(MAKE) _framework_test_preflight
 	rm -rf public
-	hugo160 --gc --minify > .build.log 2>&1
+	hugo --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test --project=browser; \
 		result=$$?; $(SHOW_REPORT); exit $$result)
@@ -186,7 +268,7 @@ framework-test-browser:
 framework-test-cross-browser:
 	@$(MAKE) _framework_test_preflight
 	rm -rf public
-	hugo160 --gc --minify > .build.log 2>&1
+	hugo --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test \
 			--project=cross-browser-chromium \

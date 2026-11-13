@@ -27,6 +27,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -200,6 +201,25 @@ type nodeMap = map[string]*yaml.Node
 
 type schemaResolver struct {
 	root *yaml.Node
+	// Synthesised union nodes, keyed by the node they were built from.
+	//
+	// LOAD-BEARING, not just a speed-up. toPropertyMapWithResolver guards against
+	// a type that contains itself by pointer identity (`visiting[n]`), and a
+	// merged union is a NEW node on every call, so without this each occurrence
+	// looks unrelated and the guard never fires. Returning one node per source
+	// keeps that guard working now that unions merge rather than collapse.
+	merged map[*yaml.Node]*yaml.Node
+}
+
+func (r *schemaResolver) memoizeMerge(src, out *yaml.Node) *yaml.Node {
+	if r == nil || src == nil {
+		return out
+	}
+	if r.merged == nil {
+		r.merged = map[*yaml.Node]*yaml.Node{}
+	}
+	r.merged[src] = out
+	return out
 }
 
 func resolveAlias(n *yaml.Node) *yaml.Node {
@@ -237,10 +257,30 @@ func resolveSchemaNode(node *yaml.Node, resolver *schemaResolver) *yaml.Node {
 
 // mergeObjectVariants exposes every externally tagged object alternative. Variant
 // keys are alternatives, so none is individually required; requirements within
-// each variant remain intact. Overlapping shapes retain the existing fallback.
+// each variant remain intact. Genuinely overlapping shapes retain the existing
+// fallback, which keeps a single variant.
+//
+// Two shapes used to abandon the merge and cost the reader every variant but one.
+// Both appear in `backendAuth`, which is why it rendered `key` alone out of ten
+// alternatives:
+//
+//   - A serde unit variant serializes as the bare tag, so its schema is a scalar
+//     with a `const` rather than an object (`backendAuth: copilot`). It is still
+//     an alternative and now renders as a named leaf. A scalar with no `const`
+//     names nothing, so those unions still fall back.
+//   - A compat wrapper restates the same property across variants, sometimes
+//     identically (`BackendAuthCompat` lists `credentials` twice) and sometimes
+//     not (its legacy `key` shorthand against the canonical `key` object). A
+//     repeat is a naming clash, not a reason to discard the other nine
+//     alternatives, so it is now resolved in place: an identical restatement
+//     collapses, and a genuine disagreement keeps the more specific schema.
+//
+// Merging can only ever ADD names, since the union of every variant's properties
+// contains whatever single variant the fallback would have kept. So no shape
+// renders fewer alternatives than before this change.
 func mergeObjectVariants(alts *yaml.Node, resolver *schemaResolver, seen map[*yaml.Node]bool, depth int) *yaml.Node {
 	props := &yaml.Node{Kind: yaml.MappingNode}
-	names := map[string]bool{}
+	byName := map[string]*yaml.Node{}
 	count := 0
 	for _, alt := range alts.Content {
 		candidate := resolveSchemaNodeWithState(alt, resolver, seen, depth+1)
@@ -250,15 +290,22 @@ func mergeObjectVariants(alts *yaml.Node, resolver *schemaResolver, seen map[*ya
 		}
 		fields := getNode(raw, "properties")
 		if fields == nil || fields.Kind != yaml.MappingNode || len(fields.Content) == 0 {
-			return nil
+			tag := getString(raw, "const")
+			if tag == "" {
+				return nil
+			}
+			// The variant schema carries the type, the const and the description,
+			// so reuse it as the leaf rather than synthesising one.
+			if _, ok := byName[tag]; !ok {
+				byName[tag] = candidate
+				count++
+				props.Content = append(props.Content, &yaml.Node{Kind: yaml.ScalarNode, Value: tag}, candidate)
+			}
+			continue
 		}
 		count++
 		for i := 0; i+1 < len(fields.Content); i += 2 {
 			name, value := fields.Content[i], fields.Content[i+1]
-			if names[name.Value] {
-				return nil
-			}
-			names[name.Value] = true
 			if len(fields.Content) == 2 && getString(decodeMapping(value), "description") == "" {
 				if desc := getNode(raw, "description"); desc != nil {
 					copyValue := *value
@@ -266,6 +313,22 @@ func mergeObjectVariants(alts *yaml.Node, resolver *schemaResolver, seen map[*ya
 					value = &copyValue
 				}
 			}
+			if prev, ok := byName[name.Value]; ok {
+				if sameSchemaNode(prev, value) {
+					continue
+				}
+				// Two spellings of one field, such as the legacy `key: <value>`
+				// shorthand beside the canonical `key: {value, location}`. Keep
+				// whichever describes more, so the row a reader expands is the
+				// fuller one; the alternative is discarding every other variant.
+				if specificity(value, resolver, seen, depth) <= specificity(prev, resolver, seen, depth) {
+					continue
+				}
+				replaceProp(props, name.Value, value)
+				byName[name.Value] = value
+				continue
+			}
+			byName[name.Value] = value
 			props.Content = append(props.Content, name, value)
 		}
 	}
@@ -276,6 +339,50 @@ func mergeObjectVariants(alts *yaml.Node, resolver *schemaResolver, seen map[*ya
 		{Kind: yaml.ScalarNode, Value: "type"}, {Kind: yaml.ScalarNode, Value: "object"},
 		{Kind: yaml.ScalarNode, Value: "properties"}, props,
 	}}
+}
+
+// specificity ranks two spellings of one property name by how much shape they
+// describe, so a clash keeps the fuller one. Counting resolved properties is
+// enough to separate the cases that occur here and stays deterministic.
+func specificity(n *yaml.Node, resolver *schemaResolver, seen map[*yaml.Node]bool, depth int) int {
+	resolved := resolveSchemaNodeWithState(n, resolver, seen, depth+1)
+	fields := getNode(decodeMapping(resolved), "properties")
+	if fields == nil || fields.Kind != yaml.MappingNode {
+		return 0
+	}
+	return len(fields.Content) / 2
+}
+
+// replaceProp swaps the value of an already-appended property, keeping its
+// position so the merged order still follows the order the variants declared.
+func replaceProp(props *yaml.Node, name string, value *yaml.Node) {
+	for i := 0; i+1 < len(props.Content); i += 2 {
+		if props.Content[i].Value == name {
+			props.Content[i+1] = value
+			return
+		}
+	}
+}
+
+// sameSchemaNode reports whether two schema nodes describe the same thing.
+// Serialising is enough here: these are small subtrees read from one document,
+// and the alternative is hand-rolling a comparison over every node kind.
+func sameSchemaNode(a, b *yaml.Node) bool {
+	if a == b {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	left, err := yaml.Marshal(a)
+	if err != nil {
+		return false
+	}
+	right, err := yaml.Marshal(b)
+	if err != nil {
+		return false
+	}
+	return bytes.Equal(left, right)
 }
 
 func resolveSchemaNodeWithState(node *yaml.Node, resolver *schemaResolver, seen map[*yaml.Node]bool, depth int) *yaml.Node {
@@ -304,13 +411,26 @@ func resolveSchemaNodeWithState(node *yaml.Node, resolver *schemaResolver, seen 
 
 	// Combine disjoint object variants before falling back to the best non-null
 	// branch for nullable or mixed scalar/object unions.
+	//
+	// KNOWN GAP, deliberately left: a node carrying its own `properties` AND a
+	// union keeps only the union, so `OAuthTokenExchangeAuth` renders the three
+	// ways of addressing the token endpoint but not the thirteen fields declared
+	// beside them. Folding the two together is correct and was measured, but this
+	// widget materialises every path in the schema and `backendAuth` alone occurs
+	// ~361 times, so it took the output from 18 MB to 98 MB. Fixing it properly
+	// means rendering each type once and cross-referencing the repeats.
+	if resolver != nil {
+		if cached, ok := resolver.merged[n]; ok {
+			return cached
+		}
+	}
 	for _, key := range []string{"anyOf", "oneOf"} {
 		alts := getNode(raw, key)
 		if alts == nil || alts.Kind != yaml.SequenceNode {
 			continue
 		}
 		if merged := mergeObjectVariants(alts, resolver, seen, depth); merged != nil {
-			return merged
+			return resolver.memoizeMerge(n, merged)
 		}
 		best := (*yaml.Node)(nil)
 		bestScore := -1
@@ -343,7 +463,7 @@ func resolveSchemaNodeWithState(node *yaml.Node, resolver *schemaResolver, seen 
 			}
 		}
 		if best != nil {
-			return best
+			return resolver.memoizeMerge(n, best)
 		}
 	}
 
@@ -793,11 +913,18 @@ func renderRichText(text string) string {
 	return strings.Join(blocks, "")
 }
 
-func renderFieldPanel(nodeID, path string, prop propertyDef, isRequired bool, docs []docLink) string {
+// renderFieldPanelBody builds the detail card for one field WITHOUT its path.
+//
+// The path is the only part of a panel that varies between two fields of the
+// same shape, and it is already on the row as data-ks-path, so the widget fills
+// it in when the panel is mounted. Everything else — type, required,
+// description, validation, documentation links — depends on the shape alone,
+// which lets identical bodies share one template. On the standalone config
+// schema that is 713 distinct bodies for 28,725 fields.
+func renderFieldPanelBody(prop propertyDef, isRequired bool, docs []docLink) string {
 	var b strings.Builder
-	fmt.Fprintf(&b, `<template data-ks-field-panel="%s">`, esc(nodeID))
 	b.WriteString(`<div class="ks-detail-card">`)
-	fmt.Fprintf(&b, `<div class="ks-detail-path">%s</div>`, esc(path))
+	b.WriteString(`<div class="ks-detail-path" data-ks-detail-path></div>`)
 	b.WriteString(`<div class="ks-detail-meta-line">`)
 	fmt.Fprintf(&b, `<span class="ks-detail-type %s">%s</span>`, typeClass(prop.propType, prop.definition != nil && len(prop.definition.keys) > 0), esc(prop.propType))
 	if isRequired {
@@ -815,7 +942,37 @@ func renderFieldPanel(nodeID, path string, prop propertyDef, isRequired bool, do
 	if documentationHTML := renderDocumentationDetails(docs); documentationHTML != "" {
 		b.WriteString(documentationHTML)
 	}
-	b.WriteString(`</div></template>`)
+	b.WriteString(`</div>`)
+	return b.String()
+}
+
+// panelRegistry interns detail-card bodies so each distinct one is emitted once.
+type panelRegistry struct {
+	ids    map[string]string
+	bodies []string
+}
+
+func newPanelRegistry() *panelRegistry {
+	return &panelRegistry{ids: map[string]string{}}
+}
+
+// intern returns the template id for a body, emitting the body only the first
+// time it is seen.
+func (r *panelRegistry) intern(body string) string {
+	if id, ok := r.ids[body]; ok {
+		return id
+	}
+	id := fmt.Sprintf("p%d", len(r.bodies))
+	r.ids[body] = id
+	r.bodies = append(r.bodies, body)
+	return id
+}
+
+func (r *panelRegistry) render() string {
+	var b strings.Builder
+	for i, body := range r.bodies {
+		fmt.Fprintf(&b, `<template data-ks-field-panel="p%d">%s</template>`+"\n", i, body)
+	}
 	return b.String()
 }
 
@@ -850,13 +1007,7 @@ func typeClass(propType string, hasChildren bool) string {
 	}
 }
 
-type searchEntry struct {
-	nodeID   string
-	path     string
-	propType string
-}
-
-func renderTree(pm *propertyMap, scope string, level int, path, widgetID string, docsByPath map[string][]docLink, counter *int, searchIndex *[]searchEntry, panelTemplates *[]string, b *strings.Builder) {
+func renderTree(pm *propertyMap, scope string, level int, path, widgetID string, docsByPath map[string][]docLink, counter *int, panels *panelRegistry, b *strings.Builder) {
 	if pm == nil || len(pm.keys) == 0 {
 		return
 	}
@@ -873,14 +1024,12 @@ func renderTree(pm *propertyMap, scope string, level int, path, widgetID string,
 		searchPath := strings.TrimPrefix(propPath, ".")
 		hasChildren := prop.definition != nil && len(prop.definition.keys) > 0
 		isRequired := prop.required || (scope == "Namespaced" && propPath == ".metadata.namespace")
-		nodeID := fmt.Sprintf("%s-node-%d", widgetID, *counter)
-		childrenID := nodeID + "-children"
+		// Short ids: these are unique within the widget's shadow root, which is
+		// the only scope they have to be unique in, and every field repeats its
+		// id up to four times.
+		nodeID := fmt.Sprintf("n%d", *counter)
+		childrenID := fmt.Sprintf("c%d", *counter)
 		*counter++
-		*searchIndex = append(*searchIndex, searchEntry{
-			nodeID:   nodeID,
-			path:     searchPath,
-			propType: prop.propType,
-		})
 
 		reqMark := ""
 		if isRequired {
@@ -896,19 +1045,21 @@ func renderTree(pm *propertyMap, scope string, level int, path, widgetID string,
 		if hasChildren {
 			typeControl = fmt.Sprintf(`<button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="%s" aria-controls="%s" aria-expanded="false">%s</button>`,
 				esc(childrenID), esc(childrenID), typeHTML)
-			rowTarget = fmt.Sprintf(` data-ks-children-target="%s"`, esc(childrenID))
+			// Marks the row as expandable. The container itself is the row
+			// line's next sibling, so the id does not have to be repeated here.
+			rowTarget = " data-ks-expandable"
 		}
-		*panelTemplates = append(*panelTemplates, renderFieldPanel(nodeID, searchPath, prop, isRequired, docsByPath[normalizePath(searchPath)]))
+		panelID := panels.intern(renderFieldPanelBody(prop, isRequired, docsByPath[normalizePath(searchPath)]))
 
-		fmt.Fprintf(b, `<li class="ks-row" data-ks-path="%s">`, esc(searchPath))
-		fmt.Fprintf(b, `<div class="ks-row-line" id="%s" data-ks-node-id="%s" data-ks-path="%s"%s>`, esc(nodeID), esc(nodeID), esc(searchPath), rowTarget)
+		b.WriteString(`<li class="ks-row">`)
+		fmt.Fprintf(b, `<div class="ks-row-line" id="%s" data-ks-path="%s" data-ks-panel="%s"%s>`, esc(nodeID), esc(searchPath), panelID, rowTarget)
 		fmt.Fprintf(b, `<span class="ks-name-toggle">%s<span class="ks-name">%s</span></span>`,
 			reqMark, esc(name))
 		b.WriteString(typeControl)
 		b.WriteString(`</div>`)
 		if hasChildren && prop.definition != nil {
 			fmt.Fprintf(b, `<div class="ks-children-container" id="%s" data-ks-children-container hidden>`, esc(childrenID))
-			renderTree(prop.definition, scope, level+1, propPath, widgetID, docsByPath, counter, searchIndex, panelTemplates, b)
+			renderTree(prop.definition, scope, level+1, propPath, widgetID, docsByPath, counter, panels, b)
 			b.WriteString(`</div>`)
 		}
 		b.WriteString("</li>\n")
@@ -1402,21 +1553,7 @@ const css = `.ks-schema {
 .ks-schema.ks-dark .ks-doc-link:hover { color: #99f6e4; }
 `
 
-func renderSearchScript(hostID, templateID string, searchIndex []searchEntry) string {
-	var entries strings.Builder
-	entries.WriteString("[\n")
-	for i, entry := range searchIndex {
-		if i > 0 {
-			entries.WriteString(",\n")
-		}
-		fmt.Fprintf(&entries, "  { nodeId: %s, path: %s, propType: %s }",
-			strconv.Quote(entry.nodeID),
-			strconv.Quote(entry.path),
-			strconv.Quote(entry.propType),
-		)
-	}
-	entries.WriteString("\n]")
-
+func renderSearchScript(hostID, templateID string) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, `<script>
 (() => {
@@ -1445,7 +1582,19 @@ func renderSearchScript(hostID, templateID string, searchIndex []searchEntry) st
   syncDark();
   new MutationObserver(syncDark).observe(docEl, { attributes: true, attributeFilter: ["class"] });
 
-  const entries = %s;
+  // The search index is read out of the tree rather than shipped beside it.
+  // Every field of an entry is already an attribute on the row, and the literal
+  // cost ~170 bytes per field, which on the standalone config schema was 4.8 MB
+  // of the page. querySelectorAll returns document order, so entries[0] is
+  // still the root field.
+  const entries = Array.from(shadow.querySelectorAll(".ks-row-line[data-ks-path]")).map((element) => {
+    const badge = element.querySelector(".ks-type");
+    return {
+      nodeId: element.id,
+      path: element.getAttribute("data-ks-path"),
+      propType: badge ? badge.textContent : "",
+    };
+  });
   const input = shadow.querySelector("[data-ks-search-input]");
   const results = shadow.querySelector("[data-ks-search-results]");
   const detailPanel = shadow.querySelector("[data-ks-active-panel]");
@@ -1455,8 +1604,8 @@ func renderSearchScript(hostID, templateID string, searchIndex []searchEntry) st
   const nodeByID = new Map();
   const childrenByID = new Map();
   const panelTemplateByID = new Map();
-  shadow.querySelectorAll("[data-ks-node-id]").forEach((element) => {
-    nodeByID.set(element.getAttribute("data-ks-node-id"), element);
+  shadow.querySelectorAll(".ks-row-line[id]").forEach((element) => {
+    nodeByID.set(element.id, element);
   });
   shadow.querySelectorAll("[data-ks-children-container]").forEach((element) => {
     childrenByID.set(element.id, element);
@@ -1465,7 +1614,6 @@ func renderSearchScript(hostID, templateID string, searchIndex []searchEntry) st
     panelTemplateByID.set(element.getAttribute("data-ks-field-panel"), element);
   });
   const entryByPath = new Map(entries.map((entry) => [normalize(entry.path), entry]));
-  // Rows carry data-ks-children-target too, so scope this to the badge itself.
   const typeButtons = shadow.querySelectorAll(".ks-type-toggle[data-ks-children-target]");
   const toggleByTarget = new Map();
   typeButtons.forEach((element) => {
@@ -1631,8 +1779,19 @@ func renderSearchScript(hostID, templateID string, searchIndex []searchEntry) st
     next.classList.add("is-active");
     activeNodeId = entry.nodeId;
     if (detailPanel) {
-      const panelTemplate = panelTemplateByID.get(entry.nodeId);
-      detailPanel.innerHTML = panelTemplate ? panelTemplate.innerHTML : "";
+      // Panels are shared by every field of the same shape, so the path is
+      // filled in here from the row that was selected.
+      const panelTemplate = panelTemplateByID.get(next.getAttribute("data-ks-panel"));
+      if (panelTemplate) {
+        const panel = panelTemplate.content.cloneNode(true);
+        const pathSlot = panel.querySelector("[data-ks-detail-path]");
+        if (pathSlot) {
+          pathSlot.textContent = entry.path;
+        }
+        detailPanel.replaceChildren(panel);
+      } else {
+        detailPanel.replaceChildren();
+      }
     }
   }
 
@@ -1810,8 +1969,8 @@ func renderSearchScript(hostID, templateID string, searchIndex []searchEntry) st
     }
     // Clicking the field itself opens or closes it. Selecting still happens, so
     // one click both reveals the children and puts the field in the detail pane.
-    const children = childrenByID.get(selectable.getAttribute("data-ks-children-target"));
-    if (children) {
+    const children = selectable.nextElementSibling;
+    if (children && children.hasAttribute("data-ks-children-container")) {
       setChildrenOpen(children, children.hidden);
     }
     setHash(path);
@@ -1826,7 +1985,6 @@ func renderSearchScript(hostID, templateID string, searchIndex []searchEntry) st
 </script>`,
 		strconv.Quote(hostID),
 		strconv.Quote(templateID),
-		entries.String(),
 	)
 	return b.String()
 }
@@ -1838,8 +1996,7 @@ func renderWidget(kind, group, version, scope string, pm *propertyMap, widgetID 
 	}
 
 	var b strings.Builder
-	searchIndex := make([]searchEntry, 0, 64)
-	panelTemplates := make([]string, 0, 64)
+	panels := newPanelRegistry()
 	nodeCounter := 0
 	templateID := widgetID + "-template"
 	fmt.Fprintf(&b, "<!-- kubespec widget: %s (%s) -->\n", esc(kind), esc(apiVersion))
@@ -1858,17 +2015,15 @@ func renderWidget(kind, group, version, scope string, pm *propertyMap, widgetID 
 	b.WriteString("</div>\n")
 	b.WriteString(`<div class="ks-layout">` + "\n")
 	b.WriteString(`<div class="ks-tree-pane">` + "\n")
-	renderTree(pm, scope, 0, "", widgetID, docsByPath, &nodeCounter, &searchIndex, &panelTemplates, &b)
+	renderTree(pm, scope, 0, "", widgetID, docsByPath, &nodeCounter, panels, &b)
 	b.WriteString(`</div>` + "\n")
 	b.WriteString(`<aside class="ks-detail-pane"><div data-ks-active-panel></div></aside>` + "\n")
 	b.WriteString(`</div>` + "\n")
-	for _, panelTemplate := range panelTemplates {
-		b.WriteString(panelTemplate + "\n")
-	}
+	b.WriteString(panels.render())
 	b.WriteString("\n")
 	b.WriteString("</div>\n")
 	b.WriteString("</template>\n")
-	b.WriteString(renderSearchScript(widgetID, templateID, searchIndex) + "\n")
+	b.WriteString(renderSearchScript(widgetID, templateID) + "\n")
 
 	// Embedded simplified markdown skeleton for Copy-as-Markdown extraction.
 	// Hidden from browsers (HTML comment) and ignored by transform.HTMLToMarkdown.

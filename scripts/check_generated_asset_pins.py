@@ -38,8 +38,8 @@ WHY THIS EXISTS
 
 Archiving a version means pointing its stub at the frozen snapshot. That step is
 easy to skip, and skipping it is invisible: the page still builds and still renders
-a plausible table, just of the wrong release. Ten pages are in that state today.
-content/docs/kubernetes/1.0.x through 1.4.x reuse .../helm/main/ or .../helm/latest/,
+a plausible table, just of the wrong release. Eight pages are in that state today.
+content/docs/kubernetes/1.0.x through 1.3.x reuse .../helm/main/ or .../helm/latest/,
 and hugo.yaml sets no ignoreFiles, so those directories build and publish. Every one
 of them serves a values table for a release the reader did not ask for.
 
@@ -86,8 +86,6 @@ BASELINE = frozenset(
         "content/docs/kubernetes/1.2.x/reference/helm/agentgateway.md",
         "content/docs/kubernetes/1.3.x/reference/helm/agentgateway-crds.md",
         "content/docs/kubernetes/1.3.x/reference/helm/agentgateway.md",
-        "content/docs/kubernetes/1.4.x/reference/helm/agentgateway-crds.md",
-        "content/docs/kubernetes/1.4.x/reference/helm/agentgateway.md",
     }
 )
 

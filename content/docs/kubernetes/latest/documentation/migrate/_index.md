@@ -2,7 +2,6 @@
 title: "Migrate from Ingress"
 description: Migrate from Ingress NGINX to Gateway API and agentgateway using the ingress2gateway tool
 weight: 900
-test: skip
 ---
 
 ## Introduction
@@ -16,6 +15,11 @@ Welcome to the documentation for migrating from Ingress to **Gateway API** and *
 - **Agentgateway Emitter:** Generates Gateway API and agentgateway-specific resources, e.g. AgentgatewayPolicy (traffic and backend behavior).
 
 [This upstream issue](https://github.com/kgateway-dev/ingress2gateway/issues/54) tracks merging these features into the Kubernetes ingress2gateway project.
+
+This guide uses [ingress2gateway v0.5.0](https://github.com/kgateway-dev/ingress2gateway/releases/tag/v0.5.0).
+The Ingress NGINX provider selects the `nginx` Ingress class by default. For a different source class, add
+`--ingress-nginx-ingress-class=<class-name>`. Generated Gateways use `spec.gatewayClassName: agentgateway`
+regardless of the source Ingress class.
 
 ## Prerequisites
 
@@ -49,16 +53,18 @@ of the Ingress before converting.
 
 ## Common workflows
 
-1. Convert a file and write output to a directory.
+1. Convert a file and save the generated manifests.
 
     ```bash
-    ingress2gateway print   --providers=ingress-nginx   --emitter=agentgateway   --input-file ./ingress.yaml   --output-dir ./out
+    ingress2gateway print --providers=ingress-nginx --emitter=agentgateway \
+      --input-file ./ingress.yaml > agentgateway.yaml
     ```
 
-2. Convert a folder of YAML files.
+2. Convert multiple files together by repeating `--input-file`.
 
     ```bash
-    ingress2gateway print   --providers=ingress-nginx   --emitter=agentgateway   --input-dir ./manifests   --output-dir ./out
+    ingress2gateway print --providers=ingress-nginx --emitter=agentgateway \
+      --input-file ./ingress.yaml --input-file ./canary.yaml > agentgateway.yaml
     ```
 
 3. Check the tool version.

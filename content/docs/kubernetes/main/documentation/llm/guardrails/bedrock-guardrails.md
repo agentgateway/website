@@ -161,10 +161,12 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
    {{% /tab %}}
    {{< /tabs >}}
    
-   Example output: 
+   The response has the default `403` status code, and the body is the blocked messaging that you configured for the guardrail in AWS. For example, if the blocked message for prompts is `Your request contains an email address.`, the output is as follows.
    ```console
-   The request was rejected due to inappropriate content
+   Your request contains an email address.
    ```
+
+   If Bedrock returns no blocked message, the body is `The request was rejected due to inappropriate content`. To return your own message instead, set `response.message` on the guard. If you set only `response.statusCode`, the status code changes, but the body is still the Bedrock message.
 
 ## Backend connection and authentication policies
 

@@ -2,7 +2,6 @@
 title: CEL in YAML and example expressions
 weight: 2
 description: How to embed CEL expressions in YAML configuration, plus worked examples for common use cases.
-test: skip
 ---
 
 ## CEL in YAML
@@ -64,7 +63,7 @@ default(jwt.role, "user")
 ```yaml
 # Include logs where there was no response or there was an error
 filter: |
-   !has(response) || response.code > 299
+   !has(response.code) || response.code > 299
 fields:
   add:
     user.agent: 'request.headers["user-agent"]'
@@ -86,6 +85,8 @@ fields:
 
 ```
 
+{{< reuse "agw-docs/snippets/cel-upstream-calls-access-log.md" >}}
+
 ### Authorization {#authorization}
 
 ```yaml
@@ -97,6 +98,17 @@ mcpAuthorization:
   - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
   # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
   - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
+```
+
+MCP authorization rules control both which tools, prompts, and resources a client can see and which ones it can use. When a client sends a list request, such as `tools/list`, the rules run once for each item in the response. In each run, `mcp.methodName` is the list method, and the target field, such as `mcp.tool`, contains that item. Any item that no rule allows is removed from the list. A rule that checks only the tool, such as `mcp.tool.name == "echo"`, therefore both lists `echo` and allows calls to it. To give listing and calling different access, check `mcp.methodName` in the rule. The following rules let every client see all tools, but let only `test-user` call them. Because no rule matches the prompt or resource methods, prompts and resources are removed from list responses, and requests for them, such as `prompts/get` and `resources/read`, are denied.
+
+```yaml
+mcpAuthorization:
+  rules:
+  # Anyone can see every tool in the tools/list response
+  - 'mcp.methodName == "tools/list"'
+  # Only test-user can call tools
+  - 'mcp.methodName == "tools/call" && jwt.sub == "test-user"'
 ```
 
 ### Rate limiting {#rate-limiting}

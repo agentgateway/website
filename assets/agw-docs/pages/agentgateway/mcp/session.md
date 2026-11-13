@@ -8,13 +8,23 @@ If you run multiple agentgateway proxy instances without stateful sessions, the 
 
 To ensure that subsequent requests are routed to the same agentgateway proxy instance, the proxy exposes streamable HTTP endpoints as stateful endpoints by default and sends back the session ID in the `Mcp-Session-Id` header. You can disable this setting and instead use stateless MCP servers by using the `sessionRouting: Stateless` setting in the {{< reuse "agw-docs/snippets/backend.md" >}} resource. 
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+If a client sends a session ID that the proxy cannot decode, the proxy returns `HTTP 404`, and the [MCP specification](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports#session-management) requires the client to start a new session. A session ID cannot be decoded after the session key changes. If an encrypted session ID belongs to a different MCP backend from the current request's backend, the proxy also returns `HTTP 404`. The client starts a new session on the current backend.
+
+The proxy encrypts each session ID with a session key. The controller stores the key in a Secret named `<gateway-name>-session-key` in the namespace of the Gateway. The controller creates the Secret only if it does not exist, and never changes the key in it. The Gateway owns the Secret, so deleting the Gateway deletes the key. To use your own key, set the `SESSION_KEY` environment variable in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. The controller then does not manage a Secret. If the controller cannot create the Secret, or another resource controls it, the Gateway reports `Programmed: False` with the reason `DeploymentFailed`.
+
+When a client closes a stateful session with an HTTP `DELETE` request, the proxy decodes the session ID before it sends close requests to the upstream targets. Because all replicas of the Gateway share the session key, any replica can close the upstream sessions. If you set `SESSION_KEY` yourself, use the same value for every replica. Deletion is best effort. Upstream close failures still return `HTTP 202`, and those upstream sessions stay open until the target's idle timeout. If the proxy cannot rebuild a target connection from the session ID, the client receives an error response instead of `HTTP 202`.
+
+A client can reuse a session ID on a different route to the same MCP backend. The request then uses the MCP authorization and MCP guardrail policies of the route that it arrives on, not the route that created the session.
+{{< /version >}}
+
 
 ## Stateless
 
 The following configuration disables stateful session routing for a streamable HTTP endpoint. You typically use this configuration if you have stateless agents that connect to your MCP server or where the state is handled in the client directly. The MCP server treats every request as a new request and therefore requires the entire context to be sent as part of the request.
 
 ```yaml
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   namespace: default
@@ -38,7 +48,7 @@ The following configuration enables stateful session routing for a streamable HT
 > Stateful session routing and session affinity require the use of non-static, `selector`-based targets. If you use a `static` target with `sessionRouting: Stateful`, requests are not guaranteed to be routed to the same proxy instance.
 
 ```yaml
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   namespace: default

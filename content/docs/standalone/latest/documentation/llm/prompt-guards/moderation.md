@@ -36,7 +36,7 @@ In this configuration, agentgateway calls the Moderation API for each request an
 
    ```yaml
    cat <<EOF > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "*"
@@ -84,6 +84,27 @@ In this configuration, agentgateway calls the Moderation API for each request an
    Content blocked by moderation policy%    
    ```
 
+## Guard scope {#scope}
+
+By default, the moderation prompt guard sends the system prompt, message text, and tool call results to the Moderation API. Set `scope` to change which text it sends.
+
+This example checks only tool call results.
+
+```yaml
+guardrails:
+  request:
+  - scope: [toolOutput]
+    openAIModeration:
+      model: omni-moderation-latest
+      policies:
+        backendAuth:
+          key: "$OPENAI_API_KEY"
+```
+
+If no text is in scope, the guard skips the API call and lets the request continue. The `scope` field does not apply to inline moderation.
+
+For supported values and restrictions, see [Guard scope]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#scope" >}}).
+
 ## Moderate content inline on the OpenAI provider
 
 In this configuration, agentgateway adds a `moderation` parameter to each request that it sends to OpenAI, and OpenAI moderates the content as part of the completion. No separate call to the Moderation API is made.
@@ -96,7 +117,7 @@ Because the gateway sets the parameter, a client cannot weaken the moderation th
 1. Create a configuration file that routes to OpenAI and sets the `moderation` field on the provider.
    ```yaml
    cat <<EOF > moderation-config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
@@ -199,6 +220,6 @@ Because the gateway sets the parameter, a client cannot weaken the moderation th
 Inline moderation applies only where agentgateway builds the request that it sends to OpenAI. The following conditions apply.
 
 * **The provider must be OpenAI.** The `moderation` field exists only on the `openAI` provider. Azure OpenAI is a separate provider and has no such field. To moderate traffic to any other provider, use the moderation prompt guard instead.
-* **The route type must be `completions` or `responses`.** Requests on a `passthrough` or `detect` route reach OpenAI unchanged, so the moderation parameter is not added.
+* **The route type must be `completions`, `responses`, or `messages`.** Agentgateway converts a `messages` request to the OpenAI Responses or Chat Completions format, and the converted request carries the moderation parameter. Requests on a `passthrough` or `detect` route reach OpenAI unchanged, so the moderation parameter is not added.
 * **Clients keep their own `moderation` value when you omit the field.** If you do not configure `moderation`, a `moderation` value that a client sends passes through to OpenAI unchanged. OpenAI requires `moderation.model`, so a client value that omits it fails with `Missing required parameter: 'moderation.model'`. Configuring `moderation` on the backend avoids this, because agentgateway always sends a model.
 * **Moderation results reach the client only in OpenAI response formats.** A client that uses a different API format, such as the Anthropic Messages API, does not receive the moderation results.

@@ -13,7 +13,7 @@ Which methods each mode supports:
 | AWS | `aws` | `aws` |
 | Azure | `azure` | `azure` |
 | Google Cloud | `gcp` | `gcp` |
-| GitHub Copilot | `copilot` | Not available |
+| GitHub Copilot | `backendAuth: copilot` | {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}`ai.provider.copilot` with `policies.auth.secretRef`{{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}Not available{{< /version >}} |
 | Signed JWT | `jwtSign`, in 1.5.x and later | `jwtSign`, in 1.5.x and later |
 | OAuth token exchange | `oauthTokenExchange` | `oauthTokenExchange` |
 | Cross App Access | `crossAppAccess` | `crossAppAccess` |

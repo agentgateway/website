@@ -1,0 +1,10 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Config for tests/traffic-add.spec.ts: the Add gateway and Add route drawers in the
+# configuration/gateways and configuration/routes guides. It has only the http-proxy gateway
+# that routes.md tells the reader to create first, and no default gateway, so the Add gateway
+# drawer can select Default gateway as gateways.md does. The drawers are filled in but NEVER
+# saved, so this file is never rewritten.
+gateways:
+  http-proxy:
+    port: 8080

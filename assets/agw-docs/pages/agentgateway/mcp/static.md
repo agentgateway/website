@@ -16,7 +16,7 @@ Notice the following details about the Service:
 * `appProtocol: agentgateway.dev/mcp` (required): Configure your service to use the MCP protocol. This way, the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy uses the MCP protocol when connecting to the service.
 * `agentgateway.dev/mcp-path` annotation (optional): The default values are `/sse` for the SSE protocol or `/mcp` for the Streamable HTTP protocol. If you need to change the path of the MCP target endpoint, set this annotation on the Service.
 
-```yaml {paths="setup-mcp-server"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: apps/v1
 kind: Deployment
@@ -52,34 +52,15 @@ spec:
 EOF
 ```
 
-{{< doc-test paths="setup-mcp-server" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for mcp-website-fetcher deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: default
-        name: mcp-website-fetcher
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
 ### Step 2: Create the backend for the MCP server
 
 Create a {{< reuse "agw-docs/snippets/backend.md" >}} that sets up the {{< reuse "agw-docs/snippets/agentgateway.md" >}} target details for the MCP server.
 
 {{< tabs >}}
 {{% tab name="Static host" %}}
-```yaml {paths="setup-mcp-server"}
+```yaml
 kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: mcp-backend
@@ -98,7 +79,7 @@ EOF
 Instead of specifying the full hostname with `static.host`, you can use `backendRef` to reference a `Service` by name. The `backendRef` approach is simpler and avoids hardcoding the full cluster DNS name.
 
 ```yaml
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: mcp-backend
@@ -119,7 +100,7 @@ spec:
 
 Create an HTTPRoute resource that routes to the {{< reuse "agw-docs/snippets/backend.md" >}} that you created in the previous step. Use a path match so that requests to `/mcp` go to the MCP backend and are not routed to an LLM or other backend.
 
-```yaml {paths="setup-mcp-server"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -136,29 +117,10 @@ spec:
           value: /mcp
       backendRefs:
       - name: mcp-backend
-        group: agentgateway.dev
+        group: {{< reuse "agw-docs/snippets/group.md" >}}
         kind: {{< reuse "agw-docs/snippets/backend.md" >}}  
 EOF
 ```
-
-{{< doc-test paths="setup-mcp-server" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for mcp HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: default
-        name: mcp
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
 
 ### Step 4: Verify the connection {#verify}
 
@@ -209,7 +171,7 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
 
 ## Connect an IDE
 
-After verifying connectivity with MCP Inspector, you can connect AI coding assistants such as Claude Code, Cursor, or VS Code to the MCP server through agentgateway.{{% conditional-text include-if="kubernetes" %}} For configuration instructions, see [MCP clients]({{< link-hextra path="/integrations/mcp/clients/" >}}).{{% /conditional-text %}}
+After verifying connectivity with MCP Inspector, you can connect AI coding assistants such as Claude Code, Cursor, or VS Code to the MCP server through agentgateway.{{% conditional-text include-if="kubernetes" %}}{{< version exclude-if="1.1.x" >}} For configuration instructions, see [MCP clients]({{< link-hextra path="/integrations/mcp/clients/" >}}).{{< /version >}}{{% /conditional-text %}}
 
 ## Cleanup
 

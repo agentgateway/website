@@ -1,0 +1,18 @@
+# Fixture for tests/ui-tabs-c.spec.ts: the "UI" tab captures in the standalone LLM provider,
+# LLM client, and web UI guides.
+#
+# One OpenAI model, which is the state the client and web UI guides reach before their
+# "Serve LLM traffic on port 3000" step: the Gateway Overview's LLM card only offers
+# Settings once a model exists. No `gateways` and no `llm.port`, so that Settings drawer
+# shows an empty Port field rather than a Gateway dropdown. No shared providers, so the
+# Add provider drawer opens on a clean LLM > Providers page.
+#
+# Nothing is ever saved and nothing calls OpenAI, so no backend or API key is needed. The
+# model deliberately has no `apiKey`. The guides reference the OPENAI_API_KEY variable, but the
+# gateway refuses to load a config that names an unset variable, and the launcher sets none.
+# The gateway expands a dollar-sign reference even inside a YAML comment, so do not write one
+# anywhere in this file.
+llm:
+  models:
+  - name: "*"
+    provider: openAI

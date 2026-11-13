@@ -18,7 +18,7 @@ Add agentgateway to your Cursor MCP settings. Create or edit `.cursor/mcp.json` 
 {
   "mcpServers": {
     "agentgateway": {
-      "url": "http://localhost:3000/mcp/http"
+      "url": "http://localhost:3000/mcp"
     }
   }
 }
@@ -32,7 +32,7 @@ For global configuration across all projects, edit `~/.cursor/mcp.json`:
 {
   "mcpServers": {
     "agentgateway": {
-      "url": "http://localhost:3000/mcp/http"
+      "url": "http://localhost:3000/mcp"
     }
   }
 }
@@ -46,7 +46,7 @@ Include authentication headers if required:
 {
   "mcpServers": {
     "agentgateway": {
-      "url": "http://localhost:3000/mcp/http",
+      "url": "http://localhost:3000/mcp",
       "headers": {
         "Authorization": "Bearer your-token-here"
       }

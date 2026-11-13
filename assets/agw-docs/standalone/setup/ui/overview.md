@@ -2,6 +2,8 @@
 
 The agentgateway UI is a built-in web interface that runs alongside the proxy. It is fully interactive in standalone mode, so you can inspect your current configuration and manage your proxy without restarting agentgateway.
 
+For screenshots of each area of the UI, see [Tour the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#tour" >}}).
+
 The UI is separate from the [Web UI integrations]({{< link-hextra path="/integrations/web-uis/" >}}), which are third-party AI chat frontends (such as Open WebUI or LibreChat) that you connect to agentgateway as a backend. The UI is the management interface for agentgateway itself.
 
 ## Where the UI is served

@@ -2,19 +2,11 @@
 title: Rate limiting
 weight: 10
 description: Enforce budget and spend limits per key by controlling request and token usage.
-test:
-  rate-limits:
-  - file: ${versionRoot}/documentation/configuration/resiliency/rate-limits.md
-    path: rate-limits
 ---
 
 Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/">}}
 
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
-
-{{< doc-test paths="rate-limits" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
 
 Use rate limiting to enforce budget and spend limits per key: control the rate of requests and token usage on a route. Token-based limits let you cap usage per user, per API key, or per time window. Combined with API key authentication and observability, this gives you virtual key management.
 
@@ -39,9 +31,42 @@ By default, agentgateway applies rate limits to requests. Therefore, each reques
 To explicitly set request-based rate limits, set the rate limiting type to `requests` as shown in the following example. 
 
 {{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same `localRateLimit` policy as the **Simplified (LLM)** example in the **Config file** tab.
+
+1. Create a configuration with an LLM model, but no rate limit policy. You add the policy in the UI.
+   ```yaml
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+   ```
+2. Start agentgateway with this configuration.
+3. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **Local rate limit** tile.
+4. Fill out the form.
+   1. **Limit type**: Keep **Requests**.
+   2. **Fill interval**: `60s`
+   3. **Max tokens**: `10`
+   4. **Tokens per fill**: `1`
+
+   {{< reuse-image src="img/ui-llm-policy-local-rate-limit.png" srcDark="img/ui-llm-policy-local-rate-limit-dark.png" alt="Local rate limit drawer with the Requests type, a 60s fill interval, 10 maximum tokens, and 1 token per fill" >}}
+
+5. Click **Save policy**.
+
+The UI omits `type: requests`, because `requests` is the default type. The form edits a single rate limit rule without a `key`. To add more rules or a per-key limit, use the **Raw** icon (`<>`) in the drawer header or the **Config file** tab.
+
+You can also add a local rate limit policy in **MCP** > **Policies**, or in the **Route policies** section of a named route in **Traffic** > **Routes**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
+{{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     localRateLimit:
@@ -58,7 +83,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -76,7 +101,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -97,67 +122,8 @@ For a runnable version of the routing-based configuration, see the [`traffic-rat
 {{% github-yaml url="https://agentgateway.dev/examples/traffic-ratelimiting-local/config.yaml" %}}
 {{< /tab >}}
 {{< /tabs >}}
-
-{{< doc-test paths="rate-limits" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The request-based localRateLimit policy is accepted by agentgateway in the
-#     routing-based (gateways), simplified LLM (llm.policies), and simplified MCP
-#     (mcp.policies) forms.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That requests are actually limited at runtime — requires driving traffic
-#     past the configured bucket, which the page does not exercise.
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- policies:
-    localRateLimit:
-    - maxTokens: 10
-      tokensPerFill: 1
-      fillInterval: 60s
-      type: requests
-  backends:
-  - host: localhost:8080
-EOF
-agentgateway -f config.yaml --validate-only
-
-cat <<'EOF' > config-llm.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  policies:
-    localRateLimit:
-    - maxTokens: 10
-      tokensPerFill: 1
-      fillInterval: 60s
-      type: requests
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-EOF
-agentgateway -f config-llm.yaml --validate-only
-
-cat <<'EOF' > config-mcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  port: 3000
-  policies:
-    localRateLimit:
-    - maxTokens: 10
-      tokensPerFill: 1
-      fillInterval: 60s
-      type: requests
-  targets:
-  - name: everything
-    stdio:
-      cmd: npx
-      args: ["@modelcontextprotocol/server-everything"]
-EOF
-agentgateway -f config-mcp.yaml --validate-only
-{{< /doc-test >}}
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Token-based rate limits
 
@@ -166,6 +132,17 @@ Because the number of tokens that are used for the completion is not known at th
 
 To enable token-based rate limiting, set the rate limiting type to `tokens`. This example shows only the `localRateLimit` policy; attach it to a route as shown in the complete examples in the [Configuration](#configuration) section.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Local rate limit** policy drawer, such as in **LLM** > **Policies**.
+2. Select **Tokens** for the **Limit type**.
+3. Fill out the other fields.
+   1. **Fill interval**: `60s`
+   2. **Max tokens**: `10`
+   3. **Tokens per fill**: `1`
+4. Click **Save policy**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 localRateLimit:
 - maxTokens: 10
@@ -173,6 +150,8 @@ localRateLimit:
   fillInterval: 60s
   type: tokens
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 #### At request time
 
@@ -203,7 +182,7 @@ Below shows an example rate limit configuration that allows 5,000 tokens per hou
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     localRateLimit:
@@ -226,7 +205,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -250,7 +229,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -273,87 +252,6 @@ routes:
 {{< /tab >}}
 {{< /tabs >}}
 
-{{< doc-test paths="rate-limits" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The Local example config (5000 tokens/hour and 60 requests/second) is
-#     accepted by agentgateway in the routing-based (gateways), simplified LLM
-#     (llm.policies), and simplified MCP (mcp.policies) forms.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That the token-bucket limits actually refill and throttle at runtime —
-#     requires sustained traffic over the fill intervals, which the page omits.
-#   * The token-based and failOpen fragments on this page are focused field-
-#     reference snippets, not standalone configs, so they are not tested here.
-cat <<'EOF' > config2.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- policies:
-    localRateLimit:
-    - maxTokens: 5000
-      # Every hour, refill 5000 tokens
-      tokensPerFill: 5000
-      fillInterval: 1h
-      type: tokens
-    - maxTokens: 60
-      # Every second, refill 1 token
-      tokensPerFill: 1
-      fillInterval: 1s
-      type: requests
-  backends:
-  - host: localhost:8080
-EOF
-agentgateway -f config2.yaml --validate-only
-
-cat <<'EOF' > config2-llm.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  policies:
-    localRateLimit:
-    - maxTokens: 5000
-      # Every hour, refill 5000 tokens
-      tokensPerFill: 5000
-      fillInterval: 1h
-      type: tokens
-    - maxTokens: 60
-      # Every second, refill 1 token
-      tokensPerFill: 1
-      fillInterval: 1s
-      type: requests
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-EOF
-agentgateway -f config2-llm.yaml --validate-only
-
-cat <<'EOF' > config2-mcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  port: 3000
-  policies:
-    localRateLimit:
-    - maxTokens: 5000
-      # Every hour, refill 5000 tokens
-      tokensPerFill: 5000
-      fillInterval: 1h
-      type: tokens
-    - maxTokens: 60
-      # Every second, refill 1 token
-      tokensPerFill: 1
-      fillInterval: 1s
-      type: requests
-  targets:
-  - name: everything
-    stdio:
-      cmd: npx
-      args: ["@modelcontextprotocol/server-everything"]
-EOF
-agentgateway -f config2-mcp.yaml --validate-only
-{{< /doc-test >}}
-
 > [!NOTE]
 > The term "tokens" is used for two distinct meanings. In `maxTokens` and `tokensPerFill`, it indicates the "token" in the token bucket counter. Each token can allow either 1 LLM token, or 1 HTTP request, based on the `type`.
 
@@ -364,7 +262,7 @@ By default, every request that a rule matches counts against the same bucket, so
 The following example builds on [API key authentication]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}) and gives each virtual key its own budget of 1,000 LLM tokens per hour and its own limit of 60 requests per minute.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     apiKey:
@@ -396,54 +294,11 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 
-{{< doc-test paths="rate-limits" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The per-key example (two localRateLimit rules keyed on `apiKey.user`) is
-#     accepted by agentgateway, which also compiles each `key` as a CEL
-#     expression and fails validation if it does not compile.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That each key gets its own bucket at runtime — requires an LLM backend and
-#     enough traffic per key to drain a bucket, which the page does not exercise.
-cat <<'EOF' > config-perkey.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  policies:
-    apiKey:
-      mode: strict
-      keys:
-      - key: sk-alice-abc123def456
-        metadata:
-          user: alice
-      - key: sk-bob-xyz789uvw012
-        metadata:
-          user: bob
-    localRateLimit:
-    # Each API key gets its own budget of 1000 tokens per hour.
-    - maxTokens: 1000
-      tokensPerFill: 1000
-      fillInterval: 1h
-      type: tokens
-      key: apiKey.user
-    # Each API key also gets its own limit of 60 requests per minute.
-    - maxTokens: 60
-      tokensPerFill: 60
-      fillInterval: 60s
-      type: requests
-      key: apiKey.user
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-EOF
-agentgateway -f config-perkey.yaml --validate-only
-{{< /doc-test >}}
-
 The expression can read anything in the request context. Common keys are the `jwt.sub` claim for a limit per user, `jwt.team` for a limit per team, and `jwt.sub + "/" + llm.requestModel` to give each user a separate allowance per model.
 
 Review the following behavior before you set a key.
 
-* **Where the key is evaluated**: A `requests` rule is checked before the LLM request body is parsed, so its key cannot read `llm` fields. A `tokens` rule is charged after the body is parsed, so its key can also read fields such as `llm.requestModel`. For the variables that each policy can read, see [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
+* **What the key can read**: For LLM requests, both `requests` and `tokens` keys can read `llm.requestModel` and `llmRequest` (the parsed request body). To count requests per model, use `llm.requestModel` as the key. See [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}).
 * **Requests without a value**: Requests whose key is empty, or whose expression cannot be evaluated, share a single bucket. An empty key does not exempt a request from the limit. To apply a limit to only some requests, use [conditional policies]({{< link-hextra path="/documentation/configuration/policies/conditional-policies/" >}}) instead.
 * **How many buckets are kept, and where they live**: {{< reuse "agw-docs/snippets/ratelimit-key-buckets.md" >}} For a quota that is shared across instances, use [remote rate limits](#remote).
 
@@ -514,12 +369,47 @@ The following example runs the `ratelimit` server and its Redis backing store lo
 
 #### Connect agentgateway to the rate limit server
 
-With the server running, configure agentgateway to connect to it and specify which descriptors to send. Each descriptor value is a [CEL expression]({{< link-hextra path="/documentation/configuration/traffic-management/transformations" >}}).
+With the server running, configure agentgateway to connect to it and specify which descriptors to send. Each descriptor value is a [CEL expression]({{< link-hextra path="/documentation/configuration/traffic-management/transformations" >}}). You can configure the connection in the UI or in your configuration file.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same `remoteRateLimit` policy as the **Simplified (LLM)** example in the **Config file** tab.
+
+1. Create a configuration with an LLM model, but no rate limit policy, and start agentgateway with it.
+   ```yaml
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+   ```
+2. Open [http://localhost:15000/ui/llm/policies](http://localhost:15000/ui/llm/policies) (**LLM** > **Policies**), and click the **Remote rate limit** tile.
+3. In the **Service** section, fill out the following fields.
+   1. **Domain**: `example.com`. The domain must match the domain on the rate limit server.
+   2. **Failure mode**: Keep **Fail closed**.
+   3. **Host**: Replace the default host with `localhost:8081`, the address of the rate limit server.
+4. In the **Descriptors** section, configure **Descriptor 1**.
+   1. Select **Tokens** for the **Type**.
+   2. Click **Add entry** twice, so that the descriptor has three entries.
+   3. Enter the following keys and CEL expressions in the **Entries**. Replace the example entry in the first row.
+
+      | Key | Expression |
+      |-----|------------|
+      | `some-static-value` | `"something"` |
+      | `organization` | `request.headers["x-organization"]` |
+      | `authenticated` | `has(jwt.sub)` |
+
+5. Click **Save policy**.
+
+You can also add a remote rate limit policy in **MCP** > **Policies**, or in the **Route policies** section of a named route in **Traffic** > **Routes**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     remoteRateLimit:
@@ -546,7 +436,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -574,7 +464,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -600,99 +490,8 @@ routes:
 ```
 {{< /tab >}}
 {{< /tabs >}}
-
-{{< doc-test paths="rate-limits" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The Remote example config (remoteRateLimit with descriptors) is accepted
-#     by agentgateway in the routing-based (gateways), simplified LLM
-#     (llm.policies), and simplified MCP (mcp.policies) forms.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That limits are actually enforced at runtime — requires an external Envoy
-#     rate limit server the page omits to define and enforce the descriptors.
-#   * The failOpen and backend-connection-policy snippets below are focused
-#     field-reference fragments, not standalone configs, so they are not tested.
-cat <<'EOF' > config3.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- policies:
-    remoteRateLimit:
-      # The address to access the rate limit server
-      host: localhost:8081
-      # Arbitrary 'domain' to match limits on the rate limit server
-      domain: example.com
-      descriptors:
-      # Rate limit requests based on a header, whether the user is authenticated, and a static value (used to match a specific rate limit rule on the rate limit server)
-      - entries:
-        - key: some-static-value
-          value: '"something"'
-        - key: organization
-          value: 'request.headers["x-organization"]'
-        - key: authenticated
-          value: 'has(jwt.sub)'
-        type: tokens # or 'requests'
-  backends:
-  - host: localhost:8080
-EOF
-agentgateway -f config3.yaml --validate-only
-
-cat <<'EOF' > config3-llm.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  policies:
-    remoteRateLimit:
-      # The address to access the rate limit server
-      host: localhost:8081
-      # Arbitrary 'domain' to match limits on the rate limit server
-      domain: example.com
-      descriptors:
-      # Rate limit requests based on a header, whether the user is authenticated, and a static value (used to match a specific rate limit rule on the rate limit server)
-      - entries:
-        - key: some-static-value
-          value: '"something"'
-        - key: organization
-          value: 'request.headers["x-organization"]'
-        - key: authenticated
-          value: 'has(jwt.sub)'
-        type: tokens # or 'requests'
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-EOF
-agentgateway -f config3-llm.yaml --validate-only
-
-cat <<'EOF' > config3-mcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  port: 3000
-  policies:
-    remoteRateLimit:
-      # The address to access the rate limit server
-      host: localhost:8081
-      # Arbitrary 'domain' to match limits on the rate limit server
-      domain: example.com
-      descriptors:
-      # Rate limit requests based on a header, whether the user is authenticated, and a static value (used to match a specific rate limit rule on the rate limit server)
-      - entries:
-        - key: some-static-value
-          value: '"something"'
-        - key: organization
-          value: 'request.headers["x-organization"]'
-        - key: authenticated
-          value: 'has(jwt.sub)'
-        type: tokens # or 'requests'
-  targets:
-  - name: everything
-    stdio:
-      cmd: npx
-      args: ["@modelcontextprotocol/server-everything"]
-EOF
-agentgateway -f config3-mcp.yaml --validate-only
-{{< /doc-test >}}
+{{% /tab %}}
+{{< /tabs >}}
 
 Each descriptor value is a [CEL expression]({{< link-hextra path="/documentation/configuration/traffic-management/transformations" >}}).
 
@@ -736,6 +535,8 @@ remoteRateLimit:
 
 You can configure connection policies on the `remoteRateLimit` field to secure or tune how agentgateway connects to the rate limit service. This includes TLS, authentication, and connection timeouts.
 
+By default, agentgateway waits 10 seconds for the rate limit service to respond. When the wait runs out, the call fails and the `failureMode` setting decides what happens to the request. To use a different timeout, set `policies.http.requestTimeout`.
+
 ```yaml
 remoteRateLimit:
   host: ratelimit-service:8081
@@ -761,7 +562,7 @@ remoteRateLimit:
 | `policies.backendAuth` | Credentials to authenticate to the rate limit service. Supports `key` (API key from file or inline), `gcp`, `aws`, and `azure` auth. |
 | `policies.backendTLS` | TLS settings for the connection to the rate limit service. Use `root` to specify a CA cert, `insecure: true` to skip certificate verification (not recommended for production). |
 | `policies.tcp.connectTimeout` | Connection timeout as a duration string, such as `3s`. |
-| `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). Use for HTTP-based rate limit service connections. |
+| `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). If unset, calls to the rate limit service time out after 10 seconds. |
 
 ## Conditional execution
 

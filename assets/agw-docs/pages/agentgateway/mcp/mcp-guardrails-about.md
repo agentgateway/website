@@ -17,6 +17,10 @@ Common use cases include the following:
 
 When a client calls an MCP method that you opt in, agentgateway calls your ExtMCP server before it forwards the request, after it receives the response, or both. At each call, the server can pass the message through unchanged, return a mutated message, or deny the call with an error that agentgateway returns to the client as a JSON-RPC error.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+The exception is a denied `tools/call` request, which returns a tool result with `isError: true` instead, so that MCP clients can show the denial as a tool-execution error. For details, see [Error codes](#error-codes).
+{{< /version >}}
+
 ```mermaid
 sequenceDiagram
     autonumber
@@ -28,7 +32,7 @@ sequenceDiagram
     AGW->>Ext: CheckRequest (method, tool, params, headers)
     alt Request denied
         Ext-->>AGW: AuthorizationError
-        AGW-->>Client: JSON-RPC error
+        AGW-->>Client: Denied response
     else Request passed or mutated
         Ext-->>AGW: Pass request or return mutated params
         AGW->>MCP: Forward request
@@ -36,7 +40,7 @@ sequenceDiagram
         AGW->>Ext: CheckResponse (result)
         alt Response denied
             Ext-->>AGW: AuthorizationError
-            AGW-->>Client: JSON-RPC error
+            AGW-->>Client: Denied response
         else Response passed or mutated
             Ext-->>AGW: Pass or return mutated response
             AGW-->>Client: Result
@@ -48,7 +52,7 @@ The server returns one of three outcomes for each call:
 
 * **Pass**: Allow the request or response unchanged.
 * **Mutate**: Replace the JSON-RPC `params` (request phase) or `result` (response phase) before agentgateway forwards it.
-* **Deny**: Reject the call with a JSON-RPC error that is returned to the client. The server can deny a call in either the request phase or the response phase.
+* **Deny**: Reject the call with a JSON-RPC error that is returned to the client. The server can deny a call in either the request phase or the response phase. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}For `tools/call`, the client receives a tool result with `isError: true` instead of a JSON-RPC error.{{< /version >}}
 
 ### Request mutation trust boundary
 
@@ -118,19 +122,21 @@ Method keys can be exact (`tools/call`), a prefix wildcard (`tools/*`), a suffix
 
 The phase controls when agentgateway calls the processor for a method. Set a phase for each method that you want to send to the server.
 
-| Phase | When the server is called |
-|-------|---------------------------|
-| `Off` | Never. The method bypasses this processor. |
-| `Request` | Before the request reaches the MCP backend. Use to gate or mutate the incoming call. |
-| `Response` | After the MCP backend returns a result. Use to filter or rewrite the response. |
-| `Full` | Both the request and response phases. |
+| Phase | Kubernetes value | Standalone value | When the server is called |
+|-------|------------------|------------------|---------------------------|
+| Off | `Off` | `off` | Never. The method bypasses this processor. |
+| Request | `Request` | `request` | Before the request reaches the MCP backend. Use to gate or mutate the incoming call. |
+| Response | `Response` | `response` | After the MCP backend returns a result. Use to filter or rewrite the response. |
+| Full | `Full` | `full` | Both the request and response phases. |
 
 ### Failure modes
 
 The `failureMode` setting controls what happens when the server is unreachable or returns an error.
 
-* **failClosed** (default): Deny the request. Use when the policy server must approve every call.
-* **failOpen**: Allow the request. Use when availability matters more than strict enforcement.
+| Behavior | Kubernetes value | Standalone value | Description |
+|----------|------------------|------------------|-------------|
+| Fail closed (default) | `FailClosed` | `failClosed` | Deny the request. Use when the policy server must approve every call. |
+| Fail open | `FailOpen` | `failOpen` | Allow the request. Use when availability matters more than strict enforcement. |
 
 ### Ordering and multiplexing
 
@@ -152,4 +158,8 @@ When a processor denies a call, agentgateway returns a JSON-RPC error to the cli
 | `INVALID` | Invalid request |
 | `UNKNOWN` | Internal error |
 
-The server can also return an explicit JSON-RPC error payload to override the default.
+The error `message` is the server's `reason`. The server can also set the optional `mcp_error` field to a JSON value, which the client receives in the error's `data` field. The `mcp_error` payload does not change the error code or message. If the payload is not valid JSON, it is ignored.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+For `tools/call`, the table applies only to the `UNKNOWN` code and to internal failures, such as an unreachable server when the failure mode denies the request. Every other `tools/call` denial returns an HTTP 200 response with a tool result where `isError: true` and the text content is the server's `reason`. The `mcp_error` payload is not included in that tool result. For all other MCP methods, the table applies to every code.
+{{< /version >}}

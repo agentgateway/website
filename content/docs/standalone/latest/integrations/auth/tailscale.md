@@ -40,7 +40,7 @@ Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authentic
    {{< tabs >}}
    {{% tab name="Linux" %}}
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      accessLog:
        add:
@@ -80,7 +80,7 @@ Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authentic
    {{% /tab %}}
    {{% tab name="macOS" %}}
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      accessLog:
        add:
@@ -168,7 +168,7 @@ Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authentic
 
    ```
    HTTP/1.1 403 Forbidden
-   external authorization failed
+   authorization failed
    ```
 
 2. Send a request through your Tailscale IP address. The request passes authentication and reaches the MCP server, which returns a `406 Not Acceptable` response because the request does not include the required `text/event-stream` header.
@@ -182,7 +182,7 @@ Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authentic
 
    ```
    HTTP/1.1 406 Not Acceptable
-   Not Acceptable: Client must accept text/event-stream
+   client must accept text/event-stream
    ```
 
 3. Send a complete MCP request through your Tailscale IP address with the required headers.
@@ -198,13 +198,13 @@ Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authentic
 4. Check the agentgateway logs. After a successful request, the logs show the Tailscale identity from the access log fields that you configured.
 
    ```
-   info request ... tailscale.node=your-machine-name tailscale.email=you@example.com
+   info request ... tailscale.node="your-machine-name" tailscale.email="you@example.com"
    ```
 
 <!--
 ## Troubleshooting
 
-**`external authorization failed` for Tailscale IPs**: Check that the Tailscale socket exists and is accessible at the path in your configuration.
+**`authorization failed` for Tailscale IPs**: Check that the Tailscale socket exists and is accessible at the path in your configuration.
 
 ```bash
 # Linux
@@ -222,5 +222,5 @@ ls -la /var/run/tailscale/tailscaled.sock
 {{< cards >}}
   {{< card path="/documentation/configuration/security/external-authz" title="External authorization" subtitle="ExtAuthz configuration reference" >}}
   {{< card path="/documentation/configuration/security/" title="Security configuration" subtitle="Complete security options" >}}
-  {{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-tailscale-auth" title="traffic-tailscale-auth example" subtitle="Agentgateway config example that protects a plain HTTP backend" >}}
+  {{< card link="https://github.com/agentgateway/agentgateway/tree/v1.7.0/examples/traffic-tailscale-auth" title="traffic-tailscale-auth example" subtitle="Agentgateway config example that protects a plain HTTP backend" >}}
 {{< /cards >}}

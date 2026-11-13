@@ -4,7 +4,7 @@ weight: 20
 description: Apply AWS Bedrock Guardrails to filter LLM requests and responses for policy-violating content.
 ---
 
-[AWS Bedrock Guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html) let you define content policies in the AWS console and apply them to LLM traffic passing through the agentgateway prxoy. When a request or response violates a guardrail policy, agentgateway blocks the interaction and returns an error.
+[AWS Bedrock Guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html) let you define content policies in the AWS console and apply them to LLM traffic passing through the agentgateway proxy. When a request or response violates a guardrail policy, agentgateway blocks the interaction and returns an error.
 
 AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Language Model (LLM), whether it is hosted on AWS Bedrock, another cloud provider (like Google or Azure), or on-premises.
 
@@ -13,7 +13,7 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 2. Create a guardrail in the [AWS console](https://console.aws.amazon.com/bedrock/home#/guardrails) or via the AWS CLI.
 3. Retrieve your guardrail identifier by running: `aws bedrock list-guardrails --region <aws-region>`
-4. Authenticate with AWS Bedrock using the standard [AWS authentication sources](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html). Make sure that you have permission to invoke the Bedrock Guardrails API.
+4. Authenticate with AWS Bedrock using the standard [AWS authentication sources](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html). Make sure that you have permission to invoke the Bedrock Guardrails API and the Amazon Nova Lite model (`amazon.nova-lite-v1:0`) in the `us-west-2` region.
 
 ## Configure Bedrock Guardrails
 
@@ -24,14 +24,14 @@ Configure the `guardrails` field under `llm.models[]` in your agentgateway confi
 
 ```yaml
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
-    provider: openAI
+    provider: bedrock
     params:
-      model: amazon.titan-text-express-v1
-      apiKey: "$BEDROCK_API_KEY"
+      model: amazon.nova-lite-v1:0
+      awsRegion: us-west-2
     guardrails:
       request:
       - bedrockGuardrails:
@@ -60,4 +60,4 @@ EOF
 | `region` | The AWS region where the guardrail is configured, such as `us-west-2`. |
 | `policies.backendAuth.aws` | AWS authentication configuration. Agentgateway uses the credentials available in the environment, such as environment variables or an instance profile.  |
 
-When a request or response matches a guardrail policy, agentgateway blocks the interaction and returns an error such as: `The request was rejected due to inappropriate content`.
+When a guardrail blocks a request or response, the client receives a response with the default `403` status code, and the body is the blocked messaging that you configured for the guardrail in AWS. If Bedrock returns no blocked message, the body is `The request was rejected due to inappropriate content`. To return your own body instead, set `rejection.body` on the guard. The custom body can be a YAML string or a byte list. If you set only `rejection.status` or `rejection.headers`, the status code and headers change, but the body is still the Bedrock message.

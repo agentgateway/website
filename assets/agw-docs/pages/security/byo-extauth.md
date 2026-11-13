@@ -102,12 +102,16 @@ You can attach an external authorization policy to a Gateway, HTTPRoute, or back
 
 Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authorization runs before the proxy selects a backend. Backend targets use the `backend.extAuth` section so that authorization runs after backend selection, which is useful when the authorization service shapes the outgoing request, for example by inserting a token, or when a route load-balances or fails over across multiple backends.
 
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+For gRPC external authorization, agentgateway waits 2 seconds for the authorization service to respond by default. To use a different timeout, apply a second {{< reuse "agw-docs/snippets/policy.md" >}} whose `targetRefs` names the authorization service, either as a Kubernetes Service or as an {{< reuse "agw-docs/snippets/backend.md" >}}, and set `backend.http.requestTimeout` on it.
+{{< /version >}}
+
 1. Send a test request to the OpenAI backend. Verify that you get back a 200 HTTP response code and that no authorization is required.
 
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -v "${INGRESS_GW_ADDRESS}:8080/openai" -H content-type:application/json -d '{
+   curl -v "${INGRESS_GW_ADDRESS}/openai" -H content-type:application/json -d '{
     "model": "gpt-3.5-turbo",
     "messages": [
       {
@@ -253,7 +257,7 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -v "${INGRESS_GW_ADDRESS}:8080/openai" -H content-type:application/json -d '{
+   curl -v "${INGRESS_GW_ADDRESS}/openai" -H content-type:application/json -d '{
     "model": "gpt-3.5-turbo",
     "messages": [
       {
@@ -304,7 +308,7 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -v "${INGRESS_GW_ADDRESS}:8080/openai" -H content-type:application/json \
+   curl -v "${INGRESS_GW_ADDRESS}/openai" -H content-type:application/json \
    -H "x-ext-authz: allow" \
    -H "x-ai-api-key:N2YwMDIxZTEtNGUzNS1jNzgzLTRkYjAtYjE2YzRkZGVmNjcy" \
    -d '{
@@ -349,7 +353,7 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} gateway-ext-auth-policy route-ext-auth-policy backend-ext-auth-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete deployment ext-authz -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete service ext-authz -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
