@@ -61,6 +61,12 @@ On the way back, the signature of a response thinking block is forwarded as `rea
 
 For the same behavior in the other direction, where a Messages client reaches a provider that speaks Chat Completions, see [Converting to the Chat Completions format]({{< link-hextra path="/documentation/llm/api-types/messages/#converting-to-the-chat-completions-format" >}}).
 
+## Content parts on passthrough and converted routes {#content-parts-on-passthrough-and-converted-routes}
+
+Some OpenAI-compatible providers, such as Mistral reasoning models, return `message.content` or streaming `delta.content` as an array of typed parts. On a Chat Completions route that passes the response through, those parts stay unchanged. The unchanged parts include `thinking` and `text` parts, so a client can replay the assistant message that it received.
+
+On a route that converts a Chat Completions response to the Messages or Responses format, only `text` parts become response text. `thinking` parts do not become `reasoning_content`, because Mistral rejects `reasoning_content` when a client sends the assistant message back on the next turn.
+
 ## File parts on a converted route {#file-parts-on-a-converted-route}
 
 When a Chat Completions user message reaches a provider that takes the Messages format, an inline `file` content part becomes a Messages `document` block. Set `file.file_data` to a base64 `data:` URI, such as `data:application/pdf;base64,<base64>`. The document title comes from `file.filename`. A `prompt_cache_breakpoint` on the file part becomes an ephemeral `cache_control` breakpoint on the document block.
