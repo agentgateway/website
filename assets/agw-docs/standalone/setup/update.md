@@ -24,6 +24,20 @@ The top-level `config` section is read at startup. If you change a field in it, 
 
 The steps for each installation method include the restart command for that method.
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
+### Refresh DNS entries before long TTLs expire {#dns-max-ttl}
+
+Use `config.dns.maxTtl` when an upstream hostname can move before its DNS record's advertised time to live (TTL) expires. The field caps how long the refresh loop waits between successful DNS refreshes. If you omit the field, the cap does not apply.
+
+```yaml
+config:
+  dns:
+    maxTtl: 30s
+```
+
+The value is a duration string. Set `config.dns.maxTtl` to `0s` to disable DNS caching and resolve the hostname on each request. Because the field is in the top-level `config` section, restart agentgateway after you change it.
+{{% /version %}}
+
 ### Check a file before you apply it
 
 At any point, you can check a configuration file for errors without starting the proxy. This check is useful before you edit a running instance, and before you render a file into a Helm values file.
