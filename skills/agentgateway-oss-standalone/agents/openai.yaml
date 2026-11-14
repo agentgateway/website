@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agentgateway OSS Standalone"
+  short_description: "Build and troubleshoot OSS standalone Agentgateway"
+  default_prompt: "Use $agentgateway-oss-standalone to configure and verify an OSS standalone Agentgateway deployment for my use case."

@@ -1,0 +1,27 @@
+{
+  "schema_version": 2,
+  "name": "agentgateway-oss-kubernetes",
+  "channel": "current",
+  "edition": "oss",
+  "mode": "kubernetes",
+  "python_requires": ">=3.10",
+  "source": {
+    "repository": "https://github.com/agentgateway/website",
+    "path": "skills/agentgateway-oss-kubernetes",
+    "commit": null,
+    "state": "content-addressed",
+    "content_sha256": "e01bf040fb099e9c7c4041e2571cb5db95d7afb7ce53c9529930da3b8a0e86d9"
+  },
+  "documentation": "https://agentgateway.dev/docs/kubernetes/latest/",
+  "files_sha256": {
+    "SKILL.md": "0962ce8c3ee051d7ee9eb47c20261c63baf15e4d537f0009e8f824ff1b0c62ad",
+    "agents/openai.yaml": "f8d3d5f74ef8fee84170921af3ac780e26d0c3b6560502473cdc126c47b7be9f",
+    "references/deployment.md": "d4e494b63f0a85c62f8f221753f6541ddcce5c8baed95efa114cde03f034faec",
+    "references/edition-boundaries.md": "36be3123f40e9d9ac271b6d757e80d2debbfa35786786e64ca53348b83073de0",
+    "references/llm-setup.md": "66de8dbcd50ac757d5dcb4b5778367f35af2c11144af7df54a87a91814120f67",
+    "references/sources.md": "e90ba188ed3c614bf468eac9c8f1ffa7e5770831c8bf43e3f9fdcefc9f67a09e",
+    "references/verification-helpers.md": "bc60ca2b59394214ec4ce6ff10ca3ff922d4aa2666ce75345f0e4aa8c0ba4477",
+    "references/verification.md": "5acb447eed4d25852ecedb0f3ef9fe6b02a78db31e42ac312551c65761a85f9a",
+    "scripts/verify.py": "e3ed965f7a9709eca7a5aa1991ff11454f0cea0f747829ad7bb2c879a7ea2b89"
+  }
+}

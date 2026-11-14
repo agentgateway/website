@@ -11,6 +11,8 @@ test: skip
 disableCards: true
 ---
 
+<p>Want an AI coding assistant to set up agentgateway? <a href="/docs/standalone/latest/documentation/quickstart/ai-assistant/">Install the standalone skill</a> for standalone configuration, including a standalone process hosted in Kubernetes, or <a href="/docs/kubernetes/latest/documentation/quickstart/ai-assistant/">the Kubernetes skill</a> for the controller and Gateway API. Agents can discover both skills at <a href="https://agentgateway.dev/.well-known/agent-skills/index.json">the skill index</a>.</p>
+
 Agentgateway can be deployed in two ways. Choose your deployment type to view the relevant documentation.
 
 <div class="toggle-dark">

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Agentgateway OSS Kubernetes"
+  short_description: "Build and verify OSS Agentgateway on Kubernetes"
+  default_prompt: "Use $agentgateway-oss-kubernetes to configure and verify a OSS Agentgateway Kubernetes deployment for my use case."

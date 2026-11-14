@@ -6,4 +6,6 @@ aliases:
   - ../../../deployment/binary/
 ---
 
+{{< reuse "agw-docs/snippets/ai-assistant-quickstart.md" >}}
+
 {{< reuse "agw-docs/standalone/setup/binary.md" >}}

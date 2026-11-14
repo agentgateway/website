@@ -1,0 +1,19 @@
+{
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "agentgateway-oss-standalone",
+      "type": "archive",
+      "description": "Plan, configure, troubleshoot, and verify open-source Agentgateway using its standalone configuration model on a host or in a container. Supports explicitly requested standalone Helm hosting, but excludes the Kubernetes controller and Gateway API/CRD configuration model. Keeps implementation OSS and explains relevant, verified Enterprise capabilities without recommending an upgrade.",
+      "url": "/.well-known/agent-skills/agentgateway-oss-standalone.zip",
+      "digest": "sha256:6f622bedafe673d155211f50b82a33a2b3b6a79c7b7bf1e6e2fb4d8d2ae61613"
+    },
+    {
+      "name": "agentgateway-oss-kubernetes",
+      "type": "archive",
+      "description": "Configure, deploy, troubleshoot, and verify OSS Agentgateway using the Kubernetes controller, Gateway API, and release-matched CRDs. Covers LLM and MCP routing, identity, cost controls, and UI access. Excludes standalone configuration, including a standalone Helm chart.",
+      "url": "/.well-known/agent-skills/agentgateway-oss-kubernetes.zip",
+      "digest": "sha256:be3ace988b984ab585d875e29ac3828d4aa3336b8ec120dc6fe0ec299bffd2e3"
+    }
+  ]
+}
