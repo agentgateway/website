@@ -28,6 +28,7 @@ These providers accept Decisions and SystemOne requests. Other providers reject 
 |----------|--------------------------------------|--------------------------------------|
 | [`openAI`]({{< link-hextra path="/integrations/llm/providers/openai/" >}}) | Sent natively. | Translated to the Decisions format. |
 | [`typesafe`]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}) | Translated to the SystemOne format. | Sent natively. |
+| [`azure`]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the `openAI` resource type | Sent natively. | Translated to the Decisions format. |
 | [`azure`]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the `foundry` resource type | Translated to the SystemOne format. | Sent natively. |
 | [`copilot`]({{< link-hextra path="/integrations/llm/providers/copilot/" >}}) with `microsoft-decision-1` | Translated to the SystemOne format. | Sent natively. |
 | [`custom`]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with `decisions`, without `systemOne` | Sent natively. | Translated to the Decisions format. |
