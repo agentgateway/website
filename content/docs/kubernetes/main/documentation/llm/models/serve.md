@@ -363,21 +363,24 @@ The model did not attach to the listener, or it is not reachable by clients. Com
      -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="AGW_ENABLE_AGENTGATEWAY_MODELS")].value}'
    ```
 
-2. Check how many routes attached to the listener. This count includes every `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that attached, whether public or internal.
+2. Check whether the parent accepted the model. An unaccepted model reports `Accepted: False` in `status.parents`. If the listener does not allow the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` route kind, the reason is `NotAllowedByListeners`. The message includes the rejecting Gateway, the listener, and the allowed route kinds.
+
+   ```sh
+   kubectl get agentgatewaymodel gpt-4 -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
+   ```
+
+3. Check how many routes attached to the listener. This count includes every `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that attached, whether public or internal.
 
    ```sh
    kubectl get gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
      -o jsonpath='{.status.listeners[0].attachedRoutes}'
    ```
 
-3. List the models that clients can reach. If a model is missing here but the `attachedRoutes` count includes it, the model is `Internal`.
+4. List the models that clients can reach. If a model is missing here but the `attachedRoutes` count includes it, the model is `Internal`.
 
    ```sh
    curl -s http://$INGRESS_GW_ADDRESS/v1/models
    ```
-
-> [!WARNING]
-> The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resource does not yet report status. The `status.parents` field stays empty even when a model serves traffic correctly, so you cannot use `kubectl describe agmodel` to debug attachment. Use the checks in this section instead.
 
 ### Cleanup
 
