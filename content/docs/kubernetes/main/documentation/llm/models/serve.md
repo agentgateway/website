@@ -10,7 +10,7 @@ Expose an LLM model to clients with an `{{< reuse "agw-docs/snippets/agentgatewa
 
 An `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` declares one client-facing model and attaches it to a Gateway listener. Agentgateway derives the LLM routing from the models that attach to a listener, so you do not create an {{< reuse "agw-docs/snippets/backend.md" >}} or an `HTTPRoute`.
 
-In this guide, you verify that the API is enabled, turn on LLM serving for a listener, and expose three kinds of models: an exact match, a wildcard match, and a model that authenticates to its provider with a Kubernetes Secret.
+In this guide, you turn on LLM serving for a listener and expose three kinds of models: an exact match, a wildcard match, and a model that authenticates to its provider with a Kubernetes Secret.
 
 For more information, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
 
@@ -20,17 +20,6 @@ For more information, see [About models]({{< link-hextra path="/documentation/ll
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
 2. Deploy the [httpbun mock LLM]({{< link-hextra path="/integrations/llm/providers/httpbun/" >}}). This guide routes to httpbun so that you do not need a provider API key. To use a real provider instead, remove the `baseURL` field from each model and follow [API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
-
-## Verify the AgentgatewayModel feature
-
-The {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} API is enabled by default. Verify that the feature is turned on in the control plane. The command returns `true`.
-
-```sh
-kubectl get deploy {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="AGW_ENABLE_AGENTGATEWAY_MODELS")].value}'
-```
-
-If the command returns any other value, the API was turned off with the `agentgatewayModels.enabled=false` Helm value. To turn it back on, upgrade the {{< reuse "agw-docs/snippets/agentgateway.md" >}} Helm release with `--set agentgatewayModels.enabled=true`.
 
 ## Enable LLM serving on a listener
 
@@ -348,7 +337,6 @@ Every request fails with the following error, even for a model you created.
 
 The model did not attach to the listener, or it is not reachable by clients. Common causes include the following.
 
-- The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API is turned off on the control plane.
 - The listener does not allow the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` route kind.
 - The `parentRefs` field does not match the Gateway name or `sectionName`.
 - The model is in a different namespace than the Gateway, and the listener restricts `allowedRoutes.namespaces`.
@@ -356,21 +344,14 @@ The model did not attach to the listener, or it is not reachable by clients. Com
 
 **How to fix it:**
 
-1. Confirm that the API is enabled. If the following command does not return `true`, turn the API back on as described in [Verify the AgentgatewayModel feature](#verify-the-agentgatewaymodel-feature).
-
-   ```sh
-   kubectl get deploy agentgateway -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="AGW_ENABLE_AGENTGATEWAY_MODELS")].value}'
-   ```
-
-2. Check how many routes attached to the listener. This count includes every `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that attached, whether public or internal.
+1. Check how many routes attached to the listener. This count includes every `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that attached, whether public or internal.
 
    ```sh
    kubectl get gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
      -o jsonpath='{.status.listeners[0].attachedRoutes}'
    ```
 
-3. List the models that clients can reach. If a model is missing here but the `attachedRoutes` count includes it, the model is `Internal`.
+2. List the models that clients can reach. If a model is missing here but the `attachedRoutes` count includes it, the model is `Internal`.
 
    ```sh
    curl -s http://$INGRESS_GW_ADDRESS/v1/models
