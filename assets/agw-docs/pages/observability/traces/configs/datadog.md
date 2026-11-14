@@ -2,14 +2,15 @@
 from {{< reuse "agw-docs/snippets/agentgateway.md" >}}. Choose the setup that
 matches what you want to observe.
 
-| Setup | Telemetry | When to use it |
+| Setup | Telemetry | When to use |
 | --- | --- | --- |
-| Complete example | Proxy and controller metrics, LLM traces, and a dashboard | Evaluate the integration end to end or use it as a production reference |
+| Complete example | Proxy and controller metrics, LLM traces, and a dashboard | Evaluate the integration end to end or use the example as a production reference |
 | Direct trace export | LLM traces | Add tracing to an existing Kubernetes deployment with the fewest components |
 
-The complete example is the recommended starting point. It uses the Datadog
-Agent for OpenMetrics collection and an OpenTelemetry Collector for trace
-processing. The direct setup sends traces from the proxy to the Agent.
+The complete example is the recommended starting point. The Datadog Agent
+collects proxy and controller metrics through OpenMetrics Autodiscovery and
+receives OpenTelemetry Protocol (OTLP) traces over HTTP directly from the
+proxy. The direct setup sends only traces from the proxy to the Agent.
 
 ## Before you begin
 
@@ -20,15 +21,20 @@ For either setup, you need:
   [Datadog site](https://docs.datadoghq.com/getting_started/site/).
 - Agent Observability enabled in your Datadog organization to view LLM traces.
 
-The complete example also uses Docker, Kind, `curl`, and
-[uv](https://docs.astral.sh/uv/), and needs free loopback ports `13000`,
-`18080`, `18520`, and `19092` for the smoke test's port forwards. You can use an
-existing cluster instead of Kind.
+For the complete example, you also need:
+
+- An existing {{< reuse "agw-docs/snippets/agentgateway.md" >}} installation, including the custom
+  resource definitions (CRDs), the controller, and the `agentgateway`
+  GatewayClass. To install {{< reuse "agw-docs/snippets/agentgateway.md" >}}, see
+  [Install with Helm]({{< link-hextra path="/documentation/install/helm/" >}}).
+- `curl`.
+- Free loopback ports `13000` and `18520` for the port-forwards.
+
+The example deploys its own Gateway and demo model.
 
 The direct trace setup applies a policy to an existing
 {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy, so complete the
-following steps first. The complete example deploys its own proxy and does not
-need them.
+following steps first.
 
 {{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
@@ -36,27 +42,30 @@ need them.
 
 The
 [Datadog Kubernetes example](https://github.com/agentgateway/agentgateway/tree/main/examples/datadog/kubernetes)
-deploys the agentgateway controller and a controller-provisioned proxy, a
-synthetic OpenAI-compatible provider, an OpenTelemetry Collector, and the
-Datadog Agent. It does not call a paid model.
+installs the Datadog Agent and adds OpenMetrics Autodiscovery annotations to the
+controller and proxy. The example also deploys a Gateway that routes to the
+HomeHub demo model. HomeHub returns fixed OpenAI-compatible responses, so the example does
+not call a paid model or need a provider API key. A tracing policy sends the
+proxy's traces to the Datadog Agent on the same node. Traces from the example
+omit prompt and completion content.
 
 > [!NOTE]
-> The example pins the {{< reuse "agw-docs/snippets/agentgateway.md" >}}, Gateway
-> API, and Datadog Agent versions it was tested against, and its OpenTelemetry
-> Collector configuration includes workarounds for that release. Check the
-> example README for the pinned versions before you run it against a newer
-> release.
+> The example pins the Datadog Helm chart and Agent versions in `versions.env`.
+> The example files use the `agentgateway-system` namespace and the
+> `agentgateway` controller Deployment. Check the example README for the tested
+> {{< reuse "agw-docs/snippets/agentgateway.md" >}} version, and adjust the files for your installation.
 
-1. Clone the {{< reuse "agw-docs/snippets/agentgateway.md" >}} repository and
-   change to the example directory.
+1. Clone the {{< reuse "agw-docs/snippets/agentgateway.md" >}} repository, change to the example directory, and
+   load the pinned versions.
 
    ```sh
    git clone https://github.com/agentgateway/agentgateway.git
    cd agentgateway/examples/datadog/kubernetes
+   source versions.env
    ```
 
 2. Export your Datadog API key and site. The example creates the Kubernetes
-   Secret for you; do not add the key to a manifest.
+   Secret for you, so do not add the key to a manifest.
 
    ```sh
    export DD_API_KEY="replace-with-your-datadog-api-key"
@@ -65,18 +74,61 @@ Datadog Agent. It does not call a paid model.
 
 3. Follow the
    [Kubernetes example README](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/kubernetes/README.md)
-   to create or select a cluster, install the pinned Datadog Agent and
-   agentgateway versions, and deploy the test resources.
+   to complete the following tasks:
 
-4. Generate synthetic traffic and verify the local telemetry assertions.
+   - Install the Datadog Agent.
+   - Add the controller annotation from `controller-annotations.yaml`.
+   - Apply `homehub.yaml`, `proxy-parameters.yaml`, and `gateway.yaml`.
+
+   To reuse an existing Gateway, remove the Gateway definition from
+   `gateway.yaml` and update the other files to refer to your Gateway.
+
+   The proxy check in `proxy-parameters.yaml` sets `use_latest_spec: true` so
+   that the Agent parses the proxy's output as OpenMetrics. {{< reuse "agw-docs/snippets/agentgateway.md" >}} 1.6
+   and earlier need this setting, or the Agent drops every counter. The controller
+   check in `controller-annotations.yaml` sets `use_latest_spec: false`, because
+   the controller serves the classic Prometheus text format.
+
+4. Port-forward the gateway and the proxy metrics endpoint. Run each command in
+   its own terminal.
 
    ```sh
-   ./smoke.sh
+   kubectl port-forward --namespace agentgateway-system \
+     service/agentgateway-proxy 13000:80
    ```
 
-5. Verify that the Agent discovered the OpenMetrics endpoints for the
-   agentgateway controller and proxy. Counter metrics need successive scrapes
-   before rate samples appear in the Datadog UI.
+   ```sh
+   kubectl port-forward --namespace agentgateway-system \
+     deployment/agentgateway-proxy 18520:15020
+   ```
+
+5. Send a request to the HomeHub model.
+
+   ```sh
+   curl --fail http://127.0.0.1:13000/v1/chat/completions \
+     -H 'Content-Type: application/json' \
+     -d '{"model":"homehub-support","stream":false,"messages":[{"role":"user","content":"How do I factory-reset my HomeHub X2?"}],"max_tokens":96}'
+   ```
+
+   The response describes the HomeHub X2 reset procedure and reports 12 input
+   and 24 output tokens.
+
+6. Check the proxy's request and token metrics.
+
+   ```sh
+   curl --fail http://127.0.0.1:18520/metrics \
+     | grep -E '^agentgateway_(requests|gen_ai_client_token_usage)'
+   ```
+
+   The output includes `agentgateway_requests_total` and
+   `agentgateway_gen_ai_client_token_usage` samples for the `homehub-support`
+   model.
+
+7. Send another request and wait one scrape interval. Counter metrics need two
+   scrapes before rate samples appear. Then verify that the Agent discovered the
+   OpenMetrics checks for the controller and proxy. If the controller and proxy
+   run on different nodes, run the check in the Agent pod on each component's
+   node instead, with `--discovery-min-instances 1`.
 
    ```sh
    export DD_AGENT_POD="$(kubectl get pods \
@@ -85,42 +137,33 @@ Datadog Agent. It does not call a paid model.
      --output jsonpath='{.items[0].metadata.name}')"
 
    kubectl exec --namespace datadog "${DD_AGENT_POD}" -- \
-     agent check openmetrics --check-rate
+     agent check openmetrics --check-rate \
+     --discovery-min-instances 2 --discovery-timeout 30
    ```
 
-   The output should report healthy instances tagged `component:proxy` and
-   `component:controller`, with metric samples for each endpoint.
+   The output reports instances tagged `component:proxy` and
+   `component:controller`.
 
-6. In Datadog, open **Metrics > Explorer**, filter by `env:datadog-dev` and
+8. In Datadog, open **Metrics > Explorer**, filter by `env:datadog-dev` and
    `service:agentgateway`, and search for an exact metric name. Narrow the
    results with `component:proxy` or `component:controller`.
 
    - `agentgateway.requests.count`
    - `agentgateway.gen_ai.token.usage.sum`
-   - `agentgateway.gen_ai.cost.usd.count`
    - `agentgateway.controller.reconciliations.count`
 
-7. In **Dashboards**, import the example's
+9. In **Dashboards**, import the example's
    [`dashboard.json`](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/dashboard.json)
    and set the `env` template variable to `datadog-dev`. Enable percentile
    aggregations in Metrics Summary for the latency distributions before you use
-   the p95 widgets. MCP and guardrail widgets remain empty until their
-   corresponding components or traffic are present.
-
-The example uses a synthetic model that is not in Datadog's pricing catalog, so
-Datadog displays **Cost unavailable**. The cost calculated from the synthetic
-provider's rates is still in the span's `agw.ai.usage.cost.*` attributes and the
-`agentgateway.gen_ai.cost.usd.count` metric.
+   the p95 widgets. Streaming timing, MCP, and guardrail widgets remain empty
+   until the corresponding traffic is present. HomeHub has no real provider
+   pricing, so estimated-cost widgets can be empty or show **Cost unavailable**.
 
 The example collects all proxy and controller metric families. The
 `agentgateway.mcp.requests.count` metric's `resource` tag can contain tool names
 or resource URIs. Review custom-metric usage, tag cardinality, and resource
 values before adapting the wildcard configuration for production.
-
-The example provides two alternative ways to annotate a proxy. Use
-`proxy-parameters.yaml` for a controller-provisioned proxy. Use
-`proxy-values.yaml` only with the standalone proxy Helm chart. Do not apply both
-to the same workload.
 
 ## Configure direct trace export
 
@@ -186,8 +229,8 @@ This direct path does not configure OpenMetrics collection or a dashboard.
 
 ### Metrics are missing
 
-A healthy OpenMetrics service check proves that the endpoint responded; it does
-not prove that counter samples reached Datadog. Run traffic between scrape
+A healthy OpenMetrics service check means that the endpoint responded. The
+service check does not prove that counter samples reached Datadog. Run traffic between scrape
 intervals, repeat the check with `--check-rate`, allow several minutes for
 indexing, and confirm that `DD_SITE` selects the organization that owns the API
 key.
@@ -204,6 +247,16 @@ curl --fail http://127.0.0.1:18520/metrics
 For controller metrics, port-forward `service/agentgateway 19092:9092` instead.
 Keep management ports private outside troubleshooting.
 
+### Gauges appear but counters are missing
+
+In {{< reuse "agw-docs/snippets/agentgateway.md" >}} 1.6 and earlier, confirm that the `openmetrics` check for
+the proxy sets `use_latest_spec: true`. Without this setting, the Agent parses
+the proxy's OpenMetrics output as classic Prometheus text. The Agent then drops
+every counter without an error, but gauges and histograms still arrive.
+
+In every version, keep `use_latest_spec: false` for the controller check,
+because the controller serves classic Prometheus text.
+
 ### An OpenMetrics check is missing
 
 Confirm that the Autodiscovery annotation identifier matches the container
@@ -214,15 +267,19 @@ discovery configuration.
 ### Traces are missing
 
 Confirm that Agent Observability is enabled, the Agent is healthy, and the
-Datadog site is correct. For the complete example, inspect the Collector logs
-and tracing policy.
+Datadog site is correct. For the complete example, check the Agent status and
+the tracing policy. Set `DD_AGENT_POD` as in step 7 of the complete example
+first.
 
 ```sh
-kubectl logs --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  deployment/datadog-collector --tail 200
+kubectl exec --namespace datadog "${DD_AGENT_POD}" -- agent status
 kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} datadog-tracing \
-  --namespace {{< reuse "agw-docs/snippets/namespace.md" >}}
+  --namespace agentgateway-system --output yaml
 ```
+
+The Datadog chart's OTLP Service uses `internalTrafficPolicy: Local`, so the
+proxy sends traces only to an Agent on its own node. Run an Agent on every node
+that hosts an {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy.
 
 A successful OTLP response alone does not prove ingestion into Agent
 Observability.
@@ -231,7 +288,8 @@ Observability.
 
 For the complete example, follow the
 [Kubernetes example README](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/kubernetes/README.md)
-to remove the Kind cluster or the resources installed in an existing cluster.
+to remove the example resources, the controller annotation, and the Datadog
+Agent. Keep any Gateway that existed before you ran the example.
 
 For the direct trace setup, remove the policy and Agent.
 
