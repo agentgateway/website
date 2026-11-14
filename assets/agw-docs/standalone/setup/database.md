@@ -28,6 +28,10 @@ The following features do not work without a database. When you set up a databas
 | [`hybrid` configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}) | When enabled, hybrid mode stores UI edit to agentgateway configuration in the database. | Agentgateway does not start: `config.storage.mode=hybrid requires config.database.url`. |
 | [LLM API key budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/" >}}) | API key budgets let you track LLM spend across restarts | Agentgateway does not start: `API key budgets require config.database to be configured`. |
 
+{{< version exclude-if="1.5.x,1.6.x,1.7.x" >}}
+When database logging is disabled or no database is configured, the database-backed UI pages report `request log storage is not running (disabled, or no database configured)`.
+{{< /version >}}
+
 ### Access logging database
 
 Optionally, to keep request logs in a different database from the rest, you can set the `config.logging.database` field. Then, agentgateway writes request logs to the database in `config.logging.database`, and uses `config.database` for the other features.
@@ -197,6 +201,10 @@ A configuration file that you write yourself has no database until you add one. 
 ## Helm {#helm}
 
 The Helm chart mounts your configuration as a read-only ConfigMap. The chart does not install a database. Without a database, the **Analytics** and **Logs** pages report `request log database is not configured`.
+
+{{< version exclude-if="1.5.x,1.6.x,1.7.x" >}}
+If the chart has no request log database, the pages report `request log storage is not running (disabled, or no database configured)`.
+{{< /version >}}
 
 For a new installation, follow [Set up a database]({{< link-hextra path="/documentation/setup/install/helm/#database" >}}) in the Helm installation guide.
 
@@ -455,7 +463,7 @@ Agentgateway writes to the database asynchronously. An empty result can mean tha
 The **Analytics** page and the request log show an error, and the admin API returns a `500` response with the following message.
 
 ```txt
-"request log database is not configured"
+"request log storage is not running"
 ```
 
 **Why it is happening**
