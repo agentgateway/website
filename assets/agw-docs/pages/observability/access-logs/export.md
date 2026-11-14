@@ -148,7 +148,7 @@ EOF
    ```
    {{% /version %}}
 
-   {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+   {{% version include-if="1.6.x,1.7.x" %}}
    Check the collector logs for the access log record. Each proxied request appears as a `LogRecord` entry with attributes, such as `gateway`, `http.request.method`, `url.path`, and `http.response.status_code`. The HTTP attributes use the OpenTelemetry semantic convention names. The records belong to the `agentgateway.access` instrumentation scope, which the collector prints in the `InstrumentationScope` line of the `ScopeLogs` block that contains the record.
    ```sh
    kubectl logs deploy/opentelemetry-collector-logs -n telemetry | grep -A 20 "LogRecord"
@@ -178,6 +178,39 @@ EOF
      -> url.scheme: Str(http)
    Trace ID: 
    Span ID: 
+   ```
+   {{% /version %}}
+
+   {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
+   Check the collector logs for the access log record. Each proxied request appears as a `LogRecord` entry with a timestamp and a body. The body combines the request method, path, and response status. The record includes attributes such as `gateway`, `http.request.method`, `url.path`, and `http.response.status_code`. The HTTP attributes use the OpenTelemetry semantic convention names. The records belong to the `agentgateway.access` instrumentation scope. The collector prints the scope in the `InstrumentationScope` line of the `ScopeLogs` block.
+   ```sh
+   kubectl logs deploy/opentelemetry-collector-logs -n telemetry | grep -A 20 "LogRecord"
+   ```
+
+   Example output:
+   ```console
+   LogRecord #0
+   ObservedTimestamp: 2026-11-05 22:55:36.305374151 +0000 UTC
+   Timestamp: 2026-11-05 22:55:36.305364307 +0000 UTC
+   SeverityText: INFO
+   SeverityNumber: Info(9)
+   Body: Str(GET /get 200)
+   Attributes:
+     -> gateway: Str(agentgateway-system/agentgateway-proxy)
+     -> listener: Str(http)
+     -> route: Str(httpbin/httpbin)
+     -> endpoint: Str(10.244.0.7:8080)
+     -> client.address: Str(127.0.0.1)
+     -> http.request.method: Str(GET)
+     -> server.address: Str(www.example.com)
+     -> url.path: Str(/get)
+     -> network.protocol.version: Str(1.1)
+     -> http.response.status_code: Int(200)
+     -> protocol: Str(http)
+     -> duration: Str(2ms)
+     -> url.scheme: Str(http)
+   Trace ID:
+   Span ID:
    ```
    {{% /version %}}
    {{% /tab %}}
