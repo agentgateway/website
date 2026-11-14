@@ -271,10 +271,19 @@ Standalone mode takes the same four values in lowercase, such as `runtimePreferr
 
 The preference applies to chat completions, messages, responses, and Anthropic token counting. The other route types ignore it: embeddings, reranking, realtime, Gemini token counting, detection, passthrough, and content generation always take Runtime, and model listing always takes Mantle.
 
+{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
 Whether the preference changes the request format that a model accepts depends on the endpoint that it selects. A model that resolves to Runtime accepts the Bedrock Converse format only, and its chat format tags do not apply. A model that resolves to Mantle accepts the formats in its tags, except for `anthropic.claude*` models, which always take the Anthropic Messages format. For more information, see [Chat format tags]({{< link-hextra path="/documentation/llm/cost-controls/costs/#chat-format-tags" >}}).
+{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+The endpoint that the preference selects determines whether the request format that a model accepts changes. A model that resolves to Runtime accepts the Bedrock Converse format. It uses a native OpenAI or Anthropic API when the model supports that API. Runtime falls back to Bedrock Converse when the native API cannot serve the request, such as a Responses request to a Claude model or a model without native API support. A model that resolves to Mantle accepts the formats in its tags, except for `anthropic.claude*` models, which always take the Anthropic Messages format. For more information, see [Chat format tags]({{< link-hextra path="/documentation/llm/cost-controls/costs/#chat-format-tags" >}}).
+{{< /version >}}
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 When a `/v1/messages` or `/v1/messages/count_tokens` request reaches Bedrock Mantle in the Anthropic Messages format, the request keeps the client `anthropic-version` header. If the client sends no version header, the request uses the default `2023-06-01` version.
+{{< /version >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+When a `/v1/messages` or `/v1/messages/count_tokens` request reaches Bedrock in the Anthropic Messages format, agentgateway removes `oauth-*` values from the `anthropic-beta` header before it forwards the request to the native Bedrock Anthropic API.
 {{< /version >}}
 
 > [!NOTE]
@@ -294,6 +303,10 @@ When a chat request goes to Bedrock Runtime, the `tool_choice` value from the cl
 | `none`, or omitted | Omitted. Bedrock Converse has no `none` option. The tools are still sent, so the model can still call them. |
 
 The Bedrock model decides which values it accepts. If the model rejects forced tool use, such as `any` or a named tool, the client receives the Bedrock error. For example, Anthropic models reject forced tool use when [extended thinking](https://platform.claude.com/docs/en/build-with-claude/thinking#thinking-with-tool-use) is enabled. The tool choice is not changed for requests that use extended thinking.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+When a `/v1/messages` or `/v1/responses` request uses a native Bedrock Runtime API, agentgateway removes server tools whose `type` starts with `web_search` before it forwards the request to Bedrock. If a removed Messages tool has a cache breakpoint, the breakpoint moves to the preceding kept tool when that tool does not already have one.
+{{< /version >}}
 {{% /version %}}
 
 {{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
