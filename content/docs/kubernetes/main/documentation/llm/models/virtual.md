@@ -453,7 +453,7 @@ For your own in-cluster routing service, set `backendRef` instead of `url`. A `u
 
 ## Verify model discovery
 
-Only the virtual models appear in discovery. The internal targets are hidden.
+Only the virtual models appear in discovery. The internal targets are hidden. When a virtual model targets more than one valid concrete model, discovery advertises shared `preferred_endpoints` only.
 
 ```sh
 curl -s http://$INGRESS_GW_ADDRESS/v1/models

@@ -289,6 +289,7 @@ Each entry includes the OpenAI model object fields `id`, `object`, `created`, an
 - `architecture.input_modalities` and `architecture.output_modalities`: The accepted input and output types, such as `text`, `image`, and `file`.
 - `capabilities`: Whether the model supports `reasoning`, `structured_outputs`, `tools`, and `temperature`.
 - `supported_parameters`: The request parameters that the model accepts, derived from its limits and capabilities.
+- `preferred_endpoints`: The client endpoint paths that the gateway parses for the model, such as `/chat/completions`, `/responses`, or `/embeddings`.
 
 To return only the first listed models, add the `limit` query parameter. To look up one model by ID, send a request to `/v1/models/<model-id>` or `/models/<model-id>`.
 
@@ -329,6 +330,7 @@ Wildcard models expand to matching IDs from the [model catalog]({{< link-hextra 
 
 - **Model transformations**: Agentgateway reverses transformations that strip or add a fixed string, such as `stripPrefix("openai/")`. The list then uses the model names that clients send.
 - **Unexpanded patterns**: Agentgateway lists the pattern itself if the provider has no catalog entries. It also keeps the pattern if the model overrides the upstream model or uses a transformation that cannot be reversed.
+- **Endpoint metadata**: Catalog entries can set `endpoints` to restrict discovery to the paths that the model serves. For example, an embedding model can advertise only `/embeddings`.
 - **Custom providers**: To expand a wildcard, set `custom.providerOverride` to a catalog provider name, such as `openai`.
 - **Internal models**: Models with `visibility: Internal` do not appear in the list.
 

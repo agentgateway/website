@@ -19,6 +19,8 @@ Use `llm.models[].visibility` to control whether a model is directly exposed to 
 - `public`: The model can be requested directly by clients and can also be used as a virtual model target.
 - `internal`: The model is intended for internal routing targets and is not exposed as a direct client model.
 
+Public models appear in the `/v1/models` discovery response. Each entry can include `preferred_endpoints`. This field lists the client endpoint paths that the gateway parses for that model, such as `/chat/completions`, `/responses`, or `/embeddings`. For a virtual model, the list includes only paths that every valid target shares.
+
 The model drawer in the UI has no field for `visibility`. To set it in the UI, open the model, click the **Raw** icon (`<>`) in the drawer header, and add the `visibility` field to the YAML. When you edit a model in the form, the UI keeps the `visibility` value that the model already has.
 
 ## Route selection modes
