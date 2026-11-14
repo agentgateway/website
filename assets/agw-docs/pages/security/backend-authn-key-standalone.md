@@ -193,5 +193,33 @@ backendAuth:
 ```
 {{% /version %}}
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
+
+The list can also fetch a Google Cloud token for one header while the primary backend authentication method sends another credential. Use this pattern for a backend behind Google Cloud Identity-Aware Proxy (IAP). The backend can receive the client's JWT in `Authorization` and the Google ID token in `Proxy-Authorization`.
+
+```yaml
+backendAuth:
+  passthrough: {}
+  credentials:
+  - location:
+      header:
+        name: Proxy-Authorization
+        prefix: "Bearer "
+    gcp:
+      type: idToken
+      audience: iap-client-id
+```
+
+{{< reuse "agw-docs/snippets/review-table.md" >}}
+
+| Field | Description |
+| -- | -- |
+| `credentials[].gcp` | Fetches a Google Cloud access token or ID token and writes it to `credentials[].location`. Set exactly one of `credentials[].key`, `credentials[].expression`, or `credentials[].gcp`. |
+| `credentials[].gcp.type` | Google token type to fetch. Use `accessToken` for most Google services, or `idToken` for IAP and Cloud Run. |
+| `credentials[].gcp.audience` | Audience for the ID token. Set `credentials[].gcp.audience` when `credentials[].gcp.type` is `idToken`. |
+| `credentials[].gcp.credential` | ADC-compatible Google credential JSON, either inline or as `{file: <path>}`. Optional. Omit this field to use the ambient credentials of the environment. |
+
+{{% /version %}}
+
 > [!NOTE]
 > The `credentials` list is not supported on a backend that agentgateway reaches through a tunnel. A tunnel-bound backend supports the `key` method only.

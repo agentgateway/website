@@ -35,6 +35,8 @@ backendAuth:
 | `audience` | The `aud` claim of the ID token. Valid only with `idToken`. Omit the field and agentgateway uses the hostname of the backend. |
 | `credential` | ADC-compatible Google credential JSON, either inline or as `{file: <path>}`. Omit the field to use the ambient credentials of the environment. |
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}To send the Google token in a different header, such as `Proxy-Authorization`, use `credentials[].gcp`. Google Cloud Identity-Aware Proxy (IAP) accepts that header. For more information, see [Send more than one credential]({{< link-hextra path="/documentation/configuration/security/backend-authn/key/#send-more-than-one-credential" >}}).{{% /version %}}
+
 By default, agentgateway resolves credentials from the environment. It reads the path in the `GOOGLE_APPLICATION_CREDENTIALS` environment variable, and falls back to `$HOME/.config/gcloud/application_default_credentials.json`. On Windows the fallback path is `%APPDATA%/gcloud/application_default_credentials.json`. Set the `credential` field to supply the credential JSON directly instead.
 
 Not every credential type works with both token types.
