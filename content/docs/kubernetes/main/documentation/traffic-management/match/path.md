@@ -10,6 +10,50 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
+## Normalize paths before matching {#normalize-paths}
+
+By default, path matching uses the request path as agentgateway receives it. Use an {{< reuse "agw-docs/snippets/policy.md" >}} to normalize request paths before route matching, policy evaluation, and forwarding to the backend.
+
+1. Create a policy that normalizes repeated slashes, dot segments, and percent-encoded unreserved characters.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: normalize-paths
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+     frontend:
+       http:
+         normalize:
+         - MergeSlash
+         - DotSegment
+         - DecodeUnreserved
+   EOF
+   ```
+
+   | Field | Description |
+   | -- | -- |
+   | `spec.frontend.http.normalize` | Normalizes the request path before route matching, policy evaluation, and forwarding. Access logs keep the original request path. |
+   | `MergeSlash` | Collapses repeated slashes and treats `\` as `/`. |
+   | `DotSegment` | Resolves `.` and `..` path segments. This rule also treats `%2E` as `.`, treats `\` as `/`, and ignores parameters on dot segments such as `..;x`. |
+   | `DecodeUnreserved` | Decodes percent-encoded unreserved characters. |
+   | `RejectEscapedSlash` | Rejects requests whose path contains `%2F` or `%5C`. |
+   | `UnescapeSlash` | Decodes `%2F` and `%5C` into `/`. The API server rejects policies that set `UnescapeSlash` with `RejectEscapedSlash`. |
+
+   The rules run in a fixed order, regardless of their order in the list. If you set any rule except `MergeSlash`, malformed percent-encoding and `%00` in the path are rejected.
+
+2. Review the policy.
+
+   ```sh
+   kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} normalize-paths -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
+   ```
+
 ## Set up exact matching
 
 1. Create an HTTPRoute resource for the `match.example` domain that matches incoming requests on the `/status/200` exact path.
@@ -337,6 +381,7 @@ Use [RE2 syntax](https://github.com/google/re2/wiki/Syntax) for regular expressi
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} normalize-paths -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete httproute httpbin-match -n httpbin --ignore-not-found
 ```
 

@@ -102,6 +102,41 @@ routes:
 {{% /tab %}}
 {{< /tabs >}}
 
+### Normalize paths before matching {#normalize-paths}
+
+By default, route matching uses the request path as agentgateway receives it. To normalize request paths before route matching, policy evaluation, and forwarding to the backend, set `frontendPolicies.http.normalize`.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  http:
+    normalize:
+    - mergeSlash
+    - dotSegment
+    - decodeUnreserved
+gateways:
+  default:
+    port: 3000
+routes:
+- name: api
+  matches:
+  - path:
+      pathPrefix: "/api"
+  backends:
+  - host: api.example.com:8080
+```
+
+| Field | Description |
+| -- | -- |
+| `frontendPolicies.http.normalize` | Normalizes the request path before route matching, policy evaluation, and forwarding. Access logs keep the original request path. |
+| `mergeSlash` | Collapses repeated slashes and treats `\` as `/`. |
+| `dotSegment` | Resolves `.` and `..` path segments. This rule also treats `%2E` as `.`, treats `\` as `/`, and ignores parameters on dot segments such as `..;x`. |
+| `decodeUnreserved` | Decodes percent-encoded unreserved characters. |
+| `rejectEscapedSlash` | Rejects requests whose path contains `%2F` or `%5C`. |
+| `unescapeSlash` | Decodes `%2F` and `%5C` into `/`. The config loader rejects configurations that set `unescapeSlash` with `rejectEscapedSlash`. |
+
+The rules run in a fixed order, regardless of their order in the list. If you set any rule except `mergeSlash`, malformed percent-encoding and `%00` in the path are rejected.
+
 ### Header matching
 
 Match incoming requests based on HTTP headers included in the request.
