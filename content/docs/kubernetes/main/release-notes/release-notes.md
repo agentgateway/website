@@ -27,14 +27,28 @@ Model transformations now rewrite the model ID in the request path of Bedrock, V
 
 ### LLM {#v18-llm}
 
+- **AgentgatewayModel API is always enabled**: The `AgentgatewayModel` API no longer uses the `agentgatewayModels.enabled` Helm value or the `AGW_ENABLE_AGENTGATEWAY_MODELS` environment variable. Remove those settings from custom Helm values; listeners still opt in to model serving by listing `AgentgatewayModel` in `allowedRoutes.kinds`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4280 -->
+- **Custom model sources can join model routing**: Controller extensions can register additional Kubernetes model APIs as model sources. When an installation includes one, model listeners, model-serving HTTPRoute rules, virtual model targets, and status treat its kind as a model kind alongside `AgentgatewayModel`. For more information, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4292 -->
+- **Model discovery advertises preferred endpoints**: The `/v1/models` response now includes `preferred_endpoints` for models whose served client paths are known. Catalog entries can use `endpoints` to mark non-chat models, such as embedding or image models, so clients can pick compatible API paths. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4272 -->
 - **Nebius Token Factory provider**: Set `spec.provider: Nebius` in an AgentgatewayModel to route requests to Nebius Token Factory at `https://api.tokenfactory.nebius.com/v1`. The preset supports Chat Completions and Embeddings, and the built-in model catalog includes Nebius pricing. For more information, see [Nebius Token Factory]({{< link-hextra path="/integrations/llm/providers/nebius/" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4225 -->
 - **Original client model**: CEL expressions can read `llm.originalModel`, the model name that the client sent before virtual model routing, aliases, provider overrides, or request body rewrites. Cost lookup now also falls back to `llm.originalModel` when the catalog has no price for the response or request model, so requests whose model was rewritten are still priced. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4215 -->
+- **Ultrafast service-tier pricing**: OpenAI and Amazon Bedrock responses that report the `ultrafast` service tier are now priced with matching model catalog tiers and exposed to CEL as `llm.serviceTier`. Add `serviceTier: "ultrafast"` to catalog tiers to set separate rates for this tier. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4259 -->
+- **Virtual model targets can point to other virtual models**: Weighted, conditional, and callout virtual model targets can now route through another virtual model before they resolve to a concrete model. In standalone mode, `/v1/models` now includes target-derived metadata for failover virtual models. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4216 -->
 
 ### Observability {#v18-observability}
 
 - **Active upstream request and connection metrics**: The data plane now emits `agentgateway_requests_active` and `agentgateway_upstream_connections_active` gauges with a `backend` label. Use them to monitor active backend requests and open upstream connections. For more information, see [Data plane metrics]({{< link-hextra path="/documentation/observability/metrics/dataplane/" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4187 -->
+- **OTLP access log records include a body and timestamp**: OTLP access log records now include a timestamp and a body that joins the request method, path, and response status, such as `POST /v1/messages 200`. Previously, exported records had an empty body and no timestamp. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4312 -->
 - **Outbound calls in access logs**: Access log CEL expressions can use `upstreamCalls` to record outbound primary and policy HTTP calls, including MCP target calls after backend authentication or token exchange. For more information, see [Log outbound calls from access logs]({{< link-hextra path="/reference/cel/yaml-and-examples/#log-outbound-calls-from-access-logs" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4044 -->
 - **MCP request outcome label**: MCP request metrics now include an `outcome` label with `success`, `tool_error`, `protocol_error`, `gateway_error`, or `unknown`, so that you can count tool failures that still return HTTP `200`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4182 -->
+
+### Security {#v18-security}
+
+- **GCP tokens in backend credential lists**: Backend authentication credential lists can now fetch a Google Cloud access token or ID token with `credentials[].gcp`. Use this field to send the generated Google token in a header such as `Proxy-Authorization` while another backend authentication method preserves the client's `Authorization` header. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4279 -->
+
+### Traffic management {#v18-traffic-management}
+
+- **Normalize request paths before matching**: Set `spec.frontend.http.normalize` on an {{< reuse "agw-docs/snippets/policy.md" >}} to normalize request paths before route matching, policy evaluation, and forwarding. Normalization rules can merge repeated slashes, resolve dot segments, decode unreserved characters, and reject or unescape escaped slashes. For more information, see [Normalize paths before matching]({{< link-hextra path="/documentation/traffic-management/match/path/#normalize-paths" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4253 -->
 
 <!-- Held for the 1.8 release cut, triaged as no entry. Restore or delete then:
 ### MCP {#v18-mcp}
@@ -45,17 +59,48 @@ Model transformations now rewrite the model ID in the request path of Bedrock, V
 
 **Traffic management**
 
+- Direct responses now keep the reason from the component that produced them, MCP backend external authorization denials return the authorization service's response instead of `500`, ExtProc response-phase `ImmediateResponse` replies are returned to clients, and buffer-limit or CSRF rejections include client-safe response bodies. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4250 -->
+- DNS resolution uses agentgateway's resolver cache without Hickory's internal cache layer, so hostname refreshes follow agentgateway's refresh and retry behavior. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4302 -->
+- gRPC clients now receive `UNAVAILABLE` for missing services, invalid backend types, and missing backends, so retryable backend-routing errors no longer fall back to `UNKNOWN`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4226 -->
+- HTTP/2 connection handoff avoids a deadlock when a waiting request is canceled as the pool delivers a connection. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4323 -->
+- HTTP/2 requests waiting for backend connection capacity are woken to retry when a peer lowers and then restores its stream limit, instead of waiting while slots are available. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4326 -->
+- Parent references that use a route kind a Gateway listener does not allow now report the rejecting parent and listener, plus the route kinds that the listener allows. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4290 -->
+- When an HTTP/2 server advertises a smaller stream limit than expected, the pool opens another connection instead of queuing the next request behind the full connection. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4273 -->
 - When the downstream client disconnects, external processing now cancels its in-flight callout requests and stops reading a streamed upstream response body. Previously, a request that waited in an endpoint picker queue, such as in llm-d, kept its queue slot until the callout timed out, and a streamed model response kept generating until `max_tokens`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4174 --> <!-- ref: https://github.com/agentgateway/agentgateway/pull/4285 -->
 - Routes and listeners match request hostnames case-insensitively, and forwarded requests keep the original `Host` header casing. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4233 -->
 
 **LLM**
 
 - Bedrock conversion now sends inline OpenAI file content and base64 Anthropic document content as Bedrock document blocks. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4199 -->
+- Bedrock Invoke streaming responses contribute input, output, cache-write, and cache-read token counts from `amazon-bedrock-invocationMetrics` to LLM usage metrics and cost calculations. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4297 -->
+- Bedrock Mantle chat requests for `gpt-*` and `openai.gpt-*` models send token limits as `max_completion_tokens`, including when the client uses `max_tokens`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4310 -->
 - Buffered Chat Completions responses that omit the top-level `model` field now keep the request model during parsing and format conversion. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4181 -->
+- Chat Completions clients now receive an OpenAI-style stream error when an Anthropic stream sends an error event after partial content. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4270 -->
+- GitHub Copilot embeddings requests now accept string `input`, route embedding models to `/embeddings`, and return OpenAI-compatible embeddings responses. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4240 -->
 - Messages replay to Bedrock drops assistant `thinking` blocks whose `signature` is empty, so Bedrock does not receive invalid reasoning content. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4115 -->
 - Bedrock requests now keep the Anthropic `thinking.display` setting, so Claude models receive `summarized` or `omitted` thinking display preferences. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4211 -->
 - Gemini and Vertex AI Chat Completions requests use `thinkingLevel` for Gemini 4 and Gemma 4 models, so `reasoning_effort` no longer returns Google thinking-budget errors. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4151 -->
+- Mistral reasoning responses that send `message.content` or `delta.content` as `thinking` and `text` parts pass through Chat Completions unchanged; converted Messages and Responses replies keep only the text parts. <!-- ref: https://github.com/agentgateway/agentgateway/pull/3729 -->
 - Streaming LLM response transformations can read request-side CEL fields such as `llm.provider`, `llm.requestModel`, and `llm.streaming`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4241 -->
+
+**Operations**
+
+- On Windows, config lookup uses `USERPROFILE`, or `HOMEDRIVE` with `HOMEPATH`, when `HOME` is unset, so the default config file can be found without passing `--config` or `--file`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4264 -->
+- PostgreSQL request-log storage now replaces NUL characters in text and JSON fields with `U+FFFD`, so a prompt, completion, or custom attribute no longer rolls back the batch. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4274 -->
+
+**Security**
+
+- A Gateway listener can use a cross-namespace ConfigMap CA certificate when a ReferenceGrant permits the Gateway-to-ConfigMap reference. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4315 -->
+- Gateways remove the `InsecureFrontendValidationMode` condition after frontend validation no longer uses `AllowInsecureFallback`, instead of preserving the stale condition. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4320 -->
+- Inline JWKS keys that omit `kid` or use symmetric `oct` keys now report `PartiallyValid` status on the {{< reuse "agw-docs/snippets/policy.md" >}}. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4291 -->
+- The Kubernetes API server rejects `oauthTokenExchange.additionalParams` entries that override reserved OAuth token-exchange parameters such as `scope`, `audience`, or `client_id`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4286 -->
+- The UI Policies page now shows API key policies with the `apiKey` type. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4332 -->
+
+**MCP**
+
+- A2A agent cards no longer duplicate interface paths that already contain the public gateway route when a URL rewrite changes the backend path. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4329 -->
+- OpenAPI-backed MCP servers now negotiate an `initialize` protocol version that supports the handshake, including for clients that request `2025-11-25`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4328 -->
+- Stdio MCP target requests honor the backend request timeout, with a 10-second default when no timeout is configured. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4305 -->
 
 <!-- Held for the 1.8 release cut, not in the triage keep list. Restore or delete then:
 - Prompt-cache markers are preserved for GPT model names that use only a major version, such as `gpt-6-luna`. (ref: https://github.com/agentgateway/agentgateway/pull/4249)
