@@ -23,6 +23,8 @@ python3 scripts/check-skill-install.py
 
 Keep the verification helper and its supporting reference identical across the two OSS packages. Update both copies together. The publishing tree and its generated archives are checked together; do not maintain independent, unsynchronized public copies.
 
+Keep the published skills client-neutral. Do not add optional `agents/openai.yaml` metadata to these or future skill packages.
+
 ## Acceptance checks
 
 Installer tests use disposable projects and local source fixtures to verify discovery, complete folders, updates reaching both clients, customization backups, and selected removal. They resolve the current installer instead of maintaining a pinned installer release. Actual client checks install the packages through that installer, then invoke each skill with the other skills present:
