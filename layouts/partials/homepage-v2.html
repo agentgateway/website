@@ -132,6 +132,55 @@
   </div>
 </section>
 
+<!-- ============ UI TOUR ============ -->
+{{- $tour := slice
+  (dict "id" "models" "title" "LLM models" "body" "Configure the models callers can request and the providers that serve them: OpenAI, Bedrock, and self-hosted models side by side." "href" "/docs/standalone/latest/documentation/llm/")
+  (dict "id" "virtual-api-keys" "title" "Virtual API keys" "body" "Issue keys that callers use to authenticate to the gateway, so every request has an owner that budgets and reports attach to." "href" "/docs/standalone/latest/documentation/llm/cost-controls/virtual-keys/")
+  (dict "id" "costs" "title" "Costs" "body" "Manage the model cost catalogs used for analytics and per-request cost attribution, with your own overrides on top." "href" "/docs/standalone/latest/documentation/llm/cost-controls/")
+  (dict "id" "analytics" "title" "Analytics" "body" "Break down LLM traffic by model, user, group, and provider: tokens, calls, and spend over time." "href" "/docs/standalone/latest/documentation/llm/observability/")
+  (dict "id" "logs" "title" "Logs" "body" "Inspect recent LLM calls with status, latency, tokens, cost, and the full request and response payloads." "href" "/docs/standalone/latest/documentation/llm/observability/")
+}}
+<section id="ui-tour" class="mx-auto max-w-7xl px-6 pb-32">
+  <div class="flex flex-wrap items-end justify-between gap-6">
+    <div class="max-w-2xl">
+      <h2 class="text-4xl font-light tracking-[-0.03em] sm:text-5xl">See every model, key, and dollar.</h2>
+      <p class="mt-5 text-lg font-light text-neutral-600 dark:text-neutral-400">agentgateway ships with a built-in UI for the LLM traffic flowing through it.</p>
+    </div>
+  </div>
+
+  <div class="mt-14 grid gap-10 lg:grid-cols-[320px_1fr] lg:gap-14" data-tour>
+    <div role="tablist" aria-label="agentgateway UI tour" class="-mx-6 flex snap-x gap-2 overflow-x-auto px-6 pb-2 lg:mx-0 lg:flex-col lg:gap-1 lg:overflow-visible lg:px-0 lg:pb-0">
+      {{- range $i, $t := $tour }}
+      <button type="button" role="tab" id="tour-tab-{{ $t.id }}" aria-controls="tour-panel-{{ $t.id }}" aria-selected="{{ if eq $i 0 }}true{{ else }}false{{ end }}" data-tour-tab="{{ $i }}"
+        class="group relative shrink-0 snap-start overflow-hidden rounded-2xl border border-transparent px-5 py-4 text-left transition-colors aria-selected:border-black/10 aria-selected:bg-neutral-50 hover:bg-neutral-50 lg:shrink dark:aria-selected:border-white/10 dark:aria-selected:bg-neutral-950 dark:hover:bg-neutral-950">
+        <span class="block whitespace-nowrap text-base font-medium text-neutral-500 group-aria-selected:text-neutral-950 dark:group-aria-selected:text-white">{{ $t.title }}</span>
+        <span class="mt-2 hidden text-sm font-light leading-relaxed text-neutral-600 lg:group-aria-selected:block dark:text-neutral-400">{{ $t.body }}</span>
+        <span aria-hidden="true" class="absolute inset-x-0 bottom-0 h-0.5 origin-left scale-x-0 bg-violet-500 group-aria-selected:transition-transform group-aria-selected:duration-[6000ms] group-aria-selected:ease-linear" data-tour-bar></span>
+      </button>
+      {{- end }}
+    </div>
+
+    <div class="relative">
+      <div aria-hidden="true" class="absolute inset-x-12 -bottom-8 top-12 -z-10 rounded-[40px] bg-violet-500/20 blur-3xl dark:bg-violet-600/25"></div>
+      <div class="overflow-hidden rounded-2xl border border-black/10 bg-[#0b0d14] shadow-2xl shadow-black/20 dark:border-white/10">
+        <div class="flex items-center gap-2 border-b border-white/5 px-4 py-3">
+          <span class="h-3 w-3 rounded-full bg-white/10"></span><span class="h-3 w-3 rounded-full bg-white/10"></span><span class="h-3 w-3 rounded-full bg-white/10"></span>
+          <span class="ml-3 truncate rounded-md bg-white/5 px-3 py-1 font-geist-mono text-xs text-neutral-500">localhost:15000/ui/llm/<span data-tour-path>models</span></span>
+        </div>
+        <div class="relative aspect-[16/10]">
+          {{- range $i, $t := $tour }}
+          <img id="tour-panel-{{ $t.id }}" role="tabpanel" aria-labelledby="tour-tab-{{ $t.id }}" data-tour-panel="{{ $i }}"
+            src="/img/homepage/ui/{{ $t.id }}.webp" alt="agentgateway UI: {{ $t.title }} page" width="2000" height="1250" loading="lazy"
+            class="absolute inset-0 h-full w-full object-cover object-left-top transition-opacity duration-500 {{ if eq $i 0 }}opacity-100{{ else }}opacity-0{{ end }}">
+          {{- end }}
+        </div>
+      </div>
+      <p class="mt-4 text-sm font-light text-neutral-600 lg:hidden dark:text-neutral-400" data-tour-caption>{{ (index $tour 0).body }}</p>
+      <a href="{{ (index $tour 0).href }}" data-tour-link class="mt-4 inline-block text-sm font-medium text-neutral-600 hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-white">Read the <span data-tour-name>{{ (index $tour 0).title }}</span> docs →</a>
+    </div>
+  </div>
+</section>
+
 <!-- ============ CAPABILITIES ============ -->
 <section class="border-t border-black/5 dark:border-white/5">
   <div class="mx-auto max-w-7xl px-6 py-32">
@@ -285,6 +334,56 @@
       el.textContent = words[i];
       el.classList.add('animate-word-in');
     }, 2400);
+  }
+
+  var tour = document.querySelector('[data-tour]');
+  if (tour) {
+    var tabs = tour.querySelectorAll('[data-tour-tab]');
+    var panels = tour.querySelectorAll('[data-tour-panel]');
+    var path = tour.querySelector('[data-tour-path]');
+    var caption = tour.querySelector('[data-tour-caption]');
+    var bodies = {{ $tour | jsonify | safeJS }};
+    var cur = 0, timer = null, paused = false;
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function show(n) {
+      cur = n;
+      tabs.forEach(function (t, i) {
+        t.setAttribute('aria-selected', i === n ? 'true' : 'false');
+        t.tabIndex = i === n ? 0 : -1;
+        var bar = t.querySelector('[data-tour-bar]');
+        bar.classList.remove('scale-x-100');
+        if (i === n && !paused && !reduce) { void bar.offsetWidth; bar.classList.add('scale-x-100'); }
+      });
+      panels.forEach(function (p, i) {
+        p.classList.toggle('opacity-100', i === n);
+        p.classList.toggle('opacity-0', i !== n);
+      });
+      if (path) path.textContent = bodies[n].id === 'virtual-api-keys' ? 'keys' : bodies[n].id;
+      if (caption) caption.textContent = bodies[n].body;
+      var link = tour.querySelector('[data-tour-link]');
+      if (link) { link.href = bodies[n].href; link.querySelector('[data-tour-name]').textContent = bodies[n].title; }
+    }
+    function schedule() {
+      clearInterval(timer);
+      if (paused || reduce) return;
+      timer = setInterval(function () { show((cur + 1) % tabs.length); }, 6000);
+    }
+    tabs.forEach(function (t, i) {
+      t.addEventListener('click', function () {
+        paused = true; clearInterval(timer); show(i);
+      });
+      t.addEventListener('keydown', function (e) {
+        var d = (e.key === 'ArrowDown' || e.key === 'ArrowRight') ? 1 : (e.key === 'ArrowUp' || e.key === 'ArrowLeft') ? -1 : 0;
+        if (!d) return;
+        e.preventDefault(); paused = true; clearInterval(timer);
+        var n = (cur + d + tabs.length) % tabs.length; show(n); tabs[n].focus();
+      });
+    });
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) {
+        es.forEach(function (en) { if (en.isIntersecting && !paused) { show(cur); schedule(); } else { clearInterval(timer); } });
+      }, { threshold: 0.3 }).observe(tour);
+    } else { show(0); schedule(); }
   }
   var btn = document.getElementById('hp2-copy');
   if (btn) btn.addEventListener('click', function () {
