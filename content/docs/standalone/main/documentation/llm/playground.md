@@ -9,6 +9,8 @@ Use the built-in LLM playground in the agentgateway UI to send a chat completion
 > [!NOTE]
 > The LLM playground is available in the agentgateway UI in version 1.3 and later.
 
+In hybrid storage mode, you can use **Settings** in the LLM section of the UI to choose the gateway for LLM traffic. You can also choose a dedicated port. The UI stores those changes in the `llm.settings` database row. Fields owned by the configuration file stay read-only in the UI.
+
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
