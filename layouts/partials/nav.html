@@ -451,6 +451,45 @@
       color: #e5e7eb; /* gray-200 — visible on the near-black nav in dark mode */
     }
   </style>
+  {{- if $isLandingPage -}}
+  {{- /* Homepage: flat, full-width bar (logo / centered links / pill CTAs).
+         Fixed, transparent at the top; gains a blurred backdrop once scrolled
+         (nav.js toggles .scrolled on the first .navbar). */ -}}
+  <div class="agw-home-nav-wrap fixed inset-x-0 top-0 z-50 hidden lg:block">
+    <header class="navbar group/nav border-b border-transparent transition-colors duration-300 [&.scrolled]:border-black/5 [&.scrolled]:bg-white/75 [&.scrolled]:backdrop-blur-xl dark:[&.scrolled]:border-white/5 dark:[&.scrolled]:bg-black/60">
+      <div class="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-5 font-display">
+        <a href="/" class="flex items-center" aria-label="agentgateway home">
+          <img src="/agw-light.svg" alt="agentgateway" class="h-7 w-auto dark:hidden">
+          <img src="/agw-dark.svg" alt="agentgateway" class="hidden h-7 w-auto dark:block">
+        </a>
+        <nav class="absolute left-1/2 flex -translate-x-1/2 items-center gap-8" aria-label="Main">
+          <div class="dropdown relative">
+            <a class="flex items-center gap-1 text-sm text-neutral-600 transition-colors hover:text-neutral-950 dark:text-white/80 dark:hover:text-white" href="/docs/">
+              Docs
+              <svg class="h-3.5 w-3.5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </a>
+            <div class="dropdown-content navbar-dropdown-content absolute rounded-xl border border-black/10 bg-white/95 text-sm shadow-xl backdrop-blur dark:border-white/10 dark:bg-neutral-950/95" style="top: calc(100% + 0.25rem); padding-top: 0.25rem;">
+              <a href="/docs/standalone/latest/" class="block px-4 py-3 text-left text-sm text-neutral-600 transition-colors hover:text-neutral-950 dark:text-white/80 dark:hover:text-white">Standalone</a>
+              <a href="/docs/kubernetes/latest/" class="block px-4 py-3 text-left text-sm text-neutral-600 transition-colors hover:text-neutral-950 dark:text-white/80 dark:hover:text-white">Kubernetes</a>
+            </div>
+          </div>
+          <a class="text-sm text-neutral-600 transition-colors hover:text-neutral-950 dark:text-white/80 dark:hover:text-white" href="/models">Models</a>
+          <a class="text-sm text-neutral-600 transition-colors hover:text-neutral-950 dark:text-white/80 dark:hover:text-white" href="/blog">Blog</a>
+          <a class="text-sm text-neutral-600 transition-colors hover:text-neutral-950 dark:text-white/80 dark:hover:text-white" href="https://discord.gg/y9efgEmppm">Community</a>
+          <a class="text-sm text-neutral-600 transition-colors hover:text-neutral-950 dark:text-white/80 dark:hover:text-white" href="/enterprise">Enterprise</a>
+        </nav>
+        <div class="flex items-center gap-2">
+          {{- partial "theme-toggle.html" (dict "hideLabel" true "iconHeight" 16 "location" "top" "class" "hx:p-2") -}}
+          <a class="flex items-center p-2 text-sm text-neutral-600 transition-colors hover:text-neutral-950 dark:text-white/80 dark:hover:text-white" href="https://x.com/agentgateway" target="_blank" rel="noopener" title="agentgateway on X" aria-label="agentgateway on X">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a class="inline-flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-2 text-sm text-neutral-950 transition-colors hover:bg-neutral-200 dark:bg-[#1c1c1c] dark:text-white dark:hover:bg-[#2a2a2a]" href="https://github.com/agentgateway/agentgateway"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
+          <a class="inline-flex items-center rounded-full bg-neutral-950 px-4 py-2 text-sm text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-black" href="/#get-started">Get started</a>
+        </div>
+      </div>
+    </header>
+  </div>
+  {{- else -}}
   <div class="agw-landing-nav-wrap fixed top-5 left-0 right-0 flex justify-center z-50 pointer-events-none hidden lg:flex">
     <nav class="navbar landing-navbar pointer-events-auto flex items-center gap-7">
       <a href="/" class="flex items-center"><img src="/agw-light.svg" alt="agentgateway logo" id="logo" height="22" /></a>
@@ -488,6 +527,7 @@
       </div>
     </nav>
   </div>
+  {{- end -}}
 
   <nav class="landing-mobile-nav absolute top-0 w-full block lg:hidden z-50 bg-white/80 dark:bg-[#0B0E18]/80 border-b border-gray-200/50 dark:border-white/8">
     <div class="py-4 px-4 flex justify-between items-center">

@@ -9,7 +9,7 @@
 <div class='mx-auto flex'>
     {{ partial "sidebar.html" (dict "context" . "disableSidebar" true) }}
     <article class="w-full break-words flex justify-center">
-        <main id="content" class="w-full relative overflow-hidden">
+        <main id="content" class="w-full relative overflow-hidden bg-white dark:bg-black">
             {{ partial "nav.html" .}}
             {{ partial "homepage-v2.html" . }}
             {{ partial "chatbot.html" . }}
