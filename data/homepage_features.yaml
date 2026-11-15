@@ -1,0 +1,117 @@
+# Homepage "product tour" section (layouts/partials/homepage-v2.html).
+#
+# Each tab has a list of items shown as an accordion on the right. The media
+# panel on the left shows the open item's media:
+#   video: path or URL to an .mp4/.webm (autoplays muted + loops when shown)
+#   image: still image, also used as the video poster
+# An item with no media of its own falls back to its tab's `video`/`image`.
+# Put files under static/ (for example static/videos/homepage/llm-gateway.mp4)
+# and reference them from the site root ("/videos/homepage/llm-gateway.mp4").
+#
+# Images under /img/homepage/ui/ are captures of the agentgateway UI.
+
+tabs:
+  - id: llm
+    label: LLM Gateway
+    video: ""
+    items:
+      - title: Every model behind one API
+        body: An OpenAI-compatible endpoint in front of OpenAI, Anthropic, Bedrock, Gemini, Vertex, and self-hosted models. Callers ask for a model name; the gateway handles the provider.
+        image: /img/homepage/ui/llm-models.webp
+        href: /docs/standalone/latest/documentation/llm/
+      - title: Providers, side by side
+        body: Configure provider credentials once at the gateway. Apps never hold a provider key, and switching providers is a config change, not a code change.
+        image: /img/homepage/ui/llm-providers.webp
+        href: /docs/standalone/latest/documentation/llm/providers/
+      - title: Chat playground
+        body: Send a prompt to any configured model from the UI and watch routing, policy, and token accounting play out on a real request.
+        image: /img/homepage/ui/llm-playground.webp
+        href: /docs/standalone/latest/documentation/llm/playground/
+      - title: Client setup in seconds
+        body: Copy-ready snippets for curl, the OpenAI SDKs, and coding agents, pre-filled with your gateway URL, model, and virtual key.
+        image: /img/homepage/ui/llm-client-setup.webp
+        href: /docs/standalone/latest/documentation/llm/
+
+  - id: mcp
+    label: MCP Gateway
+    video: ""
+    items:
+      - title: Federate MCP servers
+        body: Put every MCP server, remote or local, behind one endpoint. Agents connect once and see the tools you choose to expose.
+        image: /img/homepage/ui/mcp-servers.webp
+        href: /docs/standalone/latest/documentation/mcp/
+      - title: One tool catalog
+        body: Tools from every server show up in a single, namespaced catalog, so two servers can both ship a "search" tool without colliding.
+        image: /img/homepage/ui/mcp-tools.webp
+        href: /docs/standalone/latest/documentation/mcp/
+      - title: Tool playground
+        body: Initialize a session and call any tool through the gateway, with the full request and response on screen.
+        image: /img/homepage/ui/mcp-playground.webp
+        href: /docs/standalone/latest/documentation/mcp/
+      - title: MCP auth and guardrails
+        body: Authenticate MCP clients, authorize which tools each caller can reach, and inspect tool calls in flight.
+        image: /img/homepage/ui/mcp-policies.webp
+        href: /docs/standalone/latest/documentation/mcp/mcp-authn/
+
+  - id: access
+    label: Access
+    video: ""
+    items:
+      - title: Virtual API keys
+        body: Issue a key per team, app, or agent. Every request carries an owner, and provider credentials never leave the gateway.
+        image: /img/homepage/ui/keys.webp
+        href: /docs/standalone/latest/documentation/llm/cost-controls/virtual-keys/
+      - title: Budgets and model access per key
+        body: Cap spend or tokens per rolling window, decide whether to block or just audit, and limit which models each key can call.
+        image: /img/homepage/ui/key-budgets.webp
+        href: /docs/standalone/latest/documentation/llm/cost-controls/budget-limits/
+      - title: Guardrails
+        body: Check prompts and completions for injection attempts and sensitive data, and redact what should never leave your estate.
+        image: /img/homepage/ui/llm-guardrails.webp
+        href: /docs/standalone/latest/documentation/llm/prompt-guards/
+      - title: Policies
+        body: JWT and OIDC, API key auth, external authorization, and rate limits, attached at the gateway, route, or backend.
+        image: /img/homepage/ui/llm-policies.webp
+        href: /docs/standalone/latest/documentation/configuration/policies/
+
+  - id: visibility
+    label: Visibility & Control
+    video: ""
+    items:
+      - title: Analytics
+        body: Tokens, calls, and spend over time, broken down by model, user, group, provider, or user agent.
+        image: /img/homepage/ui/analytics.webp
+        href: /docs/standalone/latest/documentation/llm/observability/
+      - title: Who is calling what
+        body: Group traffic by user agent, user, or group to see which apps, SDKs, and agents drive load, and which ones are erroring.
+        image: /img/homepage/ui/analytics-users.webp
+        href: /docs/standalone/latest/documentation/llm/observability/
+      - title: Request logs
+        body: Every LLM call with status, model, duration, input and output tokens, cache hits, and cost.
+        image: /img/homepage/ui/logs.webp
+        href: /docs/standalone/latest/documentation/llm/observability/
+      - title: Full payloads on demand
+        body: Expand any call to inspect the request and response bodies, headers, and the key that sent it.
+        image: /img/homepage/ui/log-detail.webp
+        href: /docs/standalone/latest/documentation/llm/observability/
+
+  - id: cost
+    label: Cost Optimization
+    video: ""
+    items:
+      - title: Spend by model and team
+        body: See where the money goes, per model, per key, per team, before the invoice does it for you.
+        image: /img/homepage/ui/analytics-cost.webp
+        href: /docs/standalone/latest/documentation/llm/cost-controls/dashboard/
+      - title: Cost catalogs
+        body: Built-in pricing for major providers, with your own overrides for negotiated rates and self-hosted models.
+        image: /img/homepage/ui/costs.webp
+        href: /docs/standalone/latest/documentation/llm/cost-controls/
+      - title: Budgets that enforce
+        body: Hard caps per key cut off spend once a limit is hit, instead of alerting after the fact.
+        image: /img/homepage/ui/keys.webp
+        href: /docs/standalone/latest/documentation/llm/cost-controls/budget-limits/
+      - title: Cost on every request
+        body: Each log line carries its realized cost, so one expensive prompt is easy to find.
+        image: /img/homepage/ui/logs.webp
+        href: /docs/standalone/latest/documentation/llm/cost-controls/
