@@ -48,7 +48,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 1. Create a configuration that routes LLM traffic, and start agentgateway.
    ```yaml
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
@@ -79,7 +79,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: localhost:4317
@@ -118,7 +118,7 @@ If your Phoenix keeps authentication on, agentgateway must send a Phoenix API ke
    ```
 5. Add the key to the tracing policy with `backendAuth`. Agentgateway sends the key in the `Authorization: Bearer <key>` header, which is the header that Phoenix checks.
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      tracing:
        host: localhost:4317

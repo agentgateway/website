@@ -57,7 +57,7 @@ By default, the UI binds to `localhost:15000`. To use a different address or por
 1. Add or update the `adminAddr` field in your config file. The value must use `ip:port` format.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      adminAddr: localhost:9090
    ```
@@ -82,7 +82,7 @@ By default, the UI binds to `localhost:15000`. To use a different address or por
 {{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
 ## Secure the UI {#secure-admin-ui}
 
-By default, the UI is served on the local admin interface (`localhost:15000`) with no authentication. Anyone who can reach the admin address can inspect and manage your configuration. To require users to authenticate, attach the UI to a gateway listener and apply a browser [OIDC]({{< link-hextra path="/documentation/configuration/security/oidc" >}}) policy. When you attach the UI to a gateway, it is served on that gateway's port instead of the admin address, and all UI traffic must pass the policies that you attach.
+By default, the UI is served on the local admin interface (`localhost:15000`) with no authentication. Anyone who can reach the admin address can inspect and manage your configuration. To require users to authenticate, attach the UI to a gateway listener and apply a browser {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[OIDC]({{< link-hextra path="/documentation/configuration/security/authentication/oidc" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[OIDC]({{< link-hextra path="/documentation/configuration/security/oidc" >}}){{< /version >}} policy. When you attach the UI to a gateway, it is served on that gateway's port instead of the admin address, and all UI traffic must pass the policies that you attach.
 
 1. Set the `OIDC_COOKIE_SECRET` environment variable. Agentgateway requires this value to encrypt session cookies whenever an `oidc` policy is configured. Set it to a random value before you start the gateway.
 
@@ -93,7 +93,7 @@ By default, the UI is served on the local admin interface (`localhost:15000`) wi
 2. Add a `ui` section to your config file that attaches to a gateway and applies an `oidc` policy. The following example serves the UI on the `default` gateway on port 3000 and redirects unauthenticated users to the OIDC provider to log in. The optional `authorization` policy further restricts access to users whose email address ends in `@example.com`.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
@@ -120,5 +120,5 @@ By default, the UI is served on the local admin interface (`localhost:15000`) wi
 
 4. Open the UI at the gateway's address, such as [http://localhost:3000/ui/](http://localhost:3000/ui/). Instead of loading the UI directly, agentgateway redirects you to the OIDC provider to log in. After you authenticate, you are returned to the UI.
 
-For the full list of `oidc` policy fields and a complete runnable Keycloak setup, see [OIDC browser authentication]({{< link-hextra path="/documentation/configuration/security/oidc" >}}) and the [`traffic-unified-gateway` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-unified-gateway) in the agentgateway repository. You can attach other policies to UI traffic in the same way, such as `cors`, `jwtAuth`, `basicAuth`, or `apiKey`.
+For the full list of `oidc` policy fields and a complete runnable Keycloak setup, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[OIDC browser authentication]({{< link-hextra path="/documentation/configuration/security/authentication/oidc" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[OIDC browser authentication]({{< link-hextra path="/documentation/configuration/security/oidc" >}}){{< /version >}} and the [`traffic-unified-gateway` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-unified-gateway) in the agentgateway repository. You can attach other policies to UI traffic in the same way, such as `cors`, `jwtAuth`, `basicAuth`, or `apiKey`.
 {{< /version >}}

@@ -203,8 +203,8 @@ class TestAliasSweep(unittest.TestCase):
             self.assertEqual(rules, [])
             self.assertIn("claimed by 2 pages", skipped)
 
-    def test_non_absolute_alias_is_dropped(self):
-        """`windsurf` and `vllm` are declared without a leading slash."""
+    def test_relative_alias_resolves_against_parent_of_page(self):
+        """Hugo joins a relative alias to the page URL's parent, not to the page URL."""
         with tempfile.TemporaryDirectory() as root:
             self._tree(root, {
                 "kubernetes/latest/clients/devin.md": """
@@ -212,11 +212,59 @@ class TestAliasSweep(unittest.TestCase):
                     aliases: [windsurf]
                     ---
                 """,
+                "standalone/latest/documentation/setup/install/binary.md": """
+                    ---
+                    aliases: [../../../deployment/binary/]
+                    ---
+                """,
             })
-            skipped = []
-            rules = n.load_alias_rules(root, on_skip=lambda a, r, p: skipped.append(r))
-            self.assertEqual(rules, [])
-            self.assertIn("not site-absolute", skipped)
+            self.assertEqual(
+                sorted(n.load_alias_rules(root)),
+                [
+                    ("/docs/kubernetes/latest/clients/windsurf/",
+                     "/docs/kubernetes/latest/clients/devin/"),
+                    ("/docs/standalone/latest/deployment/binary/",
+                     "/docs/standalone/latest/documentation/setup/install/binary/"),
+                ],
+            )
+
+    def test_relative_alias_on_index_page_resolves_against_its_parent(self):
+        """An _index.md URL is its directory, so the base is one level above that."""
+        with tempfile.TemporaryDirectory() as root:
+            self._tree(root, {
+                "kubernetes/latest/documentation/llm/inference/_index.md": """
+                    ---
+                    aliases: [../inference/]
+                    ---
+                """,
+            })
+            self.assertEqual(
+                n.load_alias_rules(root),
+                [("/docs/kubernetes/latest/documentation/inference/",
+                  "/docs/kubernetes/latest/documentation/llm/inference/")],
+            )
+
+    def test_same_relative_alias_in_two_trees_is_not_a_collision(self):
+        """Each version tree declares the same relative alias; each resolves in its own tree."""
+        with tempfile.TemporaryDirectory() as root:
+            page = """
+                ---
+                aliases: [old-page/]
+                ---
+            """
+            self._tree(root, {
+                "kubernetes/latest/documentation/new-page.md": page,
+                "kubernetes/main/documentation/new-page.md": page,
+            })
+            self.assertEqual(
+                sorted(n.load_alias_rules(root)),
+                [
+                    ("/docs/kubernetes/latest/documentation/old-page/",
+                     "/docs/kubernetes/latest/documentation/new-page/"),
+                    ("/docs/kubernetes/main/documentation/old-page/",
+                     "/docs/kubernetes/main/documentation/new-page/"),
+                ],
+            )
 
     def test_cross_tree_alias_is_dropped(self):
         """A 1.4.x page claiming a /latest/ path must not capture latest links."""
