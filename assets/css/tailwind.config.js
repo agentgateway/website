@@ -47,6 +47,27 @@ module.exports = {
             },
             fontFamily: {
                 'sans': ['ui-sans-serif', 'system-ui', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"'],
+                'display': ['Geist', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                'geist-mono': ['"Geist Mono"', 'ui-monospace', 'monospace'],
+            },
+            keyframes: {
+                marquee: {
+                    from: { transform: 'translateX(0)' },
+                    to: { transform: 'translateX(-50%)' },
+                },
+                'word-in': {
+                    from: { opacity: '0', transform: 'translateY(0.35em)', filter: 'blur(6px)' },
+                    to: { opacity: '1', transform: 'translateY(0)', filter: 'blur(0)' },
+                },
+                'fade-up': {
+                    from: { opacity: '0', transform: 'translateY(16px)' },
+                    to: { opacity: '1', transform: 'translateY(0)' },
+                },
+            },
+            animation: {
+                marquee: 'marquee 45s linear infinite',
+                'word-in': 'word-in 600ms cubic-bezier(0.22, 1, 0.36, 1) both',
+                'fade-up': 'fade-up 900ms cubic-bezier(0.22, 1, 0.36, 1) both',
             }
         },
     },

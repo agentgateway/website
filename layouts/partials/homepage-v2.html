@@ -1,0 +1,293 @@
+{{/*
+  Homepage v2 — monochrome, type-led layout with a large hero video stage.
+
+  The hero video is driven by front matter in content/_index.md:
+    heroVideo:       path or URL to an .mp4/.webm file (autoplays muted, loops)
+    heroVideoEmbed:  a YouTube/Vimeo embed URL (used if heroVideo is empty)
+    heroVideoPoster: optional poster image for heroVideo
+  With none set, a placeholder stage is rendered in the same slot.
+
+  Styling is Tailwind utilities only; keyframes live in assets/css/tailwind.config.js.
+*/}}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+{{- $video := .Params.heroVideo -}}
+{{- $embed := .Params.heroVideoEmbed -}}
+{{- $poster := .Params.heroVideoPoster -}}
+
+<div class="font-display bg-white text-neutral-950 dark:bg-black dark:text-white antialiased selection:bg-violet-500/30">
+
+<!-- ============ HERO ============ -->
+<section class="relative isolate overflow-hidden pt-40 lg:pt-48 pb-10">
+  <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 -top-40 -z-10 mx-auto h-[640px] max-w-5xl rounded-full bg-violet-500/20 blur-[140px] dark:bg-violet-600/25"></div>
+
+  <div class="mx-auto max-w-6xl px-6 text-center">
+    <a href="/blog/2026-06-04-agentgateway-joins-aaif/" class="animate-fade-up inline-flex items-center gap-2 rounded-full border border-black/10 px-4 py-1.5 text-xs font-medium tracking-wide text-neutral-600 transition-colors hover:border-black/30 hover:text-neutral-950 dark:border-white/15 dark:text-neutral-400 dark:hover:border-white/40 dark:hover:text-white">
+      <span class="h-1.5 w-1.5 rounded-full bg-violet-500"></span>
+      agentgateway joins the Agentic AI Foundation
+      <span aria-hidden="true">→</span>
+    </a>
+
+    <h1 class="animate-fade-up mt-8 text-5xl font-light leading-[1.02] tracking-[-0.04em] sm:text-7xl lg:text-[104px]">
+      One gateway for<br>
+      <span class="relative inline-block min-w-[4ch] font-normal">
+        <span id="hp2-word" class="inline-block animate-word-in text-violet-600 dark:text-violet-400">agents</span>
+      </span>
+    </h1>
+
+    <p class="animate-fade-up mx-auto mt-8 max-w-2xl text-lg font-light leading-relaxed text-neutral-600 sm:text-xl dark:text-neutral-400">
+      Route, secure, observe, and govern LLM, MCP, A2A, and service traffic in a single high-performance data plane.
+    </p>
+
+    <div class="animate-fade-up mt-10 flex flex-wrap items-center justify-center gap-3">
+      <a href="#get-started" class="inline-flex items-center gap-2 rounded-full bg-neutral-950 px-6 py-3 text-sm font-medium text-white transition-transform hover:scale-[1.03] dark:bg-white dark:text-black">
+        Start building <span aria-hidden="true">→</span>
+      </a>
+      <a href="https://github.com/agentgateway/agentgateway" class="inline-flex items-center gap-2 rounded-full border border-black/15 px-6 py-3 text-sm font-medium transition-colors hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        View on GitHub
+      </a>
+    </div>
+  </div>
+
+  <!-- ============ VIDEO STAGE ============ -->
+  <div class="animate-fade-up mx-auto mt-20 max-w-7xl px-4 sm:px-6">
+    <div class="relative">
+      <div aria-hidden="true" class="absolute -inset-px rounded-[28px] bg-gradient-to-b from-black/15 via-black/5 to-transparent dark:from-white/25 dark:via-white/5"></div>
+      <div aria-hidden="true" class="absolute inset-x-10 -bottom-10 top-10 -z-10 rounded-[40px] bg-violet-500/25 blur-3xl dark:bg-violet-600/30"></div>
+      <div class="relative aspect-video overflow-hidden rounded-[28px] bg-neutral-100 dark:bg-neutral-950">
+        {{- if $video }}
+        <video class="h-full w-full object-cover" src="{{ $video }}"{{ with $poster }} poster="{{ . }}"{{ end }} autoplay muted loop playsinline controls></video>
+        {{- else if $embed }}
+        <iframe class="h-full w-full" src="{{ $embed }}" title="agentgateway overview video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        {{- else }}
+        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(138,63,252,0.18),transparent_60%)]"></div>
+        <div class="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:48px_48px] dark:bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)]"></div>
+        <div class="relative flex h-full flex-col items-center justify-center gap-5 text-center">
+          <span class="flex h-20 w-20 items-center justify-center rounded-full border border-black/15 bg-white/70 backdrop-blur transition-transform hover:scale-105 sm:h-24 sm:w-24 dark:border-white/20 dark:bg-white/10">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l11.1-6.86a1 1 0 0 0 0-1.7L9.52 4.29A1 1 0 0 0 8 5.14z"/></svg>
+          </span>
+          <span class="font-geist-mono text-xs uppercase tracking-[0.2em] text-neutral-500">Product video · coming soon</span>
+        </div>
+        {{- end }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Install line -->
+  <div class="mx-auto mt-16 max-w-xl px-6">
+    <div class="flex items-center justify-between gap-4 rounded-full border border-black/10 bg-neutral-50 py-2 pl-6 pr-2 font-geist-mono text-sm dark:border-white/10 dark:bg-neutral-950">
+      <code class="truncate text-neutral-700 dark:text-neutral-300"><span class="select-none text-neutral-400 dark:text-neutral-600">$ </span><span id="hp2-install">curl -sL https://agentgateway.dev/install | bash</span></code>
+      <button type="button" id="hp2-copy" class="shrink-0 rounded-full bg-neutral-950 px-4 py-1.5 font-display text-xs font-medium text-white dark:bg-white dark:text-black">Copy</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTRIBUTORS ============ -->
+<section class="border-y border-black/5 py-12 dark:border-white/5">
+  <p class="text-center font-geist-mono text-[11px] uppercase tracking-[0.25em] text-neutral-500">Built in the open by</p>
+  <div class="relative mt-8 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_15%,black_85%,transparent)]">
+    <div class="flex w-max animate-marquee items-center gap-16 hover:[animation-play-state:paused]">
+{{- range $pass := seq 2 }}
+{{- range $c := site.Data.contributors }}
+      <div class="flex items-center gap-3 opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0"{{ if gt $pass 1 }} aria-hidden="true"{{ end }}>
+        <img src="{{ $c.logo }}" alt="{{ $c.name }}" class="h-7 w-auto dark:invert" loading="lazy">
+        <span class="whitespace-nowrap text-sm font-medium">{{ $c.name }}</span>
+      </div>
+{{- end }}
+{{- end }}
+    </div>
+  </div>
+</section>
+
+<!-- ============ PILLARS ============ -->
+<section id="features" class="mx-auto max-w-7xl px-6 py-32">
+  <div class="max-w-3xl">
+    <p class="font-geist-mono text-xs uppercase tracking-[0.25em] text-violet-600 dark:text-violet-400">One data plane</p>
+    <h2 class="mt-5 text-4xl font-light tracking-[-0.03em] sm:text-6xl">Everything agent traffic needs. One binary.</h2>
+  </div>
+
+  {{- $pillars := slice
+    (dict "tag" "LLM" "title" "LLM Gateway" "body" "An OpenAI-compatible API in front of OpenAI, Anthropic, Bedrock, Gemini, Vertex, and self-hosted models — with failover, token budgets, and prompt guards." "href" "/docs/standalone/latest/documentation/llm/")
+    (dict "tag" "MCP · A2A" "title" "Agent connectivity" "body" "Treat MCP servers like microservices. Discover, authenticate, and scope every tool call, and route agent-to-agent hops with identity and tracing." "href" "/docs/standalone/latest/documentation/mcp/")
+    (dict "tag" "HTTP · gRPC" "title" "Service Gateway" "body" "North–south and east–west traffic through a single binary, with TLS, mTLS, OIDC, and OpenTelemetry built in." "href" "/docs/standalone/latest/")
+  }}
+  <div class="mt-16 grid gap-px overflow-hidden rounded-3xl border border-black/10 bg-black/10 md:grid-cols-3 dark:border-white/10 dark:bg-white/10">
+    {{- range $pillars }}
+    <a href="{{ .href }}" class="group relative flex min-h-[340px] flex-col bg-white p-8 transition-colors hover:bg-neutral-50 lg:p-10 dark:bg-black dark:hover:bg-neutral-950">
+      <span class="w-fit rounded-full border border-black/10 px-3 py-1 font-geist-mono text-[11px] uppercase tracking-widest text-neutral-500 dark:border-white/15">{{ .tag }}</span>
+      <h3 class="mt-auto text-3xl font-light tracking-[-0.02em]">{{ .title }}</h3>
+      <p class="mt-4 text-[15px] font-light leading-relaxed text-neutral-600 dark:text-neutral-400">{{ .body }}</p>
+      <span class="mt-6 text-sm font-medium text-neutral-950 dark:text-white">Learn more <span aria-hidden="true" class="inline-block transition-transform group-hover:translate-x-1">→</span></span>
+    </a>
+    {{- end }}
+  </div>
+</section>
+
+<!-- ============ CAPABILITIES ============ -->
+<section class="border-t border-black/5 dark:border-white/5">
+  <div class="mx-auto max-w-7xl px-6 py-32">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <h2 class="max-w-2xl text-4xl font-light tracking-[-0.03em] sm:text-5xl">Route. Secure. Observe. Govern.</h2>
+      <a href="/docs/" class="text-sm font-medium text-neutral-600 hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-white">Read the documentation →</a>
+    </div>
+
+    {{- $caps := slice
+      (dict "k" "Route" "title" "Inference Routing" "body" "Latency-, cost-, and model-aware routing to vLLM, TGI, and Triton replicas." "href" "/docs/standalone/latest/documentation/inference/")
+      (dict "k" "Secure" "title" "JWT & OIDC" "body" "Validate tokens at the edge and feed claims into routing and authorization." "href" "/docs/standalone/latest/documentation/configuration/security/jwt-authn/")
+      (dict "k" "Secure" "title" "MCP Guardrails" "body" "Inspect tool calls in flight and block prompt injection before it lands." "href" "/docs/standalone/latest/documentation/mcp/guardrails/")
+      (dict "k" "Secure" "title" "Tool Access Policies" "body" "Decide which tools on which MCP targets each caller may reach." "href" "/docs/standalone/latest/documentation/mcp/mcp-target-policies/")
+      (dict "k" "Observe" "title" "OpenTelemetry" "body" "Token histograms, traces, and request logs carrying realized USD cost." "href" "/docs/standalone/latest/documentation/llm/observability/")
+      (dict "k" "Observe" "title" "agctl CLI" "body" "Trace live requests and dump runtime config without a restart." "href" "/docs/standalone/latest/documentation/operations/agctl/")
+      (dict "k" "Govern" "title" "Rate Limiting" "body" "Local and global limits keyed on any attribute to stop runaway agent loops." "href" "/docs/standalone/latest/documentation/configuration/resiliency/rate-limits/")
+      (dict "k" "Cost" "title" "Budgets & Virtual Keys" "body" "Scoped keys per team with hard token and dollar caps, enforced in-line." "href" "/docs/standalone/latest/documentation/llm/cost-controls/")
+    }}
+    <div class="mt-14 grid gap-x-10 gap-y-2 sm:grid-cols-2 lg:grid-cols-4">
+      {{- range $caps }}
+      <a href="{{ .href }}" class="group border-t border-black/10 py-7 dark:border-white/10">
+        <span class="font-geist-mono text-[11px] uppercase tracking-widest text-neutral-500">{{ .k }}</span>
+        <h3 class="mt-3 text-lg font-medium tracking-[-0.01em] group-hover:text-violet-600 dark:group-hover:text-violet-400">{{ .title }}</h3>
+        <p class="mt-2 text-sm font-light leading-relaxed text-neutral-600 dark:text-neutral-400">{{ .body }}</p>
+      </a>
+      {{- end }}
+    </div>
+  </div>
+</section>
+
+<!-- ============ GET STARTED ============ -->
+<section id="get-started" class="border-t border-black/5 dark:border-white/5">
+  <div class="mx-auto max-w-7xl px-6 py-32">
+    <p class="font-geist-mono text-xs uppercase tracking-[0.25em] text-violet-600 dark:text-violet-400">Get started</p>
+    <h2 class="mt-5 max-w-3xl text-4xl font-light tracking-[-0.03em] sm:text-6xl">Running in under five minutes.</h2>
+
+    {{- $paths := slice
+      (dict "tag" "Binary · Docker" "title" "Standalone" "body" "Run agentgateway locally with a single config file. The fastest way to try LLM and MCP routing." "href" "/docs/standalone/latest/documentation/quickstart/" "cta" "Standalone quickstart")
+      (dict "tag" "Gateway API" "title" "Kubernetes" "body" "Install with Helm and manage routes, backends, and policies as Gateway API resources." "href" "/docs/kubernetes/latest/documentation/quickstart/" "cta" "Kubernetes quickstart")
+      (dict "tag" "Hands-on lab" "title" "LLM cost management" "body" "A free, on-demand lab: monitor LLM usage, apply consumption controls, and optimize spend." "href" "https://www.solo.io/resources/lab/llm-consumption-cost-management-with-agentgateway?utm_source=agentgateway.io&utm_medium=lab%20offer&utm_campaign=homepage-lab" "cta" "Start the lab")
+    }}
+    <div class="mt-16 grid gap-6 lg:grid-cols-3">
+      {{- range $paths }}
+      <a href="{{ .href }}" class="group flex flex-col rounded-3xl border border-black/10 bg-neutral-50 p-8 transition-colors hover:border-black/25 dark:border-white/10 dark:bg-neutral-950 dark:hover:border-white/30">
+        <span class="font-geist-mono text-[11px] uppercase tracking-widest text-neutral-500">{{ .tag }}</span>
+        <h3 class="mt-10 text-2xl font-light tracking-[-0.02em]">{{ .title }}</h3>
+        <p class="mt-3 flex-1 text-[15px] font-light leading-relaxed text-neutral-600 dark:text-neutral-400">{{ .body }}</p>
+        <span class="mt-8 text-sm font-medium">{{ .cta }} <span aria-hidden="true" class="inline-block transition-transform group-hover:translate-x-1">→</span></span>
+      </a>
+      {{- end }}
+    </div>
+  </div>
+</section>
+
+<!-- ============ LATEST FROM THE BLOG ============ -->
+{{- $posts := first 3 (sort (where site.RegularPages "Section" "blog") "PublishDate" "desc") }}
+{{- with $posts }}
+<section class="border-t border-black/5 dark:border-white/5">
+  <div class="mx-auto max-w-7xl px-6 py-32">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <h2 class="text-4xl font-light tracking-[-0.03em] sm:text-5xl">Latest updates</h2>
+      <a href="/blog/" class="text-sm font-medium text-neutral-600 hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-white">All posts →</a>
+    </div>
+    <div class="mt-14 divide-y divide-black/10 border-y border-black/10 dark:divide-white/10 dark:border-white/10">
+      {{- range . }}
+      <a href="{{ .RelPermalink }}" class="group grid gap-4 py-10 md:grid-cols-[180px_1fr_auto] md:items-baseline md:gap-10">
+        <span class="font-geist-mono text-xs uppercase tracking-widest text-neutral-500">{{ .PublishDate.Format "Jan 2, 2006" }}{{ with .Params.category }} · {{ . }}{{ end }}</span>
+        <div>
+          <h3 class="text-2xl font-light tracking-[-0.02em] group-hover:text-violet-600 dark:group-hover:text-violet-400">{{ .Title }}</h3>
+          {{- with .Description }}<p class="mt-3 line-clamp-2 max-w-3xl text-[15px] font-light leading-relaxed text-neutral-600 dark:text-neutral-400">{{ . }}</p>{{ end }}
+        </div>
+        <span aria-hidden="true" class="hidden text-xl transition-transform group-hover:translate-x-1 md:block">→</span>
+      </a>
+      {{- end }}
+    </div>
+  </div>
+</section>
+{{- end }}
+
+<!-- ============ INTEGRATIONS ============ -->
+<section id="integrations" class="border-t border-black/5 dark:border-white/5">
+  <div class="mx-auto max-w-7xl px-6 py-32 text-center">
+    <h2 class="text-4xl font-light tracking-[-0.03em] sm:text-5xl">Works with your stack.</h2>
+    <p class="mx-auto mt-5 max-w-xl text-[15px] font-light text-neutral-600 dark:text-neutral-400">Model providers, agent frameworks, coding tools, and the platforms you already run.</p>
+    {{- $logos := slice
+      (dict "f" "openai" "n" "OpenAI") (dict "f" "anthropic" "n" "Anthropic") (dict "f" "google-gemini" "n" "Gemini") (dict "f" "bedrock" "n" "Amazon Bedrock")
+      (dict "f" "azure-openai" "n" "Azure OpenAI") (dict "f" "mistral" "n" "Mistral") (dict "f" "ollama" "n" "Ollama") (dict "f" "hugging-face" "n" "Hugging Face")
+      (dict "f" "langchain" "n" "LangChain") (dict "f" "langgraph" "n" "LangGraph") (dict "f" "crewai" "n" "CrewAI") (dict "f" "google-adk" "n" "Google ADK")
+      (dict "f" "claude" "n" "Claude Code") (dict "f" "cursor" "n" "Cursor") (dict "f" "mcp" "n" "MCP") (dict "f" "a2a" "n" "A2A")
+      (dict "f" "kubernetes" "n" "Kubernetes") (dict "f" "istio" "n" "Istio") (dict "f" "grafana" "n" "Grafana") (dict "f" "langfuse" "n" "Langfuse")
+    }}
+    <div class="mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-3xl border border-black/10 bg-black/10 sm:grid-cols-4 lg:grid-cols-5 dark:border-white/10 dark:bg-white/10">
+      {{- range $logos }}
+      <div class="group flex h-28 flex-col items-center justify-center gap-3 bg-white dark:bg-black">
+        <img src="/integrations/{{ .f }}.svg" alt="" class="h-7 w-7 opacity-70 grayscale transition group-hover:opacity-100 group-hover:grayscale-0 dark:opacity-80 dark:brightness-0 dark:invert dark:group-hover:opacity-100" loading="lazy">
+        <span class="text-xs font-medium text-neutral-600 dark:text-neutral-400">{{ .n }}</span>
+      </div>
+      {{- end }}
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMMUNITY CTA ============ -->
+<section id="community" class="relative isolate overflow-hidden border-t border-black/5 dark:border-white/5">
+  <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 bottom-0 -z-10 mx-auto h-[420px] max-w-4xl translate-y-1/2 rounded-full bg-violet-500/20 blur-[120px] dark:bg-violet-600/25"></div>
+  <div class="mx-auto max-w-4xl px-6 py-40 text-center">
+    <h2 class="text-5xl font-light tracking-[-0.04em] sm:text-7xl">Build it with us.</h2>
+    <p class="mx-auto mt-6 max-w-xl text-lg font-light text-neutral-600 dark:text-neutral-400">agentgateway is developed in the open. Join the community on Discord, star the repo, and come to the community meetings.</p>
+    <div class="mt-10 flex flex-wrap justify-center gap-3">
+      <a href="https://discord.gg/y9efgEmppm" class="rounded-full bg-neutral-950 px-6 py-3 text-sm font-medium text-white transition-transform hover:scale-[1.03] dark:bg-white dark:text-black">Join Discord</a>
+      <a href="https://github.com/agentgateway/agentgateway" class="rounded-full border border-black/15 px-6 py-3 text-sm font-medium transition-colors hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10">Star on GitHub</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="border-t border-black/10 dark:border-white/10">
+  <div class="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-[2fr_1fr_1fr_1fr]">
+    <div>
+      <img src="/agw-light.svg" alt="agentgateway" class="h-7 w-auto dark:hidden">
+      <img src="/agw-dark.svg" alt="agentgateway" class="hidden h-7 w-auto dark:block">
+      <p class="mt-5 max-w-sm text-sm font-light leading-relaxed text-neutral-600 dark:text-neutral-400">The open source gateway for AI traffic — LLM, MCP, A2A, and HTTP in one data plane.</p>
+    </div>
+    {{- $cols := slice
+      (dict "h" "Product" "links" (slice (dict "t" "Features" "u" "#features") (dict "t" "Integrations" "u" "#integrations") (dict "t" "Models" "u" "/models/") (dict "t" "Enterprise" "u" "/enterprise/")))
+      (dict "h" "Resources" "links" (slice (dict "t" "Docs" "u" "/docs/") (dict "t" "Blog" "u" "/blog/") (dict "t" "Release notes" "u" "/docs/standalone/latest/release-notes/release-notes/")))
+      (dict "h" "Community" "links" (slice (dict "t" "GitHub" "u" "https://github.com/agentgateway/agentgateway") (dict "t" "Discord" "u" "https://discord.gg/y9efgEmppm") (dict "t" "Code of Conduct" "u" "https://github.com/agentgateway/agentgateway/blob/main/CODE_OF_CONDUCT.md")))
+    }}
+    {{- range $cols }}
+    <div>
+      <h5 class="font-geist-mono text-[11px] uppercase tracking-widest text-neutral-500">{{ .h }}</h5>
+      <ul class="mt-5 space-y-3 text-sm">
+        {{- range .links }}<li><a href="{{ .u }}" class="text-neutral-700 hover:text-neutral-950 dark:text-neutral-300 dark:hover:text-white">{{ .t }}</a></li>{{ end }}
+      </ul>
+    </div>
+    {{- end }}
+  </div>
+</footer>
+
+</div>
+
+<script>
+(function () {
+  var el = document.getElementById('hp2-word');
+  if (el && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    var words = ['agents', 'LLMs', 'MCP', 'A2A', 'APIs'];
+    var i = 0;
+    setInterval(function () {
+      i = (i + 1) % words.length;
+      el.classList.remove('animate-word-in');
+      void el.offsetWidth;
+      el.textContent = words[i];
+      el.classList.add('animate-word-in');
+    }, 2400);
+  }
+  var btn = document.getElementById('hp2-copy');
+  if (btn) btn.addEventListener('click', function () {
+    var txt = document.getElementById('hp2-install').textContent;
+    navigator.clipboard && navigator.clipboard.writeText(txt).then(function () {
+      btn.textContent = 'Copied';
+      setTimeout(function () { btn.textContent = 'Copy'; }, 1600);
+    });
+  });
+})();
+</script>
