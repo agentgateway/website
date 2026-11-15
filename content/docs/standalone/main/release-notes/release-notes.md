@@ -22,6 +22,7 @@ A model that sets `passthrough` now always passes requests through, even on a kn
 
 ### LLM {#v18-llm}
 
+- **Anthropic fast mode uses fast pricing**: Anthropic Messages responses that report `usage.speed: "fast"` now set `llm.serviceTier` to `fast`, so model catalogs can apply Anthropic fast-mode rates instead of standard rates. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4363 -->
 - **Model discovery advertises preferred endpoints**: The `/v1/models` response now includes `preferred_endpoints` for models whose served client paths are known. Catalog entries can use `endpoints` to mark non-chat models, such as embedding or image models, so clients can pick compatible API paths. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4272 -->
 - **Nebius Token Factory provider**: Set `provider: nebius` to route requests to Nebius Token Factory at `https://api.tokenfactory.nebius.com/v1`. The preset supports Chat Completions and Embeddings, and the built-in model catalog includes Nebius pricing. For more information, see [Nebius Token Factory]({{< link-hextra path="/integrations/llm/providers/nebius/" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4225 -->
 - **Original client model**: CEL expressions can read `llm.originalModel`, the model name that the client sent before virtual model routing, aliases, provider overrides, or request body rewrites. Cost lookup now also falls back to `llm.originalModel` when the catalog has no price for the response or request model, so requests whose model was rewritten are still priced. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4215 -->
@@ -60,12 +61,14 @@ A model that sets `passthrough` now always passes requests through, even on a kn
 - gRPC clients now receive `UNAVAILABLE` for missing services, invalid backend types, and missing backends, so retryable backend-routing errors no longer fall back to `UNKNOWN`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4226 -->
 - HTTP/2 connection handoff avoids a deadlock when a waiting request is canceled as the pool delivers a connection. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4323 -->
 - HTTP/2 requests waiting for backend connection capacity are woken to retry when a peer lowers and then restores its stream limit, instead of waiting while slots are available. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4326 -->
+- Requests with more than one `Host` header line now return HTTP `400`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4401 -->
 - When an HTTP/2 server advertises a smaller stream limit than expected, the pool opens another connection instead of queuing the next request behind the full connection. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4273 -->
 - When the downstream client disconnects, external processing now cancels its in-flight callout requests and stops reading a streamed upstream response body. Previously, a request that waited in an endpoint picker queue, such as in llm-d, kept its queue slot until the callout timed out, and a streamed model response kept generating until `max_tokens`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4174 --> <!-- ref: https://github.com/agentgateway/agentgateway/pull/4285 -->
 - Routes and listeners match request hostnames case-insensitively, and forwarded requests keep the original `Host` header casing. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4233 -->
 
 **LLM**
 
+- `agentgateway import` now reports LiteLLM response-cache and Redis routing settings that are not migrated, including cache backend, TTL, namespace, and unknown cache parameters. <!-- ref: https://github.com/agentgateway/agentgateway/pull/3663 -->
 - Bedrock conversion now sends inline OpenAI file content and base64 Anthropic document content as Bedrock document blocks. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4199 -->
 - Bedrock guardrail Messages streams that omit the delta usage field continue to convert instead of failing the stream. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4299 -->
 - Bedrock Invoke streaming responses contribute input, output, cache-write, and cache-read token counts from `amazon-bedrock-invocationMetrics` to LLM usage metrics and cost calculations. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4297 -->
@@ -74,15 +77,20 @@ A model that sets `passthrough` now always passes requests through, even on a kn
 - Buffered Chat Completions responses that omit the top-level `model` field now keep the request model during parsing and format conversion. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4181 -->
 - Chat Completions clients now receive an OpenAI-style stream error when an Anthropic stream sends an error event after partial content. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4270 -->
 - GitHub Copilot embeddings requests now accept string `input`, route embedding models to `/embeddings`, and return OpenAI-compatible embeddings responses. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4240 -->
+- Messages `document` blocks sent to Responses backends now become file or text input parts in user messages and tool results instead of being dropped. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4127 -->
 - Messages replay to Bedrock drops assistant `thinking` blocks whose `signature` is empty, so Bedrock does not receive invalid reasoning content. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4115 -->
 - Bedrock requests now keep the Anthropic `thinking.display` setting, so Claude models receive `summarized` or `omitted` thinking display preferences. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4211 -->
 - Gemini and Vertex AI Chat Completions requests use `thinkingLevel` for Gemini 4 and Gemma 4 models, so `reasoning_effort` no longer returns Google thinking-budget errors. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4151 -->
 - Mistral reasoning responses that send `message.content` or `delta.content` as `thinking` and `text` parts pass through Chat Completions unchanged; converted Messages and Responses replies keep only the text parts. <!-- ref: https://github.com/agentgateway/agentgateway/pull/3729 -->
 - Streaming Chat Completions chunks that omit `model` are accepted, so usage from the final chunk is still reported. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4265 -->
 - Streaming LLM response transformations can read request-side CEL fields such as `llm.provider`, `llm.requestModel`, and `llm.streaming`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4241 -->
+- The built-in model catalog now includes Gemini 4 Carbon and Muse Ember pricing, limits, modalities, and capabilities. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4372 -->
+- The UI can save standalone LLM listener settings to the `llm.settings` database row in hybrid storage mode while keeping file-owned settings read-only. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4374 -->
+- Webhook guardrail masks that keep the same message count and roles now update text in place, so the proxy preserves tool calls, images, IDs, names, and metadata such as `cache_control`, while masks that add, drop, or change message roles still rebuild the request. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4341 -->
 
 **Operations**
 
+- Helm installs that leave native histogram scraping disabled no longer render `scrapeNativeHistograms`, so installs can succeed with Prometheus Operator versions older than v0.88.0. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4370 -->
 - On Windows, config lookup uses `USERPROFILE`, or `HOMEDRIVE` with `HOMEPATH`, when `HOME` is unset, so the default config file can be found without passing `--config` or `--file`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4264 -->
 - PostgreSQL request-log storage now replaces NUL characters in text and JSON fields with `U+FFFD`, so a prompt, completion, or custom attribute no longer rolls back the batch. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4274 -->
 
