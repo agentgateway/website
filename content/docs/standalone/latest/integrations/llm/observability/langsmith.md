@@ -119,7 +119,7 @@ Agentgateway exports traces directly to LangSmith without needing an OTel Collec
 version: '3'
 services:
   agentgateway:
-    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/standalone/image-tag-stable.md" >}}
+    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/standalone/image-tag-default.md" >}}
     ports:
       - "3000:3000"
     volumes:

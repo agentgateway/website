@@ -117,7 +117,7 @@ To run agentgateway and Open WebUI together, use the following `docker-compose.y
 ```yaml
 services:
   agentgateway:
-    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/standalone/image-tag-stable.md" >}}
+    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/standalone/image-tag-default.md" >}}
     ports:
       - "3000:3000"
       - "15000:15000"

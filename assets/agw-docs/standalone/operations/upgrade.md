@@ -211,7 +211,16 @@ Roll back to an earlier version.
 {{< reuse "agw-docs/standalone/operations/rollback-binary.md" >}}
 {{% /tab %}}
 {{% tab name="Docker" %}}
-{{< reuse "agw-docs/standalone/operations/rollback-docker.md" >}}
+Recreate the container from the previous tag. Because the configuration lives on the volume, no restore step is needed.
+
+```sh
+docker rm -f agentgateway
+docker run -d --name agentgateway \
+  --user "$(id -u):$(id -g)" \
+  -v "$PWD/agentgateway-config:/config" \
+  -p 4000:4000 \
+  {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/standalone/image-tag-prefix.md" >}}$OLD_VERSION
+```
 {{% /tab %}}
 {{% tab name="Helm" %}}
 Helm keeps the history of the release, so you can return to the previous revision.
