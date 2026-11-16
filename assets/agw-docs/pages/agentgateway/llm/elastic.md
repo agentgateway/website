@@ -241,7 +241,11 @@ Two kinds of variable appear in this command, and the difference matters.
 * `${ELASTIC_APM_HOST}` and `${ELASTIC_APM_PORT}` have no backslash, so your shell substitutes the values before Helm reads the file.
 * `\${env:ELASTIC_APM_AUTHORIZATION}` is escaped, so the value reaches the collector's configuration file unchanged. The collector then resolves it from the environment variable that `extraEnvs` sets from the Secret. This way, the token stays out of the Helm release.
 
-For a self-hosted APM Server, replace the exporter `endpoint` with the in-cluster address and add `tls.insecure: true` if TLS is not configured.
+For a self-hosted APM Server, replace the exporter `endpoint` with the in-cluster address.
+
+If authentication is not configured, remove the `ELASTIC_APM_AUTHORIZATION` entry from `extraEnvs` and remove the `Authorization` header from the `otlp/elastic` exporter. If no other headers remain, remove the `headers` section too. This avoids referencing the `elastic-apm-credentials` Secret that you skipped creating earlier.
+
+If TLS is not configured, add `tls.insecure: true` to the exporter.
 
 The `memory_limiter` and `batch` processors come from the chart's default configuration. For production deployments, review the collector's resource requests, memory limiter, batching, and replica count for your expected telemetry volume.
 
