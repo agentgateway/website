@@ -112,7 +112,7 @@ docker run --rm \
   -v "$PWD/config.yaml:/config.yaml:ro" \
   -e BRAINTRUST_API_KEY \
   -e BRAINTRUST_PARENT \
-  {{< reuse "agw-docs/standalone/image-ref.md" >}}:latest \
+  {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/standalone/image-tag-default.md" >}} \
   -f /config.yaml
 ```
 
