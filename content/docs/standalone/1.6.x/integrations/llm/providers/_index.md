@@ -24,7 +24,7 @@ For simplified `llm` configuration, upstream provider authentication is configur
 ### API key
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:

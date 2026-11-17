@@ -78,7 +78,7 @@ Register an application in Microsoft Entra ID and collect the values that agentg
 1. Create a `config.yaml` file that exposes a sample MCP server on port 3000 and protects it with the `entra` provider.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    mcp:
      port: 3000
      policies:

@@ -35,7 +35,7 @@ description: Route Goose's LLM traffic through agentgateway to govern an autonom
 Create a `config.yaml`:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   port: 3000

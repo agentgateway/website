@@ -53,7 +53,7 @@ You can configure the keys and budgets in the UI or in your configuration file.
 
    ```sh
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      database:
        url: sqlite://budgets.db
@@ -95,7 +95,7 @@ Create a configuration with a database, the catalog, API key authentication, and
 
 ```yaml
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   database:
     url: sqlite://budgets.db
@@ -484,4 +484,4 @@ This behavior is expected. Set the limit below the ceiling that you want. Size t
 
 - Cap tokens with a bucket instead, with [rate limit token budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/rate-limit/" >}}).
 - Price your traffic with a [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
-- Review the API key policy fields in [API key authentication]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}).
+- Review the API key policy fields in [API key authentication]({{< link-hextra path="/documentation/configuration/security/authentication/apikey-authn/" >}}).

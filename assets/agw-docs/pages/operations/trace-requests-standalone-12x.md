@@ -33,7 +33,7 @@ You can run `agctl trace` in two modes:
 If you do not already have a setup, the following minimal `config.yaml` works for the examples in this guide.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 binds:
 - port: 3000
   listeners:

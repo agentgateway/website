@@ -230,7 +230,7 @@ To save the configuration changes that you make in the UI, see [Configuration st
 1. Remove the `tls` section and the `ui.policies` section from your configuration file, and remove the `ui-gateway` if you no longer want a separate UI port.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 4000
