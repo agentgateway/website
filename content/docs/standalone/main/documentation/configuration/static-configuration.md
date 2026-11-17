@@ -39,6 +39,10 @@ The `CONNECTION_MIN_TERMINATION_DEADLINE` and `CONNECTION_TERMINATION_DEADLINE`
 environment variables take precedence over these fields. Set them as durations,
 such as `10s`.
 
+## Cap the DNS cache time {#dns-max-ttl}
+
+{{< reuse "agw-docs/pages/setup/dns-max-ttl.md" >}}
+
 ## Static configuration file schema
 
 The following table shows the `config` file schema for static configurations at startup. For the full agentgateway schema of dynamic and static configuration, see the [reference docs]({{< link-hextra path="/reference/configuration/schema/" >}}).

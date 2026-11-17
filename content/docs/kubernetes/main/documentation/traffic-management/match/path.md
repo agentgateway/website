@@ -334,7 +334,7 @@ Use [RE2 syntax](https://github.com/google/re2/wiki/Syntax) for regular expressi
 
 ## Optional: Normalize paths before matching {#normalize-paths}
 
-By default, path matching uses the request path as agentgateway receives it. Use an {{< reuse "agw-docs/snippets/policy.md" >}} to normalize request paths before route matching, policy evaluation, and forwarding to the backend. The policy applies to every route on the Gateway. The following steps use the `httpbin-match` HTTPRoute from [Set up regex matching](#set-up-regex-matching).
+By default, path matching uses the request path as agentgateway receives it. Use an {{< reuse "agw-docs/snippets/policy.md" >}} to normalize request paths before route matching, policy evaluation, and forwarding to the backend. The policy applies to every route on the Gateway. For all normalization rules, the order in which they run, and the paths that they reject, see [Path normalization]({{< link-hextra path="/documentation/security/path-normalization/" >}}). The following steps use the `httpbin-match` HTTPRoute from [Set up regex matching](#set-up-regex-matching).
 
 1. Send a request to the `/anything//stores/./us/entities` path. This path contains a repeated slash and a `.` segment. The `--path-as-is` option stops curl from resolving the `.` segment before curl sends the request. Verify that you get back a 404 HTTP response code, because the path does not match the `/anything/stores/[^/]+?/entities` regex pattern.
    {{< tabs >}}
@@ -389,14 +389,7 @@ By default, path matching uses the request path as agentgateway receives it. Use
 
    | Field | Description |
    | -- | -- |
-   | `spec.frontend.http.normalize` | Normalizes the request path before route matching, policy evaluation, and forwarding. Access logs keep the original request path. |
-   | `MergeSlash` | Collapses repeated slashes and treats `\` as `/`. |
-   | `DotSegment` | Resolves `.` and `..` path segments. This rule also treats `%2E` as `.`, treats `\` as `/`, and ignores parameters on dot segments such as `..;x`. |
-   | `DecodeUnreserved` | Decodes percent-encoded unreserved characters (`A-Z`, `a-z`, `0-9`, `-`, `.`, `_`, and `~`). |
-   | `RejectEscapedSlash` | Rejects requests whose path contains `%2F` or `%5C`. |
-   | `UnescapeSlash` | Decodes `%2F` and `%5C` into `/`. The API server rejects a policy that sets both `UnescapeSlash` and `RejectEscapedSlash`. |
-
-   The rules run in a fixed order, regardless of their order in the list. Percent-decoding runs first, then `MergeSlash`, then `DotSegment`. If you set any rule except `MergeSlash`, agentgateway rejects paths that contain malformed percent-encoding or `%00`. Agentgateway returns a 400 HTTP response code for every rejected path, including a path that `RejectEscapedSlash` rejects.
+   | `spec.frontend.http.normalize` | The normalization rules to apply. `MergeSlash` collapses repeated slashes, `DotSegment` resolves `.` and `..` segments, and `DecodeUnreserved` decodes percent-encoded unreserved characters. The `DotSegment` and `DecodeUnreserved` rules also reject a path with malformed percent-encoding or `%00`. |
 
 3. Send the same request again. Verify that you get back a 200 HTTP response code. The `url` field in the response body shows the normalized `/anything/stores/us/entities` path that the httpbin app received.
    {{< tabs >}}

@@ -82,14 +82,14 @@ This behavior can open a security hole. Take a rule that denies requests that in
 
 To get a consistent type, read the header through a header view. The following table shows the result of each expression for a request made with `curl -H 'x-a: 1' -H 'x-a: 2'`:
 
-| Expression | Result | Use it to |
+| Expression | Result | Notes |
 | -- | -- | -- |
 | `request.headers["x-a"]` | `["1", "2"]` | Not recommended. The type depends on how many times the header is sent. |
 | `request.headers["x-a"] == "1"` | `false` | Not recommended. The comparison is false for repeated headers. |
 | `request.headers["x-a"].startsWith("1")` | Error | Not recommended. String functions fail for repeated headers. |
-| `request.headers.raw()["x-a"][0]` | `"1"` | Get the first value. |
-| `request.headers.join()["x-a"]` | `"1,2"` | Get all values as one string. |
-| `request.headers.split()["x-a"]` | `["1", "2"]` | Get all values as a list, with comma-separated values split too. |
+| `request.headers.raw()["x-a"][0]` | `"1"` | Gets the first value. |
+| `request.headers.join()["x-a"]` | `"1,2"` | Gets all values as one string. |
+| `request.headers.split()["x-a"]` | `["1", "2"]` | Gets all values as a list, with comma-separated values split too. |
 
 The `raw()` view always returns a list, even if the header is sent once, so `[0]` works for single and repeated headers. The `split()` view also splits each value on commas, so `x-a: 1,2` and `x-a: 3` together return `["1", "2", "3"]`. For the full list of header views, see [Header Views](https://github.com/agentgateway/agentgateway/blob/main/schema/cel-functions.md#header-views) in the agentgateway CEL schema.
 
@@ -113,9 +113,9 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 | External processing (ExtProc) | Request-phase rules: same as Transformation (request). Response-phase rules: same as Transformation (response). |
 | LLM policy | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `llmRequest`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — `llmRequest` is the raw JSON body during LLM request handling (not `mcp`). [^5] |
 | Virtual model callout | Same as LLM policy. `transformation` and `cache.ttl` can also read `callout`, the callout response, with `callout.headers` and the decoded JSON `callout.body`. |
-| Logging | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata`, `upstreamCalls` [^6]. (Same across logging, tracing, and metrics.) |
-| Tracing | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata`, `upstreamCalls` [^6]. (Same across logging, tracing, and metrics.) |
-| Metrics | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata`, `upstreamCalls` [^6]. (Same across logging, tracing, and metrics.) |
+| Logging | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata`, `guardrails`, `mcpGuardrails`, `upstreamCalls` [^6]. (Same across logging, tracing, and metrics.) |
+| Tracing | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata`, `guardrails`, `mcpGuardrails`, `upstreamCalls` [^6]. (Same across logging, tracing, and metrics.) |
+| Metrics | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata`, `guardrails`, `mcpGuardrails`, `upstreamCalls` [^6]. (Same across logging, tracing, and metrics.) |
 
 [^1]: Request-time transformation evaluation binds `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, and `metadata` when earlier filters have populated them. For AI requests, `llm.requestModel` is available before provider overrides. `llmRequest` is available for the parsed JSON body. `mcp` is populated only for MCP JSON-RPC requests to an MCP backend.
 
