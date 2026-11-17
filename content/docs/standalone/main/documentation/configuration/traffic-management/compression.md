@@ -39,7 +39,7 @@ For the full list of fields, see the [configuration reference]({{< link-hextra p
 
 ## Before you begin
 
-1. Install a [nightly agentgateway binary]({{< link-hextra path="/documentation/setup/install/binary/#binary" >}}). On the installation page, select **Nightly build**. Compression is not available in v1.7.0.
+1. {{< reuse "agw-docs/snippets/compression-prereq-binary.md" >}}
 2. {{< reuse "agw-docs/snippets/prereq-docker.md" >}}
 
 ## Compress responses and decompress requests
