@@ -21,7 +21,7 @@ The following table shows which resource types each policy section can target.
 | -- | -- | -- | -- |
 | `frontend` | Gateway | Depends on the field. See [Frontend section restrictions](#frontend-restrictions) for more information. | Applies to all listeners on the targeted Gateway. A `targetRef` or `targetSelector` can also set `port` to scope the policy to a single listener port on the Gateway. |
 | `traffic` | Gateway, HTTPRoute, GRPCRoute, ListenerSet | Optional | When targeting a Gateway, the `sectionName` selects a specific listener. When targeting a ListenerSet, the `sectionName` selects a specific listener in that ListenerSet. When targeting an HTTPRoute or GRPCRoute, the `sectionName` selects a specific route rule. |
-| `backend` | Gateway, HTTPRoute, GRPCRoute, ListenerSet, Service, {{< reuse "agw-docs/snippets/backend.md" >}} | Optional | When targeting a Service, the `sectionName` selects a specific port. When targeting an {{< reuse "agw-docs/snippets/backend.md" >}}, the `sectionName` selects a specific sub-backend. |
+| `backend` | Gateway, HTTPRoute, GRPCRoute, Service, {{< reuse "agw-docs/snippets/backend.md" >}} | Optional | When targeting a Service, the `sectionName` selects a specific port. When targeting an {{< reuse "agw-docs/snippets/backend.md" >}}, the `sectionName` selects a specific sub-backend. |
 
 ### Frontend section restrictions {#frontend-restrictions}
 
@@ -79,13 +79,18 @@ Each policy section follows a different precedence order based on the specificit
 | `frontend` | Gateway < Port < Listener |
 | `traffic` (Gateway listeners) | Gateway < Listener < Route < Route rule |
 | `traffic` (ListenerSet listeners) | Gateway < ListenerSet < ListenerSet listener < Route < Route rule |
-| `backend` | Gateway < Listener < Route (targetRef) < Route rule (targetRef) < Backend (targetRef) < Backend (inline on the backend object) < Route backend ref (inline on the route) |
+| `backend` | Gateway < Listener < Service or Backend (targetRef) < Sub-backend (targetRef with `sectionName`) < Route (targetRef) < Route rule (targetRef) < Backend (inline on the backend object) < Route backend ref (inline on the route) |
 
 A listener is defined either on the Gateway or in a ListenerSet. So a `traffic` policy follows the Gateway listener order or the ListenerSet listener order, depending on where its listener is defined.
 
 For a `frontend` policy, you can only apply the policy at the Listener level when the `frontend` policy field supports setting a `sectionName`. For more information about the fields that support the `sectionName` setting, see [Frontend section restrictions](#frontend-restrictions).
 
 For `backend`, precedence works the same way but with more levels. For example, if a Gateway-level policy sets `backend.tcp` and `backend.tls`, and a Backend-level policy sets `backend.tls`, the effective policy uses `tcp` from the Gateway policy and `tls` from the Backend policy.
+
+A `backend` policy that targets a Route overrides a `backend` policy that targets the Service or Backend that the route sends traffic to. For example, if a Route-level policy and a Backend-level policy both set `backend.transformation`, the effective policy uses the value from the Route policy.
+
+> [!NOTE]
+> A `backend` policy that targets a ListenerSet has no effect. The Kubernetes API server accepts the policy and the policy reports `Attached`, but agentgateway does not apply it to the backend. To apply a `backend` policy to every route on a ListenerSet listener, target the Gateway or each Route instead. Policies in the `traffic` section can target a ListenerSet.
 
 ### Equal specificity {#ties}
 
