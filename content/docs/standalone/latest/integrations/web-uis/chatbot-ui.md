@@ -73,7 +73,7 @@ Agentgateway is already running with the new configuration, so skip Step 2.
 Create a `config.yaml`. Agentgateway listens on port `3001` so it does not conflict with Chatbot UI's default port `3000`:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   port: 3001
   models:

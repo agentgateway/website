@@ -41,7 +41,7 @@ Run a Jaeger container on the same host as agentgateway.
    {{% /tab %}}
    {{% tab name="Config file" %}}
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      tracing:
        host: localhost:4317
@@ -49,6 +49,9 @@ Run a Jaeger container on the same host as agentgateway.
    ```
    {{% /tab %}}
    {{< /tabs >}}
+
+   > [!NOTE]
+   > {{< reuse "agw-docs/standalone/observability/docker-collector-host.md" >}}
 
 3. Open the Jaeger UI at [http://localhost:16686](http://localhost:16686) to view traces.
 
@@ -122,7 +125,7 @@ Run agentgateway and Jaeger together as a single Docker Compose stack. Jaeger is
 
 2. In your agentgateway config file, set the Jaeger service name as the tracing host.
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      tracing:
        host: jaeger:4317

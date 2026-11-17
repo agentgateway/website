@@ -68,7 +68,7 @@ Create a `config.yaml` that listens on port 3000 and routes traffic to the httpb
 
 ```yaml
 cat > config.yaml << 'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 binds:
 - port: 3000
   listeners:

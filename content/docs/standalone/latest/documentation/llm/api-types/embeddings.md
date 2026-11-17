@@ -15,7 +15,7 @@ Agentgateway supports the OpenAI-compatible Embeddings API. Requests to `/v1/emb
 In the simplified `llm` configuration, agentgateway automatically maps `/v1/embeddings` requests to the `embeddings` route type, so no explicit route configuration is required.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -27,7 +27,7 @@ llm:
 To configure the route type explicitly, use the `gateways` and `routes` format and set the `embeddings` route type in the `policies.ai.routes` map.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 4000

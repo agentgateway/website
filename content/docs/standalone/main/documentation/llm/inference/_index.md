@@ -20,7 +20,7 @@ endpoint for each inference request.
 Use this mode when you want Gateway API integration, `InferencePool` resources,
 traffic splitting, route matching, and other Kubernetes networking features.
 
-[Set up Kubernetes inference routing](/docs/kubernetes/main/documentation/llm/inference/).
+{{% upstream %}}[Set up Kubernetes inference routing](/docs/kubernetes/main/documentation/llm/inference/).{{% /upstream %}}{{% downstream %}}[Set up Kubernetes inference routing](/docs/kubernetes/latest/documentation/llm/inference/).{{% /downstream %}}
 
 ## Standalone request scheduler mode
 
@@ -68,7 +68,7 @@ Both modes reject `unix:` socket paths. An EPP cannot route requests to a local 
 The following configuration accepts hostname destinations. The EPP itself is also reached by hostname.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 services:
 - name: my-model
   namespace: default
