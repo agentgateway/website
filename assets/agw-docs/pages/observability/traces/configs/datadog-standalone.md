@@ -79,8 +79,7 @@ Traces from the example omit prompt and completion content.
 
 4. Start the Datadog Agent and HomeHub. The example's `openmetrics.yaml` check
    sets `use_latest_spec: true` so that the Agent parses the proxy's output as
-   OpenMetrics. {{< reuse "agw-docs/snippets/agentgateway.md" >}} 1.6 and earlier need this setting, or the Agent
-   drops every counter.
+   OpenMetrics. Without this setting, the Agent drops every counter.
 
    ```sh
    docker compose --env-file versions.env --env-file .env up -d
@@ -250,8 +249,7 @@ allow several minutes for indexing, and search by the exact metric name.
 
 ### Gauges appear but counters are missing
 
-In {{< reuse "agw-docs/snippets/agentgateway.md" >}} 1.6 and earlier, confirm that the `openmetrics` check
-sets `use_latest_spec: true`. Without this setting, the Agent parses the proxy's
+Confirm that the `openmetrics` check sets `use_latest_spec: true`. Without this setting, the Agent parses the proxy's
 OpenMetrics output as classic Prometheus text. The Agent then drops every counter
 without an error, but gauges and histograms still arrive.
 

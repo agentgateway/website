@@ -85,25 +85,26 @@ omit prompt and completion content.
    `gateway.yaml` and update the other files to refer to your Gateway.
 
    The proxy check in `proxy-parameters.yaml` sets `use_latest_spec: true` so
-   that the Agent parses the proxy's output as OpenMetrics. {{< reuse "agw-docs/snippets/agentgateway.md" >}} 1.6
-   and earlier need this setting, or the Agent drops every counter. The controller
+   that the Agent parses the proxy's output as OpenMetrics. Without this
+   setting, the Agent drops every counter. The controller
    check in `controller-annotations.yaml` sets `use_latest_spec: false`, because
    the controller serves the classic Prometheus text format.
 
-4. Port-forward the gateway and the proxy metrics endpoint. Run each command in
-   its own terminal.
+4. In a separate terminal, port-forward the gateway.
 
    ```sh
    kubectl port-forward --namespace agentgateway-system \
      service/agentgateway-proxy 13000:80
    ```
 
+5. In another terminal, port-forward the proxy metrics endpoint.
+
    ```sh
    kubectl port-forward --namespace agentgateway-system \
      deployment/agentgateway-proxy 18520:15020
    ```
 
-5. Send a request to the HomeHub model.
+6. Send a request to the HomeHub model.
 
    ```sh
    curl --fail http://127.0.0.1:13000/v1/chat/completions \
@@ -114,7 +115,7 @@ omit prompt and completion content.
    The response describes the HomeHub X2 reset procedure and reports 12 input
    and 24 output tokens.
 
-6. Check the proxy's request and token metrics.
+7. Check the proxy's request and token metrics.
 
    ```sh
    curl --fail http://127.0.0.1:18520/metrics \
@@ -125,7 +126,7 @@ omit prompt and completion content.
    `agentgateway_gen_ai_client_token_usage` samples for the `homehub-support`
    model.
 
-7. Send another request and wait one scrape interval. Counter metrics need two
+8. Send another request and wait one scrape interval. Counter metrics need two
    scrapes before rate samples appear. Then verify that the Agent discovered the
    OpenMetrics checks for the controller and proxy. If the controller and proxy
    run on different nodes, run the check in the Agent pod on each component's
@@ -145,7 +146,7 @@ omit prompt and completion content.
    The output reports instances tagged `component:proxy` and
    `component:controller`.
 
-8. In Datadog, open **Metrics > Explorer**, filter by `env:datadog-dev` and
+9. In Datadog, open **Metrics > Explorer**, filter by `env:datadog-dev` and
    `service:agentgateway`, and search for an exact metric name. Narrow the
    results with `component:proxy` or `component:controller`.
 
@@ -153,13 +154,13 @@ omit prompt and completion content.
    - `agentgateway.gen_ai.token.usage.sum`
    - `agentgateway.controller.reconciliations.count`
 
-9. In **Dashboards**, import the example's
-   [`dashboard.json`](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/dashboard.json)
-   and set the `env` template variable to `datadog-dev`. Enable percentile
-   aggregations in Metrics Summary for the latency distributions before you use
-   the p95 widgets. Streaming timing, MCP, and guardrail widgets remain empty
-   until the corresponding traffic is present. HomeHub has no real provider
-   pricing, so estimated-cost widgets can be empty or show **Cost unavailable**.
+10. In **Dashboards**, import the example's
+    [`dashboard.json`](https://github.com/agentgateway/agentgateway/blob/main/examples/datadog/dashboard.json)
+    and set the `env` template variable to `datadog-dev`. Enable percentile
+    aggregations in Metrics Summary for the latency distributions before you use
+    the p95 widgets. Streaming timing, MCP, and guardrail widgets remain empty
+    until the corresponding traffic is present. HomeHub has no real provider
+    pricing, so estimated-cost widgets can be empty or show **Cost unavailable**.
 
 The example collects all proxy and controller metric families. The
 `agentgateway.mcp.requests.count` metric's `resource` tag can contain tool names
@@ -250,13 +251,11 @@ Keep management ports private outside troubleshooting.
 
 ### Gauges appear but counters are missing
 
-In {{< reuse "agw-docs/snippets/agentgateway.md" >}} 1.6 and earlier, confirm that the `openmetrics` check for
-the proxy sets `use_latest_spec: true`. Without this setting, the Agent parses
+Confirm that the `openmetrics` check for the proxy sets `use_latest_spec: true`. Without this setting, the Agent parses
 the proxy's OpenMetrics output as classic Prometheus text. The Agent then drops
 every counter without an error, but gauges and histograms still arrive.
 
-In every version, keep `use_latest_spec: false` for the controller check,
-because the controller serves classic Prometheus text.
+Keep `use_latest_spec: false` for the controller check, because the controller serves classic Prometheus text.
 
 ### An OpenMetrics check is missing
 
@@ -269,7 +268,7 @@ discovery configuration.
 
 Confirm that Agent Observability is enabled, the Agent is healthy, and the
 Datadog site is correct. For the complete example, check the Agent status and
-the tracing policy. Set `DD_AGENT_POD` as in step 7 of the complete example
+the tracing policy. Set `DD_AGENT_POD` as in step 8 of the complete example
 first.
 
 ```sh
