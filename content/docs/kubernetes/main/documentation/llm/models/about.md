@@ -398,7 +398,7 @@ A `Custom` provider behaves differently. When you set `spec.custom.formats[].pat
 
 ## Virtual models
 
-A model that routes across other models is a virtual model. It is an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that sets `spec.virtualModel` instead of `spec.provider`, so it has no provider of its own. It publishes one client-facing name and selects a concrete model to serve each request.
+A model that routes across other models is a virtual model. It is an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that sets `spec.virtualModel` instead of `spec.provider`, so it has no provider of its own. It publishes one client-facing name and selects another model to serve each request.
 
 The following example splits traffic across two concrete models by weight.
 
@@ -443,7 +443,9 @@ For examples of each strategy, see [Virtual models]({{< link-hextra path="/docum
 ### Constraints
 
 - Model targets must be `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources in the same namespace. Cross-namespace model references are not supported.
-- Virtual models must be `Public`. The restriction stops virtual models from targeting each other, which could otherwise create routing loops.
+- Weighted, conditional, and callout virtual models can target other virtual models. Failover targets must be concrete provider models.
+- Virtual models must be `Public`. A nested virtual model is a target and must be `Public` too, so clients can also request it directly.
+- Nesting is limited to 4 levels. Past that limit, requests fail with a `404` response and the `virtual_model_not_resolved` error code. Kubernetes does not check for cycles when you apply the models, so this limit is the only guard.
 - Virtual models cannot set `spec.policies`. Configure policies on the concrete target models instead.
 
 ## Model resolution order {#agentgatewaymodel-resolution}
