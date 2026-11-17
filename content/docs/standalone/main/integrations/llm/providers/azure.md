@@ -318,7 +318,7 @@ On AKS, complete the following steps to prepare the cluster.
 
 1. [Enable Microsoft Entra Workload ID on the cluster](https://learn.microsoft.com/azure/aks/workload-identity-deploy-cluster).
 
-2. Create a user-assigned managed identity. Then, grant that identity the least-privilege role that the Azure AI resource requires. For example, the `Azure AI User` role grants access to Azure AI Foundry.
+2. Create a user-assigned managed identity. Then, grant that identity the least-privilege role that the Azure AI resource requires. For example, the `Foundry User` role grants access to Azure AI Foundry. This role was previously named `Azure AI User`.
 
 3. Create a federated credential that trusts the service account that agentgateway uses. By default, the standalone Helm chart names the service account after the Helm release. For a release named `agentgateway` in the `agentgateway` namespace, use the following subject. The subject must match the namespace and the service account name exactly.
 

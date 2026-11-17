@@ -16,13 +16,18 @@ You can authenticate to Azure with an API key or with implicit Entra ID authenti
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.1.x,2.2.x,2.3.x" >}}
 You can also configure explicit managed identity or workload identity authentication in the {{< reuse "agw-docs/snippets/backend.md" >}}. Managed identity requires access to an Azure managed identity endpoint. Workload identity exchanges the projected ServiceAccount token with Microsoft Entra ID.
 
+Workload identity is not limited to AKS. Microsoft Entra ID trusts the ServiceAccount tokens of any Kubernetes cluster whose token issuer is publicly discoverable, such as a Google Kubernetes Engine (GKE) cluster. On AKS, a webhook adds the token and the Azure settings to the proxy pod. On other clusters, you add them yourself. To set up workload identity, follow the steps for your cluster:
+
+* [Use Microsoft Entra Workload ID on AKS](#use-microsoft-entra-workload-id-on-aks)
+* [Use workload identity federation from GKE](#use-workload-identity-federation-from-gke)
+
 ### Use Microsoft Entra Workload ID on AKS
 
 To authenticate with Microsoft Entra Workload ID, prepare the AKS cluster and the proxy service account before you create the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
 1. [Enable workload identity on the AKS cluster](https://learn.microsoft.com/azure/aks/workload-identity-deploy-cluster).
 
-2. Create a user-assigned managed identity. Then, grant that identity the least-privilege role that the Azure AI resource requires. For example, the `Azure AI User` role grants access to Azure AI Foundry.
+2. Create a user-assigned managed identity. Then, grant that identity the least-privilege role that the Azure AI resource requires. For example, the `Foundry User` role grants access to Azure AI Foundry. This role was previously named `Azure AI User`. For more information, see [Role-based access control for Microsoft Foundry](https://learn.microsoft.com/azure/foundry/concepts/rbac-foundry).
 
 3. Create a federated credential that trusts the service account that the proxy uses. By default, the deployer names this service account after the Gateway. For the default gateway from the quickstart, use the following subject. The subject must match the namespace and the service account name exactly.
 
@@ -60,6 +65,119 @@ To authenticate with Microsoft Entra Workload ID, prepare the AKS cluster and th
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
      --type merge \
      --patch '{"spec":{"infrastructure":{"parametersRef":{"group":"{{< reuse "agw-docs/snippets/group.md" >}}","kind":"{{< reuse "agw-docs/snippets/gatewayparameters.md" >}}","name":"azure-workload-identity"}}}}'
+   ```
+
+### Use workload identity federation from GKE
+
+GKE serves the token issuer of each cluster from a public Google endpoint, so Microsoft Entra ID can verify the ServiceAccount tokens of the proxy. GKE has no Azure workload identity webhook. You add the federated token volume and the Azure environment variables to the proxy pod yourself, in an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. You can use the same steps on other Kubernetes clusters that have a publicly discoverable token issuer.
+
+1. Get the token issuer URL from the discovery document of the cluster. Do not build the URL from the `selfLink` value of the cluster. For a zonal cluster, `selfLink` contains `/zones/`, but the issuer contains `/locations/`. Microsoft Entra ID rejects a token if the issuer does not match exactly.
+
+   ```sh
+   export ISSUER=$(kubectl get --raw /.well-known/openid-configuration | jq -r .issuer)
+   echo $ISSUER
+   ```
+
+   Example output:
+
+   ```
+   https://container.googleapis.com/v1/projects/my-project/locations/us-central1-b/clusters/my-cluster
+   ```
+
+2. Confirm that the discovery document is publicly available. Microsoft Entra ID gets the document and the signing keys without credentials. The following command sends no credentials. The output is the same issuer URL.
+
+   ```sh
+   curl -s "$ISSUER/.well-known/openid-configuration" | jq -r .issuer
+   ```
+
+3. Create a user-assigned managed identity. Then, grant that identity the least-privilege role that the Azure AI resource requires, such as `Foundry User`. Record the client ID of the identity and the ID of your Microsoft Entra tenant for a later step.
+
+4. Create a federated credential on the managed identity that trusts the service account of the proxy. The deployer names this service account after the Gateway. The following example uses the default gateway from the quickstart.
+
+   ```sh
+   az identity federated-credential create \
+     --name agentgateway-gke \
+     --identity-name <managed-identity-name> \
+     --resource-group <resource-group> \
+     --issuer "$ISSUER" \
+     --subject "system:serviceaccount:{{< reuse "agw-docs/snippets/namespace.md" >}}:agentgateway-proxy" \
+     --audiences "api://AzureADTokenExchange"
+   ```
+
+   | Setting | Description |
+   | -- | -- |
+   | `--issuer` | The token issuer URL of the cluster from step 1. |
+   | `--subject` | The service account of the proxy, in the format `system:serviceaccount:<namespace>:<name>`. The namespace and the name must match exactly. |
+   | `--audiences` | Set to `api://AzureADTokenExchange`. This value must match the audience of the projected token in the next step. |
+
+5. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource for the proxy pod. The resource projects a ServiceAccount token for Microsoft Entra ID, and sets the Azure environment variables that the proxy reads. If the gateway already refers to an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, add these settings to that resource instead.
+
+   ```yaml
+   kubectl apply --server-side -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+   metadata:
+     name: azure-workload-identity
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     env:
+     - name: AZURE_CLIENT_ID
+       value: <managed-identity-client-id>
+     - name: AZURE_TENANT_ID
+       value: <entra-tenant-id>
+     - name: AZURE_FEDERATED_TOKEN_FILE
+       value: /var/run/secrets/azure/tokens/azure-identity-token
+     deployment:
+       spec:
+         template:
+           spec:
+             containers:
+             - name: agentgateway
+               volumeMounts:
+               - name: azure-identity-token
+                 mountPath: /var/run/secrets/azure/tokens
+                 readOnly: true
+             volumes:
+             - name: azure-identity-token
+               projected:
+                 sources:
+                 - serviceAccountToken:
+                     path: azure-identity-token
+                     audience: api://AzureADTokenExchange
+                     expirationSeconds: 3600
+   EOF
+   ```
+
+   | Setting | Description |
+   | -- | -- |
+   | `env.AZURE_CLIENT_ID` | The client ID of the managed identity. |
+   | `env.AZURE_TENANT_ID` | The ID of your Microsoft Entra tenant. |
+   | `env.AZURE_FEDERATED_TOKEN_FILE` | The path to the projected token in the proxy container: the `mountPath` of the volume, followed by the `path` of the token. |
+   | `containers.name` | Set to `agentgateway`, the name of the proxy container. The controller merges the volume mount into the container that has this name. |
+   | `serviceAccountToken.audience` | Set to `api://AzureADTokenExchange`, the audience that Microsoft Entra ID requires. |
+   | `serviceAccountToken.expirationSeconds` | The lifetime of the projected token. The kubelet replaces the token before it expires, and the proxy reads the file again. You do not have to restart the proxy. |
+
+6. Attach the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to the gateway.
+
+   ```sh
+   kubectl patch gateway agentgateway-proxy \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --type merge \
+     --patch '{"spec":{"infrastructure":{"parametersRef":{"group":"{{< reuse "agw-docs/snippets/group.md" >}}","kind":"{{< reuse "agw-docs/snippets/gatewayparameters.md" >}}","name":"azure-workload-identity"}}}}'
+   ```
+
+7. Confirm that the proxy deployment mounts the token with the Microsoft Entra audience.
+
+   ```sh
+   kubectl get deployment agentgateway-proxy \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -o jsonpath='{.spec.template.spec.volumes[?(@.name=="azure-identity-token")].projected.sources[0].serviceAccountToken.audience}'
+   ```
+
+   Example output:
+
+   ```
+   api://AzureADTokenExchange
    ```
 {{< /version >}}
 
@@ -163,7 +281,7 @@ To authenticate with Microsoft Entra Workload ID, prepare the AKS cluster and th
 
    {{< tabs >}}
    {{% tab name="Workload identity" %}}
-   To use workload identity, first prepare the AKS cluster as described in [Use Microsoft Entra Workload ID on AKS](#use-microsoft-entra-workload-id-on-aks). Then, select workload identity in the {{< reuse "agw-docs/snippets/backend.md" >}}.
+   To use workload identity, first prepare the cluster as described in [Use Microsoft Entra Workload ID on AKS](#use-microsoft-entra-workload-id-on-aks) or [Use workload identity federation from GKE](#use-workload-identity-federation-from-gke). Then, select workload identity in the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -248,7 +366,7 @@ To authenticate with Microsoft Entra Workload ID, prepare the AKS cluster and th
    | `azure.model` | The model to use for requests, such as `gpt-4.1-mini`. |
    | `azure.projectName` | The Foundry project name. Required when `resourceType` is `Foundry`. |
    | `azure.apiVersion` | Optional API version override. Defaults to `v1`. For legacy deployments, use a dated version like `2025-01-01-preview`. |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.1.x,2.2.x,2.3.x" >}}
-   | `policies.auth.azure.workloadIdentity` | Use Azure workload identity. Leave the object empty. The proxy uses the federated token and the Azure environment variables that the Azure workload identity webhook projects into the proxy pod. |
+   | `policies.auth.azure.workloadIdentity` | Use Azure workload identity. Leave the object empty. The proxy uses the federated token and the Azure environment variables in the proxy pod. On AKS, the Azure workload identity webhook adds them. On other clusters, the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource adds them. |
    | `policies.auth.azure.managedIdentity` | Use an Azure managed identity. Leave the object empty to use the system-assigned identity. To use a user-assigned identity, set one of `clientId`, `objectId`, or `resourceId`. |{{< /version >}}
 
 5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
@@ -533,7 +651,7 @@ Choose the Azure endpoint that hosts your model. {{< reuse "agw-docs/snippets/ag
 {{< /version >}}
 - **Azure AI Foundry**: Deploy Microsoft-Decision-1 in your Foundry resource. Foundry receives both client formats at `https://{resourceName}.cognitiveservices.azure.com/providers/microsoft/v1/systemone`: SystemOne requests are sent unchanged, and Decisions requests are converted to SystemOne.
 
-Before you begin, complete the [AKS Workload Identity setup](#use-microsoft-entra-workload-id-on-aks) for the `agentgateway-proxy` Gateway.
+Before you begin, set up workload identity for the `agentgateway-proxy` Gateway, either [on AKS](#use-microsoft-entra-workload-id-on-aks) or [from GKE](#use-workload-identity-federation-from-gke).
 
 ### Configure the Azure backend
 
