@@ -68,7 +68,7 @@ The UI adds both targets to the top-level `mcp` section, as in the [example mult
 1. Create a configuration with an empty `mcp` section, and start agentgateway. You add the MCP servers in the UI.
    ```sh
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    mcp:
      port: 3000
      targets: []
@@ -116,7 +116,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 3. Optional: To use the agentgateway UI playground later, add a `cors` policy to the route. Replace the contents of your `config.yaml` file with the following complete example, which keeps both targets and adds the policy. The config automatically reloads when you save the file.
 
       ```yaml
-      # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+      # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
       gateways:
         default:
           port: 3000
@@ -206,7 +206,7 @@ The UI sets `prefixMode` to `never`, as in the **Config file** tab. It also writ
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   prefixMode: never
@@ -239,7 +239,7 @@ If every condition returns `false`, clients see an empty virtual MCP server.
 The following example always includes the `everything` target and includes the `time` target only when the request has the header `x-include-time: true`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   targets:
@@ -287,7 +287,7 @@ The UI sets the `server` block, as in the **Config file** tab. The UI also write
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   server:

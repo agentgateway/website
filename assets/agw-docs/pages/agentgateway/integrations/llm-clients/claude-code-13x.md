@@ -20,7 +20,7 @@ Route Claude Code to any OpenAI-compatible LLM provider (such as vLLM, Ollama, o
 
    ```yaml
    cat > config.yaml << 'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "*"
@@ -67,7 +67,7 @@ Alternatively, route Claude Code directly to Anthropic's API through agentgatewa
 
    ```yaml
    cat > config.yaml << 'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "*"

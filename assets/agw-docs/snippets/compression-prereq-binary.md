@@ -1,0 +1,1 @@
+Install a [nightly agentgateway binary]({{< link-hextra path="/documentation/setup/install/binary/#binary" >}}). On the installation page, select **Nightly build**. Compression is not available in v1.7.0.

@@ -26,7 +26,7 @@ The `promptCaching` policy adds prompt-cache markers to requests, so that the pr
 Set `promptCaching` on a model in `llm.models`, or in the `policies.ai` block of a route or AI backend.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "anthropic/*"

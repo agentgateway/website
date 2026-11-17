@@ -802,11 +802,22 @@ apply the Gateway security controls appropriate for your deployment.
   {{< card path="/integrations/llm/clients/codex" title="Codex" subtitle="Configure and verify Codex with agentgateway" >}}
   {{< card path="/integrations/llm/clients/claude-desktop" title="Claude Desktop" subtitle="Configure and verify Claude Desktop with agentgateway" >}}
 {{< conditional-text include-if="kubernetes" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}
+  {{< card path="/documentation/security/extauth/jwt/" title="JWT authentication" subtitle="Authenticate managed clients at the Gateway" >}}
+{{< /version >}}
+{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}
   {{< card path="/documentation/security/jwt/" title="JWT authentication" subtitle="Authenticate managed clients at the Gateway" >}}
+{{< /version >}}
   {{< card path="/documentation/llm/rbac/" title="Authorization" subtitle="Control which identities can use the Gateway" >}}
 {{< /conditional-text >}}
 {{< conditional-text include-if="standalone" >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}
+  {{< card path="/documentation/configuration/security/authentication/jwt-authn/" title="JWT authentication" subtitle="Authenticate managed clients at the Gateway" >}}
+  {{< card path="/documentation/configuration/security/authorization/http-authz/" title="Authorization" subtitle="Control which identities can use the Gateway" >}}
+{{< /version >}}
+{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}
   {{< card path="/documentation/configuration/security/jwt-authn/" title="JWT authentication" subtitle="Authenticate managed clients at the Gateway" >}}
   {{< card path="/documentation/configuration/security/http-authz/" title="Authorization" subtitle="Control which identities can use the Gateway" >}}
+{{< /version >}}
 {{< /conditional-text >}}
 {{< /cards >}}
