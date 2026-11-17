@@ -36,3 +36,6 @@ When Istio integration is enabled, you can omit `spec.istio.caAddress` to let th
 
 For example, if `istio.revision` is `1-30` and the Istio namespace is omitted, the gateway uses `https://istiod-1-30.istio-system.svc:15012`. Set `spec.istio.caAddress` only when the gateway must use a different CA service name, namespace, scheme, or port.
 
+## Cap the DNS cache time {#dns-max-ttl}
+
+{{< reuse "agw-docs/pages/setup/dns-max-ttl.md" >}}
