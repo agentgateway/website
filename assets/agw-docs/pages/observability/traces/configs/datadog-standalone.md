@@ -93,7 +93,7 @@ Traces from the example omit prompt and completion content.
    To match your deployment, adjust the port and backend addresses.
 
    ```yaml
-   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    frontendPolicies:
      tracing:
        host: localhost:4318
@@ -175,7 +175,7 @@ site if needed.
 Add this tracing policy to your `config.yaml`.
 
 ```yaml
-# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
   tracing:
     host: otlp.datadoghq.com:443
