@@ -93,14 +93,14 @@ omit prompt and completion content.
 4. In a separate terminal, port-forward the gateway.
 
    ```sh
-   kubectl port-forward --namespace agentgateway-system \
+   kubectl port-forward --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
      service/agentgateway-proxy 13000:80
    ```
 
 5. In another terminal, port-forward the proxy metrics endpoint.
 
    ```sh
-   kubectl port-forward --namespace agentgateway-system \
+   kubectl port-forward --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
      deployment/agentgateway-proxy 18520:15020
    ```
 
@@ -274,7 +274,7 @@ first.
 ```sh
 kubectl exec --namespace datadog "${DD_AGENT_POD}" -- agent status
 kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} datadog-tracing \
-  --namespace agentgateway-system --output yaml
+  --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} --output yaml
 ```
 
 The Datadog chart's OTLP Service uses `internalTrafficPolicy: Local`, so the
