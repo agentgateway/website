@@ -15,7 +15,7 @@ The [OpenAI Chat Completions API](https://developers.openai.com/api/docs/guides/
 In the simplified `llm` configuration, agentgateway automatically maps `/v1/chat/completions` requests to the `completions` route type, so no explicit route configuration is required.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -27,7 +27,7 @@ llm:
 To configure the route type explicitly, use the `gateways` and `routes` format and set the `completions` route type in the `policies.ai.routes` map.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 4000
@@ -60,6 +60,9 @@ On the way back, the signature of a response thinking block is forwarded as `rea
 > Send the signature back along with the reasoning. A client that keeps `reasoning_content` but discards `reasoning_signature` loses its thinking history on the next turn, with no error and no warning.
 
 For the same behavior in the other direction, where a Messages client reaches a provider that speaks Chat Completions, see [Converting to the Chat Completions format]({{< link-hextra path="/documentation/llm/api-types/messages/#converting-to-the-chat-completions-format" >}}).
+
+> [!NOTE]
+> Mistral reasoning models can return `message.content` or streaming `delta.content` as an array of `thinking` and `text` parts. The built-in [`mistral` provider]({{< link-hextra path="/integrations/llm/providers/mistral/" >}}) supports only the Chat Completions format for chat requests. On a Chat Completions route, agentgateway passes the parts through unchanged. Messages and Responses requests to this provider are converted to Chat Completions. The converted reply drops the reasoning. The reply has no `thinking` block or reasoning item, and it keeps only the text parts.
 
 ## File parts on a converted route {#file-parts-on-a-converted-route}
 

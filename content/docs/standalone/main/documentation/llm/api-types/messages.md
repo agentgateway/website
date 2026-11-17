@@ -20,7 +20,7 @@ The related [`/v1/messages/count_tokens`]({{< link-hextra path="/documentation/l
 In the simplified `llm` configuration, agentgateway automatically maps `/v1/messages` requests to the `messages` route type, so no explicit route configuration is required.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -32,7 +32,7 @@ llm:
 To configure the route type explicitly, use the `gateways` and `routes` format and set the `messages` route type in the `policies.ai.routes` map. To also support token counting, map `/v1/messages/count_tokens` to the `anthropicTokenCount` route type.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 4000
@@ -71,7 +71,7 @@ Agentgateway uses the first of these formats that the provider supports.
 
 The first three rows are values that a `custom` provider declares in its `formats` list. Built-in providers support a fixed set of formats. The `openAI`, `ollama`, `groq`, `huggingface`, and `xai` providers support both `responses` and `completions`. The `azure` provider also supports both formats for models other than Claude.
 
-Bedrock Converse is not a `formats` value. A [`bedrock` provider]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) supports only Converse, so agentgateway always converts Messages requests to that format.
+Bedrock Converse is not a `formats` value. A [`bedrock` provider]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) handles Messages requests based on the Bedrock endpoint. On Mantle, Claude models receive the native Anthropic Messages format. On Runtime, agentgateway converts Messages requests to Bedrock Converse.
 
 When a provider supports both `responses` and `completions`, agentgateway always converts Messages requests to Responses. This rule is fixed, regardless of the `formats` list order.
 

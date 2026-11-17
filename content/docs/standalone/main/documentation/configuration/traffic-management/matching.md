@@ -55,7 +55,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{< tabs >}}
 {{< tab name="Exact path matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -70,7 +70,7 @@ routes:
 {{< /tab >}}
 {{< tab name="Prefix path matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -85,7 +85,7 @@ routes:
 {{< /tab >}}
 {{< tab name="Regex path matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -101,6 +101,78 @@ routes:
 {{< /tabs >}}
 {{% /tab %}}
 {{< /tabs >}}
+
+### Normalize paths before matching {#normalize-paths}
+
+By default, route matching uses the request path as agentgateway receives it. To normalize request paths before route matching, policy evaluation, and forwarding to the backend, set `frontendPolicies.http.normalize`. The setting applies to every route.
+
+The following example normalizes repeated slashes, dot segments, and percent-encoded unreserved characters. The `api-exact` route matches only the `/api/v1/users` exact path. The route returns a direct response with the `request.path` value, which is the normalized path that agentgateway matched.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  http:
+    normalize:
+    - mergeSlash
+    - dotSegment
+    - decodeUnreserved
+gateways:
+  default:
+    port: 3000
+routes:
+- name: api-exact
+  matches:
+  - path:
+      exact: "/api/v1/users"
+  policies:
+    directResponse:
+      status: 200
+      bodyExpression: '"Matched path: " + request.path'
+```
+
+| Field | Description |
+| -- | -- |
+| `frontendPolicies.http.normalize` | Normalizes the request path before route matching, policy evaluation, and forwarding. Access logs keep the original request path. |
+| `mergeSlash` | Collapses repeated slashes and treats `\` as `/`. |
+| `dotSegment` | Resolves `.` and `..` path segments. This rule also treats `%2E` as `.`, treats `\` as `/`, and ignores parameters on dot segments such as `..;x`. |
+| `decodeUnreserved` | Decodes percent-encoded unreserved characters (`A-Z`, `a-z`, `0-9`, `-`, `.`, `_`, and `~`). |
+| `rejectEscapedSlash` | Rejects requests whose path contains `%2F` or `%5C`. |
+| `unescapeSlash` | Decodes `%2F` and `%5C` into `/`. Agentgateway rejects a configuration that sets both `unescapeSlash` and `rejectEscapedSlash`. |
+
+The rules run in a fixed order, regardless of their order in the list. Percent-decoding runs first, then `mergeSlash`, then `dotSegment`. If you set any rule except `mergeSlash`, agentgateway rejects paths that contain malformed percent-encoding or `%00`. Agentgateway returns a 400 HTTP response code for every rejected path, including a path that `rejectEscapedSlash` rejects.
+
+To try the example, run agentgateway with the example configuration. Then, send requests to paths that normalize to `/api/v1/users`. The `--path-as-is` option stops curl from resolving `.` and `..` segments before curl sends the request.
+
+```sh
+curl -i --path-as-is http://localhost:3000/api//v1/./users
+curl -i --path-as-is http://localhost:3000/api/v2/../v1/users
+curl -i --path-as-is http://localhost:3000/api/%76%31/users
+```
+
+Example output for each request:
+
+```
+HTTP/1.1 200 OK
+content-length: 27
+
+Matched path: /api/v1/users
+```
+
+Send a request with an escaped NUL character (`%00`) in the path. Agentgateway rejects the request.
+
+```sh
+curl -i --path-as-is http://localhost:3000/api/v1/users%00
+```
+
+Example output:
+
+```
+HTTP/1.1 400 Bad Request
+content-type: text/plain
+content-length: 15
+
+invalid request
+```
 
 ### Header matching
 
@@ -136,7 +208,7 @@ A request must match every header condition in the list. The UI edits only the f
 {{< tabs >}}
 {{< tab name="Exact header matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -155,7 +227,7 @@ routes:
 {{< /tab >}}
 {{< tab name="Regex header matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -174,7 +246,7 @@ routes:
 {{< /tab >}}
 {{< tab name="Multiple header matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -229,7 +301,7 @@ To send different methods to different backends, add one route for each method. 
 {{< tabs >}}
 {{< tab name="GET method matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -245,7 +317,7 @@ routes:
 {{< /tab >}}
 {{< tab name="POST method matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -261,7 +333,7 @@ routes:
 {{< /tab >}}
 {{< tab name="Multiple methods with different backends" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -320,7 +392,7 @@ A request must match every query condition in the list. The UI edits only the fi
 {{< tabs >}}
 {{< tab name="Exact query parameter matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -339,7 +411,7 @@ routes:
 {{< /tab >}}
 {{< tab name="Regex query parameter matching" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -358,7 +430,7 @@ routes:
 {{< /tab >}}
 {{< tab name="Multiple query parameters" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -387,7 +459,7 @@ routes:
 You can combine multiple matching conditions to create a more specific route, such as the following example.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -434,7 +506,7 @@ The following steps assume that you have a TCP gateway named `database-proxy`. T
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   database-proxy:
     port: 5432
@@ -479,7 +551,7 @@ The UI leaves out `weight: 1`, because 1 is the default weight.
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   redis-proxy:
     port: 6379

@@ -17,7 +17,7 @@ To attach a static key as an `Authorization` value, use `key`:
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -33,7 +33,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -64,7 +64,7 @@ backendAuth:
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 ## Compute the key from the request {#key-expression}
 
-Instead of a fixed value, you can compute the credential for each request with a [CEL]({{< link-hextra path="/reference/cel/" >}}) expression. Set `expression` instead of `value`. For example, an [external authorization]({{< link-hextra path="/documentation/configuration/security/external-authz/" >}}) policy can return a token for the backend as metadata, and the expression reads the token from the `extauthz` variable.
+Instead of a fixed value, you can compute the credential for each request with a [CEL]({{< link-hextra path="/reference/cel/" >}}) expression. Set `expression` instead of `value`. For example, an {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[external authorization]({{< link-hextra path="/documentation/configuration/security/authorization/external-authz/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[external authorization]({{< link-hextra path="/documentation/configuration/security/external-authz/" >}}){{< /version >}} policy can return a token for the backend as metadata, and the expression reads the token from the `extauthz` variable.
 
 ```yaml
 backendAuth:
@@ -126,14 +126,14 @@ backendAuth:
 
 ## Pass through client credentials
 
-Any form of incoming authentication removes the original credential from the request by default, before agentgateway forwards it to the backend. That applies to [JWT]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}), [API key]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}), and [basic auth]({{< link-hextra path="/documentation/configuration/security/basic-authn/" >}}). To send the original credential on to the backend, use the `passthrough` method.
+Any form of incoming authentication removes the original credential from the request by default, before agentgateway forwards it to the backend. That applies to {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT]({{< link-hextra path="/documentation/configuration/security/authentication/jwt-authn/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}){{< /version >}}, {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[API key]({{< link-hextra path="/documentation/configuration/security/authentication/apikey-authn/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[API key]({{< link-hextra path="/documentation/configuration/security/apikey-authn/" >}}){{< /version >}}, and {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[basic auth]({{< link-hextra path="/documentation/configuration/security/authentication/basic-authn/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[basic auth]({{< link-hextra path="/documentation/configuration/security/basic-authn/" >}}){{< /version >}}. To send the original credential on to the backend, use the `passthrough` method.
 
 ```yaml
 backendAuth:
   passthrough: {}
 ```
 
-The method forwards a JWT only. It re-sends the token that a [JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) policy validated on the route. An API key or basic auth credential is still stripped, and `passthrough` does not add it back.
+The method forwards a JWT only. It re-sends the token that a {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/configuration/security/authentication/jwt-authn/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}){{< /version >}} policy validated on the route. An API key or basic auth credential is still stripped, and `passthrough` does not add it back.
 
 The `passthrough` method has no field for where to read the credential from, because agentgateway does not read it from the request at all. It re-sends the token that the `jwtAuth` policy already validated. The source is therefore wherever that policy's own `location` field reads from, which is the `Authorization` header by default.
 
@@ -152,7 +152,7 @@ backendAuth:
 
 ## Send more than one credential
 
-Some upstreams want two credentials on the same request, such as a bearer token and a subscription key. The `credentials` list covers that case. Each entry sets a `location` and a `key`, and the list is independent of the primary method, so you can set it on its own or together with one.
+Some upstreams want two credentials on the same request, such as a bearer token and a subscription key. The `credentials` list covers that case. Each entry sets a `location` and a credential source.{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} The source is a `key` or an `expression`.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} The source is a `key`, an `expression`, or a Google Cloud token (`gcp`).{{< /version >}} The list is independent of the primary method, so you can set the list on its own or together with one.
 
 ```yaml
 backendAuth:
@@ -177,8 +177,8 @@ The policy in the example sends three credentials on every request: the `Authori
 | Field | Description |
 | -- | -- |
 | `credentials[].location` | Required location that agentgateway writes this credential to. Set exactly one of `header`, `queryParameter`, or `cookie`. Each entry carries its own location. |
-| `credentials[].key` | Credential value, either inline or as `{file: <path>}`.{{< version include-if="1.6.x" >}} Required.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} Required unless you set `expression`. Do not set both.{{< /version >}} |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
-| `credentials[].expression` | CEL expression that computes the credential value from the request. Required unless you set `key`. Do not set both. The expression follows the same rules as in [Compute the key from the request](#key-expression), so a failed expression clears the location of this entry. |{{< /version >}}
+| `credentials[].key` | Credential value, either inline or as `{file: <path>}`.{{< version include-if="1.6.x" >}} Required.{{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} Required unless you set `expression`. Do not set both.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} Required unless you set `expression` or `gcp`. Set exactly one of `key`, `expression`, or `gcp`.{{< /version >}} |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+| `credentials[].expression` | CEL expression that computes the credential value from the request.{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} Required unless you set `key`. Do not set both.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} Required unless you set `key` or `gcp`. Set exactly one of `key`, `expression`, or `gcp`.{{< /version >}} The expression follows the same rules as in [Compute the key from the request](#key-expression), so a failed expression clears the location of this entry. |{{< /version >}}
 
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 For example, the following entry sends the `sub` claim of the validated JWT in an `x-user-id` header.
@@ -191,6 +191,34 @@ backendAuth:
         name: x-user-id
     expression: jwt.sub
 ```
+{{% /version %}}
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
+
+The list can also fetch a Google Cloud token for one header while the primary backend authentication method sends another credential. Use this pattern for a backend behind Google Cloud Identity-Aware Proxy (IAP). The backend can receive the client's JWT in `Authorization` and the Google ID token in `Proxy-Authorization`.
+
+```yaml
+backendAuth:
+  passthrough: {}
+  credentials:
+  - location:
+      header:
+        name: Proxy-Authorization
+        prefix: "Bearer "
+    gcp:
+      type: idToken
+      audience: iap-client-id
+```
+
+{{< reuse "agw-docs/snippets/review-table.md" >}}
+
+| Field | Description |
+| -- | -- |
+| `credentials[].gcp` | Fetches a Google Cloud access token or ID token and writes it to `credentials[].location`. Set exactly one of `credentials[].key`, `credentials[].expression`, or `credentials[].gcp`. |
+| `credentials[].gcp.type` | Google token type to fetch. Use `accessToken` for most Google services, or `idToken` for IAP and Cloud Run. |
+| `credentials[].gcp.audience` | The `aud` claim of the ID token. Optional. Valid only with `idToken`. Defaults to the backend hostname. For IAP, set the audience to the IAP OAuth client ID. |
+| `credentials[].gcp.credential` | ADC-compatible Google credential JSON, either inline or as `{file: <path>}`. Optional. Omit this field to use the ambient credentials of the environment. |
+
 {{% /version %}}
 
 > [!NOTE]

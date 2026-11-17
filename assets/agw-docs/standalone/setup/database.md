@@ -5,7 +5,7 @@ Agentgateway reads a configuration file at startup, and that file alone is enoug
 You set the database in the `config.database` field of your configuration file. Because the field is in the `config` section, agentgateway applies it at startup only, so a change to it takes effect after a restart.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   database:
     url: sqlite://./data.db
@@ -24,7 +24,7 @@ The following features do not work without a database. When you set up a databas
 
 | Feature | Description | What happens without a database |
 | --- | --- | --- |
-| LLM analytics and logs | The UI shows **Analytics** and **Logs** for LLM requests (not other proxy traffic such as HTTP routes to a backend service). The **Analytics** page is also the cost dashboard. To show spend in dollars instead of tokens and calls, add a [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) as well as a database. For the controls on the page, see [Cost dashboard]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/" >}}). | Agentgateway starts, but each UI page reports `request log database is not configured` and the admin API returns a `500` response. |
+| LLM analytics and logs | The UI shows **Analytics** and **Logs** for LLM requests (not other proxy traffic such as HTTP routes to a backend service). The **Analytics** page is also the cost dashboard. To show spend in dollars instead of tokens and calls, add a [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) as well as a database. For the controls on the page, see [Cost dashboard]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/" >}}). | Agentgateway starts, but each UI page shows an error and the admin API returns a `500` response. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}}The error is `request log database is not configured`.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}}The error is `request log storage is not running (disabled, or no database configured)`.{{< /version >}} |
 | [`hybrid` configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}) | When enabled, hybrid mode stores UI edit to agentgateway configuration in the database. | Agentgateway does not start: `config.storage.mode=hybrid requires config.database.url`. |
 | [LLM API key budgets]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/" >}}) | API key budgets let you track LLM spend across restarts | Agentgateway does not start: `API key budgets require config.database to be configured`. |
 
@@ -97,7 +97,7 @@ When you start agentgateway with no configuration file, the generated configurat
 2. Review the generated configuration. The `config.database.url` field points at a SQLite file next to the configuration file. The following example is the file that a container generates. The binary generates the same file, with the absolute path of your user config directory in the URL.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      database:
        url: sqlite:///config/data.db
@@ -121,7 +121,7 @@ A configuration file that you write yourself has no database until you add one. 
    The path is relative to the directory that you start agentgateway from.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      database:
        url: sqlite://./data.db
@@ -143,7 +143,7 @@ A configuration file that you write yourself has no database until you add one. 
    Point the URL at a directory that you mount into the container. The example uses a `/data` path, because a mount of a single configuration file leaves no writable directory for the SQLite file.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      database:
        url: sqlite:///data/data.db
@@ -196,7 +196,7 @@ A configuration file that you write yourself has no database until you add one. 
 
 ## Helm {#helm}
 
-The Helm chart mounts your configuration as a read-only ConfigMap. The chart does not install a database. Without a database, the **Analytics** and **Logs** pages report `request log database is not configured`.
+The Helm chart mounts your configuration as a read-only ConfigMap. The chart does not install a database. Without a database, the **Analytics** and **Logs** pages show an error. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}}The error is `request log database is not configured`.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}}The error is `request log storage is not running (disabled, or no database configured)`.{{< /version >}}
 
 For a new installation, follow [Set up a database]({{< link-hextra path="/documentation/setup/install/helm/#database" >}}) in the Helm installation guide.
 
