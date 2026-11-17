@@ -97,7 +97,7 @@ Target-level policies are configured under `mcp.targets[].policies`.
 Use different authentication methods for different targets.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   targets:
@@ -122,7 +122,7 @@ mcp:
 
 {{< doc-test paths="mcp-target-policies" >}}
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   targets:
@@ -158,7 +158,7 @@ agentgateway -f config.yaml --validate-only
 # accepted at the target level, and "Policy inheritance": a policy set at the backend
 # group level alongside a target-level override is a valid shape.
 cat <<'EOF' > config-all-policies.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

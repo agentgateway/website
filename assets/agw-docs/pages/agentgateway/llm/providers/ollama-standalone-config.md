@@ -1,7 +1,7 @@
 Create a configuration file that routes requests to your local Ollama instance.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   port: 3000
   models:
@@ -23,7 +23,7 @@ llm:
 If Ollama is running somewhere other than `http://localhost:11434/v1`, override the base URL instead of using host overrides.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   port: 3000
   models:

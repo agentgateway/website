@@ -44,7 +44,7 @@ Agentgateway is already running with the new configuration, so skip Step 2.
 Create a `config.yaml` that exposes an OpenAI-compatible endpoint on port 3000 and forwards requests to OpenAI.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   port: 3000
   models:
@@ -117,7 +117,7 @@ To run agentgateway and Open WebUI together, use the following `docker-compose.y
 ```yaml
 services:
   agentgateway:
-    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:latest
+    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/standalone/image-tag-default.md" >}}
     ports:
       - "3000:3000"
       - "15000:15000"
