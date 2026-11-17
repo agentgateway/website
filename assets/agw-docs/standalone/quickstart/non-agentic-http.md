@@ -97,7 +97,7 @@ You add the gateway and route from the UI, so you can start agentgateway without
 
    ```yaml
    cat > config.yaml << 'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      httpbin:
        port: 3000
