@@ -9,7 +9,7 @@ You configure the attribution values, and agentgateway resolves each one from an
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
 2. Create the {{< reuse "agw-docs/snippets/backend.md" >}} and HTTPRoute for the LLM provider that you want to attribute, such as [Amazon Bedrock]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}).
-3. Apply a [JWT authentication policy]({{< link-hextra path="/documentation/security/jwt/setup/" >}}) to the route, so that `jwt.*` values are available to attribution expressions.
+3. Apply a {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication policy]({{< link-hextra path="/documentation/security/extauth/jwt/setup/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication policy]({{< link-hextra path="/documentation/security/jwt/setup/" >}}){{< /version >}} to the route, so that `jwt.*` values are available to attribution expressions.
 
 ## Amazon Bedrock
 

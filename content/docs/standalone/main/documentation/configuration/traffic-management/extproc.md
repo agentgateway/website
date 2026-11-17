@@ -51,6 +51,8 @@ For requests with a body, `failOpen` applies only while no request body bytes ha
 
 A clean close from the external processing server is different from a failure. If the server finishes request processing and closes its gRPC stream, the gateway skips any later external processing phases for that exchange. The request continues to the backend, and the upstream response is returned to the client even when `extProc.failureMode` is `failClosed`.
 
+If the downstream client disconnects while the gateway waits for an external processing response, the gateway resets the gRPC stream to the external processing server. This behavior applies during a request or response phase. The reset lets the server release queued work for that exchange without waiting for the normal response path.
+
 ## Compatibility
 
 The [External Processing gRPC service](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/ext_proc/v3/external_processor.proto) was designed for Envoy,
@@ -74,7 +76,7 @@ If any incompatibility causes issues for your external processing server, open a
 External processing is applied at the route level.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -114,7 +116,7 @@ By default, ExtProc sends request headers, response headers, request trailers, a
 The following example sends headers and trailers, buffers request bodies up to the body buffer limit, skips response bodies, and allows the external processor to override later processing phases after a matching header response.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -144,7 +146,7 @@ routes:
 You can also set `processingOptions` inside a conditional ExtProc policy. Each conditional policy entry can use different phase settings.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -182,7 +184,7 @@ A dynamic backend dials whatever destination the request itself names, taken fro
 An external processor can already return Envoy's standard `dynamic_metadata` alongside its verdict, and agentgateway exposes that metadata to CEL as `extproc.*`. Set a `target` expression on the dynamic backend to dial the destination directly from that metadata, rather than making the processor rewrite the request authority to communicate it.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -199,7 +201,7 @@ routes:
 | -- | -- | -- |
 | `dynamic.target` | No | CEL expression that computes the destination to dial. It must evaluate to a `host:port` string. When you omit it, agentgateway dials the destination that the request names, which is the behavior of a dynamic backend in earlier versions. |
 
-Agentgateway resolves the destination in a fixed order: an in-process override first, then the `target` expression, and finally the destination that the request names.
+Agentgateway resolves the destination in a fixed order: an in-process override first, then the `target` expression, and finally the destination that the request names. The request falls back to the destination that it names only when you do not set `target`. When you set `target` and the expression fails, agentgateway rejects the request.
 
 Which CEL variables the expression can read depends on the route type.
 
@@ -210,10 +212,13 @@ Which CEL variables the expression can read depends on the route type.
 
 Review the following limits.
 
-- **The expression must return a string.** A value of any other type fails the request with `dynamic backend target expression must evaluate to a host:port string`.
-- **Targets must use `host:port`.** A Unix socket path such as `unix:/run/admin.sock` fails with `dynamic backend target "unix:/run/admin.sock" must be a host:port`.
+- **The expression must return a string.** A value of any other type fails the request. Agentgateway logs `dynamic backend target expression must evaluate to a host:port string`.
+- **An expression that fails to evaluate rejects the request.** If the expression fails to evaluate, agentgateway does not fall back to the destination that the request names. Agentgateway logs `dynamic backend target expression eval` along with the evaluation error.
+- **Targets must use `host:port`.** A Unix socket path such as `unix:/run/admin.sock` fails the request. Agentgateway logs `dynamic backend target "unix:/run/admin.sock" must be a host:port`.
 - **Loopback and link-local destinations are blocked.** Targets resolving to addresses such as `127.0.0.1` or `169.254.169.254` fail with `503`. For blocked addresses and the `config.backend.allowDynamicLoopback` override, see [Loopback and link-local destinations]({{< link-hextra path="/documentation/configuration/egress-proxy/#loopback-destinations" >}}).
-- **`inferenceRouting` cannot be combined with a dynamic backend.** A request that hits both fails with `inferenceRouting is not supported with dynamic backends`.
+- **`inferenceRouting` cannot be combined with a dynamic backend.** A request that hits both fails. Agentgateway logs `inferenceRouting is not supported with dynamic backends`.
+
+For the failures that agentgateway logs, the client does not see the log text. By default, the client receives a `503` response with the body `internal error`.
 
 > [!WARNING]
 > The expression selects the address that agentgateway connects to, so whatever supplies its input decides where traffic goes. When the expression reads `extproc.*`, you are trusting the external processor to choose the destination. Treat that processor as part of the gateway's trust boundary, run it over a connection you control, and do not build the target from client-supplied headers.

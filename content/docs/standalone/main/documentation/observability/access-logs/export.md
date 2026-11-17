@@ -61,7 +61,7 @@ Run the OTel Collector as a Docker container on the same host as agentgateway.
    {{% /tab %}}
    {{% tab name="Config file" %}}
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      accessLog:
        otlp:
@@ -70,11 +70,14 @@ Run the OTel Collector as a Docker container on the same host as agentgateway.
    {{% /tab %}}
    {{< /tabs >}}
 
+   > [!NOTE]
+   > {{< reuse "agw-docs/standalone/observability/docker-collector-host.md" >}}
+
 4. Send a request through agentgateway, then check the collector output to verify that log records are arriving.
    ```sh
    docker logs otel-collector
    ```
-   Each proxied request appears as a `LogRecord` entry in the collector output. Look for a block that starts with `LogRecord #` and includes attributes such as `gateway`, `http.request.method`, `url.path`, and `http.response.status_code`. The HTTP attributes use the OpenTelemetry semantic convention names. The records belong to the `agentgateway.access` instrumentation scope, which the collector prints in the `InstrumentationScope` line of the `ScopeLogs` block that contains the record.
+   Each proxied request appears as a `LogRecord` entry in the collector output. The record includes a timestamp and a body. The timestamp is the time that agentgateway emits the record. The body combines the request method, path, and response status. Look for a block that starts with `LogRecord #`. The block includes attributes such as `gateway`, `http.request.method`, `url.path`, and `http.response.status_code`. The HTTP attributes use the OpenTelemetry semantic convention names. The records belong to the `agentgateway.access` instrumentation scope. The collector prints the scope in the `InstrumentationScope` line of the `ScopeLogs` block.
 
 5. When you are done, remove the OTel Collector container.
    ```sh
@@ -142,7 +145,7 @@ Deploy the OTel Collector into your cluster by using the OpenTelemetry Helm char
    ```sh
    kubectl logs -n monitoring deployment/otel-collector
    ```
-   Each proxied request appears as a `LogRecord` entry. Look for a block that starts with `LogRecord #` and includes attributes such as `gateway`, `http.request.method`, `url.path`, and `http.response.status_code`. The HTTP attributes use the OpenTelemetry semantic convention names. The records belong to the `agentgateway.access` instrumentation scope, which the collector prints in the `InstrumentationScope` line of the `ScopeLogs` block that contains the record.
+   Each proxied request appears as a `LogRecord` entry. The record includes a timestamp and a body. The timestamp is the time that agentgateway emits the record. The body combines the request method, path, and response status. Look for a block that starts with `LogRecord #`. The block includes attributes such as `gateway`, `http.request.method`, `url.path`, and `http.response.status_code`. The HTTP attributes use the OpenTelemetry semantic convention names. The records belong to the `agentgateway.access` instrumentation scope. The collector prints the scope in the `InstrumentationScope` line of the `ScopeLogs` block.
 
 8. When you are done, remove the OTel Collector and the monitoring namespace.
    ```sh
@@ -172,7 +175,7 @@ The following example sends only error responses to the OTLP collector while log
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     otlp:
@@ -185,7 +188,7 @@ frontendPolicies:
 The following example logs only error responses to stdout, the database, and the OTLP collector. Because no `otlp.filter` is set, the top-level filter applies to all three backends.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     filter: 'response.code >= 400'
@@ -196,7 +199,7 @@ frontendPolicies:
 The following example logs only error responses to stdout and the database, but sends all requests to the OTLP collector. To override the top-level filter for OTLP, set `otlp.filter` explicitly.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     filter: 'response.code >= 400'
@@ -214,7 +217,7 @@ The `remove` list matches the attribute names in the OTLP record, which are the 
 The UI has no field for `otlp.fields`, so set it in your configuration file.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     otlp:

@@ -95,7 +95,7 @@ flowchart LR
 Each key in the `gateways` map is the gateway name, and each gateway needs a `port`. The following configuration listens for HTTP traffic on port 3000 and forwards it to a backend on `localhost:8000`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -113,7 +113,7 @@ The route in this example does not set a `gateways` field. When you omit that fi
 #   * That traffic reaches localhost:8000 at runtime — the backend does not exist
 #     in the test environment.
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -129,7 +129,7 @@ agentgateway -f config.yaml --validate-only
 To attach a route to a specific gateway, list the gateway name in the route's `gateways` field. The following configuration serves two different sets of routes on two ports.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   public:
     port: 8080
@@ -159,7 +159,7 @@ routes:
 #   * That each route serves traffic on its own port at runtime — the backends do
 #     not exist in the test environment.
 cat <<'EOF' > config2.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   public:
     port: 8080
@@ -189,7 +189,7 @@ agentgateway -f config2.yaml --validate-only
 Because routes attach by name, one route can serve several gateways. A common case is serving the same API on both plaintext HTTP and HTTPS.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   http:
     port: 8080
@@ -213,7 +213,7 @@ routes:
 #   * That both ports serve the route at runtime — requires client requests and a
 #     backend the page does not exercise.
 cat <<'EOF' > config3.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   http:
     port: 8080
@@ -238,7 +238,7 @@ Use the `listeners` field when one port must serve multiple hostnames with diffe
 When you set `listeners`, `port` is the only other field you can set on the gateway itself. Move the protocol, hostname, and TLS settings into each listener.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   web:
     port: 8443
@@ -274,7 +274,7 @@ All listeners under a gateway share the gateway's port, so they cannot mix encry
 #   * That SNI selects the right certificate and listener at runtime — requires TLS
 #     client connections the page does not exercise.
 cat <<'EOF' > config4.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   web:
     port: 8443
@@ -309,7 +309,7 @@ The `protocol` field controls whether a gateway accepts HTTP routes or TCP route
 TCP and TLS gateways serve `tcpRoutes` instead of `routes`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   tcp:
     port: 9000
@@ -329,7 +329,7 @@ For more information about each protocol, including TLS termination and passthro
 #   * That TCP traffic is forwarded at runtime — the backend does not exist in the
 #     test environment.
 cat <<'EOF' > config5.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   tcp:
     port: 9000
@@ -349,7 +349,7 @@ The `llm`, `mcp`, and `ui` sections each take a `gateways` field, so you can ser
 The following configuration exposes an LLM model, an MCP target, and the UI on port 3000. None of the three sections sets `gateways`, so all of them attach to the gateway named `default`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -383,7 +383,7 @@ With no `ui` section, the UI is served only on the admin interface on `localhost
 #     an MCP server process, and a browser session the page does not exercise.
 export OPENAI_API_KEY="${OPENAI_API_KEY:-dummy}"
 cat <<'EOF' > config6.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -408,7 +408,7 @@ agentgateway -f config6.yaml --validate-only
 Because each section attaches separately, you can also split them across ports. The following configuration serves the UI on its own port while LLM traffic stays on the shared gateway.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -432,7 +432,7 @@ ui:
 #     API key and a browser session the page does not exercise.
 export OPENAI_API_KEY="${OPENAI_API_KEY:-dummy}"
 cat <<'EOF' > config7.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -455,7 +455,7 @@ agentgateway -f config7.yaml --validate-only
 Gateways and listeners accept the same policies that listeners accepted under `binds`, such as `jwtAuth`, `authorization`, `cors`, `basicAuth`, `apiKey`, `oidc`, `extAuthz`, `extProc`, and `transformations`. A policy on a gateway applies to all traffic that enters that gateway, including LLM, MCP, and UI traffic.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -479,7 +479,7 @@ To scope a policy more narrowly, attach it to a listener or to a route instead. 
 #   * That CORS headers are applied at runtime — requires a preflight request the
 #     page does not exercise.
 cat <<'EOF' > config8.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -512,7 +512,7 @@ The `binds` field nests listeners and routes inside each port, which means a rou
 The following configuration uses `binds`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 binds:
 - port: 3000
   listeners:
@@ -529,7 +529,7 @@ binds:
 The following configuration is the equivalent with `gateways`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

@@ -13,7 +13,7 @@ Global rate limiting is essential when running multiple proxy replicas and you n
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 > [!NOTE]
-> A shared counter is the reason to choose global rate limiting, not claim-level granularity. Local rate limits can also apply per user, per team, or per model by setting a CEL expression in the `local[].key` field, which needs no external service but counts separately on each replica. For more information, see [Claim-level rate limits]({{< link-hextra path="/documentation/security/rate-limit-http/#claim-level" >}}).
+> A shared counter is the reason to choose global rate limiting, not claim-level granularity. Local rate limits can also apply per user, per team, or per model by setting a CEL expression in the `local[].key` field, which needs no external service but counts separately on each replica. For more information, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Claim-level rate limits]({{< link-hextra path="/documentation/security/rate-limit/local/#claim-level" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Claim-level rate limits]({{< link-hextra path="/documentation/security/rate-limit-http/#claim-level" >}}){{< /version >}}.
 {{< /version >}}
 
 Global rate limiting requires two components:
@@ -349,7 +349,7 @@ The table summarizes the examples in the following sections.
 | Combine local and global limits | Include both `local[]` and `global` in same policy |
 | Token-based rate limiting (LLMs) | Set `descriptors[].unit: Tokens` and configure token limits in service |
 
-Global rate limiting is the right choice when you need shared quotas across multiple proxy replicas, fine-grained control based on request attributes, or integration with existing rate limiting infrastructure. For simpler per-replica limits, use [local rate limiting]({{< link-hextra path="/documentation/security/rate-limit-http#local" >}}).
+Global rate limiting is the right choice when you need shared quotas across multiple proxy replicas, fine-grained control based on request attributes, or integration with existing rate limiting infrastructure. For simpler per-replica limits, use {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[local rate limiting]({{< link-hextra path="/documentation/security/rate-limit/local#local" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[local rate limiting]({{< link-hextra path="/documentation/security/rate-limit-http#local" >}}){{< /version >}}.
 
 For AI-specific use cases:
 - [LLM token-based rate limiting]({{< link-hextra path="/documentation/llm/rate-limit" >}})

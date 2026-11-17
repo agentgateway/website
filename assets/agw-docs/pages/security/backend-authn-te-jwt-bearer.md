@@ -124,7 +124,7 @@ Mint the incoming token, send a request through agentgateway with it, and verify
    curl -s http://$INGRESS_GW_ADDRESS:80/headers \
      -H "host: www.example.com" \
      -H "authorization: Bearer $INBOUND_TOKEN" \
-     | jq -r '.headers.Authorization | sub("^Bearer ";"")' \
+     | jq -r '.headers.Authorization[0] | sub("^Bearer ";"")' \
      | cut -d. -f2 \
      | jq -R 'gsub("-";"+") | gsub("_";"/") | . + ("=" * ((4 - (length % 4)) % 4)) | @base64d | fromjson'
    ```

@@ -49,12 +49,15 @@ Run the OTel Collector as a Docker container on the same host as agentgateway.
 
 3. Configure agentgateway to send access logs to the collector.
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      accessLog:
        otlp:
          host: localhost:4317
    ```
+
+   > [!NOTE]
+   > {{< reuse "agw-docs/standalone/observability/docker-collector-host.md" >}}
 
 4. Send a request through agentgateway, then check the collector output to verify that log records are arriving.
    ```sh
@@ -151,7 +154,7 @@ You can filter which access logs are exported to your OTLP backend by setting th
 The following example sends only error responses to the OTLP collector while logging all requests to stdout.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     otlp:
@@ -162,7 +165,7 @@ frontendPolicies:
 The following example logs only error responses to stdout, the database, and the OTLP collector. Because no `otlp.filter` is set, the top-level filter applies to all three backends.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     filter: 'response.code >= 400'
@@ -173,7 +176,7 @@ frontendPolicies:
 The following example logs only error responses to stdout and the database, but sends all requests to the OTLP collector. To override the top-level filter for OTLP, set `otlp.filter` explicitly.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     filter: 'response.code >= 400'
@@ -187,7 +190,7 @@ frontendPolicies:
 You can add or remove fields to the log entry that you export to the OTLP endpoint. 
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     otlp:

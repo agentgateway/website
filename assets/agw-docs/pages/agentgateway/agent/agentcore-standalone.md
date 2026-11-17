@@ -60,7 +60,7 @@ Create a configuration file with a route to the AgentCore runtime. The `aws.agen
 
    ```yaml
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
@@ -92,7 +92,7 @@ Create a configuration file with a route to the AgentCore runtime. The `aws.agen
 
    ```yaml
    cat <<'EOF' > config-jwt.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
