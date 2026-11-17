@@ -58,6 +58,12 @@ The webhook returns an `action` object whose fields determine how agentgateway h
 
 Extra fields in a pass action, such as a score, cause a webhook error. For mask actions, message fields other than `role` and `content` also cause an error.
 
+For request guards, a mask patches editable text in the original request when the reply returns the same number of messages in the same role order. Tool calls, tool call IDs, images, `name`, and metadata such as `cache_control` stay in the request. If the mask adds a message, drops a message, or changes a message role, the proxy rebuilds the request from the webhook reply. The rebuild removes non-text content that the reply does not include.
+
+Do not return an empty string for a masked message. Some provider APIs reject empty text blocks. If you need to remove a message's text, return a placeholder such as `<removed by guardrail>`.
+
+The webhook receives all text in a message as one string. If a mask changes text split around an image or another non-text part, the proxy keeps the non-text part and writes the full masked text into the last editable text block.
+
 Return extra metadata outside the `action` object, where agentgateway ignores it.
 
 The guard's `failureMode` determines how agentgateway handles webhook errors:

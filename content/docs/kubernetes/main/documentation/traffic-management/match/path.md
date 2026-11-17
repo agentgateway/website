@@ -332,11 +332,158 @@ Use [RE2 syntax](https://github.com/google/re2/wiki/Syntax) for regular expressi
    content-type: text/plain; charset=utf-8
    ```
 
+## Optional: Normalize paths before matching {#normalize-paths}
+
+By default, path matching uses the request path as agentgateway receives it. Use an {{< reuse "agw-docs/snippets/policy.md" >}} to normalize request paths before route matching, policy evaluation, and forwarding to the backend. The policy applies to every route on the Gateway. The following steps use the `httpbin-match` HTTPRoute from [Set up regex matching](#set-up-regex-matching).
+
+1. Send a request to the `/anything//stores/./us/entities` path. This path contains a repeated slash and a `.` segment. The `--path-as-is` option stops curl from resolving the `.` segment before curl sends the request. Verify that you get back a 404 HTTP response code, because the path does not match the `/anything/stores/[^/]+?/entities` regex pattern.
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -vi --path-as-is http://$INGRESS_GW_ADDRESS:80/anything//stores/./us/entities -H "host: match.example"
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -vi --path-as-is localhost:8080/anything//stores/./us/entities -H "host: match.example"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+   ```
+   > GET /anything//stores/./us/entities HTTP/1.1
+   ...
+   < HTTP/1.1 404 Not Found
+   HTTP/1.1 404 Not Found
+   < content-type: text/plain
+   content-type: text/plain
+   < content-length: 15
+   content-length: 15
+   <
+   route not found
+   ```
+
+2. Create a policy that normalizes repeated slashes, dot segments, and percent-encoded unreserved characters for all routes on the `agentgateway-proxy` Gateway.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: normalize-paths
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+     frontend:
+       http:
+         normalize:
+         - MergeSlash
+         - DotSegment
+         - DecodeUnreserved
+   EOF
+   ```
+
+   | Field | Description |
+   | -- | -- |
+   | `spec.frontend.http.normalize` | Normalizes the request path before route matching, policy evaluation, and forwarding. Access logs keep the original request path. |
+   | `MergeSlash` | Collapses repeated slashes and treats `\` as `/`. |
+   | `DotSegment` | Resolves `.` and `..` path segments. This rule also treats `%2E` as `.`, treats `\` as `/`, and ignores parameters on dot segments such as `..;x`. |
+   | `DecodeUnreserved` | Decodes percent-encoded unreserved characters (`A-Z`, `a-z`, `0-9`, `-`, `.`, `_`, and `~`). |
+   | `RejectEscapedSlash` | Rejects requests whose path contains `%2F` or `%5C`. |
+   | `UnescapeSlash` | Decodes `%2F` and `%5C` into `/`. The API server rejects a policy that sets both `UnescapeSlash` and `RejectEscapedSlash`. |
+
+   The rules run in a fixed order, regardless of their order in the list. Percent-decoding runs first, then `MergeSlash`, then `DotSegment`. If you set any rule except `MergeSlash`, agentgateway rejects paths that contain malformed percent-encoding or `%00`. Agentgateway returns a 400 HTTP response code for every rejected path, including a path that `RejectEscapedSlash` rejects.
+
+3. Send the same request again. Verify that you get back a 200 HTTP response code. The `url` field in the response body shows the normalized `/anything/stores/us/entities` path that the httpbin app received.
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -vi --path-as-is http://$INGRESS_GW_ADDRESS:80/anything//stores/./us/entities -H "host: match.example"
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -vi --path-as-is localhost:8080/anything//stores/./us/entities -H "host: match.example"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+   ```
+   > GET /anything//stores/./us/entities HTTP/1.1
+   ...
+   < HTTP/1.1 200 OK
+   HTTP/1.1 200 OK
+   < Access-Control-Allow-Credentials: true
+   Access-Control-Allow-Credentials: true
+   < Access-Control-Allow-Origin: *
+   Access-Control-Allow-Origin: *
+   < Content-Type: application/json; encoding=utf-8
+   Content-Type: application/json; encoding=utf-8
+   < Content-Length: 316
+   Content-Length: 316
+   <
+
+   {
+     "args": {},
+     "headers": {
+       "Accept": [
+         "*/*"
+       ],
+       "Host": [
+         "match.example"
+       ],
+       "User-Agent": [
+         "curl/8.7.1"
+       ]
+     },
+     "origin": "10.244.0.7:43306",
+     "url": "http://match.example/anything/stores/us/entities",
+     "data": "",
+     "files": null,
+     "form": null,
+     "json": null
+   }
+   ```
+
+4. Send a request with an escaped NUL character (`%00`) in the path. Verify that you get back a 400 HTTP response code, because the `DotSegment` and `DecodeUnreserved` rules reject `%00`.
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -vi --path-as-is http://$INGRESS_GW_ADDRESS:80/anything/stores/us%00/entities -H "host: match.example"
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -vi --path-as-is localhost:8080/anything/stores/us%00/entities -H "host: match.example"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+   ```
+   > GET /anything/stores/us%00/entities HTTP/1.1
+   ...
+   < HTTP/1.1 400 Bad Request
+   HTTP/1.1 400 Bad Request
+   < content-type: text/plain
+   content-type: text/plain
+   < content-length: 15
+   content-length: 15
+   <
+   invalid request
+   ```
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} normalize-paths -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete httproute httpbin-match -n httpbin --ignore-not-found
 ```
 

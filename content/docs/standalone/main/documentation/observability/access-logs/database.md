@@ -102,6 +102,8 @@ frontendPolicies:
 {{% /tab %}}
 {{< /tabs >}}
 
+PostgreSQL text and JSONB columns cannot store the U+0000 (NUL) character, so agentgateway replaces it with U+FFFD in any text value or JSON key before it writes the record. The rest of the record is stored as usual.
+
 ## Schema migrations {#schema-migrations}
 
 At startup, agentgateway migrates the request log database that `config.logging.database` configures, or the database that `config.database` configures if you omit `config.logging.database`. If you set `config.logging.database.enabled: false`, agentgateway does not start or migrate a request log database.
