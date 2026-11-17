@@ -130,13 +130,6 @@ Audit mode is how you measure a guard before you enforce it. Start a new guard i
 
 The following policy runs a credit card detector and OpenAI moderation, both in audit mode, so that the gateway logs what each guard finds and then forwards the request.
 
-> [!NOTE]
-> Audit mode changes only whether the gateway acts on the verdict. The guard still calls its provider, so an external guard in audit mode adds the same latency and the same provider cost as an enforcing guard.
-
-To record audit results in access logs, add the `guardrails` CEL variable to a frontend access log field. For the field shape and a Gateway-level logging policy, see [Log guardrail results]({{< link-hextra path="/documentation/security/access-logging/#guardrails" >}}).
-
-The proxy also records guardrail checks in the `agentgateway_guardrail_checks_total` Prometheus counter, with labels for the request or response phase and the action. A matching audit guard increments the audit action, while an audit guard that finds nothing records an allow action.
-
 ```yaml
 kubectl apply -f - <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -161,6 +154,13 @@ spec:
             action: Audit
 EOF
 ```
+
+To record audit results in access logs, add the `guardrails` CEL variable to a frontend access log field. For the field shape and a Gateway-level logging policy, see [Log guardrail results]({{< link-hextra path="/documentation/observability/access-logs/view/#guardrails" >}}).
+
+The proxy also counts guardrail checks in the `agentgateway_guardrail_checks_total` Prometheus counter. The `phase` label is `Request` or `Response`, and the `action` label records the result of the check. An audit guard that finds a match records `action="Audit"`. An audit guard that finds nothing records `action="Allow"`.
+
+> [!NOTE]
+> Audit mode changes only whether the gateway acts on the verdict. The guard still calls its provider, so an external guard in audit mode adds the same latency and the same provider cost as an enforcing guard.
 
 ## Provider failures
 
