@@ -181,7 +181,7 @@ The `location` field on `passthrough` controls only where the gateway writes the
 
 ## Send more than one credential
 
-Use the `credentials` list when a backend wants two credentials on the same request, such as a bearer token and a subscription key. The list does not replace the methods in the previous sections, and it is not how you choose one of them. The list is additive. Each entry names a Secret and a location, and the gateway sends every entry in it. If the policy also sets a primary method, the gateway sends that credential too.
+Use the `credentials` list when a backend wants two credentials on the same request, such as a bearer token and a subscription key. The list does not replace the methods in the previous sections, and it is not how you choose one of them. The list is additive. Each entry names a location and a credential source, and the gateway sends every entry in it.{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} The source is a Secret.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} The source is a Secret (`secretRef`) or a Google Cloud token (`gcp`).{{< /version >}} If the policy also sets a primary method, the gateway sends that credential too.
 
 The following example keeps `secretRef` as the primary credential and adds two more credentials from a second Secret. The primary credential still goes to the `Authorization` header. Each entry in the list carries its own location, and the policy-level `location` field does not apply to the list.
 
@@ -233,7 +233,7 @@ The following example keeps `secretRef` as the primary credential and adds two m
    | Field | Description |
    | -- | -- |
    | `credentials[].location` | Required location that the gateway writes this credential to. Set exactly one of `header`, `queryParameter`, or `cookie`. Each entry carries its own location, and the policy-level `location` field does not apply to the list. |
-   | `credentials[].secretRef.name` | Required name of a Secret in the same namespace as the policy. |
+   | `credentials[].secretRef.name` | Name of a Secret in the same namespace as the policy.{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} Required.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} Required unless the entry sets `credentials[].gcp`. Set exactly one of `credentials[].secretRef` or `credentials[].gcp`.{{< /version >}} |
    | `credentials[].secretRef.key` | Key in the Secret that holds the credential. Defaults to `Authorization`, so set it for every entry that reads a Secret with more than one key in it. Unlike the primary `secretRef`, an entry in the list never strips a `Bearer ` prefix from the value, whichever key it reads. |
 
 3. Send a request to the httpbin `/get` endpoint, which reflects the query string as well as the headers.
@@ -264,6 +264,36 @@ The following example keeps `secretRef` as the primary credential and adds two m
    ```
 
 The `credentials` list also works on its own, or alongside any other primary method. Omit `secretRef` and the gateway sends only the entries in the list. Set `passthrough` instead and the gateway forwards the client's JWT alongside them.
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
+
+You can also use the `credentials` list to send a Google Cloud token to one header while the primary backend authentication method sends another credential. Use this pattern for a backend behind Google Cloud Identity-Aware Proxy (IAP). The backend can receive the client's JWT in `Authorization` and the Google ID token in `Proxy-Authorization`.
+
+```yaml
+backend:
+  auth:
+    passthrough: {}
+    credentials:
+    - location:
+        header:
+          name: Proxy-Authorization
+          prefix: "Bearer "
+      gcp:
+        type: IdToken
+        audience: iap-client-id
+```
+
+{{< reuse "agw-docs/snippets/review-table.md" >}}
+
+| Field | Description |
+| -- | -- |
+| `credentials[].gcp` | Fetches a Google Cloud access token or ID token and writes it to `credentials[].location`. Set exactly one of `credentials[].secretRef` or `credentials[].gcp`. |
+| `credentials[].gcp.type` | Google token type to fetch. Use `AccessToken` for most Google services, or `IdToken` for IAP and Cloud Run. |
+| `credentials[].gcp.audience` | The `aud` claim of the ID token. Optional. Valid only with `IdToken`. Defaults to the backend hostname. For IAP, set the audience to the IAP OAuth client ID. |
+| `credentials[].gcp.secretRef.name` | Secret that contains ADC-compatible Google credential JSON. Optional. Omit `secretRef` to use the ambient credentials of the gateway workload. |
+| `credentials[].gcp.secretRef.key` | Key in the Secret that holds the credential JSON. Optional. Defaults to `credentials.json`. |
+
+{{% /version %}}
 
 ## Troubleshoot
 
