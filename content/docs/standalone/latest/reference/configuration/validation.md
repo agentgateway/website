@@ -11,7 +11,7 @@ Many integrated development environments (IDEs) and editors support schema valid
 The examples throughout the docs use the following schema that redirects to the agentgateway config on `main`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 ```
 
 ## Version-specific schema validation

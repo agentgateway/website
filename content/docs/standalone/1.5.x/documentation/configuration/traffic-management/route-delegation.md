@@ -161,7 +161,7 @@ In this example, a parent route matches the `/anything/team1` prefix and delegat
 
    ```sh {paths="route-delegation"}
    cat > config.yaml <<'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
@@ -250,7 +250,7 @@ In this example, a parent route matches `/anything/team1` only when the `x-team`
 
    ```sh {paths="route-delegation"}
    cat > config.yaml <<'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
@@ -361,7 +361,7 @@ In this example, a parent route delegates `/api` to a route group. One child han
 
    ```sh {paths="route-delegation"}
    cat > config.yaml <<'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
@@ -463,7 +463,7 @@ In this example, a parent route sets a `requestHeaderModifier` policy that adds 
 
    ```sh {paths="route-delegation"}
    cat > config.yaml <<'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
@@ -567,7 +567,7 @@ Agentgateway does not allow cyclic delegation. If route group A delegates to B, 
 
    ```sh {paths="route-delegation"}
    cat > config-cycle.yaml <<'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
@@ -633,7 +633,7 @@ If a route references a `routeGroup` that does not exist, agentgateway returns a
 
    ```sh {paths="route-delegation"}
    cat > config-missing-group.yaml <<'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000

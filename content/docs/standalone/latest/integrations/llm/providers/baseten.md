@@ -38,7 +38,7 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "baseten/*"

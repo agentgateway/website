@@ -36,7 +36,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 2. Create a configuration that routes LLM traffic, and start agentgateway.
    ```yaml
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000
@@ -74,7 +74,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: api.smith.langchain.com:443
@@ -119,7 +119,7 @@ Agentgateway exports traces directly to LangSmith without needing an OTel Collec
 version: '3'
 services:
   agentgateway:
-    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:latest
+    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/standalone/image-tag-default.md" >}}
     ports:
       - "3000:3000"
     volumes:

@@ -1,7 +1,7 @@
 ---
 title: CORS
 description: Configure cross-origin resource sharing policies for cross-origin requests.
-weight: 10
+weight: 60
 ---
 
 {{< reuse "agw-docs/pages/security/cors.md" >}}

@@ -1,4 +1,6 @@
-Use the OpenAI Python or Node.js SDK to send requests through agentgateway.
+Call configured LLM providers from your application code through agentgateway with the OpenAI SDK for Python, Node.js, or Go.
+
+Agentgateway exposes an OpenAI-compatible API. Point the SDK's base URL at agentgateway and send OpenAI Chat Completions requests. Agentgateway forwards each request to the provider that matches the `model` field and translates it when the provider uses a different API, such as Anthropic, Amazon Bedrock, or Vertex AI. For per-provider API support, see [About LLMs]({{< link-hextra path="/documentation/llm/about/" >}}).
 
 ## Before you begin
 
@@ -88,3 +90,160 @@ client = OpenAI()  # picks up OPENAI_BASE_URL and OPENAI_API_KEY from env
    });
    console.log(response.choices[0].message.content);
    ```
+
+## Go
+
+1. Add the OpenAI Go SDK to your module.
+
+   ```sh
+   go get github.com/openai/openai-go/v3
+   ```
+
+2. Create and run the following program to send a request through agentgateway.
+
+   ```go
+   package main
+
+   import (
+   	"context"
+   	"fmt"
+
+   	"github.com/openai/openai-go/v3"
+   	"github.com/openai/openai-go/v3/option"
+   )
+
+   func main() {
+   	client := openai.NewClient(
+   		option.WithBaseURL("http://localhost:3000/v1"),
+   		option.WithAPIKey("anything"),
+   	)
+
+   	resp, err := client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
+   		Model:    "gpt-4o-mini",
+   		Messages: []openai.ChatCompletionMessageParamUnion{openai.UserMessage("Hello!")},
+   	})
+   	if err != nil {
+   		panic(err)
+   	}
+   	fmt.Println(resp.Choices[0].Message.Content)
+   }
+   ```
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
+## Call more than one provider
+
+Add a model entry for each provider with a provider prefix. The SDK code stays the same; only the `model` value changes.
+
+In the following agentgateway configuration file, set `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` to your actual provider API keys. The SDK examples use placeholder values for the API keys.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  port: 3000
+  models:
+  - name: "openai/*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+    transformation:
+      model: llmRequest.model.stripPrefix("openai/")
+  - name: "anthropic/*"
+    provider: anthropic
+    params:
+      apiKey: "$ANTHROPIC_API_KEY"
+    transformation:
+      model: llmRequest.model.stripPrefix("anthropic/")
+```
+
+```python
+messages = [{"role": "user", "content": "Hello!"}]
+client.chat.completions.create(model="openai/gpt-4o-mini", messages=messages)
+client.chat.completions.create(model="anthropic/claude-sonnet-4-5", messages=messages)
+```
+
+Agentgateway strips the prefix and sends the request to the matching provider. For other ways to name models, see [Multiple LLM providers]({{< link-hextra path="/integrations/llm/providers/multiple-llms/" >}}).
+
+## Migrate from the LiteLLM SDK
+
+The example configuration in the previous section accepts `openai/gpt-4o-mini` and `anthropic/claude-sonnet-4-5`, so you can keep those LiteLLM model strings. Other model strings need matching gateway configuration. This example migrates Chat Completions calls. Review provider-specific parameters and other LiteLLM features separately. Replace the `litellm` call with the OpenAI SDK and move provider API keys from your application to the agentgateway configuration in [Call more than one provider](#call-more-than-one-provider).
+
+Before, with LiteLLM:
+
+```python
+from litellm import completion
+
+response = completion(
+    model="anthropic/claude-sonnet-4-5",
+    messages=[{"role": "user", "content": "Hello!"}],
+)
+print(response.choices[0].message.content)
+```
+
+After, with agentgateway:
+
+```python
+from openai import OpenAI
+
+client = OpenAI(base_url="http://localhost:3000/v1", api_key="anything")
+
+response = client.chat.completions.create(
+    model="anthropic/claude-sonnet-4-5",
+    messages=[{"role": "user", "content": "Hello!"}],
+)
+print(response.choices[0].message.content)
+```
+
+For asynchronous calls, replace `acompletion` with `AsyncOpenAI`:
+
+```python
+import asyncio
+from openai import AsyncOpenAI
+
+async_client = AsyncOpenAI(base_url="http://localhost:3000/v1", api_key="anything")
+
+async def main():
+    response = await async_client.chat.completions.create(
+        model="anthropic/claude-sonnet-4-5",
+        messages=[{"role": "user", "content": "Hello!"}],
+    )
+    print(response.choices[0].message.content)
+
+asyncio.run(main())
+```
+
+| LiteLLM SDK | OpenAI SDK with agentgateway |
+|---|---|
+| `completion(...)` | `client.chat.completions.create(...)` |
+| `await acompletion(...)` | `await async_client.chat.completions.create(...)` |
+| `stream=True` | `stream=True` |
+| `embedding(...)` | `client.embeddings.create(...)`. See [Embeddings]({{< link-hextra path="/documentation/llm/api-types/embeddings/" >}}). |
+| `num_retries=3` | `OpenAI(..., max_retries=3)` on the client, or a [retry policy]({{< link-hextra path="/documentation/configuration/resiliency/retries/" >}}) on agentgateway |
+| `Router(..., fallbacks=[...])` | A [virtual model with failover routing]({{< link-hextra path="/documentation/llm/virtual-models/#failover-routing" >}}). The client sends the virtual model name. |
+| `completion_cost(...)` | Agentgateway prices each request from its [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) and records the USD cost in access logs, traces, and metrics. |
+| Provider keys, such as `ANTHROPIC_API_KEY`, in the application environment | `params.apiKey` on each model entry in the agentgateway configuration |
+
+With LiteLLM fallbacks, the failed request moves to the next model. With agentgateway failover, the request that triggers eviction returns an error, and later requests go to the next priority group. The OpenAI Python SDK retries that error twice by default (`max_retries=2`), and the retry reaches a model in that group. If you set `max_retries=0`, configure a retry policy on agentgateway instead.
+
+If you also run the LiteLLM proxy, convert its configuration with [Migrate from LiteLLM]({{< link-hextra path="/documentation/configuration/import/" >}}).
+{{% /version %}}
+
+## Authenticate with a JWT
+
+Configure a {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[`jwtAuth` policy]({{< link-hextra path="/documentation/configuration/security/authentication/jwt-authn/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[`jwtAuth` policy]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}){{< /version >}} on agentgateway. Use `mode: strict` to require a valid token on every request.
+
+Obtain a JWT access token for your gateway API from your identity provider. The token must satisfy the policy's validation rules, including any configured issuer and audience requirements. Set `AGENTGATEWAY_JWT` in your application's environment to the raw token, without the `Bearer ` prefix.
+
+Pass that token as the SDK API key. The SDK sends `Authorization: Bearer <token>`.
+
+```python
+import os
+from openai import OpenAI
+
+jwt_token = os.environ["AGENTGATEWAY_JWT"]
+client = OpenAI(
+    base_url="http://localhost:3000/v1",
+    api_key=jwt_token,
+)
+```
+
+This token authenticates the caller to agentgateway. Keep the upstream provider API keys in the agentgateway configuration. Obtain a fresh token when it expires and update the SDK client before making more requests.
