@@ -838,7 +838,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `matchExpressions` _[CELExpression](#celexpression) array_ | CEL expressions that must all evaluate to true for the rule to match. |  | MaxItems: 256 <br />MaxLength: 16384 <br />MinItems: 1 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `matchExpressions` _[CELExpression](#celexpression) array_ | CEL expressions, each evaluated independently with this rule's<br />`action`. For `Allow` and `Deny`, any single matching expression<br />applies the action; for `Require`, every expression must match. |  | MaxItems: 256 <br />MaxLength: 16384 <br />MinItems: 1 <br />MinLength: 1 <br />Required: \{\} <br /> |
 
 
 #### AuthorizationPolicyAction

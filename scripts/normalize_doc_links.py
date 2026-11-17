@@ -24,8 +24,8 @@ THE SITE MOVES PAGES TWO DIFFERENT WAYS, AND BOTH HAVE TO BE READ.
      is served as a 200 carrying a <meta http-equiv=refresh>, NOT as a 301.
 
 Neither is a superset of the other, and the second is currently the larger of the two:
-at the time of writing, _redirects holds ~55 site-relative rules while content/docs holds
-~115 alias entries. Reading only _redirects would silently miss the majority of moves,
+at the time of writing, _redirects holds ~60 site-relative rules while content/docs holds
+~300 alias entries, most of them relative (see load_alias_rules()). Reading only _redirects would silently miss the majority of moves,
 and because an alias answers 200, nothing else reports them either: a link checker sees
 a healthy page, so the staleness is invisible from every direction.
 
@@ -69,6 +69,7 @@ Usage:
 
 import functools
 import os
+import posixpath
 import re
 import sys
 
@@ -177,21 +178,39 @@ def _with_slash(path):
     return path if path.endswith("/") else path + "/"
 
 
+def _resolve_alias(alias, page_url):
+    """The site path an `aliases:` entry builds its stub at, as Hugo resolves it.
+
+    A site-absolute alias is used as is. A relative one is joined to the parent of the
+    declaring page's URL, not to the page URL itself: `vllm` on /a/b/page/ lands at
+    /a/b/vllm/, and `../old/` lands at /a/old/.
+    """
+    if alias.startswith("/"):
+        return _with_slash(alias)
+    base = posixpath.dirname(page_url.rstrip("/"))
+    return _with_slash(posixpath.normpath(posixpath.join(base or "/", alias)))
+
+
 def load_alias_rules(website_dir, on_skip=None):
     """Sweep content/docs for `aliases:` front matter and return [(from, to), ...].
 
-    Three classes of alias are deliberately dropped rather than turned into rules,
+    A relative alias (no leading slash, such as `../inference/` or `vllm`) is resolved
+    the way Hugo resolves it: against the PARENT of the declaring page's URL. For
+    .../install/binary.md (URL .../install/binary/) the base is .../install/, so the alias
+    `../../../deployment/binary/` builds its stub at .../latest/deployment/binary/; for an
+    _index.md at .../llm/inference/ the base is .../llm/. Version trees are copied from
+    latest, so the docs write aliases relative on purpose, to keep each copy inside its
+    own tree. Resolving them before grouping also keeps the same relative alias, declared
+    once per version tree, from looking like one path claimed by many pages.
+
+    Two classes of alias are deliberately dropped rather than turned into rules,
     because each one would let the rewriter emit a URL that is wrong or unstable. Every
     drop is reported through on_skip, so nothing disappears quietly.
 
-      NOT SITE-ABSOLUTE. `vllm` and `windsurf` are declared without a leading slash.
-      Hugo resolves those somewhere, but not somewhere this script can predict, and a
-      guess would be baked into a released artifact.
-
-      CLAIMED BY MORE THAN ONE PAGE. 14 alias paths are declared by two or more pages,
-      `windsurf` by eleven of them. At build time whichever page is written last wins, so
-      the live target is not knowable from the source; picking one here would be inventing
-      an answer. (These are worth fixing in the content, separately from this script.)
+      CLAIMED BY MORE THAN ONE PAGE. When two pages declare the same resolved alias, the
+      page written last at build time wins, so the live target is not knowable from the
+      source; picking one here would be inventing an answer. (These are worth fixing in
+      the content, separately from this script.)
 
       CROSS-TREE. content/docs/kubernetes/1.4.x/.../inference/_index.md declares an alias
       under /docs/kubernetes/latest/. Honouring that would rewrite a `latest` link to point
@@ -219,13 +238,11 @@ def load_alias_rules(website_dir, on_skip=None):
             for alias in aliases:
                 if not isinstance(alias, str) or not alias.strip():
                     continue
-                claims.setdefault(_with_slash(alias.strip()), []).append((path, target))
+                resolved = _resolve_alias(alias.strip(), target)
+                claims.setdefault(resolved, []).append((path, target))
 
     rules = []
     for alias, sources in sorted(claims.items()):
-        if not alias.startswith("/"):
-            _report(on_skip, alias, "not site-absolute", sources)
-            continue
         if len({t for _, t in sources}) > 1:
             _report(on_skip, alias, f"claimed by {len(sources)} pages", sources)
             continue

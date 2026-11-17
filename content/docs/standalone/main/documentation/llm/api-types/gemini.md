@@ -35,7 +35,7 @@ A native Gemini request that is routed to any other provider is rejected with an
 In the simplified `llm` configuration, agentgateway maps the three Gemini path suffixes to their route types, so no explicit route configuration is required.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -47,7 +47,7 @@ llm:
 In the `gateways` and `routes` format, set the route types in the `policies.ai.routes` map. This map is required in this format: traffic that matches no entry is handled as chat completions, and a Gemini request then fails to parse.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 4000

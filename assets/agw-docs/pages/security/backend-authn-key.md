@@ -151,7 +151,7 @@ Set the `location` field in your {{< reuse "agw-docs/snippets/policy.md" >}} res
 
 If the client already sends the credential that the backend expects, forward it with the `passthrough` method. A client authentication policy strips the credential that it validates before the gateway forwards the request, so without `passthrough` the backend receives nothing.
 
-The method forwards a JWT only. It re-sends the token that a [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) policy validated on the route. An [API key]({{< link-hextra path="/documentation/security/apikey/" >}}) or basic auth credential is still stripped, and `passthrough` does not add it back.
+The method forwards a JWT only. It re-sends the token that a {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/security/extauth/jwt/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}){{< /version >}} policy validated on the route. An {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[API key]({{< link-hextra path="/documentation/security/extauth/apikey/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[API key]({{< link-hextra path="/documentation/security/apikey/" >}}){{< /version >}} or basic auth credential is still stripped, and `passthrough` does not add it back.
 
 ```yaml
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -177,7 +177,7 @@ The `passthrough` method has no field for where to read the credential from, bec
 The `location` field on `passthrough` controls only where the gateway writes the token on the backend request. That location does not have to be where the client sent it. To read a JWT from the `Authorization` header and forward it as an `x-forwarded-token` header, set `location` to that header.
 
 > [!NOTE]
-> Prefer `passthrough` over the `preserveToken` field of the [JWT authentication]({{< link-hextra path="/documentation/security/jwt/setup/" >}}) policy. Both get the token to the backend. However, `preserveToken` leaves the token in its original location, where every policy that runs later can read it. The `passthrough` method re-adds the token only on the request that the gateway forwards to the backend.
+> Prefer `passthrough` over the `preserveToken` field of the {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/security/extauth/jwt/setup/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/security/jwt/setup/" >}}){{< /version >}} policy. Both get the token to the backend. However, `preserveToken` leaves the token in its original location, where every policy that runs later can read it. The `passthrough` method re-adds the token only on the request that the gateway forwards to the backend.
 
 ## Send more than one credential
 

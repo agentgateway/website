@@ -68,7 +68,7 @@ The following example rejects requests that contain PII data, such as Social Sec
 1. Create a configuration file with regex prompt guard policies.
    ```yaml
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "*"
@@ -205,7 +205,7 @@ You can also filter LLM responses to redact sensitive data before it reaches the
 1. Create a configuration that masks phone numbers in LLM responses by using the built-in `phoneNumber` pattern.
    ```yaml
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "*"
@@ -268,7 +268,7 @@ For what each scope value covers and the limits on the field, see [Guard scope](
 1. Create a configuration that rejects a request when the system prompt, messages, tool call results, or tool call arguments contain a Social Security number.
    ```yaml
    cat <<'EOF' > config-scope.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "*"
