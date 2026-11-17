@@ -44,7 +44,7 @@ Below shows an example of connecting to [Perplexity](https://www.perplexity.ai/)
 
 ```yaml {paths="openai-compat-validate"}
 cat > /tmp/test-perplexity.yaml << 'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"

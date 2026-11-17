@@ -36,7 +36,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 The simplest form of backend is a static hostname or IP address. Static hosts are a routing-based backend, so they are configured in a `routes` entry; the simplified `llm` and `mcp` modes model only LLM providers and MCP targets. For example:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -59,7 +59,7 @@ Use `policies.http.maxConnectionDuration` to stop reusing a connection after a f
 HTTP/2 PING keepalives detect upstream connections that are no longer responsive, including idle connections. Configure their interval and acknowledgment timeout globally under `config.backend`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   backend:
     h2KeepaliveInterval: 30s
@@ -94,7 +94,7 @@ See the [MCP connectivity guide]({{< link-hextra path="/documentation/mcp/" >}})
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   targets:
@@ -109,7 +109,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -135,7 +135,7 @@ By default, MCP backends use stateful session routing, where the gateway tracks 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   statefulMode: stateless
@@ -149,7 +149,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -176,7 +176,7 @@ See the [LLM consumption guide]({{< link-hextra path="/documentation/llm/" >}}) 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: openai
@@ -188,7 +188,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -229,7 +229,7 @@ When a backend resolves to more than one endpoint, agentgateway load balances ac
 A `source` CEL expression selects the value. Agentgateway hashes it and maps the hash to an endpoint with weighted rendezvous hashing, so each replica picks the same endpoint for the same value without sharing any state with the other replicas.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

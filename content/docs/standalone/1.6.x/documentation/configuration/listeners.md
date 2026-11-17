@@ -34,7 +34,7 @@ This is also the default protocol if no protocol is specified.
 
 For example:
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -49,7 +49,7 @@ routes: []
 #   * That the listener actually serves traffic at runtime — the config defines
 #     no routes or backends to exercise.
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -64,7 +64,7 @@ agentgateway -f config.yaml --validate-only
 Serving {{< gloss "HTTPS (HTTP Secure)" >}}HTTPS{{< /gloss >}} traffic requires TLS certificates and setting `protocol: HTTPS` on the gateway. When you set `tls`, the protocol defaults to `HTTPS`, so you can also omit the `protocol` field.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 443
@@ -82,7 +82,7 @@ routes: []
 #   * That TLS is actually negotiated at runtime — requires a client connection
 #     the page does not exercise.
 cat <<'EOF' > config2.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 443
@@ -106,7 +106,7 @@ To serve multiple hostnames on one port, add a named listener for each one under
 The most exact match will be used, as well as the corresponding TLS certificates.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   web:
     port: 443
@@ -135,7 +135,7 @@ To attach a route to one of these listeners instead of the whole gateway, refere
 #   * That SNI hostname matching selects the right cert at runtime — requires TLS
 #     client connections the page does not exercise.
 cat <<'EOF' > config3.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   web:
     port: 443
@@ -216,7 +216,7 @@ TCP listeners are useful when serving traffic that is not HTTP based.
 > A large portion of agentgateway's functionality is specific to HTTP traffic, and not available for TCP traffic.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   tcp:
     port: 9000
@@ -231,7 +231,7 @@ tcpRoutes: []
 #   * That TCP traffic is actually forwarded at runtime — the config defines no
 #     tcpRoutes or backends to exercise.
 cat <<'EOF' > config5.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   tcp:
     port: 9000
@@ -254,7 +254,7 @@ TLS listeners can either _terminate_ or _passthrough_ TLS traffic.
 While both a TCP and TLS passthrough listener do not terminate TLS, the latter enables the use of routing based on the hostname (utilizing [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication)).
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   tls:
     port: 8443
@@ -278,7 +278,7 @@ tcpRoutes: []
 #   * That passthrough/termination behavior occurs at runtime — requires TLS client
 #     connections and backends the page does not exercise.
 cat <<'EOF' > config7.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   tls:
     port: 8443

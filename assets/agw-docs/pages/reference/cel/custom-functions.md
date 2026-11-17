@@ -7,7 +7,7 @@ Custom functions are part of the static agentgateway configuration. They are reg
 Set `config.customFunctions` to a YAML block string. Each definition has a name, parameters in parentheses, and one CEL expression between braces.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   customFunctions: |
     isInternal() {
@@ -39,7 +39,7 @@ The function uses the CEL context of its caller. For example, `request` in an au
 The following routing-based configuration defines two functions. The authorization policy calls both functions, and the transformation policy reuses `isInternal` to set a request header.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   customFunctions: |
     isInternal() {
@@ -170,7 +170,7 @@ The following constraints are checked when the functions are registered, which h
 The following configuration passes `--validate-only` and starts successfully, even though `response` is not bound when an authorization policy runs.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   customFunctions: |
     wasOk() {
