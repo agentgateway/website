@@ -267,7 +267,7 @@ To set the rates and log the cost of 1-hour cache writes, follow these steps.
 
 ### Service tiers {#service-tiers}
 
-{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} normalizes the service tier reported in each LLM response to `standard`, `flex`, `priority`, `reserved`, or `ultrafast`. CEL expressions access it as `llm.serviceTier`.
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} normalizes the service tier reported in each LLM response to `standard`, `flex`, `priority`, `reserved`, `ultrafast`, or `fast`. CEL expressions access it as `llm.serviceTier`.
 
 Cost calculations match this value to catalog tiers with a `serviceTier` field. Requests without a recorded tier use `standard` rates.
 
@@ -275,10 +275,12 @@ Cost calculations match this value to catalog tiers with a `serviceTier` field. 
 |---|---|
 | OpenAI | `default` becomes `standard`. `flex` stays `flex`. `priority` and `fast` become `priority`. `scale` becomes `reserved`. `ultrafast` stays `ultrafast`. |
 | Azure | `default` becomes `standard`. `flex` stays `flex`. `priority` and `fast` become `priority`. `scale` becomes `reserved`. |
-| Anthropic | `standard` and `priority` stay the same. |
+| Anthropic | `standard` and `priority` stay the same. If the response reports `usage.speed: "fast"`, the tier becomes `fast`. |
 | Amazon Bedrock | `default` and `standard` become `standard`. `flex`, `priority`, `ultrafast`, and `reserved` stay the same. |
 | Gemini | `standard`, `flex`, and `priority` stay the same. |
 | Vertex AI | `ON_DEMAND` becomes `standard`. `ON_DEMAND_FLEX` becomes `flex`. `ON_DEMAND_PRIORITY` becomes `priority`. `PROVISIONED_THROUGHPUT` becomes `reserved`. Claude models report the Anthropic tiers, `standard` and `priority`. |
+
+OpenAI and Azure `fast` request values map to `priority`. An Anthropic fast-mode response maps to `fast`. The two are different tiers.
 
 Unlisted providers or tiers leave `llm.serviceTier` unset.
 
