@@ -339,7 +339,10 @@ jobs:
       - name: Generate kubespec widget HTMLs
         run: |
           LINK_VERSION="${{ matrix.link_version }}"
-          CRD_DIR="${GITHUB_WORKSPACE}/agentgateway/controller/install/helm/agentgateway-crds/templates"
+          # agentgateway#4319 moved the CRD YAMLs from templates/ to
+          # files/crds/. Releases cut before that change still use templates/.
+          CRD_DIR="${GITHUB_WORKSPACE}/agentgateway/controller/install/helm/agentgateway-crds/files/crds"
+          [ -d "$CRD_DIR" ] || CRD_DIR="${GITHUB_WORKSPACE}/agentgateway/controller/install/helm/agentgateway-crds/templates"
           DOCS_KEY_FILE="${RUNNER_TEMP}/${LINK_VERSION}-keys.json"
           RENDERED_DOCS_DIR="${GITHUB_WORKSPACE}/website/public/docs/kubernetes/${LINK_VERSION}"
           TARGET_DIR="${GITHUB_WORKSPACE}/website/assets/agw-docs/pages/reference/api/${LINK_VERSION}"

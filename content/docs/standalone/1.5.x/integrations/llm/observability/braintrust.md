@@ -43,7 +43,7 @@ For a self-hosted deployment, replace the host with the Universal API URL for th
 Add a tracing policy to the agentgateway configuration. Braintrust accepts OTLP/HTTP and requires TLS, a bearer token, and an `x-bt-parent` header.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: api.braintrust.dev:443

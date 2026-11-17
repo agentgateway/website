@@ -50,6 +50,24 @@ Clients that negotiate MCP protocol version `2026-07-28` or later also get `resu
 {{< /version >}}
 {{< /version >}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x,2026.7.1,2.3.x" >}}
+## MCP tasks {#tasks}
+
+Agentgateway supports MCP tasks, the `io.modelcontextprotocol/tasks` extension of the `2026-07-28` MCP specification. With tasks, an MCP server can answer a long-running `tools/call` request with a task instead of a result. The client then polls the task for its status and result. Agentgateway forwards the client's tasks extension to the targets, and routes each task request to the target that created the task.
+
+> [!NOTE]
+> Client SDK support for MCP tasks is still limited. Check that your MCP client and your MCP servers both support the tasks extension before you build on it.
+
+| Method | What agentgateway does |
+| ------ | ---------------------- |
+| `tasks/get` | Sends the request to the target that created the task. The client gets the task status, and the result when the task is complete. |
+| `tasks/update` | Sends the request to the target that created the task. The client uses this method to answer requests that the server made during the task. |
+| `tasks/cancel` | Sends the request to the target that created the task, which cancels the task. |
+
+* **Task IDs when you federate multiple MCP servers.** Agentgateway adds the target name to each task ID, in the format `<target>+<task ID>`, in the same way that it adds the target name to tool names. The client sends the full ID back in each task request, and agentgateway removes the prefix before it sends the request to the target. A request with an unknown target in the task ID gets the error `-32602`. With one target, agentgateway does not change the task ID.
+* **Authorization.** Your {{< conditional-text include-if="standalone" >}}[MCP authorization]({{< link-hextra path="/documentation/configuration/security/authorization/mcp-authz" >}}){{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[MCP authorization]({{< link-hextra path="/documentation/mcp/mcp-access/" >}}){{< /conditional-text >}} rules apply to each task request, not only to the `tools/call` request that created the task. In a rule, `mcp.methodName` is the task method, `mcp.task.target` is the target, and `mcp.task.name` is the task ID without the target prefix. For example, the rule `mcp.methodName == "tasks/get"` lets clients poll a task, but not cancel it. When the rules deny a task request, the client gets the error `-32602` with the message `unknown resource`. If your rules allow only specific tools, add a rule that allows the task methods. A rule that checks `mcp.tool` does not match a task request.
+{{< /version >}}
+
 ## What you can still configure
 
 Version negotiation, sessionless protocol support, and [MCP Apps]({{< link-hextra path="/documentation/mcp/apps" >}}) all work automatically. 

@@ -58,7 +58,7 @@ Target-level policies are configured under `mcp.targets[].policies`.
 Use different authentication methods for different targets.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   targets:

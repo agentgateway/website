@@ -65,7 +65,7 @@ If the default session detection does not fit your clients, you can override it.
 An expression that reads a missing header fails with an error. To leave requests without that header unset instead of falling back to default session detection, wrap the session lookup in a `default()` function, as shown in the following example. Requests without an `x-conversation` header have no agent session, even if they have another recognized session header.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   standardAttributes:
     session: 'default(request.headers["x-conversation"], "")'
@@ -82,20 +82,20 @@ This behavior can open a security hole. Take a rule that denies requests that in
 
 To get a consistent type, read the header through a header view. The following table shows the result of each expression for a request made with `curl -H 'x-a: 1' -H 'x-a: 2'`:
 
-| Expression | Result | Use it to |
+| Expression | Result | Notes |
 | -- | -- | -- |
 | `request.headers["x-a"]` | `["1", "2"]` | Not recommended. The type depends on how many times the header is sent. |
 | `request.headers["x-a"] == "1"` | `false` | Not recommended. The comparison is false for repeated headers. |
 | `request.headers["x-a"].startsWith("1")` | Error | Not recommended. String functions fail for repeated headers. |
-| `request.headers.raw()["x-a"][0]` | `"1"` | Get the first value. |
-| `request.headers.join()["x-a"]` | `"1,2"` | Get all values as one string. |
-| `request.headers.split()["x-a"]` | `["1", "2"]` | Get all values as a list, with comma-separated values split too. |
+| `request.headers.raw()["x-a"][0]` | `"1"` | Gets the first value. |
+| `request.headers.join()["x-a"]` | `"1,2"` | Gets all values as one string. |
+| `request.headers.split()["x-a"]` | `["1", "2"]` | Gets all values as a list, with comma-separated values split too. |
 
 The `raw()` view always returns a list, even if the header is sent once, so `[0]` works for single and repeated headers. The `split()` view also splits each value on commas, so `x-a: 1,2` and `x-a: 3` together return `["1", "2", "3"]`. For the full list of header views, see [Header Views](https://github.com/agentgateway/agentgateway/blob/main/schema/cel-functions.md#header-views) in the agentgateway CEL schema.
 
 ## Variables by policy type
 
-Depending on the policy, different top-level variables are bound when CEL runs. A variable is only non-null when it is populated for the current request (for example, `has(jwt.sub)` or `has(apiKey.key)`). The same name can refer to different snapshots depending on pipeline stage: early policies evaluate against the live HTTP request, while logging, tracing, and metrics run after the exchange and can include `response`, `mcp`, and full telemetry fields. Note that when using streaming responses, the evaluation of response body attributes or LLM response information can be inconsistent.
+Depending on the policy, different top-level variables are bound when CEL runs. A variable is only non-null when it is populated for the current request (for example, `has(jwt.sub)` or `has(apiKey.key)`). The same name can refer to different snapshots depending on pipeline stage. Early policies evaluate against the live HTTP request. Logging, tracing, and metrics run after the exchange and can include `response`, `mcp`, and full telemetry fields. On streamed LLM responses, response transformations can read request-side LLM fields such as `llm.provider`, `llm.requestModel`, and `llm.streaming`. Response body attributes and response-derived LLM fields can be unavailable until the stream is parsed.
 
 | Policy | Available top-level variables |
 |--------|------------------------------|
@@ -113,9 +113,9 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 | External processing (ExtProc) | Request-phase rules: same as Transformation (request). Response-phase rules: same as Transformation (response). |
 | LLM policy | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `llmRequest`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — `llmRequest` is the raw JSON body during LLM request handling (not `mcp`). [^5] |
 | Virtual model callout | Same as LLM policy. `transformation` and `cache.ttl` can also read `callout`, the callout response, with `callout.headers` and the decoded JSON `callout.body`. |
-| Logging | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` [^6] |
-| Tracing | Same as Logging. |
-| Metrics | Same as Logging. |
+| Logging | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata`, `guardrails`, `mcpGuardrails`, `upstreamCalls` [^6]. (Same across logging, tracing, and metrics.) |
+| Tracing | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata`, `guardrails`, `mcpGuardrails`, `upstreamCalls` [^6]. (Same across logging, tracing, and metrics.) |
+| Metrics | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata`, `guardrails`, `mcpGuardrails`, `upstreamCalls` [^6]. (Same across logging, tracing, and metrics.) |
 
 [^1]: Request-time transformation evaluation binds `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, and `metadata` when earlier filters have populated them. For AI requests, `llm.requestModel` is available before provider overrides. `llmRequest` is available for the parsed JSON body. `mcp` is populated only for MCP JSON-RPC requests to an MCP backend.
 
@@ -131,7 +131,7 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 
 [^7]: A key that reads a variable that is not bound where its rule runs cannot be evaluated, so the request counts against the rule's shared bucket instead. For more information, see [Per-key limits]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/#per-key" >}}).
 
-[^8]: For LLM requests, `llm.requestModel` holds the model requested by the client. `llmRequest` holds the parsed JSON request body. A `requests` rule keyed by `llm.requestModel` counts requests separately for each model.
+[^8]: For LLM requests, `llm.requestModel` holds the model in the current request. `llm.originalModel` holds the model that the client sent before model rewrites. `llmRequest` holds the parsed JSON request body. A `requests` rule keyed by `llm.requestModel` counts requests separately for each model.
 
     Policies in the gateway phase run before LLM parsing and cannot read these fields. When `llm` listens on its own `port`, this includes `llm.policies.authorization`, `llm.policies.apiKey`, and `llm.policies.jwtAuth`.
 

@@ -49,3 +49,5 @@ Not every credential type works with both token types.
 
 > [!NOTE]
 > Agentgateway parses the `credential` JSON when it loads the configuration, not on the first request. A malformed or incomplete credential therefore fails `--validate-only`, which is where you want to find out about it.
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}To send the Google token in a different header, such as `Proxy-Authorization`, use `credentials[].gcp`. Google Cloud Identity-Aware Proxy (IAP) accepts that header. For more information, see [Send more than one credential]({{< link-hextra path="/documentation/configuration/security/backend-authn/key/#send-more-than-one-credential" >}}).{{% /version %}}

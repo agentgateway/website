@@ -36,6 +36,7 @@ Many providers now have dedicated integrations with preconfigured base URLs and 
 - [Fireworks AI]({{< link-hextra path="/integrations/llm/providers/fireworks/" >}})
 - [Meta]({{< link-hextra path="/integrations/llm/providers/meta/" >}})
 - [Perplexity]({{< link-hextra path="/integrations/llm/providers/perplexity/" >}})
+- [Nebius Token Factory]({{< link-hextra path="/integrations/llm/providers/nebius/" >}})
 - [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}})
 
 ### Self-hosted solutions

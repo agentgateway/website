@@ -1,6 +1,6 @@
 ---
 title: CSRF
-weight: 11
+weight: 60
 description: Protect against cross-site request forgery attacks with origin validation.
 ---
 
@@ -34,7 +34,7 @@ sequenceDiagram
     AGW->>AGW: CSRF validation:<br/>Origin (malicioussite.com)<br/>vs Destination (api.example.com)
 
     alt Origin does NOT match destination<br/>and NOT in additionalOrigins
-        AGW-->>User: 403 Forbidden<br/>"CSRF validation failed"
+        AGW-->>User: 403 Forbidden<br/>"csrf validation failed"
         Note over User,AGW: Attack blocked
     end
 
@@ -59,7 +59,7 @@ Allowed requests are as follows.
 
 ### Blocked requests
 
-Blocked requests, which receive a `403 Forbidden` response with the message "CSRF validation failed", are as follows.
+Blocked requests, which receive a `403 Forbidden` response with the message "csrf validation failed", are as follows.
 
 - Cross-site requests with `Sec-Fetch-Site: cross-site` (unless trusted)
 - Cross-site requests where `Origin` doesn't match `Host` (unless trusted)
@@ -76,7 +76,7 @@ Blocked requests, which receive a `403 Forbidden` response with the message "CSR
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -93,7 +93,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

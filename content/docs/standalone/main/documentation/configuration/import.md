@@ -10,6 +10,8 @@ Migrate from LiteLLM to agentgateway by importing your existing LiteLLM proxy co
 
 The importer currently supports LiteLLM proxy configuration files. Support for additional source gateways can be added to the same import command in future releases.
 
+To move application code from the LiteLLM Python SDK to agentgateway, see [Migrate from the LiteLLM SDK]({{< link-hextra path="/integrations/llm/clients/openai-sdk/#migrate-from-the-litellm-sdk" >}}).
+
 > [!WARNING]
 > An imported configuration can be valid without being behaviorally identical to the source configuration. Review every compatibility finding and test the generated configuration before using it in production.
 
@@ -159,7 +161,7 @@ The importer currently handles the following common file-based LiteLLM settings.
 
 | LiteLLM configuration | Imported agentgateway configuration |
 | -- | -- |
-| Common provider prefixes | First-class providers for OpenAI, Azure OpenAI, Azure AI Foundry, Anthropic, Bedrock, Gemini, Vertex AI, Ollama, Cohere, Hugging Face, Groq, Mistral, OpenRouter, Together AI, xAI, DeepInfra, DeepSeek, Fireworks, and Perplexity |
+| Common provider prefixes | First-class providers for OpenAI, Azure OpenAI, Azure AI Foundry, Anthropic, Bedrock, Gemini, Vertex AI, Ollama, Cohere, Hugging Face, Groq, Mistral, OpenRouter, Together AI, xAI, DeepInfra, DeepSeek, Fireworks, Perplexity, and Nebius Token Factory |
 | `model_name` and `litellm_params.model` | Public model names and provider-specific upstream model names |
 | Multiple deployments with the same `model_name` | Internal models behind a generated virtual model |
 | `credential_list` and `litellm_credential_name` | Reusable providers when the credential can be shared safely; otherwise, supported values are applied inline |

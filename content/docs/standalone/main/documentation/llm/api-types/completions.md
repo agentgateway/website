@@ -15,7 +15,7 @@ The [OpenAI Chat Completions API](https://developers.openai.com/api/docs/guides/
 In the simplified `llm` configuration, agentgateway automatically maps `/v1/chat/completions` requests to the `completions` route type, so no explicit route configuration is required.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -27,7 +27,7 @@ llm:
 To configure the route type explicitly, use the `gateways` and `routes` format and set the `completions` route type in the `policies.ai.routes` map.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 4000
@@ -61,6 +61,9 @@ On the way back, the signature of a response thinking block is forwarded as `rea
 
 For the same behavior in the other direction, where a Messages client reaches a provider that speaks Chat Completions, see [Converting to the Chat Completions format]({{< link-hextra path="/documentation/llm/api-types/messages/#converting-to-the-chat-completions-format" >}}).
 
+> [!NOTE]
+> Mistral reasoning models can return `message.content` or streaming `delta.content` as an array of `thinking` and `text` parts. The built-in [`mistral` provider]({{< link-hextra path="/integrations/llm/providers/mistral/" >}}) supports only the Chat Completions format for chat requests. On a Chat Completions route, agentgateway passes the parts through unchanged. Messages and Responses requests to this provider are converted to Chat Completions. The converted reply drops the reasoning. The reply has no `thinking` block or reasoning item, and it keeps only the text parts.
+
 ## File parts on a converted route {#file-parts-on-a-converted-route}
 
 When a Chat Completions user message reaches a provider that takes the Messages format, an inline `file` content part becomes a Messages `document` block. Set `file.file_data` to a base64 `data:` URI, such as `data:application/pdf;base64,<base64>`. The document title comes from `file.filename`. A `prompt_cache_breakpoint` on the file part becomes an ephemeral `cache_control` breakpoint on the document block.
@@ -72,6 +75,8 @@ The conversion rejects file parts that it cannot send inline to the Messages pro
 Chat Completions replies follow OpenAI usage conventions, even when agentgateway converts the upstream provider response from another format. When a provider reports prompt-cache tokens, `usage.prompt_tokens` includes those tokens. When they are available, cache counts are also reported separately in fields such as `usage.prompt_tokens_details.cached_tokens`, `usage.prompt_tokens_details.cache_write_tokens`, `usage.cache_read_input_tokens`, and `usage.cache_creation_input_tokens`.
 
 When a Gemini OpenAI-compatible response reports reasoning tokens separately from `usage.completion_tokens`, the normalized output count includes visible output and reasoning tokens. The converted Messages and Responses replies use this normalized output count in `usage.output_tokens`.
+
+{{< reuse "agw-docs/snippets/chat-completions-streamed-usage.md" >}}
 
 ## Using the API
 
