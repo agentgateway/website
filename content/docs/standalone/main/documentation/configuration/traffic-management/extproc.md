@@ -199,7 +199,7 @@ routes:
 | -- | -- | -- |
 | `dynamic.target` | No | CEL expression that computes the destination to dial. It must evaluate to a `host:port` string. When you omit it, agentgateway dials the destination that the request names, which is the behavior of a dynamic backend in earlier versions. |
 
-Agentgateway resolves the destination in a fixed order: an in-process override first, then the `target` expression, and finally the destination that the request names. The last step applies only when no `target` expression is configured. After you set `target`, a request whose expression fails is rejected instead of falling back to the destination that the request names.
+Agentgateway resolves the destination in a fixed order: an in-process override first, then the `target` expression, and finally the destination that the request names. The request falls back to the destination that it names only when you do not set `target`. When you set `target` and the expression fails, agentgateway rejects the request.
 
 Which CEL variables the expression can read depends on the route type.
 
@@ -210,11 +210,13 @@ Which CEL variables the expression can read depends on the route type.
 
 Review the following limits.
 
-- **The expression must return a string.** A value of any other type fails the request with `dynamic backend target expression must evaluate to a host:port string`.
-- **An expression that fails to evaluate rejects the request.** Reading an `extproc.*` key that the processor did not return fails the request with `dynamic backend target expression eval`, and there is no fallback to the request authority.
-- **Targets must use `host:port`.** A Unix socket path such as `unix:/run/admin.sock` fails with `dynamic backend target "unix:/run/admin.sock" must be a host:port`.
+- **The expression must return a string.** A value of any other type fails the request. Agentgateway logs `dynamic backend target expression must evaluate to a host:port string`.
+- **An expression that fails to evaluate rejects the request.** If the expression fails to evaluate, agentgateway does not fall back to the destination that the request names. Agentgateway logs `dynamic backend target expression eval` along with the evaluation error.
+- **Targets must use `host:port`.** A Unix socket path such as `unix:/run/admin.sock` fails the request. Agentgateway logs `dynamic backend target "unix:/run/admin.sock" must be a host:port`.
 - **Loopback and link-local destinations are blocked.** Targets resolving to addresses such as `127.0.0.1` or `169.254.169.254` fail with `503`. For blocked addresses and the `config.backend.allowDynamicLoopback` override, see [Loopback and link-local destinations]({{< link-hextra path="/documentation/configuration/egress-proxy/#loopback-destinations" >}}).
-- **`inferenceRouting` cannot be combined with a dynamic backend.** A request that hits both fails with `inferenceRouting is not supported with dynamic backends`.
+- **`inferenceRouting` cannot be combined with a dynamic backend.** A request that hits both fails. Agentgateway logs `inferenceRouting is not supported with dynamic backends`.
+
+For the failures that agentgateway logs, the client does not see the log text. By default, the client receives a `503` response with the body `internal error`.
 
 > [!WARNING]
 > The expression selects the address that agentgateway connects to, so whatever supplies its input decides where traffic goes. When the expression reads `extproc.*`, you are trusting the external processor to choose the destination. Treat that processor as part of the gateway's trust boundary, run it over a connection you control, and do not build the target from client-supplied headers.
