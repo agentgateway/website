@@ -65,7 +65,7 @@ If the default session detection does not fit your clients, you can override it.
 An expression that reads a missing header fails with an error. To leave requests without that header unset instead of falling back to default session detection, wrap the session lookup in a `default()` function, as shown in the following example. Requests without an `x-conversation` header have no agent session, even if they have another recognized session header.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   standardAttributes:
     session: 'default(request.headers["x-conversation"], "")'
@@ -95,7 +95,7 @@ The `raw()` view always returns a list, even if the header is sent once, so `[0]
 
 ## Variables by policy type
 
-Depending on the policy, different top-level variables are bound when CEL runs. A variable is only non-null when it is populated for the current request (for example, `has(jwt.sub)` or `has(apiKey.key)`). The same name can refer to different snapshots depending on pipeline stage: early policies evaluate against the live HTTP request, while logging, tracing, and metrics run after the exchange and can include `response`, `mcp`, and full telemetry fields. Note that when using streaming responses, the evaluation of response body attributes or LLM response information can be inconsistent.
+Depending on the policy, different top-level variables are bound when CEL runs. A variable is only non-null when it is populated for the current request (for example, `has(jwt.sub)` or `has(apiKey.key)`). The same name can refer to different snapshots depending on pipeline stage. Early policies evaluate against the live HTTP request. Logging, tracing, and metrics run after the exchange and can include `response`, `mcp`, and full telemetry fields. On streamed LLM responses, response transformations can read request-side LLM fields such as `llm.provider`, `llm.requestModel`, and `llm.streaming`. Response body attributes and response-derived LLM fields can be unavailable until the stream is parsed.
 
 | Policy | Available top-level variables |
 |--------|------------------------------|
@@ -131,7 +131,7 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 
 [^7]: A key that reads a variable that is not bound where its rule runs cannot be evaluated, so the request counts against the rule's shared bucket instead. For more information, see [Per-key limits]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/#per-key" >}}).
 
-[^8]: For LLM requests, `llm.requestModel` holds the model requested by the client. `llmRequest` holds the parsed JSON request body. A `requests` rule keyed by `llm.requestModel` counts requests separately for each model.
+[^8]: For LLM requests, `llm.requestModel` holds the model in the current request. `llm.originalModel` holds the model that the client sent before model rewrites. `llmRequest` holds the parsed JSON request body. A `requests` rule keyed by `llm.requestModel` counts requests separately for each model.
 
     Policies in the gateway phase run before LLM parsing and cannot read these fields. When `llm` listens on its own `port`, this includes `llm.policies.authorization`, `llm.policies.apiKey`, and `llm.policies.jwtAuth`.
 

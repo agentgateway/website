@@ -24,7 +24,7 @@ Configure a prompt guard to call your webhook service. You can use the [guardrai
 
 ```yaml
 cat <<EOF > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -52,7 +52,7 @@ Webhook calls use a 10-second timeout by default. The webhook target does not ac
 
 ```yaml
 cat <<EOF > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 backends:
 - name: content-safety-webhook
   host: content-safety-webhook.example.com:8000
@@ -101,7 +101,7 @@ Expressions are evaluated against the original client request, not against the w
 
 ```yaml
 cat <<EOF > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"

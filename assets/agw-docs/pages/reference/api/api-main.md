@@ -1160,7 +1160,7 @@ _Appears in:_
 | `crossAppAccess` _[CrossAppAccessAuth](#crossappaccessauth)_ | Cross App Access (Identity Assertion / ID-JAG) authentication.<br />If this configuration is invalid, requests using it are rejected. |  | Optional: \{\} <br /> |
 | `jwtSign` _[JwtSignAuth](#jwtsignauth)_ | Signs a short-lived JWT with a private key on each request and sends it<br />to the backend, for upstreams that require per-request keypair JWTs<br />(e.g. the Snowflake SQL API) rather than a static credential. |  | Optional: \{\} <br /> |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where backend credentials are inserted.<br />If omitted, credentials are written to the `Authorization` header with the `Bearer ` prefix.<br />This applies to `key`, `secretRef`, and `passthrough`. Entries in `credentials` carry their own location. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
-| `credentials` _[BackendAuthCredential](#backendauthcredential) array_ | Credentials is a list of additional credentials to inject on the<br />backend request. Each entry resolves a Secret key and writes its value<br />to the entry's location. `credentials` is independent of the primary<br />`key`/`secretRef`/`passthrough` mechanism and may be set on its own or<br />alongside it. |  | MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `credentials` _[BackendAuthCredential](#backendauthcredential) array_ | Credentials is a list of additional credentials to inject on the backend<br />request. Each entry writes its value to the entry's location.<br />`credentials` is independent of the primary `key`/`secretRef`/`passthrough`<br />mechanism and may be set on its own or alongside it. |  | ExactlyOneOf: [secretRef gcp] <br />MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
 
 #### BackendAuthCredential
@@ -1170,7 +1170,8 @@ _Appears in:_
 BackendAuthCredential specifies one additional credential to inject on the
 backend request.
 
-
+_Validation:_
+- ExactlyOneOf: [secretRef gcp]
 
 _Appears in:_
 - [BackendAuth](#backendauth)
@@ -1179,7 +1180,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where the credential is inserted on the backend request. |  | ExactlyOneOf: [header queryParameter cookie] <br />Required: \{\} <br /> |
-| `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | SecretRef references a Kubernetes Secret holding the credential value, and<br />optionally overrides the key read from it. Defaults to `Authorization`,<br />matching the key convention used by the top-level `secretRef`. |  | Required: \{\} <br /> |
+| `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | SecretRef references a Kubernetes Secret holding the credential value, and<br />optionally overrides the key read from it. Defaults to `Authorization`,<br />matching the key convention used by the top-level `secretRef`. |  | Optional: \{\} <br /> |
+| `gcp` _[GcpAuth](#gcpauth)_ | Fetches a Google Cloud access or ID token and writes it to `location`. |  | Optional: \{\} <br /> |
 
 
 #### BackendAuthPassthrough
@@ -2746,6 +2748,7 @@ Google Cloud authentication settings.
 
 _Appears in:_
 - [BackendAuth](#backendauth)
+- [BackendAuthCredential](#backendauthcredential)
 - [GoogleModelArmorAuth](#googlemodelarmorauth)
 - [ModelBackendAuth](#modelbackendauth)
 
@@ -3934,7 +3937,7 @@ _Appears in:_
 | `gcp` _[GcpAuth](#gcpauth)_ | Google authentication method for the model provider. When omitted,<br />default Google credential discovery is used. |  | Optional: \{\} <br /> |
 | `oauthTokenExchange` _[OAuthTokenExchange](#oauthtokenexchange)_ | OAuth 2.0 token exchange (RFC 8693) / jwt-bearer (RFC 7523)<br />authentication. |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where backend credentials are inserted. If omitted, credentials are<br />written to the `Authorization` header with the `Bearer ` prefix. This<br />applies to `key`, `secretRef`, and `passthrough`. Entries in<br />`credentials` carry their own location. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
-| `credentials` _[BackendAuthCredential](#backendauthcredential) array_ | Credentials is a list of additional credentials to inject on the backend<br />request. Each entry resolves a Secret key and writes its value to the<br />entry's location. `credentials` is independent of the primary<br />`key`/`secretRef`/`passthrough` mechanism and may be set on its own or<br />alongside it. |  | MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `credentials` _[BackendAuthCredential](#backendauthcredential) array_ | Credentials is a list of additional credentials to inject on the backend<br />request. Each entry writes its value to the entry's location.<br />`credentials` is independent of the primary `key`/`secretRef`/`passthrough`<br />mechanism and may be set on its own or alongside it. |  | ExactlyOneOf: [secretRef gcp] <br />MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
 
 #### ModelCatalogConfigMapRef

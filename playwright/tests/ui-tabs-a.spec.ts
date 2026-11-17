@@ -7,8 +7,8 @@ const PARK = { x: 5, y: 700 };
 /**
  * "UI" tab captures for the standalone security, transformation, and rate limit guides, all
  * under content/docs/standalone/main/documentation/configuration/:
- *   security/cors.md, security/jwt-authn.md, security/oidc.md, security/http-authz.md,
- *   security/external-authz.md, security/mcp-authn.md, security/mcp-authz.md,
+ *   security/cors.md, security/authentication/jwt-authn.md, security/authentication/oidc.md, security/authorization/http-authz.md,
+ *   security/authorization/external-authz.md, security/authentication/mcp-authn.md, security/authorization/mcp-authz.md,
  *   traffic-management/transformations.md, resiliency/rate-limits.md.
  *
  * Runs under CAPTURE_MODE=fixture FIXTURE=ui-tabs-a.yaml (scripts/serve-fixture-ui.sh): an LLM
@@ -131,7 +131,7 @@ test.describe('UI tabs: policies and security', () => {
     await expect(page).toHaveScreenshot('ui-llm-policy-cors-bottom.png');
   });
 
-  // security/jwt-authn.md, first "UI" tab: the Simplified (LLM) jwtAuth policy.
+  // security/authentication/jwt-authn.md, first "UI" tab: the Simplified (LLM) jwtAuth policy.
   test('jwt auth', async ({ page }) => {
     const drawer = await openPolicy(page, 'llm', 'jwtAuth', 'JWT auth');
     await drawer.getByRole('button', { name: /^strict\b/i }).click();
@@ -144,7 +144,7 @@ test.describe('UI tabs: policies and security', () => {
     await expect(page).toHaveScreenshot('ui-llm-policy-jwt-auth.png');
   });
 
-  // security/jwt-authn.md, second "UI" tab: the authorization policy that pairs with jwtAuth.
+  // security/authentication/jwt-authn.md, second "UI" tab: the authorization policy that pairs with jwtAuth.
   test('jwt authorization rule', async ({ page }) => {
     const drawer = await openPolicy(page, 'llm', 'authorization', 'Authorization');
     await addRules(page, drawer, [
@@ -154,7 +154,7 @@ test.describe('UI tabs: policies and security', () => {
     await expect(page).toHaveScreenshot('ui-llm-policy-jwt-authorization.png');
   });
 
-  // security/oidc.md, "Configuration" UI tab: the Simplified (LLM) oidc policy.
+  // security/authentication/oidc.md, "Configuration" UI tab: the Simplified (LLM) oidc policy.
   test('oidc', async ({ page }) => {
     const drawer = await openPolicy(page, 'llm', 'oidc', 'OIDC');
     await drawer.getByRole('button', { name: 'Keycloak', exact: true }).click();
@@ -171,7 +171,7 @@ test.describe('UI tabs: policies and security', () => {
     await expect(page).toHaveScreenshot('ui-llm-policy-oidc.png');
   });
 
-  // security/http-authz.md, first "UI" tab: the Simplified (LLM) authorization policy, all four
+  // security/authorization/http-authz.md, first "UI" tab: the Simplified (LLM) authorization policy, all four
   // rules. The "Require rules" tab is not captured: its one rule is the third rule here.
   test('authorization rules', async ({ page }) => {
     const drawer = await openPolicy(page, 'llm', 'authorization', 'Authorization');
@@ -185,7 +185,7 @@ test.describe('UI tabs: policies and security', () => {
     await expect(page).toHaveScreenshot('ui-llm-policy-authorization.png');
   });
 
-  // security/http-authz.md, "LLM authorization" UI tab: model-level rules on the gpt-4 model,
+  // security/authorization/http-authz.md, "LLM authorization" UI tab: model-level rules on the gpt-4 model,
   // in the Edit model drawer's Advanced > Model policies > Authorization section.
   test('model authorization', async ({ page }) => {
     await page.goto('/ui/llm/models#edit=gpt-4');
@@ -207,7 +207,7 @@ test.describe('UI tabs: policies and security', () => {
     await expect(page).toHaveScreenshot('ui-llm-model-authorization.png');
   });
 
-  // security/external-authz.md, "gRPC External Authorization" UI tab: host plus one metadata entry.
+  // security/authorization/external-authz.md, "gRPC External Authorization" UI tab: host plus one metadata entry.
   test('ext authz grpc', async ({ page }) => {
     const drawer = await openPolicy(page, 'llm', 'extAuthz', 'External authz');
     await drawer.getByRole('textbox', { name: 'Host' }).fill('localhost:9000');
@@ -222,7 +222,7 @@ test.describe('UI tabs: policies and security', () => {
     await expect(page).toHaveScreenshot('ui-llm-policy-ext-authz-grpc.png');
   });
 
-  // security/external-authz.md, "HTTP External Authorization" UI tab. Two captures, because the
+  // security/authorization/external-authz.md, "HTTP External Authorization" UI tab. Two captures, because the
   // drawer is taller than the viewport: protocol and request headers, then the HTTP details.
   test('ext authz http', async ({ page }) => {
     const drawer = await openPolicy(page, 'llm', 'extAuthz', 'External authz');
@@ -266,7 +266,7 @@ test.describe('UI tabs: policies and security', () => {
     await expect(page).toHaveScreenshot(`${name}-metadata.png`);
   }
 
-  // security/mcp-authn.md, "Authorization Server Proxy" UI tab: the keycloak example, before
+  // security/authentication/mcp-authn.md, "Authorization Server Proxy" UI tab: the keycloak example, before
   // the Raw toggle step that adds `provider`.
   test('mcp authn keycloak', async ({ page }) => {
     const drawer = await fillMcpAuthn(page, {
@@ -287,7 +287,7 @@ test.describe('UI tabs: policies and security', () => {
     await captureMcpAuthn(page, drawer, 'ui-mcp-policy-authn-keycloak');
   });
 
-  // security/mcp-authn.md, "Resource Server Only" UI tab.
+  // security/authentication/mcp-authn.md, "Resource Server Only" UI tab.
   test('mcp authn resource server', async ({ page }) => {
     const drawer = await fillMcpAuthn(page, {
       jwks: 'http://localhost:9000/.well-known/jwks.json',
@@ -305,7 +305,7 @@ test.describe('UI tabs: policies and security', () => {
     await captureMcpAuthn(page, drawer, 'ui-mcp-policy-authn-resource-server');
   });
 
-  // security/mcp-authz.md, first "UI" tab: three allow rules. The "Role-based access with JWT
+  // security/authorization/mcp-authz.md, first "UI" tab: three allow rules. The "Role-based access with JWT
   // claims" tab repeats the Resource Server Only authentication form and these same rules, so it
   // is not captured.
   test('mcp authorization', async ({ page }) => {

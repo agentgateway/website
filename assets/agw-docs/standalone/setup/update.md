@@ -45,7 +45,7 @@ Edit the file that you passed to `agentgateway -f`, or the generated file in you
 2. Edit the file in your editor. The following example adds a route to the `default` gateway.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 4000
