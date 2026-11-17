@@ -67,5 +67,5 @@ llm:
 
 In this example, `smart` inherits the upstream API key from `llm.providers[]` and only changes the model name.
 
-Named providers can hold shared upstream settings you want to reuse, such as authentication, host overrides, path overrides, or other model defaults.
+Named providers can hold shared upstream settings you want to reuse, such as authentication, host overrides, path overrides, [TLS]({{< link-hextra path="/integrations/llm/providers/#upstream-tls" >}}), or other model defaults.
 Keep the shared values on `llm.providers[]` and only set per-model differences on `llm.models[]`.
