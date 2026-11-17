@@ -134,7 +134,7 @@ For **Langfuse Cloud**, agentgateway exports traces directly without needing an 
 version: '3'
 services:
   agentgateway:
-    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:latest
+    image: {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/standalone/image-tag-default.md" >}}
     ports:
       - "3000:3000"
     volumes:
