@@ -24,9 +24,11 @@ The model drawer in the UI has no field for `visibility`. To set it in the UI, o
 ## Route selection modes
 
 Each virtual model defines its routing strategy under `routing`.
-Weighted, conditional, and callout routing targets can point to concrete `llm.models[]` entries or to other virtual models. Failover targets must point to concrete `llm.models[]` entries.
+Weighted, conditional, and callout routing targets can point to concrete `llm.models[]` entries or to other virtual models. Failover targets must point to concrete `llm.models[]` entries. A virtual model that is a target must be `public` too, so clients can also request it directly.
 
-Model discovery derives virtual model metadata from the available target metadata. Weighted, conditional, and failover virtual models combine metadata from their target sets. Failover reads targets in priority order. Because callout routing selects targets per request, `/v1/models` cannot derive target metadata for callout virtual models.
+Virtual models can nest up to 4 levels. Agentgateway rejects a cycle between virtual models when it loads the configuration. If a request resolves past the nesting limit, agentgateway returns a `404` response with the `virtual_model_not_resolved` error code.
+
+In `/v1/models`, weighted, conditional, and failover virtual models combine metadata from their targets. For more information, see the [Models API]({{< link-hextra path="/documentation/llm/api-types/models/" >}}). A nested virtual model has no metadata, so it empties the lists that its parent shares across targets, such as `preferred_endpoints`. Callout routing selects the target for each request, so `/v1/models` cannot derive target metadata for callout virtual models.
 
 With weighted, conditional, and callout routing, the `passthrough` setting of the selected target model applies. If that target sets `passthrough`, the setting takes precedence over endpoint detection, so a `/v1/chat/completions` request is forwarded to the provider unchanged instead of being converted to the format of the provider. With failover routing, the request path decides how the request is handled, and the `passthrough` setting of the target models does not apply. For more information, see [Passthrough and endpoint detection]({{< link-hextra path="/documentation/configuration/traffic-management/llm/#llm-passthrough-precedence" >}}).
 

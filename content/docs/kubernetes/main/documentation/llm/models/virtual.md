@@ -25,9 +25,9 @@ After a virtual model selects a target, the gateway rewrites the request so that
 
 To see which target served a request, check the access log or the trace span. The `agw.ai.original_model` attribute records the virtual model name that the client sent, and `gen_ai.request.model` records the model that the selected target sends to the provider. For more information, see [Generative AI attributes]({{< link-hextra path="/documentation/observability/traces/attribute-reference/#generative-ai-attributes-llm" >}}).
 
-Targets are usually `Internal` concrete models. Clients cannot request them directly, and they stay out of `/v1/models`. Weighted, conditional, and callout routing can select another virtual model before the request reaches a concrete model. Failover targets must be concrete models. For more on visibility, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
+Targets are usually `Internal` concrete models. Clients cannot request them directly, and they stay out of `/v1/models`. Weighted, conditional, and callout routing can also select another virtual model. A nested virtual model must be `Public`, and nesting is limited to 4 levels. Failover targets must be concrete models. For more on visibility and nesting, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
 
-Model discovery derives virtual model metadata from the available target metadata. Weighted, conditional, and failover virtual models combine metadata from their target sets. Failover reads targets in priority order. Because callout routing selects targets per request, `/v1/models` cannot derive target metadata for callout virtual models.
+In `/v1/models`, a weighted or conditional virtual model gets its metadata from its targets. The model reports the smallest limits and only the values that every target has, such as `preferred_endpoints`. One target without metadata empties a list. A nested virtual model has no metadata, so a nested target empties the lists of its parent. Failover and callout virtual models list no target metadata, because callout selects the target for each request.
 
 {{< reuse "agw-docs/snippets/model-exposure-patterns-tip.md" >}}
 
@@ -158,8 +158,7 @@ Use `virtualModel.weighted` to distribute requests across targets by relative we
 
    | Field | Value | Description |
    |-------|-------|-------------|
-   | `targets[].modelRef.name` | `internal-fast` | A model in the same namespace. Cross-namespace references are not supported. |
-   | `targets[].modelRef.group` and `targets[].modelRef.kind` | Not set | Optional. Omit both fields to select a model of this virtual model's kind. Set both fields together to target another model kind. |
+   | `targets[].modelRef.name` | `internal-fast` | An `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` in the same namespace. Cross-namespace references are not supported. |
    | `targets[].weight` | `80` | Relative weight, not a percentage. Weights are normalized across targets. Defaults to `1`. |
 
    > [!NOTE]
@@ -330,7 +329,6 @@ Failover depends on eviction. A virtual model with more than one priority group 
    | Field | Value | Description |
    |-------|-------|-------------|
    | `targets[].modelRef.name` | `primary-down` | A concrete model in the same namespace. Failover targets cannot point to another virtual model. |
-   | `targets[].modelRef.group` and `targets[].modelRef.kind` | Not set | Optional. Omit both fields to select a model of this virtual model's kind. For an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}`, failover targets must be `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources. |
    | `targets[].priority` | `0` | Lower values are preferred. Give several targets the same priority to load balance across them within a group. |
 
 3. Send three requests in a row.
