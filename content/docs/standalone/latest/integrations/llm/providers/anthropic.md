@@ -45,7 +45,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "anthropic/*"
@@ -282,7 +282,7 @@ Store your Claude Platform on AWS API key in an environment variable or file and
 Override the upstream host to point at the Claude Platform endpoint.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:
@@ -310,7 +310,7 @@ llm:
 Use IAM credentials from the environment (for example IRSA, an EC2 instance profile, or an AWS SSO profile) and let agentgateway sign requests with SigV4. Set `auth.aws.serviceName` to `aws-external-anthropic`, which is the SigV4 service name that Claude Platform expects.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:

@@ -284,7 +284,7 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4147 -->
 
 - **MCP authorization without an ID**: Agentgateway now rejects MCP requests other than `notifications/*` that have no usable JSON-RPC `id` with `400`. In 1.6, a `tools/call` without an `id` reached the MCP server without MCP authorization. For more information, see [Tool access]({{< link-hextra path="/documentation/mcp/tool-access/" >}}).
-- **MCP authentication with token passthrough**: MCP authentication now works with a JWT policy that sets `spec.traffic.jwtAuthentication.preserveToken: true`. For more information, see [Set up JWT authentication]({{< link-hextra path="/documentation/security/jwt/setup/" >}}).
+- **MCP authentication with token passthrough**: MCP authentication now works with a JWT policy that sets `spec.traffic.jwtAuthentication.preserveToken: true`. For more information, see [Set up JWT authentication]({{< link-hextra path="/documentation/security/extauth/jwt/setup/" >}}).
 - **Callouts through a proxy**: You can now send the requests that the agentgateway proxy makes on its own behalf, such as external authorization requests, guardrail requests, and cloud provider credential fetches, through a forward proxy. For more information, see [Callout proxy]({{< link-hextra path="/documentation/setup/customize/callout-proxy/" >}}).
 - **Optional chart-created RBAC**: Set `rbac.create` to `false` in the controller Helm chart to skip the ClusterRoles, Role, ClusterRoleBindings, and RoleBindings that the chart creates, for clusters that manage role-based access control (RBAC) outside of Helm. For more information, see [Chart-created RBAC resources]({{< link-hextra path="/documentation/install/advanced/#rbac-create" >}}).
 - **ClusterTrustBundle CA certificates**: A BackendTLSPolicy or a listener with `frontendValidation` can read CA certificates from an experimental ClusterTrustBundle, on Kubernetes 1.37 and later. If you set `rbac.create` to `false`, grant the controller `get`, `list`, and `watch` on `clustertrustbundles`. For more information, see [CA certificate in a ClusterTrustBundle]({{< link-hextra path="/documentation/security/backendtls/#clustertrustbundle-ca" >}}) and [Listener mTLS]({{< link-hextra path="/documentation/setup/listeners/mtls/#ca-sources" >}}).
@@ -322,6 +322,7 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 
 ## 🐛 Fixes {#v17-fixes}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3721 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3759 -->
@@ -372,3 +373,7 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 - MCP responses now honor the `spec.traffic.timeouts.responseIdle` response idle timeout, which previously did not apply on MCP routes. A response, including an SSE stream, that sends no data for longer than the timeout is now ended.
 - A configuration reload that races with MCP session creation no longer hangs the proxy.
 - Reused stateful MCP sessions now apply the MCP guardrails of the current route, as they already did for MCP authorization. A request with an encrypted session ID that a different MCP backend issued returns `404`, and the client starts a new session. Previously, a session could skip the guardrails of another route or reach another backend.
+
+**Operations**
+
+- The metrics endpoint now sets the `Content-Type` header to `application/openmetrics-text` by default. Previously, scrapers that did not request OpenMetrics received `Content-Type: text/plain` and could parse the response as classic Prometheus text. For example, the Datadog Agent without `use_latest_spec: true` dropped every counter metric without an error. Browsers still receive `text/plain` so that they display the metrics. For more information, see [Metrics format]({{< link-hextra path="/documentation/observability/metrics/dataplane/#metrics-format" >}}).

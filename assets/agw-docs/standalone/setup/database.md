@@ -5,7 +5,7 @@ Agentgateway reads a configuration file at startup, and that file alone is enoug
 You set the database in the `config.database` field of your configuration file. Because the field is in the `config` section, agentgateway applies it at startup only, so a change to it takes effect after a restart.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   database:
     url: sqlite://./data.db
@@ -97,7 +97,7 @@ When you start agentgateway with no configuration file, the generated configurat
 2. Review the generated configuration. The `config.database.url` field points at a SQLite file next to the configuration file. The following example is the file that a container generates. The binary generates the same file, with the absolute path of your user config directory in the URL.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      database:
        url: sqlite:///config/data.db
@@ -121,7 +121,7 @@ A configuration file that you write yourself has no database until you add one. 
    The path is relative to the directory that you start agentgateway from.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      database:
        url: sqlite://./data.db
@@ -143,7 +143,7 @@ A configuration file that you write yourself has no database until you add one. 
    Point the URL at a directory that you mount into the container. The example uses a `/data` path, because a mount of a single configuration file leaves no writable directory for the SQLite file.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      database:
        url: sqlite:///data/data.db
