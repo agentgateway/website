@@ -519,80 +519,128 @@ To authenticate with Microsoft Entra Workload ID, prepare the AKS cluster and th
    ```
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}
-## Use Microsoft Decision models on Azure AI Foundry
+## Use Decisions on Azure
 
-[Azure AI Foundry](https://ai.azure.com/) hosts Microsoft Decision models, which answer classification questions about a text, such as which of several choices fits best or how likely a statement is true. {{< reuse "agw-docs/snippets/agentgateway.md" >}} accepts two request formats for these models:
+Azure models can answer classification questions about an input, such as which of several choices fits best or how likely a statement is true. {{< reuse "agw-docs/snippets/agentgateway.md" >}} accepts two client request formats for these models:
 
-- **Decisions API** (`/v1/decisions`): The OpenAI-compatible format. {{< reuse "agw-docs/snippets/agentgateway.md" >}} converts the request and the response to and from the native SystemOne format.
-- **SystemOne** (`/v1/systemone`): The native format of the model. {{< reuse "agw-docs/snippets/agentgateway.md" >}} forwards the request unchanged.
+- **Decisions API** (`/v1/decisions`): The OpenAI-compatible format, with `predicate`, `choice`, and `score` question types.
+- **SystemOne** (`/v1/systemone`): The TypeSafe format, with corresponding `noul`, `choice`, and `score` question types.
 
-Both formats use the Foundry resource endpoint, `https://{resourceName}.cognitiveservices.azure.com/providers/microsoft/v1/systemone`. In SystemOne, a question of type `noul` returns the probability that a statement is true. The Decisions API calls this question type `predicate`.
+Choose the Azure endpoint that hosts your model. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} converts requests and responses to the upstream endpoint's native format.
 
-Before you begin, deploy Microsoft-Decision-1 in your Foundry resource. Then complete the [AKS Workload Identity setup](#use-microsoft-entra-workload-id-on-aks) for the `agentgateway-proxy` Gateway.
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}}
+- **Azure OpenAI**: Deploy a model that supports the [Azure OpenAI Decisions API](https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/decisions), such as `gpt-6-luna`. Azure OpenAI receives both client formats at `/openai/v1/decisions`: Decisions requests are sent unchanged, and SystemOne requests are converted to Decisions.
+{{< /version >}}
+- **Azure AI Foundry**: Deploy Microsoft-Decision-1 in your Foundry resource. Foundry receives both client formats at `https://{resourceName}.cognitiveservices.azure.com/providers/microsoft/v1/systemone`: SystemOne requests are sent unchanged, and Decisions requests are converted to SystemOne.
 
-1. Create a {{< reuse "agw-docs/snippets/backend.md" >}} and an HTTPRoute for Decisions and SystemOne traffic. Replace the resource, project, and deployment names with your own values.
+Before you begin, complete the [AKS Workload Identity setup](#use-microsoft-entra-workload-id-on-aks) for the `agentgateway-proxy` Gateway.
 
-   ```yaml
-   kubectl apply --server-side -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   metadata:
-     name: azure-decisions
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     ai:
-       provider:
-         azure:
-           model: my-decision-deployment
-           projectName: my-project
-           resourceName: my-foundry-resource
-           resourceType: Foundry
-     policies:
-       ai:
-         routes:
-           /v1/decisions: Decisions
-           /v1/systemone: SystemOne
-       auth:
-         azure:
-           workloadIdentity: {}
-   ---
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:
-     name: azure-decisions
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     parentRefs:
-     - name: agentgateway-proxy
-     rules:
-     - backendRefs:
-       - group: {{< reuse "agw-docs/snippets/group.md" >}}
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-         name: azure-decisions
-       matches:
-       - method: POST
-         path:
-           type: Exact
-           value: /v1/decisions
-       - method: POST
-         path:
-           type: Exact
-           value: /v1/systemone
-   EOF
-   ```
+### Configure the Azure backend
 
-   {{% reuse "agw-docs/snippets/review-table.md" %}}
+Create the {{< reuse "agw-docs/snippets/backend.md" >}} for the endpoint that hosts your model. Replace the resource, project, and deployment names with your own values.
 
-   | Setting | Description |
-   |---------|-------------|
-   | `azure.resourceName` | The Azure AI Foundry resource name used to construct the endpoint hostname. |
-   | `azure.resourceType` | Set to `Foundry` to use Azure AI Foundry endpoints. |
-   | `azure.projectName` | The Foundry project name. The CRD requires this field for the `Foundry` resource type, even though Decisions and SystemOne requests go to the resource endpoint and do not use the project. |
-   | `azure.model` | The name of your Foundry deployment, such as `my-decision-deployment`. {{< reuse "agw-docs/snippets/agentgateway.md" >}} sends this name upstream and replaces the `model` value in the client request. |
-   | `policies.ai.routes` | Maps each request path to a request format, `Decisions` or `SystemOne`. The HTTPRoute must match the same paths. |
-   | `policies.auth.azure.workloadIdentity` | Authenticate to Azure with the workload identity that you set up for the proxy. Leave the object empty. |
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}}
+#### Azure OpenAI
 
-2. Set the address of the gateway.
+```yaml
+kubectl apply --server-side -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+metadata:
+  name: azure-decisions
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  ai:
+    provider:
+      azure:
+        model: my-decision-deployment
+        resourceName: my-openai-resource
+        resourceType: OpenAI
+  policies:
+    ai:
+      routes:
+        /v1/decisions: Decisions
+        /v1/systemone: SystemOne
+    auth:
+      azure:
+        workloadIdentity: {}
+EOF
+```
+{{< /version >}}
+
+#### Azure AI Foundry
+
+```yaml
+kubectl apply --server-side -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+metadata:
+  name: azure-decisions
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  ai:
+    provider:
+      azure:
+        model: my-decision-deployment
+        projectName: my-project
+        resourceName: my-foundry-resource
+        resourceType: Foundry
+  policies:
+    ai:
+      routes:
+        /v1/decisions: Decisions
+        /v1/systemone: SystemOne
+    auth:
+      azure:
+        workloadIdentity: {}
+EOF
+```
+
+{{% reuse "agw-docs/snippets/review-table.md" %}}
+
+| Setting | Description |
+|---------|-------------|
+| `azure.resourceName` | The Azure resource name used to construct the endpoint hostname. |
+| `azure.resourceType` | Set to {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}}`OpenAI` for Azure OpenAI or {{< /version >}}`Foundry` for Azure AI Foundry. |
+| `azure.projectName` | The Foundry project name. The CRD requires this field for the `Foundry` resource type, even though Decisions and SystemOne requests go to the resource endpoint and do not use the project.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}} Do not set this field for `OpenAI`.{{< /version >}} |
+| `azure.model` | The name of your Azure deployment. {{< reuse "agw-docs/snippets/agentgateway.md" >}} sends this name upstream and replaces the `model` value in the client request. |
+| `policies.ai.routes` | Maps each request path to a request format, `Decisions` or `SystemOne`. |
+| `policies.auth.azure.workloadIdentity` | Authenticate to Azure with the workload identity that you set up for the proxy. Leave the object empty. |
+
+### Route Decisions and SystemOne traffic
+
+Create one HTTPRoute that sends both client request formats to the backend.
+
+```yaml
+kubectl apply --server-side -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: azure-decisions
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  parentRefs:
+  - name: agentgateway-proxy
+  rules:
+  - backendRefs:
+    - group: {{< reuse "agw-docs/snippets/group.md" >}}
+      kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+      name: azure-decisions
+    matches:
+    - method: POST
+      path:
+        type: Exact
+        value: /v1/decisions
+    - method: POST
+      path:
+        type: Exact
+        value: /v1/systemone
+EOF
+```
+
+### Send requests
+
+1. Set the address of the gateway.
 
    **Cloud Provider LoadBalancer**:
    ```sh
@@ -608,7 +656,7 @@ Before you begin, deploy Microsoft-Decision-1 in your Foundry resource. Then com
    export GATEWAY_URL=http://localhost:8080
    ```
 
-3. Send a choice question through the Decisions API.
+2. Send a choice question through the Decisions API.
 
    ```sh
    curl --fail-with-body --max-time 120 "$GATEWAY_URL/v1/decisions" \
@@ -630,7 +678,7 @@ Before you begin, deploy Microsoft-Decision-1 in your Foundry resource. Then com
 
    The response includes a `department` choice with a probability for each value, and token usage. The Decisions API also supports `predicate` and `score` questions.
 
-4. Send the same question in the native SystemOne format. SystemOne takes the text in `state` and the questions as a map keyed by name, and returns an `answers` map. Its question types are `noul`, `choice`, and `score`.
+3. Send the same question in the SystemOne client format. SystemOne takes the text in `state` and the questions as a map keyed by name, and returns an `answers` map. Its question types are `noul`, `choice`, and `score`.
 
    ```sh
    curl --fail-with-body --max-time 120 "$GATEWAY_URL/v1/systemone" \
@@ -652,7 +700,7 @@ Before you begin, deploy Microsoft-Decision-1 in your Foundry resource. Then com
    ```
 
    > [!NOTE]
-   > Prompt guards are disabled for requests in the native SystemOne format.
+   > Prompt guards are disabled for requests in the SystemOne format.
 
 ### Clean up {#decisions-cleanup}
 

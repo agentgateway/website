@@ -38,7 +38,7 @@ To learn more about CEL, see the following resources:
 
       ```sh
       cat <<'EOF' > config.yaml
-      # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+      # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
       llm:
         models:
         - name: "*"
@@ -63,7 +63,7 @@ To learn more about CEL, see the following resources:
    1. Create a configuration file with your LLM transformation settings.
       ```yaml
       cat <<'EOF' > config.yaml
-      # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+      # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
       llm:
         models:
         - name: "*"
@@ -144,7 +144,7 @@ You can configure the transformation in the UI or in your configuration file.
 {{% tab name="Config file" %}}
 ```yaml
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -220,7 +220,7 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
 
       ```sh
       cat <<'EOF' > config.yaml
-      # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+      # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
       llm:
         models:
         - name: "*"
@@ -248,7 +248,7 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
 
       ```yaml
       cat <<'EOF' > config.yaml
-      # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+      # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
       llm:
         models:
         - name: "*"
@@ -324,7 +324,7 @@ The UI has no field for `requestTransformation`. Use your configuration file for
 
    ```yaml
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      providers:
      - name: openai-prod
@@ -472,4 +472,4 @@ llm:
 ## Next steps
 
 - Learn about [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) for advanced expression logic.
-- Set up [authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) to use JWT claims in transformations.
+- Set up [authentication]({{< link-hextra path="/documentation/configuration/security/authentication/jwt-authn/" >}}) to use JWT claims in transformations.
