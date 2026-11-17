@@ -82,13 +82,11 @@ omit prompt and completion content.
    - Apply `homehub.yaml`, `proxy-parameters.yaml`, and `gateway.yaml`.
 
    To reuse an existing Gateway, remove the Gateway definition from
-   `gateway.yaml` and update the other files to refer to your Gateway.
-
-   The proxy check in `proxy-parameters.yaml` sets `use_latest_spec: true` so
-   that the Agent parses the proxy's output as OpenMetrics. Without this
-   setting, the Agent drops every counter. The controller
-   check in `controller-annotations.yaml` sets `use_latest_spec: false`, because
-   the controller serves the classic Prometheus text format.
+   `gateway.yaml`. Then update the HTTPRoute and AgentgatewayPolicy in that
+   file to refer to your Gateway. Add `spec.infrastructure.parametersRef` to
+   your Gateway that points to the `datadog-observability`
+   AgentgatewayParameters. Without this reference, the proxy has no Datadog
+   annotation and the Agent does not collect proxy metrics.
 
 4. In a separate terminal, port-forward the gateway.
 
