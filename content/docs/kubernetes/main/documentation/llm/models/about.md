@@ -7,7 +7,7 @@ description: Learn how the AgentgatewayModel API provides a model-centric way to
 Learn how the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API provides a model-centric way to serve LLMs in Kubernetes.
 
 > [!WARNING]
-> The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API is enabled by default. It is a `v1alpha1` API, so it is subject to change in a future release. To turn it off, set the `agentgatewayModels.enabled=false` Helm value on the {{< reuse "agw-docs/snippets/agentgateway.md" >}} control plane.
+> The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API is a `v1alpha1` API, so it is subject to change in a future release.
 
 ## About
 

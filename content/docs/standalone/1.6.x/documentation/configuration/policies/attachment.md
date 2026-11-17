@@ -22,7 +22,7 @@ Policies that are attached at multiple levels are applied at all levels.
 Review the following example configuration that uses one of each policy type.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

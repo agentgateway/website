@@ -38,7 +38,7 @@ If a target does not resolve, the control plane still generates the virtual mode
 
 ## Before you begin
 
-1. Complete [Serve a model]({{< link-hextra path="/documentation/llm/models/serve/" >}}). This guide reuses the `agentgateway-proxy` Gateway and the httpbun mock LLM from that guide, and assumes that the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API is enabled.
+1. Complete [Serve a model]({{< link-hextra path="/documentation/llm/models/serve/" >}}). This guide reuses the `agentgateway-proxy` Gateway and the httpbun mock LLM from that guide.
 2. Save the gateway address in an environment variable.
 
    {{< tabs >}}
