@@ -25,6 +25,17 @@ everything builds. Shared files (assets/, layouts/, hugo.yaml) do not count, so
 a snippet change that breaks an older version shows up only in the production
 build. If git cannot work out what changed, everything builds.
 
+--only-changed narrows a --preview-base build further, for the many short-lived
+pr-tracker branches: of the listed trees, only the ones the branch changed
+build (standalone/main, for example, without kubernetes/main or latest). If the
+branch also changed shared files, the first listed version builds in every
+section as well, because shared files feed all of them. Changing an unlisted
+tree still builds everything.
+
+Skipping a tree skips its content files only. The section content adapters
+(content/docs/<section>/_content.gotmpl) still generate their reference pages
+under it.
+
 If PyYAML is missing, the overlay is written empty and everything builds.
 """
 
@@ -82,6 +93,32 @@ def changed_files(base: str) -> list[str] | None:
         return None
 
 
+def tree_of(path: str) -> str | None:
+    """The "section/version" tree a repo path is inside, or None if it's shared."""
+    parts = path.split("/")
+    if len(parts) > 4 and parts[:2] == ["content", "docs"] and VERSION_DIR.match(parts[3]):
+        return f"{parts[2]}/{parts[3]}"
+    return None
+
+
+def only_changed_trees(files: list[str], built: list[str], entries: list[dict]) -> set[str]:
+    """The trees an --only-changed build keeps, out of `built`.
+
+    Every tree the branch changed directly, plus, if it also changed a shared
+    file (assets/, layouts/, a content adapter, hugo.yaml), the first listed
+    version in every section. Shared files feed every version, so a branch that
+    edits standalone/main and a Kubernetes snippet still renders kubernetes/main.
+    An empty diff also builds the first listed version, so there is something to
+    look at.
+    """
+    trees = {tree_of(f) for f in files}
+    keep = {t for t in built if t in trees}
+    if (None in trees or not keep) and entries:
+        first = str(entries[0].get("linkVersion") or entries[0].get("version"))
+        keep |= {t for t in built if t.split("/")[1] == first}
+    return keep
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--version", default="", help="build only this listed linkVersion, or `latest`")
@@ -89,7 +126,13 @@ def main() -> int:
         "--preview-base", default="", metavar="REF",
         help="build every version if this branch changed an unlisted version tree against REF",
     )
+    parser.add_argument(
+        "--only-changed", action="store_true",
+        help="with --preview-base, build only the listed version trees this branch changed",
+    )
     args = parser.parse_args()
+    if args.only_changed and not args.preview_base:
+        parser.error("--only-changed needs --preview-base")
 
     try:
         import yaml
@@ -116,23 +159,35 @@ def main() -> int:
                 f"(have: {', '.join(all_listed)})"
             )
 
-    patterns, skipped = [], []
-    for section_dir in sorted(p for p in DOCS.iterdir() if p.is_dir()):
-        section = section_dir.name
-        listed = {
-            str(e.get("linkVersion") or e.get("version"))
-            for e in entries
-            if not e.get("sections") or section in e["sections"]
-        }
-        if keep:
-            listed &= {keep}
-        for version_dir in sorted(p for p in section_dir.iterdir() if p.is_dir()):
-            name = version_dir.name
-            if VERSION_DIR.match(name) and name not in listed:
-                patterns.append(f"(^|/)content/docs/{re.escape(section)}/{re.escape(name)}/")
-                skipped.append(f"{section}/{name}")
+    def plan(builds) -> tuple[list[str], list[str], list[str]]:
+        """Skip patterns, skipped trees, and built trees ("section/version").
 
-    if args.preview_base and skipped:
+        A tree builds if its version is listed for its section and
+        builds(section, version) is true.
+        """
+        patterns, skipped, built = [], [], []
+        for section_dir in sorted(p for p in DOCS.iterdir() if p.is_dir()):
+            section = section_dir.name
+            listed = {
+                str(e.get("linkVersion") or e.get("version"))
+                for e in entries
+                if not e.get("sections") or section in e["sections"]
+            }
+            for version_dir in sorted(p for p in section_dir.iterdir() if p.is_dir()):
+                name = version_dir.name
+                if not VERSION_DIR.match(name):
+                    continue
+                if name in listed and builds(section, name):
+                    built.append(f"{section}/{name}")
+                else:
+                    patterns.append(f"(^|/)content/docs/{re.escape(section)}/{re.escape(name)}/")
+                    skipped.append(f"{section}/{name}")
+        return patterns, skipped, built
+
+    patterns, skipped, built = plan(lambda section, name: not keep or name == keep)
+
+    files = None
+    if args.preview_base and (skipped or args.only_changed):
         files = changed_files(args.preview_base)
         hits = (
             sorted({s for s in skipped for f in files if f.startswith(f"content/docs/{s}/")})
@@ -145,6 +200,11 @@ def main() -> int:
             OUT.write_text(HEADER + "ignoreFiles: []\n", encoding="utf-8")
             return 0
 
+    if args.only_changed and files is not None:
+        changed = only_changed_trees(files, built, entries)
+        patterns, skipped, built = plan(lambda section, name: f"{section}/{name}" in changed)
+        keep = keep or ", ".join(built)
+
     body = "".join(f"  - '{p}'\n" for p in patterns)
     text = HEADER + ("ignoreFiles:\n" + body if body else "ignoreFiles: []\n")
     if keep:
@@ -154,10 +214,14 @@ def main() -> int:
     OUT.write_text(text, encoding="utf-8")
 
     if keep:
-        print(f"Building version {keep} only; skipping {', '.join(skipped) or 'nothing'}.")
+        print(
+            f"Building version {keep} only; skipping the content files of "
+            f"{', '.join(skipped) or 'nothing'} (generated reference pages still build)."
+        )
     elif skipped:
         print(
-            f"Skipping versions not in hugo.yaml: {', '.join(skipped)}. "
+            f"Skipping the content files of versions not in hugo.yaml: {', '.join(skipped)}. "
+            "Generated reference pages still build. "
             "Run with FULL=1 to build them."
         )
     return 0

@@ -14,7 +14,7 @@ description: Capture a per-request trace as a standalone agentgateway instance h
 A trace shows the headers of the request as agentgateway processes it, which can put a credential in your terminal, your scrollback, and any log that captures the output. Agentgateway always redacts the `Authorization` and `Proxy-Authorization` headers. To redact more, list them in `config.sensitiveHeaders`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   sensitiveHeaders:
   - x-api-key

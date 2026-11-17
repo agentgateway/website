@@ -191,7 +191,7 @@ Set up retries to the sample app.
       | Field | Description |
       |-------|-------------|
       | `targetRefs.sectionName` | Select the HTTPRoute rule that you want to apply the policy to. |
-      | `retry.attempts` | The number of times to retry the request. In this example, you retry the request 3 times. |
+      | `retry.attempts` | The number of times to retry the request. In this example, you retry the request 3 times.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} Set `retry.attempts` to `0` to disable retries.{{< /version >}} |
       | `retry.backoff` | The duration to wait before retrying the request. In this example, you wait 1 second before retrying the request. |
       | `retry.codes` | The condition that must be met for the gateway proxy to retry the request. In this example, the request is retried if a 500 or 503 HTTP response code is returned. |
 
@@ -299,7 +299,7 @@ Set up retries to the sample app.
       | Field | Description |
       |-------|-------------|
       | `targetRefs.sectionName` | Select the Gateway listener that you want to apply the policy to. |
-      | `retry.attempts` | The number of times to retry the request. In this example, you retry the request 3 times. |
+      | `retry.attempts` | The number of times to retry the request. In this example, you retry the request 3 times.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} Set `retry.attempts` to `0` to disable retries.{{< /version >}} |
       | `retry.backoff` | The duration to wait before retrying the request. In this example, you wait 1 second before retrying the request. |
       | `retry.codes` | The condition that must be met for the gateway proxy to retry the request. In this example, the request is retried if a 500 or 503 HTTP response code is returned. |
 

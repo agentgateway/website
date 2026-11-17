@@ -95,7 +95,7 @@ Static templates use prompt enrichment to prepend or append fixed messages to ev
 Dynamic templates use CEL transformations to inject variables from the request context into prompts. This is ideal for personalizing prompts with user identity, adding request metadata, or applying conditional prompt modification based on headers or claims.
 
 > [!NOTE]
-> JWT claims in transformations require JWT authentication to be configured. See the [JWT authentication guide]({{< link-hextra path="/documentation/security/jwt/">}}) for setup instructions.
+> JWT claims in transformations require JWT authentication to be configured. See the [JWT authentication guide]({{< link-hextra path="/documentation/security/extauth/jwt/">}}) for setup instructions.
 
 ### Inject user identity from headers
 
@@ -295,4 +295,4 @@ kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} static-prompt-templat
 
 - Learn about [CEL expressions](https://agentgateway.dev/docs/standalone/latest/reference/cel/) for advanced templating.
 - Explore [transformations]({{< link-hextra path="/documentation/traffic-management/transformations/">}}) for request/response modification.
-- Set up [JWT authentication]({{< link-hextra path="/documentation/security/jwt/">}}) to use JWT claims in templates.
+- Set up [JWT authentication]({{< link-hextra path="/documentation/security/extauth/jwt/">}}) to use JWT claims in templates.
