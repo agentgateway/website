@@ -64,8 +64,9 @@ omit prompt and completion content.
    source versions.env
    ```
 
-2. Export your Datadog API key and site. The example creates the Kubernetes
-   Secret for you, so do not add the key to a manifest.
+2. Export your Datadog API key and site. The install commands in the example
+   README create the Kubernetes Secret from `DD_API_KEY`, so do not add the key
+   to a manifest.
 
    ```sh
    export DD_API_KEY="replace-with-your-datadog-api-key"

@@ -237,8 +237,8 @@ docker compose --env-file versions.env --env-file .env \
   exec datadog agent status
 ```
 
-Do not share `docker compose config`, container inspection output, or the local
-`.env` file. These outputs can contain credentials.
+Do not share the local `.env` file, the `docker compose config` output, or
+container inspection output. All three can contain credentials.
 
 ### Metrics are missing
 
