@@ -110,7 +110,7 @@ Build the Docker image from the source code. The example builds the image for an
    Reference a local OpenAPI schema file.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    mcp:
      port: 3000
      policies:
@@ -167,7 +167,7 @@ Agentgateway generates one MCP tool for each operation in your OpenAPI spec. Eac
 Fetch the OpenAPI schema from a remote URL. Agentgateway retrieves the schema at startup.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -189,7 +189,7 @@ mcp:
 Embed the OpenAPI schema directly as an inline string.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:

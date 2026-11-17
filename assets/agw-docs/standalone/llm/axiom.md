@@ -49,7 +49,7 @@ Axiom requires a dedicated dataset for each OpenTelemetry signal. Create two Eve
 Add the following `frontendPolicies` section to your agentgateway configuration. Axiom selects the destination dataset from the `x-axiom-dataset` header, and traces and access logs go to different datasets, so each exporter sets its own value for that header.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: ${AXIOM_DOMAIN}:443

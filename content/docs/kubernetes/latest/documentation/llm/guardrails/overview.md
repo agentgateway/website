@@ -270,6 +270,22 @@ spec:
 
 Request guards do not have this limit. A request is buffered before it reaches the LLM provider, so both `Mask` and `Reject` apply to requests whether or not the client asks for a streamed response.
 
+### Streaming latency {#streaming-latency}
+
+When you set `streaming: Enabled` and configure at least one response guard, {{< reuse "agw-docs/snippets/agentgateway.md" >}} does not forward each streamed chunk when it arrives. Instead, the proxy repeats the following cycle until the response ends:
+
+1. The proxy holds chunks until it collects 1024 bytes of response text, including reasoning text, or until the response ends.
+2. The response guards check that text.
+3. If the guards pass, the proxy sends the held chunks to the client. If a guard blocks the text, the proxy drops the held chunks and ends the stream. Text that the proxy sent in an earlier cycle already reached the client.
+
+This behavior applies to SSE responses and to the text deltas of OpenAI Realtime WebSocket traffic.
+
+Response guards change how a streamed response reaches the client in the following ways:
+
+- **A short response arrives as one chunk.** If the response has less than 1024 bytes of text, the client receives the full response at once when the response ends. This is expected behavior, not a bug.
+- **The time to first byte increases, and the rest of the response arrives in bursts.** The client gets the first chunk only after the LLM generates 1024 bytes of text and the guards check it. After that, the response arrives in bursts of about 1024 bytes of text. Each check adds the latency of the guard, such as a call to an external moderation service or a webhook.
+- **You cannot change the threshold.** No setting or environment variable changes the 1024-byte value. If your clients need the first tokens immediately, leave `streaming` unset or set it to `Disabled`. Streamed responses then reach the client without delay, but the response guards do not check them. The guards still check buffered responses.
+
 ## Choosing the right approach
 
 Use this table to decide which guardrail layer to use for your requirements:

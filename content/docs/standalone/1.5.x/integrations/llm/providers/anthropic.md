@@ -50,7 +50,7 @@ For the common API key case, use the following config. Use the AWS SigV4 section
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:
@@ -62,7 +62,7 @@ llm:
 
 {{< doc-test paths="anthropic" >}}
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:
@@ -291,7 +291,7 @@ Store your Claude Platform on AWS API key in an environment variable or file and
 Override the upstream host to point at the Claude Platform endpoint.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:
@@ -309,7 +309,7 @@ llm:
 
 {{< doc-test paths="anthropic" >}}
 cat <<'EOF' > config-claude-platform-apikey.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:
@@ -340,7 +340,7 @@ agentgateway -f config-claude-platform-apikey.yaml --validate-only
 Use IAM credentials from the environment (for example IRSA, an EC2 instance profile, or an AWS SSO profile) and let agentgateway sign requests with SigV4. Set `auth.aws.serviceName` to `aws-external-anthropic`, which is the SigV4 service name that Claude Platform expects.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:
@@ -359,7 +359,7 @@ llm:
 
 {{< doc-test paths="anthropic" >}}
 cat <<'EOF' > config-claude-platform-sigv4.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:

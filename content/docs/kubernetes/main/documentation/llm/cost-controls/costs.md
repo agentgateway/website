@@ -190,6 +190,8 @@ For transcription and translation requests, `llm.audioSeconds` holds the audio d
 
 When an Anthropic Messages response reports `usage.iterations`, {{< reuse "agw-docs/snippets/agentgateway.md" >}} prices each iteration separately and adds the results to get the request cost. If an iteration names a `model` with an exact catalog match, the tokens for that iteration use that model's catalog entry. Otherwise, the iteration uses the response model.
 
+When a response reports a model, cost lookup uses the response model first. If the catalog has no matching entry, lookup uses the request model, then `llm.originalModel`. The lookup order helps a catalog price traffic whose model was rewritten by virtual models, aliases, provider overrides, or request body transformations.
+
 The request access log includes `agw.ai.usage.cost.total` only for priced LLM requests. When the model cannot be priced, which is a lookup status of `Unpriced` or `Missing` as described in the next step, the access log leaves out the field. For how to view logs and add cost fields, see [Metrics and logs]({{< link-hextra path="/documentation/llm/observability/" >}}).
 
 ### Cache writes by TTL {#cache-write-details}
@@ -265,17 +267,20 @@ To set the rates and log the cost of 1-hour cache writes, follow these steps.
 
 ### Service tiers {#service-tiers}
 
-{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} normalizes the service tier reported in each LLM response to `standard`, `flex`, `priority`, or `reserved`. CEL expressions access it as `llm.serviceTier`.
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} normalizes the service tier reported in each LLM response to `standard`, `flex`, `priority`, `reserved`, `ultrafast`, or `fast`. CEL expressions access it as `llm.serviceTier`.
 
 Cost calculations match this value to catalog tiers with a `serviceTier` field. Requests without a recorded tier use `standard` rates.
 
 | Provider | Reported tier and normalized `llm.serviceTier` |
 |---|---|
-| OpenAI and Azure | `default` becomes `standard`. `flex` stays `flex`. `priority` and `fast` become `priority`. `scale` becomes `reserved`. |
-| Anthropic | `standard` and `priority` stay the same. |
-| Amazon Bedrock | `default` and `standard` become `standard`. `flex`, `priority`, and `reserved` stay the same. |
+| OpenAI | `default` becomes `standard`. `flex` stays `flex`. `priority` and `fast` become `priority`. `scale` becomes `reserved`. `ultrafast` stays `ultrafast`. |
+| Azure | `default` becomes `standard`. `flex` stays `flex`. `priority` and `fast` become `priority`. `scale` becomes `reserved`. |
+| Anthropic | `standard` and `priority` stay the same. If the response reports `usage.speed: "fast"`, the tier becomes `fast`. |
+| Amazon Bedrock | `default` and `standard` become `standard`. `flex`, `priority`, `ultrafast`, and `reserved` stay the same. |
 | Gemini | `standard`, `flex`, and `priority` stay the same. |
 | Vertex AI | `ON_DEMAND` becomes `standard`. `ON_DEMAND_FLEX` becomes `flex`. `ON_DEMAND_PRIORITY` becomes `priority`. `PROVISIONED_THROUGHPUT` becomes `reserved`. Claude models report the Anthropic tiers, `standard` and `priority`. |
+
+OpenAI and Azure `fast` request values map to `priority`. An Anthropic fast-mode response maps to `fast`. The two are different tiers.
 
 Unlisted providers or tiers leave `llm.serviceTier` unset.
 

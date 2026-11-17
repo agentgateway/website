@@ -540,6 +540,8 @@
             "flex",
             "priority",
             "reserved",
+            "ultrafast",
+            "fast",
             null
           ]
         },

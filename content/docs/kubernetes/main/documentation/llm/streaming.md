@@ -91,7 +91,7 @@ Google uses an HTTP stream protocol that requires special handling. {{< reuse "a
 
 For more information, see the LLM provider docs:
 
-- [Gemini](https://ai.google.dev/gemini-api/docs/text-generation#streaming-responses)
+- [Gemini](https://aistudio.google.com/docs/text-generation#streaming-responses)
 - [Vertex](https://docs.cloud.google.com/gemini-enterprise-agent-platform/reference/rest)
 
 ## Streaming example {#example}

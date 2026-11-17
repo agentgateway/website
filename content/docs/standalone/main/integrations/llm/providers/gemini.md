@@ -38,7 +38,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "gemini/*"
@@ -60,3 +60,7 @@ llm:
 | `transformation.model` | Removes the `gemini/` prefix from the model name before the request is forwarded, so the provider receives its own model name. |
 {{% /tab %}}
 {{< /tabs >}}
+
+{{< reuse "agw-docs/snippets/gemini-reasoning-effort.md" >}}
+
+For Gemma 4 models, `none`, `minimal`, and `low` use `thinkingLevel: "minimal"`, and `medium`, `high`, `xhigh`, and `max` use `thinkingLevel: "high"`.

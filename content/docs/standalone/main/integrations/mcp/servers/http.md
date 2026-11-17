@@ -62,7 +62,7 @@ Agentgateway encrypts session IDs with an AES-256-GCM key, which is 32 random by
 If agentgateway has nowhere to save a generated key, it leaves session IDs unencrypted and logs a warning at startup. This happens in the following cases.
 
 * You use `readOnly` storage mode.
-* Agentgateway cannot write to the configuration file, such as a read-only Docker mount or the ConfigMap of a [Helm installation]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
+* Agentgateway cannot write to the configuration file, such as a read-only Docker mount or the ConfigMap of a [Helm installation]({{% upstream %}}{{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}{{% /upstream %}}{{% downstream %}}{{< link-hextra path="/documentation/setup/install/helm/" >}}{{% /downstream %}}).
 * You pass the configuration inline with `--config`.
 
 An unencrypted session ID is only base64-encoded, so a client can read the target names and upstream session IDs in it.
@@ -110,7 +110,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 Set `statefulMode` to `stateless` on the MCP configuration.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   statefulMode: stateless
@@ -135,7 +135,7 @@ A browser page on any origin can resolve a hostname it controls to `127.0.0.1` a
 Agentgateway is usually a proxy in front of other servers rather than a browser-facing localhost server, so this check is off by default. Turn it on with `dnsRebindingProtection` when you run agentgateway on a developer machine and a browser can reach the MCP port.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   dnsRebindingProtection: true
@@ -178,7 +178,7 @@ Then, connect agentgateway to your MCP server. You can use the UI or a configura
 1. Create a configuration with an empty `mcp` section, and start agentgateway. You add the MCP server and the CORS policy in the UI.
    ```sh
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    mcp:
      port: 3000
      targets: []
@@ -208,7 +208,7 @@ Instead of step 5, you can click **Apply CORS** in the **Tool Playground**. That
 1. Create a configuration for your agentgateway to connect to your MCP server. Make sure to expose the `Mcp-Session-Id` header in the CORS configuration for session persistence.
    ```yaml
    cat <<EOF > config.yaml
-   # yaml-language-server: \$schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
    mcp:
      port: 3000
      policies:

@@ -10,7 +10,7 @@ Expose an LLM model to clients with an `{{< reuse "agw-docs/snippets/agentgatewa
 
 An `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` declares one client-facing model and attaches it to a Gateway listener. Agentgateway derives the LLM routing from the models that attach to a listener, so you do not create an {{< reuse "agw-docs/snippets/backend.md" >}} or an `HTTPRoute`.
 
-In this guide, you verify that the API is enabled, turn on LLM serving for a listener, and expose three kinds of models: an exact match, a wildcard match, and a model that authenticates to its provider with a Kubernetes Secret.
+In this guide, you turn on LLM serving for a listener and expose three kinds of models: an exact match, a wildcard match, and a model that authenticates to its provider with a Kubernetes Secret.
 
 For more information, see [About models]({{< link-hextra path="/documentation/llm/models/about/" >}}).
 
@@ -20,17 +20,6 @@ For more information, see [About models]({{< link-hextra path="/documentation/ll
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
 2. Deploy the [httpbun mock LLM]({{< link-hextra path="/integrations/llm/providers/httpbun/" >}}). This guide routes to httpbun so that you do not need a provider API key. To use a real provider instead, remove the `baseURL` field from each model and follow [API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).
-
-## Verify the AgentgatewayModel feature
-
-The {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} API is enabled by default. Verify that the feature is turned on in the control plane. The command returns `true`.
-
-```sh
-kubectl get deploy {{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="AGW_ENABLE_AGENTGATEWAY_MODELS")].value}'
-```
-
-If the command returns any other value, the API was turned off with the `agentgatewayModels.enabled=false` Helm value. To turn it back on, upgrade the {{< reuse "agw-docs/snippets/agentgateway.md" >}} Helm release with `--set agentgatewayModels.enabled=true`.
 
 ## Enable LLM serving on a listener
 
@@ -290,6 +279,8 @@ Each entry includes the OpenAI model object fields `id`, `object`, `created`, an
 - `capabilities`: Whether the model supports `reasoning`, `structured_outputs`, `tools`, and `temperature`.
 - `supported_parameters`: The request parameters that the model accepts, derived from its limits and capabilities.
 
+Each entry also lists `preferred_endpoints`. This field holds the client endpoint paths that the gateway parses for the model, such as `/chat/completions`, `/responses`, or `/embeddings`. Agentgateway derives the list from the provider config of the model, so the list does not depend on catalog metadata. A wildcard that stays unexpanded lists no endpoints.
+
 To return only the first listed models, add the `limit` query parameter. To look up one model by ID, send a request to `/v1/models/<model-id>` or `/models/<model-id>`.
 
 ```sh
@@ -329,6 +320,7 @@ Wildcard models expand to matching IDs from the [model catalog]({{< link-hextra 
 
 - **Model transformations**: Agentgateway reverses transformations that strip or add a fixed string, such as `stripPrefix("openai/")`. The list then uses the model names that clients send.
 - **Unexpanded patterns**: Agentgateway lists the pattern itself if the provider has no catalog entries. It also keeps the pattern if the model overrides the upstream model or uses a transformation that cannot be reversed.
+- **Endpoint metadata**: The `endpoints` field of a catalog entry only narrows `preferred_endpoints` to the paths that the model serves. For example, an embedding model can advertise only `/embeddings`.
 - **Custom providers**: To expand a wildcard, set `custom.providerOverride` to a catalog provider name, such as `openai`.
 - **Internal models**: Models with `visibility: Internal` do not appear in the list.
 
@@ -348,7 +340,6 @@ Every request fails with the following error, even for a model you created.
 
 The model did not attach to the listener, or it is not reachable by clients. Common causes include the following.
 
-- The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API is turned off on the control plane.
 - The listener does not allow the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` route kind.
 - The `parentRefs` field does not match the Gateway name or `sectionName`.
 - The model is in a different namespace than the Gateway, and the listener restricts `allowedRoutes.namespaces`.
@@ -356,11 +347,16 @@ The model did not attach to the listener, or it is not reachable by clients. Com
 
 **How to fix it:**
 
-1. Confirm that the API is enabled. If the following command does not return `true`, turn the API back on as described in [Verify the AgentgatewayModel feature](#verify-the-agentgatewaymodel-feature).
+1. Check whether the parent accepted the model. An unaccepted model reports `Accepted: False` in `status.parents`.
 
    ```sh
-   kubectl get deploy agentgateway -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="AGW_ENABLE_AGENTGATEWAY_MODELS")].value}'
+   kubectl get agentgatewaymodel gpt-4 -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
+   ```
+
+   If the listener does not allow the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` route kind, the reason is `NotAllowedByListeners`. The message names the rejecting Gateway, the listener, and the allowed route kinds. For example, a listener named `http` on the `http-only` Gateway in the `default` namespace that allows only `HTTPRoute` reports the following message.
+
+   ```text
+   kind AgentgatewayModel is not allowed by Gateway default/http-only listener "http" (allowed kinds: HTTPRoute)
    ```
 
 2. Check how many routes attached to the listener. This count includes every `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that attached, whether public or internal.
@@ -375,9 +371,6 @@ The model did not attach to the listener, or it is not reachable by clients. Com
    ```sh
    curl -s http://$INGRESS_GW_ADDRESS/v1/models
    ```
-
-> [!WARNING]
-> The `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resource does not yet report status. The `status.parents` field stays empty even when a model serves traffic correctly, so you cannot use `kubectl describe agmodel` to debug attachment. Use the checks in this section instead.
 
 ### Cleanup
 

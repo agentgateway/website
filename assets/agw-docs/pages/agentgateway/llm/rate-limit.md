@@ -48,7 +48,7 @@ Review the following table for example use cases and configuration guidance.
 
 Also, check out the rate limiting guides for other use cases:
 
-- [Request-based rate limiting on HTTP routes]({{< link-hextra path="/documentation/security/rate-limit-http" >}}).
+- {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Request-based rate limiting on HTTP routes]({{< link-hextra path="/documentation/security/rate-limit/local" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Request-based rate limiting on HTTP routes]({{< link-hextra path="/documentation/security/rate-limit-http" >}}){{< /version >}}.
 - [MCP tool call limiting]({{< link-hextra path="/documentation/mcp/rate-limit" >}}).
 
 ## Before you begin
@@ -267,7 +267,7 @@ Create claim-level budget limits with JWT authentication and CEL expressions.
 
 A token budget without a `key` field is shared by every request on the target, so a single caller can spend the budget for everyone. Set `key` to a CEL expression to give each distinct value its own token bucket with the limits of that rule. The CEL expression checks against claims in a JWT. This way, per-user, per-team, and per-model budgets do not require an external rate limit service.
 
-Before you begin, create a [JWT authentication policy]({{< link-hextra path="/documentation/security/jwt/" >}}) that targets the same backend that you want to rate limit, such as an OpenAI HTTPRoute in the following example. To key on a virtual key instead, use `apiKey.user_id`, as described in the [virtual keys guide]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
+Before you begin, create a {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication policy]({{< link-hextra path="/documentation/security/extauth/jwt/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication policy]({{< link-hextra path="/documentation/security/jwt/" >}}){{< /version >}} that targets the same backend that you want to rate limit, such as an OpenAI HTTPRoute in the following example. To key on a virtual key instead, use `apiKey.user_id`, as described in the [virtual keys guide]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
 
 The following policy sets up these budgets:
 
@@ -319,7 +319,7 @@ Review the following behavior before you rely on claim-level budget limits.
 
 Local rate limiting runs independently on each proxy replica. For shared token budgets across multiple agentgateway replicas, use global rate limiting with an external rate limit service.
 
-For detailed instructions on setting up global rate limiting with descriptors and an external rate limit service, see the [Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit-global" >}}).
+For detailed instructions on setting up global rate limiting with descriptors and an external rate limit service, see the {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit/global" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit-global" >}}){{< /version >}}.
 
 ## Cleanup
 
