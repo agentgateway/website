@@ -192,7 +192,7 @@ routes:
 3. Optional: To use the agentgateway UI playground later, add a `cors` policy to the route. Replace the contents of your `config.yaml` file with the following example, which keeps both targets and adds the policy. The configuration reloads automatically when you save the file.
 
       ```yaml
-      # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+      # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
       gateways:
         default:
           port: 3000
@@ -265,7 +265,7 @@ When you multiplex multiple targets, agentgateway namespaces tool and prompt nam
 Use `never` when clients need to call tools by their plain names, such as for [MCP Apps]({{< link-hextra path="/documentation/mcp/apps" >}}) that issue tool calls from a rendered UI. Because unprefixed names must be unique, agentgateway fails to start if two targets expose the same tool name in this mode.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   prefixMode: never
@@ -345,7 +345,7 @@ echo "✓ prefixMode conditional (default): two targets produce prefixed names"
 # `always` is only distinguishable from the default with one target and `never`
 # requires names that do not collide.
 cat <<'EOF' > config-prefix-never.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   prefixMode: never

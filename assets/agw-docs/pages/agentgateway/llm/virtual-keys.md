@@ -82,7 +82,7 @@ Store a SHA-256 hash of each virtual key in a ConfigMap. The proxy hashes each i
 | `metadata.user_id` | The user identifier that budget and metrics policies read as `apiKey.user_id`. |
 
 > [!TIP]
-> ConfigMaps with hashed keys are the recommended storage format. If you already store keys in Secrets, use [`agctl migrate`]({{< link-hextra path="/reference/agctl/agctl-migrate/" >}}) to convert them, or see [API key authentication]({{< link-hextra path="/documentation/security/apikey/" >}}) for Secret-based configuration.
+> ConfigMaps with hashed keys are the recommended storage format. If you already store keys in Secrets, use [`agctl migrate`]({{< link-hextra path="/reference/agctl/agctl-migrate/" >}}) to convert them, or see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[API key authentication]({{< link-hextra path="/documentation/security/extauth/apikey/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[API key authentication]({{< link-hextra path="/documentation/security/apikey/" >}}){{< /version >}} for Secret-based configuration.
 
 {{< /version >}}
 
@@ -652,4 +652,4 @@ kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
-To remove the rate limit server, follow the [cleanup steps]({{< link-hextra path="/documentation/security/rate-limit-global#cleanup" >}}) in the global rate limiting guide.
+To remove the rate limit server, follow the {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[cleanup steps]({{< link-hextra path="/documentation/security/rate-limit/global#cleanup" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[cleanup steps]({{< link-hextra path="/documentation/security/rate-limit-global#cleanup" >}}){{< /version >}} in the global rate limiting guide.

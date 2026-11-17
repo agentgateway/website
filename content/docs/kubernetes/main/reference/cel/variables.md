@@ -92,7 +92,7 @@ Depending on the policy, different fields are accessible based on when in the re
 |Tracing| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`, `upstreamCalls`|
 |Metrics| `source`, `request`, `jwt`, `mcp`, `backend`, `extauthz`, `response`, `llm`, `upstreamCalls`|
 
-[^1]: For LLM requests, `llm.requestModel` holds the model requested by the client. `llmRequest` holds the parsed JSON request body. A `requests` limit keyed by `llm.requestModel` counts requests separately for each model.
+[^1]: For LLM requests, `llm.requestModel` holds the model in the current request. `llm.originalModel` holds the model that the client sent before model rewrites. `llmRequest` holds the parsed JSON request body. A `requests` limit keyed by `llm.requestModel` counts requests separately for each model.
 
     Policies with `traffic.phase: PreRouting` run before LLM parsing and cannot read these fields.
 

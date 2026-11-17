@@ -106,7 +106,7 @@ CORS policies are typically implemented to limit access to server resources for 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     cors:
@@ -131,7 +131,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -157,7 +157,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -185,7 +185,7 @@ routes:
 
 {{< doc-test paths="cors" >}}
 cat <<'EOF' > config-llm.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     cors:
@@ -210,7 +210,7 @@ EOF
 agentgateway -f config-llm.yaml --validate-only
 
 cat <<'EOF' > config-mcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -236,7 +236,7 @@ EOF
 agentgateway -f config-mcp.yaml --validate-only
 
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

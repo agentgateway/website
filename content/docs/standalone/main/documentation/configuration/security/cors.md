@@ -1,6 +1,6 @@
 ---
 title: CORS
-weight: 11
+weight: 50
 description: Configure Cross-Origin Resource Sharing policies to control cross-domain requests.
 ---
 
@@ -65,7 +65,7 @@ The following steps add the same CORS policy as the **Simplified (LLM)** example
 
 1. Create a configuration with an LLM model, but no CORS policy. You add the policy in the UI.
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "*"
@@ -97,7 +97,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     cors:
@@ -122,7 +122,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -148,7 +148,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

@@ -272,6 +272,10 @@ Create a BackendTLSPolicy for the NGINX workload.
 
    The HTTPRoute forwards the request to the NGINX server on port 8443, and the NGINX server accepts only TLS on that port. A 200 response means that the gateway proxy originated a TLS connection to the backend successfully. Without a valid BackendTLSPolicy and CA certificate, requests fail with `invalid peer certificate: UnknownIssuer`.
 
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+   For other errors that invalid TLS settings cause, see [Invalid backend TLS settings](#invalid-tls-settings).
+   {{< /version >}}
+
    
 ## External service
 
@@ -643,6 +647,52 @@ A CA source does not have to store the certificate in the `ca.crt` key. Set the 
    "message": "error extracting CA cert from Secret agentgateway-system/nginx-ca-custom-key: missing key \"corporate-roots.pem\"",
    "reason": "PartiallyValid",
    ```
+
+{{< /version >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+
+## Invalid backend TLS settings {#invalid-tls-settings}
+
+When backend TLS settings are invalid, the gateway proxy does not fall back to sending plaintext traffic to the backend. Instead, requests to the backend fail with a 503 HTTP response code. The errors that you see depend on whether the controller or the gateway proxy finds the invalid setting.
+
+### Settings that the proxy marks as invalid {#proxy-invalid-settings}
+
+The controller passes some backend TLS settings to the gateway proxy without fully checking them. If the proxy cannot build a TLS configuration from these settings, it marks the entire backend TLS policy as invalid and fails every request to that backend. This rule applies to the `spec.backend.tls` section of an {{< reuse "agw-docs/snippets/policy.md" >}} and to the `spec.policies.tls` section of an {{< reuse "agw-docs/snippets/backend.md" >}}. The proxy marks the policy as invalid in the following cases:
+
+* The Secret that the `mtlsCertificateRef` setting refers to has a `tls.crt`, `tls.key`, or `ca.crt` value that is not valid PEM. If a `ca.crt` PEM block decodes but does not hold a valid certificate, the proxy skips that certificate instead of marking the policy as invalid.
+* The `certificateSource` setting is `SPIFFE` and the `keyExchangeGroups` setting is also set. A SPIFFE certificate source gets the client identity and trust roots from the SPIFFE Workload API and does not support custom key exchange groups.
+* An entry in the `verifySubjectAltNames` setting is not a valid DNS name, IP address, or URI.
+* The `insecureSkipVerify` setting is `Hostname`, but no CA certificate can be loaded, such as when every `caCertificateRefs` entry is invalid.
+* The TLS crypto provider of the proxy does not support an entry in the `keyExchangeGroups` setting.
+
+Every request to the backend fails until you fix the setting. This rule also applies when you update a working policy with an invalid setting, because the proxy does not keep the previous TLS settings for that backend.
+
+To find the error, check the proxy logs. The proxy logs a warning when it receives the invalid settings from the controller, and an error for each failed request. The log line for the warning shows `type=Nack`, but the proxy still applies the update, so requests to the backend fail.
+
+```sh
+kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} deploy/agentgateway-proxy | grep -i "backend TLS policy"
+```
+
+Example output for an {{< reuse "agw-docs/snippets/policy.md" >}} named `nginx-backend-tls` whose `mtlsCertificateRef` Secret has an invalid `ca.crt` value:
+
+```
+... type=Nack error="[{\"key\":\"policy/agentgateway-system/nginx-backend-tls:tls:agentgateway-system/nginx.agentgateway-system.svc.cluster.local/8443\",\"warn\":\"invalid backend TLS policy, requests to the backend will fail: base64 decode error: InvalidCharacter(33)\"}]"
+... http.status=503 protocol=http error="processing failed: backend TLS policy is invalid: base64 decode error: InvalidCharacter(33)" reason=Internal duration=0ms
+```
+
+The response body that the client receives is `internal error`.
+
+### Invalid CA certificate references {#invalid-ca-refs}
+
+The controller checks the CA certificates that a `caCertificateRefs` entry refers to. This check applies to a BackendTLSPolicy, an {{< reuse "agw-docs/snippets/policy.md" >}}, and an {{< reuse "agw-docs/snippets/backend.md" >}}. If the ConfigMap or Secret does not hold a valid CA certificate, the controller reports the error in the resource status:
+
+* A BackendTLSPolicy reports an `Accepted` condition of `False`, with the `NoValidCACertificate` reason.
+* An {{< reuse "agw-docs/snippets/policy.md" >}} or an {{< reuse "agw-docs/snippets/backend.md" >}} reports the `PartiallyValid` reason.
+
+The gateway proxy then trusts no CA certificate for that backend. It does not use the system CA certificates instead. The TLS handshake fails, and requests return a 503 HTTP response code with the `upstream connection failed` response body. The proxy logs record `invalid peer certificate: UnknownIssuer`.
+
+For more information about the backend TLS settings, see the [API docs]({{< link-hextra path="/reference/api/#backendtls" >}}).
 
 {{< /version >}}
 

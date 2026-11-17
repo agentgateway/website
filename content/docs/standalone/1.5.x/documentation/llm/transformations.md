@@ -56,7 +56,7 @@ To learn more about CEL, see the following resources:
 1. Create a configuration file with your LLM transformation settings. The following example caps `max_tokens` to 10, regardless of what the client requests.
    ```yaml {paths="transformations"}
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "*"
@@ -157,7 +157,7 @@ Use a CEL expression in the model-level `transformation` field to dynamically se
 
 ```yaml {paths="transformations"}
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:
@@ -285,7 +285,7 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
 
    ```yaml {paths="transformations"}
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "*"

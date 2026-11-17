@@ -55,8 +55,7 @@ On an {{< reuse "agw-docs/snippets/backend.md" >}}, set the audio paths to `Dete
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Verify that the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API is enabled. The API is enabled by default. For the steps, see [Verify the AgentgatewayModel feature]({{< link-hextra path="/documentation/llm/models/serve/#verify-the-agentgatewaymodel-feature" >}}).
-3. Make sure that your cluster has a node with an NVIDIA GPU and the NVIDIA device plugin or GPU Operator, so that `nvidia.com/gpu` is schedulable. The Voxtral Small example in this guide requests one GPU. Without one, the pod stays `Pending`, and the wait in step 1 times out.
+2. Make sure that your cluster has a node with an NVIDIA GPU and the NVIDIA device plugin or GPU Operator, so that `nvidia.com/gpu` is schedulable. The Voxtral Small example in this guide requests one GPU. Without one, the pod stays `Pending`, and the wait in step 1 times out.
 
 ## Set up and expose your audio model
 

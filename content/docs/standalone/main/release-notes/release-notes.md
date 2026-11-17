@@ -16,13 +16,13 @@ Review the release notes for agentgateway standalone.
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4185 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4188 -->
 
-A model that sets `passthrough` now always passes requests through, even on a known LLM endpoint. Previously, `passthrough` controlled only how agentgateway handled unknown paths. Model transformations also rewrite the model ID in the request path of Bedrock, Vertex AI, and Gemini requests, instead of applying only to the `model` field in the request body. For more information, see [Transform requests]({{< link-hextra path="/documentation/llm/transformations/" >}}).
+A model that sets `passthrough` now always passes requests through, even on a known LLM endpoint. Previously, `passthrough` controlled only how agentgateway handled unknown paths. Model transformations also rewrite the model ID in the request path of Bedrock, Vertex AI, and Gemini requests, instead of applying only to the `model` field in the request body. For more information, see [Passthrough and endpoint detection]({{< link-hextra path="/documentation/configuration/traffic-management/llm/#llm-passthrough-precedence" >}}).
 
 ## 🌟 New features {#v18-new-features}
 
 ### LLM {#v18-llm}
 
-- **Nebius Token Factory provider**: Set `provider: nebius` to route requests to Nebius Token Factory at `https://api.tokenfactory.nebius.com/v1`. The preset supports Chat Completions and Embeddings, and the built-in model catalog includes Nebius pricing. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4225 -->
+- **Nebius Token Factory provider**: Set `provider: nebius` to route requests to Nebius Token Factory at `https://api.tokenfactory.nebius.com/v1`. The preset supports Chat Completions and Embeddings, and the built-in model catalog includes Nebius pricing. For more information, see [Nebius Token Factory]({{< link-hextra path="/integrations/llm/providers/nebius/" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4225 -->
 - **Original client model**: CEL expressions can read `llm.originalModel`, the model name that the client sent before virtual model routing, aliases, provider overrides, or request body rewrites. Cost lookup now also falls back to `llm.originalModel` when the catalog has no price for the response or request model, so requests whose model was rewritten are still priced. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4215 -->
 
 ### Observability {#v18-observability}
@@ -298,11 +298,11 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3864 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/4158 -->
 
-- **OIDC with bearer tokens**: Set `credentials: sessionOrBearer` on an OIDC policy to accept a bearer ID token as well as a browser session. One policy then covers both browser and API clients. With `credentials: permissive`, browsers still sign in, and other requests fall through to other authentication policies. Pair `permissive` with an `authorization` policy, because it does not reject unauthenticated requests by itself. For more information, see [Bearer tokens for API clients]({{< link-hextra path="/documentation/configuration/security/oidc/#bearer-id-tokens" >}}).
+- **OIDC with bearer tokens**: Set `credentials: sessionOrBearer` on an OIDC policy to accept a bearer ID token as well as a browser session. One policy then covers both browser and API clients. With `credentials: permissive`, browsers still sign in, and other requests fall through to other authentication policies. Pair `permissive` with an `authorization` policy, because it does not reject unauthenticated requests by itself. For more information, see [Bearer tokens for API clients]({{< link-hextra path="/documentation/configuration/security/authentication/oidc/#bearer-id-tokens" >}}).
 - **Backend credentials from CEL**: A backend authentication key can be computed from a CEL expression, such as a value that an external authorization server returns. Set `backendAuth.key.expression`, or `expression` in a `backendAuth.credentials` entry. For more information, see [Compute the key from the request]({{< link-hextra path="/documentation/configuration/security/backend-authn/key/#key-expression" >}}).
-- **MCP authentication with token passthrough**: MCP authentication now works with a JWT policy that sets `preserveToken: true`. For more information, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn/" >}}).
+- **MCP authentication with token passthrough**: MCP authentication now works with a JWT policy that sets `preserveToken: true`. For more information, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/authentication/mcp-authn/" >}}).
 - **Callouts through a proxy**: Send the requests that agentgateway makes on its own behalf, such as JWKS fetches, OIDC discovery, external authorization, and cloud provider credential fetches, through an HTTP proxy. Set `config.callouts.tunnel`, or use the standard proxy environment variables. For more information, see [Callout proxy]({{< link-hextra path="/documentation/configuration/callout-proxy/" >}}).
-- **MCP authorization without an ID**: Agentgateway now rejects MCP requests other than `notifications/*` that have no usable JSON-RPC `id` with `400`. In 1.6, a `tools/call` without an `id` reached the MCP server without MCP authorization. For more information, see [MCP authorization]({{< link-hextra path="/documentation/configuration/security/mcp-authz/" >}}).
+- **MCP authorization without an ID**: Agentgateway now rejects MCP requests other than `notifications/*` that have no usable JSON-RPC `id` with `400`. In 1.6, a `tools/call` without an `id` reached the MCP server without MCP authorization. For more information, see [MCP authorization]({{< link-hextra path="/documentation/configuration/security/authorization/mcp-authz/" >}}).
 
 ### Observability {#v17-observability}
 
@@ -357,6 +357,7 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 
 ## 🐛 Fixes {#v17-fixes}
 
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/3746 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3940 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3773 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/3721 -->
@@ -425,3 +426,4 @@ The model catalog now describes models as well as pricing them. Catalog entries 
 
 - Standalone configuration reloads now track files that agentgateway reads during parsing, such as `backendTLS.root` certificate files, `params.apiKey` files, htpasswd files, GCP credentials, and OAuth client credentials, so later file changes are picked up without a process restart.
 - `/config_dump` now redacts database URLs, which previously showed the password.
+- The metrics endpoint now sets the `Content-Type` header to `application/openmetrics-text` by default. Previously, scrapers that did not request OpenMetrics received `Content-Type: text/plain` and could parse the response as classic Prometheus text. For example, the Datadog Agent without `use_latest_spec: true` dropped every counter metric without an error. Browsers still receive `text/plain` so that they display the metrics. For more information, see [Metrics format]({{< link-hextra path="/documentation/observability/metrics/overview/#metrics-format" >}}).

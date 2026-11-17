@@ -77,7 +77,7 @@ Create one resource like this for each provider, such as `anthropic/*` with `pro
 
 The `/v1/models` endpoint lists prefixed names from the [model catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}), such as `openai/gpt-5-mini`.
 
-To restrict access, list [exact model names](#exact-model-name){{% conditional-text include-if="standalone" %}}, or set per-key patterns such as `openai/gpt-5*` with [`allowedModels`]({{< link-hextra path="/documentation/configuration/security/apikey-authn/#llm-budgets-and-model-access" >}}){{% /conditional-text %}}.
+To restrict access, list [exact model names](#exact-model-name){{% conditional-text include-if="standalone" %}}, or set per-key patterns such as `openai/gpt-5*` with {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[`allowedModels`]({{< link-hextra path="/documentation/configuration/security/authentication/apikey-authn/#llm-budgets-and-model-access" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[`allowedModels`]({{< link-hextra path="/documentation/configuration/security/apikey-authn/#llm-budgets-and-model-access" >}}){{< /version >}}{{% /conditional-text %}}.
 
 ### Exact model name
 
