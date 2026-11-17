@@ -97,7 +97,7 @@ For request guards, a `Mask` action patches editable text in the original reques
 
 Do not return an empty string for a masked message. Some provider APIs reject empty text blocks. If you need to remove a message's text, return a placeholder such as `<removed by guardrail>`.
 
-The proxy treats consecutive text blocks in one message as one string. If a mask changes text split around an image or another non-text part, the proxy keeps the non-text part and writes the full masked text into the last editable text block.
+The webhook receives all text in a message as one string. If a mask changes text split around an image or another non-text part, the proxy keeps the non-text part and writes the full masked text into the last editable text block.
 {{% /version %}}
 
 Return extra metadata outside the `action` object, where {{< reuse "agw-docs/snippets/agentgateway.md" >}} ignores it.
