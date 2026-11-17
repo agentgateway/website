@@ -104,7 +104,7 @@ routes:
 
 ### Normalize paths before matching {#normalize-paths}
 
-By default, route matching uses the request path as agentgateway receives it. To normalize request paths before route matching, policy evaluation, and forwarding to the backend, set `frontendPolicies.http.normalize`. The setting applies to every route.
+By default, route matching uses the request path as agentgateway receives it. To normalize request paths before route matching, policy evaluation, and forwarding to the backend, set `frontendPolicies.http.normalize`. The setting applies to every route. For all normalization rules, the order in which they run, and the paths that they reject, see [Path normalization]({{< link-hextra path="/documentation/configuration/security/path-normalization/" >}}).
 
 The following example normalizes repeated slashes, dot segments, and percent-encoded unreserved characters. The `api-exact` route matches only the `/api/v1/users` exact path. The route returns a direct response with the `request.path` value, which is the normalized path that agentgateway matched.
 
@@ -132,14 +132,7 @@ routes:
 
 | Field | Description |
 | -- | -- |
-| `frontendPolicies.http.normalize` | Normalizes the request path before route matching, policy evaluation, and forwarding. Access logs keep the original request path. |
-| `mergeSlash` | Collapses repeated slashes and treats `\` as `/`. |
-| `dotSegment` | Resolves `.` and `..` path segments. This rule also treats `%2E` as `.`, treats `\` as `/`, and ignores parameters on dot segments such as `..;x`. |
-| `decodeUnreserved` | Decodes percent-encoded unreserved characters (`A-Z`, `a-z`, `0-9`, `-`, `.`, `_`, and `~`). |
-| `rejectEscapedSlash` | Rejects requests whose path contains `%2F` or `%5C`. |
-| `unescapeSlash` | Decodes `%2F` and `%5C` into `/`. Agentgateway rejects a configuration that sets both `unescapeSlash` and `rejectEscapedSlash`. |
-
-The rules run in a fixed order, regardless of their order in the list. Percent-decoding runs first, then `mergeSlash`, then `dotSegment`. If you set any rule except `mergeSlash`, agentgateway rejects paths that contain malformed percent-encoding or `%00`. Agentgateway returns a 400 HTTP response code for every rejected path, including a path that `rejectEscapedSlash` rejects.
+| `frontendPolicies.http.normalize` | The normalization rules to apply. `mergeSlash` collapses repeated slashes, `dotSegment` resolves `.` and `..` segments, and `decodeUnreserved` decodes percent-encoded unreserved characters. The `dotSegment` and `decodeUnreserved` rules also reject a path with malformed percent-encoding or `%00`. |
 
 To try the example, run agentgateway with the example configuration. Then, send requests to paths that normalize to `/api/v1/users`. The `--path-as-is` option stops curl from resolving `.` and `..` segments before curl sends the request.
 
