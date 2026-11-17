@@ -102,7 +102,7 @@ frontendPolicies:
 {{% /tab %}}
 {{< /tabs >}}
 
-In a PostgreSQL request-log database, text and JSON fields cannot preserve a NUL character (`U+0000`). If a request prompt, completion, or custom attribute contains `U+0000`, the database stores `U+FFFD` in that position. The database still stores the rest of the log record.
+PostgreSQL text and JSONB columns cannot store the U+0000 (NUL) character, so agentgateway replaces it with U+FFFD in any text value or JSON key before it writes the record. The rest of the record is stored as usual.
 
 ## Schema migrations {#schema-migrations}
 
