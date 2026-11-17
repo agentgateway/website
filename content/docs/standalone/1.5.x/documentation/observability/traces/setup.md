@@ -19,7 +19,7 @@ Agentgateway has two places that you can configure tracing.
 To enable tracing in agentgateway, add a `tracing` block under the `frontendPolicies` section and point agentgateway to your OTLP-compatible backend. For sample tracing backend setups, see [Sample tracing configurations]({{< link-hextra path="/documentation/observability/traces/configs/" >}}).
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: localhost:4317
@@ -36,7 +36,7 @@ frontendPolicies:
 When connecting to an OTLP backend that requires authentication, such as a SaaS observability platform, use the `policies.requestHeaderModifier` section to add required authentication headers and `policies.backendTLS` to enable TLS for the connection.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: <your-otlp-endpoint>.com:443
@@ -70,7 +70,7 @@ Because `clientSampling` defaults to `true`, agentgateway continues a trace that
 In the following example, you want to sample 10% of requests.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: localhost:4317
@@ -84,7 +84,7 @@ Use the `filter` field to write a [CEL]({{< link-hextra path="/reference/cel/" >
 The following example exports only spans for requests with an HTTP response code of 400 or greater. 
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: localhost:4317
@@ -117,7 +117,7 @@ Use the `resources` field to describe the agentgateway process itself. Resource 
 The following example sets a custom service name and deployment environment in `resources`, and adds the user ID and request path to each individual span by using `attributes`. 
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: localhost:4317
@@ -137,7 +137,7 @@ Use the `remove` field to drop attributes from spans before your `attributes` ex
 The following example removes the HTTP version and source address from the span. 
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: localhost:4317
@@ -152,7 +152,7 @@ frontendPolicies:
 The `config.tracing` section sets tracing defaults for the agentgateway process itself. Agentgateway reads the `config` section only at startup, so a change to this section requires a restart. Note that the field names differ from `frontendPolicies.tracing`: the endpoint is `otlpEndpoint` rather than `host`, and the protocol is `otlpProtocol` rather than `protocol`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   tracing:
     otlpEndpoint: http://localhost:4317

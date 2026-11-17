@@ -29,7 +29,7 @@ The `maxBytes` value is a number of bytes, such as `65536` for 64 KiB. Large buf
 Use the route's `policies` block to configure body buffering.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

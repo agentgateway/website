@@ -219,7 +219,7 @@ docker run -d --name agentgateway \
   --user "$(id -u):$(id -g)" \
   -v "$PWD/agentgateway-config:/config" \
   -p 4000:4000 \
-  {{< reuse "agw-docs/standalone/image-ref.md" >}}:v$OLD_VERSION
+  {{< reuse "agw-docs/standalone/image-ref.md" >}}:{{< reuse "agw-docs/standalone/image-tag-prefix.md" >}}$OLD_VERSION
 ```
 {{% /tab %}}
 {{% tab name="Helm" %}}

@@ -24,7 +24,7 @@ For LLM traffic, the log line automatically includes `gen_ai.*` fields. For MCP 
 You can change the default log format to JSON by setting the `config.logging.format` field. 
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   logging:
     format: json
@@ -54,7 +54,7 @@ To view access logs in the UI:
 Use a [CEL]({{< link-hextra path="/reference/cel/" >}}) expression to log only a subset of requests. Requests that do not match the expression are not logged. The following example produces access logs only for requests with a response code of 400 or greater.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     filter: 'response.code >= 400'
@@ -70,7 +70,7 @@ The following example adds 3 fields to every access log entry:
 - `cost`: Converts the LLM request cost to a string and logs it.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     add:
@@ -86,7 +86,7 @@ For the full list of available fields, see the [CEL variables reference]({{< lin
 Remove fields from access log lines. The following example removes the source address and HTTP path that are included by default. 
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     remove:

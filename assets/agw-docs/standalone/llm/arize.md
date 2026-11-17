@@ -48,7 +48,7 @@ Update the agentgateway configuration file that you created as part of [Before y
 For OTLP/HTTP, use the `arize-api-key` and `arize-space-id` headers.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: ${ARIZE_HOST}:443
@@ -87,7 +87,7 @@ frontendPolicies:
 For OTLP/gRPC, use the `api_key` and `space_id` metadata headers.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: ${ARIZE_HOST}:443
