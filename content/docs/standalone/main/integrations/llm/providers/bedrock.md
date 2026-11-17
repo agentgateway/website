@@ -281,7 +281,7 @@ If the Bedrock model does not support the requested tier, the request fails with
 
 Earlier versions omitted the tier and used the standard tier. To keep that behavior, omit `service_tier` or set it to `auto`.
 
-Bedrock reports the served tier in the `x-amzn-bedrock-service-tier` response header. Agentgateway normalizes it as `llm.serviceTier` to select model catalog rates. The built-in catalog has no Bedrock service-tier rates. To price Bedrock tiers differently, add `serviceTier` tiers for your Bedrock models to your own catalog. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
+Bedrock reports the served tier in the `x-amzn-bedrock-service-tier` response header. Agentgateway normalizes it as `llm.serviceTier` to select model catalog rates. The built-in catalog has `ultrafast` rates for the Bedrock models `openai.gpt-6-astra` and `openai.gpt-6.1-sol`. It has no other Bedrock service-tier rates. To price other Bedrock tiers differently, add `serviceTier` tiers for your Bedrock models to your own catalog. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
 
 ## Token counting
 

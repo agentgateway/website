@@ -267,7 +267,7 @@ To set the rates and log the cost of 1-hour cache writes, follow these steps.
 
 ### Service tiers {#service-tiers}
 
-The reported LLM service tier maps to `standard`, `flex`, `priority`, `reserved`, or `ultrafast`. CEL expressions access it as `llm.serviceTier`.
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} normalizes the service tier reported in each LLM response to `standard`, `flex`, `priority`, `reserved`, or `ultrafast`. CEL expressions access it as `llm.serviceTier`.
 
 Cost calculations match this value to catalog tiers with a `serviceTier` field. Requests without a recorded tier use `standard` rates.
 
