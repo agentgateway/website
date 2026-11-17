@@ -36,7 +36,7 @@ The following examples are equivalent. Each one exposes two MCP servers on port 
 {{< tabs >}}
 {{% tab name="Simplified (MCP)" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   targets:
   - name: jira
@@ -49,7 +49,7 @@ mcp:
 {{% /tab %}}
 {{% tab name="Routing-based" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -94,7 +94,7 @@ A virtual MCP backend can select upstream servers with a boolean CEL `condition`
 The following example lets a client select a server with the `x-mcp-target` header. A request with `x-mcp-target: engineering` includes only the `engineering` target.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   targets:
   - name: engineering
@@ -148,7 +148,7 @@ Multiplexing changes what authentication options you have, so decide the topolog
 When you hold the credentials, set them **per target** with `policies.backendAuth`. Each target gets its own credential, so a token for one MCP server is never sent to another.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   targets:
   - name: jira
@@ -195,7 +195,7 @@ Set the duration for the keep-alive where you configure the backend: `mcp.sseKee
 {{< tabs >}}
 {{% tab name="Simplified (MCP)" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   sseKeepAlive: 10s
   targets:
@@ -206,7 +206,7 @@ mcp:
 {{% /tab %}}
 {{% tab name="Routing-based" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -234,7 +234,7 @@ routes:
 #   * That comment frames are actually emitted every 10s — requires an MCP
 #     upstream held idle past the interval, which this page does not stand up.
 cat <<'EOF' > config-mcp-keepalive.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   sseKeepAlive: 10s
   targets:
@@ -245,7 +245,7 @@ EOF
 agentgateway -f config-mcp-keepalive.yaml --validate-only
 
 cat <<'EOF' > config-route-keepalive.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

@@ -25,7 +25,7 @@ To give every user a separate budget, use `remoteRateLimit` with a descriptor th
 1. Configure agentgateway to send a per-user descriptor to the rate limit server. The `apiKey.user` value comes from the API key `metadata`, so agentgateway counts each user independently. To count LLM tokens rather than requests, set `type: tokens`.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      policies:
        apiKey:

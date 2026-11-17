@@ -24,7 +24,7 @@ Configure a prompt guard to call your webhook service. You can use the [guardrai
 
 ```yaml
 cat <<EOF > config.yaml
-# yaml-language-server: \$schema=https://agentgateway.dev/schema/config
+# yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -57,6 +57,12 @@ The webhook returns an `action` object whose fields determine how agentgateway h
 | Reject | `status_code`, `body`, and an optional `reason`. | Agentgateway returns the status code and body to the client. |
 
 Extra fields in a pass action, such as a score, cause a webhook error. For mask actions, message fields other than `role` and `content` also cause an error.
+
+For request guards, a mask patches editable text in the original request when the reply returns the same number of messages in the same role order. Tool calls, tool call IDs, images, `name`, and metadata such as `cache_control` stay in the request. If the mask adds a message, drops a message, or changes a message role, the proxy rebuilds the request from the webhook reply. The rebuild removes non-text content that the reply does not include.
+
+Do not return an empty string for a masked message. Some provider APIs reject empty text blocks. If you need to remove a message's text, return a placeholder such as `<removed by guardrail>`.
+
+The webhook receives all text in a message as one string. If a mask changes text split around an image or another non-text part, the proxy keeps the non-text part and writes the full masked text into the last editable text block.
 
 Return extra metadata outside the `action` object, where agentgateway ignores it.
 
@@ -115,7 +121,7 @@ A `host` value that starts with `https://` enables backend TLS with the system t
 
 ```yaml
 cat <<EOF > config.yaml
-# yaml-language-server: \$schema=https://agentgateway.dev/schema/config
+# yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -153,7 +159,7 @@ Webhook calls use a 10-second timeout by default. To change the timeout for an i
 
 ```yaml
 cat <<EOF > config.yaml
-# yaml-language-server: \$schema=https://agentgateway.dev/schema/config
+# yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -185,7 +191,7 @@ To share one timeout across several guards, you can instead define a named backe
 
 ```yaml
 cat <<EOF > config.yaml
-# yaml-language-server: \$schema=https://agentgateway.dev/schema/config
+# yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
 backends:
 - name: content-safety-webhook
   host: content-safety-webhook.example.com:8000
@@ -234,7 +240,7 @@ Expressions are evaluated against the original client request, not against the w
 
 ```yaml
 cat <<EOF > config.yaml
-# yaml-language-server: \$schema=https://agentgateway.dev/schema/config
+# yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
