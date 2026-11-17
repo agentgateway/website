@@ -65,7 +65,7 @@ Network authorization uses [CEL expressions]({{< link-hextra path="/reference/ce
 Configure network authorization as a frontend policy under `frontendPolicies.networkAuthorization`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   networkAuthorization:
     rules:
@@ -83,7 +83,7 @@ routes:
 
 {{< doc-test paths="network-authz" >}}
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   networkAuthorization:
     rules:

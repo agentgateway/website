@@ -192,7 +192,7 @@ routes:
 3. Optional: To use the agentgateway UI playground later, add a `cors` policy to the route. Replace the contents of your `config.yaml` file with the following complete example, which keeps both targets and adds the policy. The config automatically reloads when you save the file.
 
       ```yaml
-      # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+      # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
       gateways:
         default:
           port: 3000
@@ -265,7 +265,7 @@ When you multiplex multiple targets, agentgateway namespaces tool and prompt nam
 Use `never` when clients need to call tools by their plain names, such as for [MCP Apps]({{< link-hextra path="/documentation/mcp/apps" >}}) that issue tool calls from a rendered UI. Because unprefixed names must be unique, agentgateway fails to start if two targets expose the same tool name in this mode.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   prefixMode: never
@@ -292,7 +292,7 @@ Target conditions run before agentgateway initializes or contacts a target. Targ
 The following example always includes the `everything` target and includes the `time` target only when the request has the header `x-include-time: true`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   targets:
@@ -319,7 +319,7 @@ Configure your MCP client to send `x-include-time: true` on its requests, includ
 When you multiplex multiple targets, the client receives the gateway MCP `serverInfo` values and instructions. To customize that metadata, set the `server` block on the MCP configuration. The override applies only to multiplexed targets. A backend with one target keeps the target server's normal metadata.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   server:
@@ -409,7 +409,7 @@ echo "✓ prefixMode conditional (default): two targets produce prefixed names"
 # `always` is only distinguishable from the default with one target and `never`
 # requires names that do not collide.
 cat <<'EOF' > config-prefix-never.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   prefixMode: never

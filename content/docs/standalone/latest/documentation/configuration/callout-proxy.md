@@ -105,7 +105,7 @@ Configure JWT authentication with a remote JWKS, and send callouts through the f
 1. Create a configuration file that fetches a remote JWKS and sends callouts through the forward proxy.
    ```yaml
    cat <<EOF > callout-proxy.yaml
-   # yaml-language-server: \$schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      callouts:
        tunnel:
