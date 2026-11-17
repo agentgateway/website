@@ -129,10 +129,48 @@ llm:
       model: llmRequest.model.stripPrefix("azure/")
 ```
 
-## Standalone upstream TLS
+## Upstream TLS
 
-Use `llm.models[].tls` to configure advanced TLS when connecting to an upstream provider.
-When using built in providers, default TLS settings are used.
-When using custom a `baseUrl`, the `https://` scheme will automatically use TLS.
+Agentgateway uses TLS with default settings when a model uses a built-in provider or a `baseUrl` that starts with `https://`. To change these settings, such as to trust a private CA or to present a client certificate, set `tls` on the model in `llm.models[].tls`.
 
-However, if you need advanced configurations such as client certificates or customized verification steps, you may set fields such as `root` for a trusted CA bundle, `hostname` and `subjectAltNames` for upstream identity checks, `cert` and `key` for client certificates.
+If several models reference the same named provider, set `tls` once in the provider's `llm.providers[].defaults.tls` instead. Each model that references the provider uses these settings, unless the model sets its own `tls`. A model-level `tls` replaces the provider's settings completely. The two are not merged, so repeat every field that the model needs.
+
+The following example configures a self-hosted provider that uses a private CA. Both models use the provider's TLS settings and send a different model name upstream.
+
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+llm:
+  providers:
+  - name: local
+    provider:
+      custom:
+        formats:
+        - type: completions
+    params:
+      baseUrl: https://llm.example.test/v1
+    defaults:
+      tls:
+        root: /certs/trusted.crt
+  models:
+  - name: local/small
+    provider:
+      reference: local
+    params:
+      model: small
+  - name: local/large
+    provider:
+      reference: local
+    params:
+      model: large
+```
+
+| Field | Description |
+| ----- | ----------- |
+| `llm.providers[].defaults.tls` | TLS settings for each model that references this provider. Takes the same fields as `llm.models[].tls`. |
+| `tls.root` | Path to a PEM file with the CA certificates to trust. If agentgateway cannot read the file, the configuration fails to load. When you run agentgateway in a container, mount the file into the container. |
+| `tls.hostname` | The server name to use for SNI and certificate verification. |
+| `tls.subjectAltNames` | More subject alternative names to accept in the upstream certificate. |
+| `tls.cert`, `tls.key` | Paths to the client certificate and private key for mutual TLS. |
+| `llm.models[].params.model` | The model name that agentgateway sends upstream. A model that references a provider can set only this parameter. |
+
+For all TLS settings, see [Backend TLS]({{< link-hextra path="/documentation/configuration/security/backend-tls/" >}}).
