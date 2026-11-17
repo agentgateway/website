@@ -16,7 +16,7 @@ Agentgateway supports the OpenAI-compatible Models API. Use this endpoint when c
 In the simplified `llm` configuration, agentgateway automatically maps `/v1/models` requests to the `models` route type, so no explicit route configuration is required.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -42,7 +42,7 @@ For example, the `*` model in the preceding configuration lists every `openai` m
 To list the configured names instead, as in version 1.5, set `llm.discovery: disabled`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   discovery: disabled
   models:

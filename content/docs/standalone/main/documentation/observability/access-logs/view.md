@@ -32,7 +32,7 @@ For requests that the `llm.models` configuration or a virtual model serves, `agw
 You can change the default log format to JSON by setting the `config.logging.format` field. 
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   logging:
     format: json
@@ -60,7 +60,7 @@ The UI saves the policy under `frontendPolicies.accessLog` in your configuration
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     preset: otel
@@ -207,7 +207,7 @@ Use a [CEL]({{< link-hextra path="/reference/cel/" >}}) expression to log only a
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     filter: 'response.code >= 400'
@@ -238,7 +238,7 @@ The following example adds 3 fields to every access log entry:
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     add:
@@ -256,7 +256,7 @@ For the full list of available fields, see the [CEL variables reference]({{< lin
 Add `request.agent.session` to correlate requests from the same agent session. This example records an empty string when no session is available.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     add:
@@ -277,7 +277,7 @@ Use `backend.endpoint` to record the resolved destination of a directly addresse
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     add:
@@ -308,7 +308,7 @@ The following filter includes all requests with guardrail results, even when eve
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     filter: guardrails.size() > 0
@@ -342,7 +342,7 @@ The metadata keys depend on the ExtMCP server response. The following example re
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     add:
@@ -365,7 +365,7 @@ Remove fields from access log lines. The following example removes the source ad
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     remove:

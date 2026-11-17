@@ -26,7 +26,7 @@ The rest of this guide uses `hybrid` mode, which supports the full set of operat
 2. Add an `apiKey` policy to `llm.policies`. Agentgateway merges database-backed keys into this policy, so the policy must exist before you create a key. Set `keys` to an empty array to start with no keys in the file. Without the policy, a create returns `409` with the message `DB-backed API keys require llm.policies.apiKey`.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      adminAddr: "127.0.0.1:15000"
      storage:

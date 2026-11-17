@@ -68,7 +68,7 @@ Both modes reject `unix:` socket paths. An EPP cannot route requests to a local 
 The following configuration accepts hostname destinations. The EPP itself is also reached by hostname.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 services:
 - name: my-model
   namespace: default

@@ -54,7 +54,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "bedrock/*"
@@ -87,7 +87,7 @@ If your applications directly use the AWS `Converse` or `Invoke` APIs, Agentgate
 1. Configure the Bedrock model. Requests to the native Bedrock paths, such as `/model/{modelId}/converse` and `/model/{modelId}/invoke`, are passed through by default, and agentgateway still records token usage when it can read it from the response. You do not need to set `passthrough` on the model.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: us.anthropic*
@@ -164,7 +164,7 @@ If your applications directly use the AWS `Converse` or `Invoke` APIs, Agentgate
 To let clients send a model name that differs from the Bedrock model ID, such as `aws/us.anthropic.claude-sonnet-4-6`, add a `transformation` that changes `model`. Agentgateway rewrites the model ID in the request path and does not add a `model` field to the request body. Use this configuration instead of the one in the previous steps.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: aws/*
@@ -206,7 +206,7 @@ The **Bedrock endpoint** dropdown is also in the **Add provider** drawer on the 
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -281,7 +281,7 @@ If the Bedrock model does not support the requested tier, the request fails with
 
 Earlier versions omitted the tier and used the standard tier. To keep that behavior, omit `service_tier` or set it to `auto`.
 
-Bedrock reports the served tier in the `x-amzn-bedrock-service-tier` response header. Agentgateway normalizes it as `llm.serviceTier` to select model catalog rates. The built-in catalog has no Bedrock service-tier rates. To price Bedrock tiers differently, add `serviceTier` tiers for your Bedrock models to your own catalog. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
+Bedrock reports the served tier in the `x-amzn-bedrock-service-tier` response header. Agentgateway normalizes it as `llm.serviceTier` to select model catalog rates. The built-in catalog has `ultrafast` rates for the Bedrock models `openai.gpt-6-astra` and `openai.gpt-6.1-sol`. It has no other Bedrock service-tier rates. To price other Bedrock tiers differently, add `serviceTier` tiers for your Bedrock models to your own catalog. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
 
 ## Token counting
 
