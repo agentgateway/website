@@ -18,17 +18,37 @@ Review the release notes for agentgateway standalone.
 
 A model that sets `passthrough` now always passes requests through, even on a known LLM endpoint. Previously, `passthrough` controlled only how agentgateway handled unknown paths. Model transformations also rewrite the model ID in the request path of Bedrock, Vertex AI, and Gemini requests, instead of applying only to the `model` field in the request body. For more information, see [Passthrough and endpoint detection]({{< link-hextra path="/documentation/configuration/traffic-management/llm/#llm-passthrough-precedence" >}}).
 
+### Other behavior changes {#v18-behavior-changes}
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/4305 -->
+
+- **Stdio MCP request timeout**: Requests to a `stdio` MCP target now time out after 10 seconds by default, and the client receives a `504` response. In 1.7, `stdio` requests had no deadline. To give long-running tools more time, set `mcp.policies.timeout.backendRequestTimeout`. In a routing-based configuration, set `routes[].policies.timeout.backendRequestTimeout` instead. For more information, see [stdio]({{< link-hextra path="/integrations/mcp/servers/stdio/" >}}).
+
 ## 🌟 New features {#v18-new-features}
 
 ### LLM {#v18-llm}
 
+- **Anthropic fast mode uses fast pricing**: Anthropic Messages responses that report `usage.speed: "fast"` now set `llm.serviceTier` to `fast`, so model catalogs can apply Anthropic fast-mode rates instead of standard rates. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4363 -->
+- **Model discovery advertises preferred endpoints**: The `/v1/models` response now includes `preferred_endpoints` for models whose served client paths are known. Catalog entries can use `endpoints` to mark non-chat models, such as embedding or image models, so clients can pick compatible API paths. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4272 -->
 - **Nebius Token Factory provider**: Set `provider: nebius` to route requests to Nebius Token Factory at `https://api.tokenfactory.nebius.com/v1`. The preset supports Chat Completions and Embeddings, and the built-in model catalog includes Nebius pricing. For more information, see [Nebius Token Factory]({{< link-hextra path="/integrations/llm/providers/nebius/" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4225 -->
 - **Original client model**: CEL expressions can read `llm.originalModel`, the model name that the client sent before virtual model routing, aliases, provider overrides, or request body rewrites. Cost lookup now also falls back to `llm.originalModel` when the catalog has no price for the response or request model, so requests whose model was rewritten are still priced. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4215 -->
+- **Ultrafast service-tier pricing**: OpenAI and Amazon Bedrock responses that report the `ultrafast` service tier are now priced with matching model catalog tiers and exposed to CEL as `llm.serviceTier`. Add `serviceTier: "ultrafast"` to catalog tiers to set separate rates for this tier. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4259 -->
+- **Virtual model targets can point to other virtual models**: Weighted, conditional, and callout virtual model targets can now route through another virtual model before they resolve to a concrete model. `/v1/models` now includes target-derived metadata for failover virtual models. For more information, see [Virtual models]({{< link-hextra path="/documentation/llm/virtual-models/" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4216 --> <!-- ref: https://github.com/agentgateway/agentgateway/pull/4313 -->
 
 ### Observability {#v18-observability}
 
+- **OTLP access log records include a body and timestamp**: OTLP access log records now include a timestamp and a body that joins the request method, path, and response status, such as `POST /v1/messages 200`. Previously, exported records had an empty body and no timestamp. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4312 -->
 - **Outbound calls in access logs**: Access log CEL expressions can use `upstreamCalls` to record outbound primary and policy HTTP calls, including MCP target calls after backend authentication or token exchange. For more information, see [Log outbound calls from access logs]({{< link-hextra path="/reference/cel/yaml-and-examples/#log-outbound-calls-from-access-logs" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4044 -->
 - **MCP request outcome label**: MCP request metrics now include an `outcome` label with `success`, `tool_error`, `protocol_error`, `gateway_error`, or `unknown`, so that you can count tool failures that still return HTTP `200`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4182 -->
+- **Request-log storage can be disabled while keeping the primary database**: You can set `config.logging.database.enabled: false` to stop storing request logs in a database while keeping `config.database` for other runtime features, such as hybrid configuration storage and API key budgets. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4334 -->
+
+### Security {#v18-security}
+
+- **GCP tokens in backend credential lists**: Backend authentication credential lists can now fetch a Google Cloud access token or ID token with `credentials[].gcp`. Use this field to send the generated Google token in a header such as `Proxy-Authorization` while another backend authentication method preserves the client's `Authorization` header. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4279 -->
+
+### Traffic management {#v18-traffic-management}
+
+- **Normalize request paths before matching**: Set `frontendPolicies.http.normalize` to normalize request paths before route matching, policy evaluation, and forwarding. Normalization rules can merge repeated slashes, resolve dot segments, decode unreserved characters, and reject or unescape escaped slashes. For more information, see [Normalize paths before matching]({{< link-hextra path="/documentation/configuration/traffic-management/matching/#normalize-paths" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4253 -->
 
 <!-- Held for the 1.8 release cut, triaged as no entry. Restore or delete then:
 ### MCP {#v18-mcp}
@@ -43,25 +63,48 @@ A model that sets `passthrough` now always passes requests through, even on a kn
 
 **Traffic management**
 
+- Direct responses now keep the reason from the component that produced them. MCP backend external authorization denials return the authorization service's status and response instead of `500`. An inference routing `ImmediateResponse` in the response phase is now returned to the client instead of being ignored. Requests and responses that exceed the buffer limit now return `413` and `502` responses with a short body instead of an empty body. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4250 -->
+- gRPC clients now receive `UNAVAILABLE` for missing services, invalid backend types, and missing backends, so retryable backend-routing errors no longer fall back to `UNKNOWN`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4226 -->
+- HTTP/2 connection handoff avoids a deadlock when a waiting request is canceled as the pool delivers a connection. Previously, the deadlock could make the proxy hang. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4323 --> <!-- ref: https://github.com/agentgateway/agentgateway/issues/4317 -->
+- Requests with more than one `Host` header line now return HTTP `400`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4401 -->
+- When an HTTP/2 server advertises a smaller stream limit than expected, the pool opens another connection instead of queuing the next request behind the full connection. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4273 -->
 - When the downstream client disconnects, external processing now cancels its in-flight callout requests and stops reading a streamed upstream response body. Previously, a request that waited in an endpoint picker queue, such as in llm-d, kept its queue slot until the callout timed out, and a streamed model response kept generating until `max_tokens`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4174 --> <!-- ref: https://github.com/agentgateway/agentgateway/pull/4285 -->
 - Routes and listeners match request hostnames case-insensitively, and forwarded requests keep the original `Host` header casing. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4233 -->
 
 **LLM**
 
 - Bedrock conversion now sends inline OpenAI file content and base64 Anthropic document content as Bedrock document blocks. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4199 -->
-- Buffered Chat Completions responses that omit the top-level `model` field now keep the request model during parsing and format conversion. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4181 -->
+- Bedrock Invoke streaming responses contribute input, output, cache-write, and cache-read token counts from `amazon-bedrock-invocationMetrics` to LLM usage metrics and cost calculations. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4297 -->
+- Chat Completions responses that omit the top-level `model` field now keep the request model during parsing and format conversion. Streamed chunks that omit `model` are accepted, so usage from the final chunk is still reported. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4181 --> <!-- ref: https://github.com/agentgateway/agentgateway/pull/4265 -->
+- Chat Completions clients now receive an OpenAI-style stream error when an Anthropic stream sends an error event after partial content. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4270 -->
+- GitHub Copilot embeddings requests with a string `input` no longer fail with `400`. Chat routes now reject Copilot embedding models instead of sending them to `/chat/completions`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4240 -->
+- Messages `document` blocks sent to Responses backends now become file or text input parts in user messages and tool results instead of being dropped. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4127 -->
 - Messages replay to Bedrock drops assistant `thinking` blocks whose `signature` is empty, so Bedrock does not receive invalid reasoning content. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4115 -->
 - Bedrock requests now keep the Anthropic `thinking.display` setting, so Claude models receive `summarized` or `omitted` thinking display preferences. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4211 -->
 - Gemini and Vertex AI Chat Completions requests use `thinkingLevel` for Gemini 4 and Gemma 4 models, so `reasoning_effort` no longer returns Google thinking-budget errors. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4151 -->
+- Mistral reasoning responses that send `message.content` or `delta.content` as `thinking` and `text` parts pass through Chat Completions unchanged. Converted Messages and Responses replies keep only the text parts. Previously, non-streaming responses failed with `502`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/3729 -->
 - Streaming LLM response transformations can read request-side CEL fields such as `llm.provider`, `llm.requestModel`, and `llm.streaming`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4241 -->
+- Webhook guardrail masks that keep the same message count and roles now update text in place, so the proxy preserves tool calls, images, IDs, names, and metadata such as `cache_control`, while masks that add, drop, or change message roles still rebuild the request. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4341 -->
 
 <!-- Held for the 1.8 release cut, not in the triage keep list. Restore or delete then:
 - Prompt-cache markers are preserved for GPT model names that use only a major version, such as `gpt-6-luna`. (ref: https://github.com/agentgateway/agentgateway/pull/4249)
 -->
 
+**Operations**
+
+- Helm installs that leave native histogram scraping disabled no longer render `scrapeNativeHistograms`, so installs can succeed with Prometheus Operator versions older than v0.88.0. Previously, the install could fail only when the PodMonitor was enabled. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4370 -->
+- On Windows, when `XDG_CONFIG_HOME` is unset, config lookup now finds the home directory from `USERPROFILE`, or from `HOMEDRIVE` with `HOMEPATH`, so the default config file can be found without passing `--config` or `--file`. Agentgateway no longer reads `HOME` on Windows, so `USERPROFILE` wins even when `HOME` is set. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4264 -->
+- PostgreSQL request-log storage now replaces NUL characters in text and JSON fields with `U+FFFD`, so a prompt, completion, or custom attribute no longer rolls back the batch. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4274 -->
+- The LLM Settings drawer in the UI now saves in hybrid mode. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4374 -->
+
 **Security**
 
 - Routes that use OAuth token exchange, including Cross App Access (ID-JAG), now return a `401` challenge when the client's subject token has expired, even when MCP fail-open routing is enabled, so that clients can refresh the token and retry. Previously, clients got HTTP `500` errors for about 60 seconds after the token expired. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4006 -->
+
+**MCP**
+
+- A2A agent cards no longer duplicate interface paths that already contain the public gateway route when a URL rewrite changes the backend path. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4329 -->
+- OpenAPI-backed MCP servers now negotiate an `initialize` protocol version that supports the handshake, including for clients that request `2025-11-25`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4328 -->
 
 ## ✨ Highlights {#v17-highlights}
 

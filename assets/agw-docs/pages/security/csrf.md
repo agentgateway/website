@@ -13,6 +13,37 @@ For requests without a `Sec-Fetch-Site` header, the policy compares the host and
 {{< /version >}}
 
 Review the following diagram to see an example CSRF request flow:
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+```mermaid
+sequenceDiagram
+    participant Attacker as Malicious Site<br/>(attacker.com)
+    participant User as User's Browser
+    participant AGW as AgentGateway Proxy
+    participant Backend as Backend Service
+
+    Note over Attacker,Backend: CSRF Attack Attempt
+
+    Attacker->>User: Trick user into visiting<br/>malicious page with hidden form
+    User->>AGW: POST /api/action<br/>Origin: malicioussite.com<br/>Cookie: session=abc123
+
+    AGW->>AGW: CSRF validation:<br/>Origin (malicioussite.com)<br/>vs Destination (api.example.com)
+
+    alt Origin does NOT match destination<br/>and NOT in additionalOrigins
+        AGW-->>User: 403 Forbidden<br/>"csrf validation failed"
+        Note over User,AGW: Attack blocked
+    end
+
+    Note over User,Backend: Legitimate Request
+
+    User->>AGW: POST /api/action<br/>Origin: allowThisOne.example.com<br/>Cookie: session=abc123
+
+    AGW->>AGW: CSRF validation:<br/>Origin in additionalOrigins list
+    AGW->>Backend: Forward request
+    Backend-->>AGW: 200 OK
+    AGW-->>User: 200 OK
+```
+{{< /version >}}
+{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
 ```mermaid
 sequenceDiagram
     participant Attacker as Malicious Site<br/>(attacker.com)
@@ -41,6 +72,7 @@ sequenceDiagram
     Backend-->>AGW: 200 OK
     AGW-->>User: 200 OK
 ```
+{{< /version >}}
 
 > [!NOTE]
 > Note that because CSRF attacks specifically target state-changing requests, the filter only acts on HTTP requests that have a state-changing method such as `POST` or `PUT`.
@@ -101,6 +133,17 @@ Configure an {{< reuse "agw-docs/snippets/policy.md" >}} to enable CSRF protecti
    
    Example output: 
    
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+   ```console
+   * Request completely sent off
+   < HTTP/1.1 403 Forbidden
+   HTTP/1.1 403 Forbidden
+   ...
+   < 
+   csrf validation failed%
+   ```
+   {{< /version >}}
+   {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
    ```console
    * Request completely sent off
    < HTTP/1.1 403 Forbidden
@@ -109,6 +152,7 @@ Configure an {{< reuse "agw-docs/snippets/policy.md" >}} to enable CSRF protecti
    < 
    CSRF validation failed%
    ```
+   {{< /version >}}
 
 3. Send another request to the httpbin app. This time, you include the `allowThisOne.example.com` origin header that is allowed in your policy. Verify that you get back a 200 HTTP response code, because the origin matches the origin that you specified in the {{< reuse "agw-docs/snippets/policy.md" >}} resource.
    

@@ -41,11 +41,13 @@ The `frontend` settings on this page tune the connections that clients open to t
 
    | Setting | Description |
    | -- | -- |
-   | `tcp.connectTimeout` | Deadline for establishing a connection to the destination. The value must be at least `100ms`. |
+   | `tcp.connectTimeout` | Deadline for establishing a connection to the destination. The value must be at least `100ms`. The default is `11s`. |
    | `tcp.keepalive.time` | How long a connection stays idle before agentgateway starts to send keepalive probes. The default is `180s`. |
    | `tcp.keepalive.interval` | Time between keepalive probes. The default is `180s`. |
    | `tcp.keepalive.retries` | Maximum number of keepalive probes to send before agentgateway drops the connection. The default is `9`. |
    | `http.requestTimeout` | Deadline for receiving a response from the backend. |
+
+   Policy merging replaces the more general `backend.tcp` block with the more specific one. For example, an HTTPRoute policy that sets only `backend.tcp.keepalive` does not inherit `connectTimeout` from a policy that targets the Service. The connection attempt then uses the default `connectTimeout` of `11s`.
 
 2. Port-forward the proxy admin port and verify the settings in the proxy configuration.
 
@@ -65,3 +67,7 @@ This example targets the httpbin HTTPRoute. To set the same deadlines on a Kuber
 
 > [!NOTE]
 > Of the connection settings on this page, a `backend` policy sets the `tcp` and `http` fields only. The `handshakeTimeout`, `http1IdleTimeout`, `http2KeepaliveInterval`, `http2KeepaliveTimeout`, and `maxConnectionDuration` settings belong to the `frontend` section, and apply to incoming connections. A `backend` policy sets other fields as well, such as `tls` and `health`; for the full list, see [Policy sections]({{< link-hextra path="/documentation/about/policies/overview/#backend-policy-fields" >}}). For more information about where each policy section attaches, see [Targeting and merging]({{< link-hextra path="/documentation/about/policies/target-merge/" >}}).
+
+## Connection limits {#connection-limits}
+
+{{< reuse "agw-docs/pages/resiliency/connection-limits.md" >}}
