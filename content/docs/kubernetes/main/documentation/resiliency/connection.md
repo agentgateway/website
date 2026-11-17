@@ -41,11 +41,13 @@ The `frontend` settings on this page tune the connections that clients open to t
 
    | Setting | Description |
    | -- | -- |
-   | `tcp.connectTimeout` | Deadline for establishing a connection to the destination. The value must be at least `100ms`. |
+   | `tcp.connectTimeout` | Deadline for establishing a connection to the destination. The value must be at least `100ms`. The default is `11s`. |
    | `tcp.keepalive.time` | How long a connection stays idle before agentgateway starts to send keepalive probes. The default is `180s`. |
    | `tcp.keepalive.interval` | Time between keepalive probes. The default is `180s`. |
    | `tcp.keepalive.retries` | Maximum number of keepalive probes to send before agentgateway drops the connection. The default is `9`. |
    | `http.requestTimeout` | Deadline for receiving a response from the backend. |
+
+   Policy merging replaces the more general `backend.tcp` block with the more specific one. For example, an HTTPRoute policy that sets only `backend.tcp.keepalive` does not inherit `connectTimeout` from a policy that targets the Service. The connection attempt then uses the default `connectTimeout` of `11s`.
 
 2. Port-forward the proxy admin port and verify the settings in the proxy configuration.
 

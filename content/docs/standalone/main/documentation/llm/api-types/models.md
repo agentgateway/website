@@ -18,6 +18,8 @@ Each listed model includes the OpenAI model object fields `id`, `object`, `creat
 - `capabilities`: Whether the model supports `reasoning`, `structured_outputs`, `tools`, and `temperature`.
 - `supported_parameters`: The request parameters that the model accepts, derived from its limits and capabilities.
 
+Each entry also lists `preferred_endpoints`. This field holds the client endpoint paths that the gateway parses for the model, such as `/chat/completions`, `/responses`, or `/embeddings`. A wildcard that stays unexpanded lists no endpoints. For a virtual model, the list holds only the paths that every target shares. One target without endpoint metadata empties the list. Invalid targets, unresolved targets, and nested virtual models have no endpoint metadata.
+
 ## Route type configuration
 
 In the simplified `llm` configuration, agentgateway automatically maps `/v1/models` requests to the `models` route type, so no explicit route configuration is required.

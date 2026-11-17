@@ -21,7 +21,7 @@ config:
       # url: "postgres://user:password@host:5432/dbname"  # PostgreSQL
 ```
 
-If you have a database configured for [configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}) in `config.database`, agentgateway automatically uses this database to store access logs. No additional configuration is required. Set `config.logging.database` explicitly when you want access logs to go to a different database than the one that is used for configuration storage. If neither `config.logging.database` nor `config.database` is set, no database log store is initialized and access logs are written to stdout only. 
+If you have a database configured for [configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}) in `config.database`, agentgateway automatically uses this database to store access logs. No additional configuration is required. Set `config.logging.database` explicitly when you want access logs to go to a different database than the one that is used for configuration storage. If neither `config.logging.database` nor `config.database` is set, no database log store is initialized and access logs are written to stdout only. Set `config.logging.database.enabled: false` to keep `config.database` for other features but stop database-backed request logs.
 
 For database setup instructions, including how to deploy PostgreSQL for Kubernetes installs, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
@@ -102,9 +102,11 @@ frontendPolicies:
 {{% /tab %}}
 {{< /tabs >}}
 
+PostgreSQL text and JSONB columns cannot store the U+0000 (NUL) character, so agentgateway replaces it with U+FFFD in any text value or JSON key before it writes the record. The rest of the record is stored as usual.
+
 ## Schema migrations {#schema-migrations}
 
-At startup, agentgateway migrates the request log database that `config.logging.database` configures, or the database that `config.database` configures if you omit `config.logging.database`.
+At startup, agentgateway migrates the request log database that `config.logging.database` configures, or the database that `config.database` configures if you omit `config.logging.database`. If you set `config.logging.database.enabled: false`, agentgateway does not start or migrate a request log database.
 
 Applied changes are recorded in `_agentgateway_request_log_migrations` and run only once.
 
