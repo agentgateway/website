@@ -92,6 +92,14 @@ The webhook returns an `action` object whose fields determine how {{< reuse "agw
 
 Extra fields in a pass action, such as a score, cause a webhook error. For mask actions, message fields other than `role` and `content` also cause an error.
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
+For request guards, a `Mask` action patches editable text in the original request when the reply returns the same number of messages in the same role order. Tool calls, tool call IDs, images, `name`, and metadata such as `cache_control` stay in the request. If the mask adds a message, drops a message, or changes a message role, the proxy rebuilds the request from the webhook reply. The rebuild removes non-text content that the reply does not include.
+
+Do not return an empty string for a masked message. Some provider APIs reject empty text blocks. If you need to remove a message's text, return a placeholder such as `<removed by guardrail>`.
+
+The webhook receives all text in a message as one string. If a mask changes text split around an image or another non-text part, the proxy keeps the non-text part and writes the full masked text into the last editable text block.
+{{% /version %}}
+
 Return extra metadata outside the `action` object, where {{< reuse "agw-docs/snippets/agentgateway.md" >}} ignores it.
 
 The guard's `failureMode` determines how {{< reuse "agw-docs/snippets/agentgateway.md" >}} handles webhook errors:

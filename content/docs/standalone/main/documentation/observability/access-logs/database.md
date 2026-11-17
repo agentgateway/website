@@ -21,7 +21,7 @@ config:
       # url: "postgres://user:password@host:5432/dbname"  # PostgreSQL
 ```
 
-If you have a database configured for [configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}) in `config.database`, agentgateway automatically uses this database to store access logs. No additional configuration is required. Set `config.logging.database` explicitly when you want access logs to go to a different database than the one that is used for configuration storage. If neither `config.logging.database` nor `config.database` is set, no database log store is initialized and access logs are written to stdout only. 
+If you have a database configured for [configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}) in `config.database`, agentgateway automatically uses this database to store access logs. No additional configuration is required. Set `config.logging.database` explicitly when you want access logs to go to a different database than the one that is used for configuration storage. If neither `config.logging.database` nor `config.database` is set, no database log store is initialized and access logs are written to stdout only. Set `config.logging.database.enabled: false` to keep `config.database` for other features but stop database-backed request logs.
 
 For database setup instructions, including how to deploy PostgreSQL for Kubernetes installs, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
@@ -102,9 +102,11 @@ frontendPolicies:
 {{% /tab %}}
 {{< /tabs >}}
 
+PostgreSQL text and JSONB columns cannot store the U+0000 (NUL) character, so agentgateway replaces it with U+FFFD in any text value or JSON key before it writes the record. The rest of the record is stored as usual.
+
 ## Schema migrations {#schema-migrations}
 
-At startup, agentgateway migrates the request log database that `config.logging.database` configures, or the database that `config.database` configures if you omit `config.logging.database`.
+At startup, agentgateway migrates the request log database that `config.logging.database` configures, or the database that `config.database` configures if you omit `config.logging.database`. If you set `config.logging.database.enabled: false`, agentgateway does not start or migrate a request log database.
 
 Applied changes are recorded in `_agentgateway_request_log_migrations` and run only once.
 
@@ -260,4 +262,22 @@ psql "postgres://user:password@host:5432/dbname" \
 
 ## Disable database logging
 
-Agentgateway writes request logs to `config.logging.database`. If that field is not set, agentgateway writes request logs to `config.database` instead. To stop writing access logs to a database, remove both fields, and then restart agentgateway. If you keep `config.database` for other features, such as budgets or hybrid configuration storage, agentgateway keeps writing request logs to that database. After you remove both fields, access logs continue to go to stdout, and the database-backed UI pages and the `agctl standalone logs` and `agctl standalone analytics` commands become unavailable.
+To stop writing request logs to a database, set `config.logging.database.enabled` to `false`, and then restart agentgateway. Agentgateway starts no request log store, even if `config.database` is set for other features, such as budgets or hybrid configuration storage.
+
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+config:
+  logging:
+    database:
+      enabled: false
+```
+
+Access logs continue to go to stdout. The database-backed UI pages and the `agctl standalone logs` and `agctl standalone analytics` commands become unavailable.
+
+The `enabled` field works as follows:
+
+| Value | Behavior |
+| -- | -- |
+| Not set | Agentgateway stores request logs if `config.logging.database.url` or `config.database.url` is set. |
+| `true` | Agentgateway stores request logs. Either `config.logging.database.url` or `config.database.url` must be set. |
+| `false` | Agentgateway does not store request logs. The other `config.logging.database` settings are ignored. |

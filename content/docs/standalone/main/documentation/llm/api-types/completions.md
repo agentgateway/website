@@ -61,6 +61,9 @@ On the way back, the signature of a response thinking block is forwarded as `rea
 
 For the same behavior in the other direction, where a Messages client reaches a provider that speaks Chat Completions, see [Converting to the Chat Completions format]({{< link-hextra path="/documentation/llm/api-types/messages/#converting-to-the-chat-completions-format" >}}).
 
+> [!NOTE]
+> Mistral reasoning models can return `message.content` or streaming `delta.content` as an array of `thinking` and `text` parts. The built-in [`mistral` provider]({{< link-hextra path="/integrations/llm/providers/mistral/" >}}) supports only the Chat Completions format for chat requests. On a Chat Completions route, agentgateway passes the parts through unchanged. Messages and Responses requests to this provider are converted to Chat Completions. The converted reply drops the reasoning. The reply has no `thinking` block or reasoning item, and it keeps only the text parts.
+
 ## File parts on a converted route {#file-parts-on-a-converted-route}
 
 When a Chat Completions user message reaches a provider that takes the Messages format, an inline `file` content part becomes a Messages `document` block. Set `file.file_data` to a base64 `data:` URI, such as `data:application/pdf;base64,<base64>`. The document title comes from `file.filename`. A `prompt_cache_breakpoint` on the file part becomes an ephemeral `cache_control` breakpoint on the document block.
