@@ -182,7 +182,7 @@ EOF
    {{% /version %}}
 
    {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
-   Check the collector logs for the access log record. Each proxied request appears as a `LogRecord` entry with a timestamp and a body. The body combines the request method, path, and response status. The record includes attributes such as `gateway`, `http.request.method`, `url.path`, and `http.response.status_code`. The HTTP attributes use the OpenTelemetry semantic convention names. The records belong to the `agentgateway.access` instrumentation scope. The collector prints the scope in the `InstrumentationScope` line of the `ScopeLogs` block.
+   Check the collector logs for the access log record. Each proxied request appears as a `LogRecord` entry with a timestamp and a body. The timestamp is the time that agentgateway emits the record. The body combines the request method, path, and response status. The record includes attributes such as `gateway`, `http.request.method`, `url.path`, and `http.response.status_code`. The HTTP attributes use the OpenTelemetry semantic convention names. The records belong to the `agentgateway.access` instrumentation scope. The collector prints the scope in the `InstrumentationScope` line of the `ScopeLogs` block.
    ```sh
    kubectl logs deploy/opentelemetry-collector-logs -n telemetry | grep -A 20 "LogRecord"
    ```
