@@ -53,7 +53,7 @@ You can configure the keys and budgets in the UI or in your configuration file.
 
    ```sh
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      database:
        url: sqlite://budgets.db
@@ -95,7 +95,7 @@ Create a configuration with a database, the catalog, API key authentication, and
 
 ```yaml
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   database:
     url: sqlite://budgets.db
