@@ -1,6 +1,7 @@
 ## Include targets conditionally {#target-conditions}
 
 Set `condition` on an MCP target to include it only when a Common Expression Language (CEL) expression returns `true`. Omit `condition` to always include the target.
+{{< reuse "agw-docs/snippets/mcp-target-condition-field.md" >}}
 
 The expression can read request attributes, such as headers, and `mcp.target.name`, the target under evaluation. With authentication configured, it can also read identity attributes, such as JWT claims.
 
