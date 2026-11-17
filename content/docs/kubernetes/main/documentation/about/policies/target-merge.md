@@ -77,8 +77,11 @@ Each policy section follows a different precedence order based on the specificit
 | Section | Precedence order (lowest to highest) |
 | -- | -- |
 | `frontend` | Gateway < Port < Listener |
-| `traffic` | Gateway < ListenerSet < ListenerSet listener < Listener < Route < Route rule |
+| `traffic` (Gateway listeners) | Gateway < Listener < Route < Route rule |
+| `traffic` (ListenerSet listeners) | Gateway < ListenerSet < ListenerSet listener < Route < Route rule |
 | `backend` | Gateway < Listener < Route (targetRef) < Route rule (targetRef) < Backend (targetRef) < Backend (inline on the backend object) < Route backend ref (inline on the route) |
+
+A listener is defined either on the Gateway or in a ListenerSet. So a `traffic` policy follows the Gateway listener order or the ListenerSet listener order, depending on where its listener is defined.
 
 For a `frontend` policy, you can only apply the policy at the Listener level when the `frontend` policy field supports setting a `sectionName`. For more information about the fields that support the `sectionName` setting, see [Frontend section restrictions](#frontend-restrictions).
 
