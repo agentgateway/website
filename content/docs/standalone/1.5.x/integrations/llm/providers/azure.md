@@ -66,7 +66,7 @@ Azure supports two endpoint types:
 {{% tab name="Foundry (implicit auth)" %}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -79,7 +79,7 @@ llm:
 
 {{< doc-test paths="azure" >}}
 cat <<'EOF' > config-foundry-implicit.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -96,7 +96,7 @@ agentgateway -f config-foundry-implicit.yaml --validate-only
 {{% tab name="Foundry (API key)" %}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "gpt-4.1"
@@ -115,7 +115,7 @@ llm:
 
 {{< doc-test paths="azure" >}}
 cat <<'EOF' > config-foundry-apikey.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "gpt-4.1"
@@ -138,7 +138,7 @@ agentgateway -f config-foundry-apikey.yaml --validate-only
 {{% tab name="Azure OpenAI (implicit auth)" %}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "gpt-4.1"
@@ -150,7 +150,7 @@ llm:
 
 {{< doc-test paths="azure" >}}
 cat <<'EOF' > config-azure-openai.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "gpt-4.1"
@@ -188,7 +188,7 @@ For advanced Azure AI scenarios, use the traditional listener/route configuratio
 **Azure AI Foundry with implicit auth**: Use `DefaultAzureCredential` to automatically detect credentials from the environment (Azure CLI, managed identity, workload identity, or environment variables).
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -209,7 +209,7 @@ routes:
 
 {{< doc-test paths="azure" >}}
 cat <<'EOF' > config-adv-foundry-implicit.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -240,7 +240,7 @@ agentgateway -f config-adv-foundry-implicit.yaml --validate-only
 **Azure AI Foundry with client secret**: Use Azure service principal credentials to authenticate agentgateway with an Azure AI Foundry endpoint.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -269,7 +269,7 @@ routes:
 
 {{< doc-test paths="azure" >}}
 cat <<'EOF' > config-adv-foundry-client-secret.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -307,7 +307,7 @@ agentgateway -f config-adv-foundry-client-secret.yaml --validate-only
 {{% tab name="Client secret" %}}
 **Client secret authentication**
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -332,7 +332,7 @@ routes:
 
 {{< doc-test paths="azure" >}}
 cat <<'EOF' > config-adv-client-secret.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -373,7 +373,7 @@ To use system-assigned managed identity:
 
 Leave `managedIdentity` empty to use the identity of the Azure resource that runs agentgateway.
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -395,7 +395,7 @@ routes:
 
 {{< doc-test paths="azure" >}}
 cat <<'EOF' > config-adv-system-managed-identity.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -433,7 +433,7 @@ To use user-assigned managed identity:
 
 Specify the client ID of the user-assigned managed identity to use. You can also specify the object ID or resource ID instead.
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -460,7 +460,7 @@ routes:
 
 {{< doc-test paths="azure" >}}
 cat <<'EOF' > config-adv-user-managed-identity.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -528,7 +528,7 @@ On AKS, complete the following steps to prepare the cluster.
 Then, select workload identity in the agentgateway configuration.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -551,7 +551,7 @@ routes:
 
 {{< doc-test paths="azure" >}}
 cat <<'EOF' > config-adv-workload-identity.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -592,7 +592,7 @@ agentgateway -f config-adv-workload-identity.yaml --validate-only
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -618,7 +618,7 @@ routes:
 
 {{< doc-test paths="azure" >}}
 cat <<'EOF' > config-claude-foundry.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

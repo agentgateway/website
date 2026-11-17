@@ -244,7 +244,7 @@ Real MCP clients get a token by sending the user through a browser login. To kee
 1. Create a `config.yaml` that exposes a sample MCP server on port 3000 and protects it with the `authentik` provider. Substitute the client ID from [Step 2](#register) for `<YOUR_CLIENT_ID>`.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    mcp:
      port: 3000
      policies:

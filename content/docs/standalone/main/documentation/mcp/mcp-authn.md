@@ -7,7 +7,7 @@ prev: /mcp/connect
 
 MCP authentication protects MCP servers with OAuth 2.0. Agentgateway acts as a resource server: it validates the tokens that your authorization server issues, serves the protected resource metadata that MCP clients discover, and adapts to the OAuth behavior of each supported identity provider.
 
-For the policy reference, including the authorization server proxy, resource server only, and passthrough scenarios, the supported providers, authentication modes, and JWT claim validation, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/mcp-authn" >}}).
+For the policy reference, including the authorization server proxy, resource server only, and passthrough scenarios, the supported providers, authentication modes, and JWT claim validation, see [MCP authentication]({{< link-hextra path="/documentation/configuration/security/authentication/mcp-authn" >}}).
 
 ## Identity provider guides
 
