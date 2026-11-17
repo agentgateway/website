@@ -61,11 +61,8 @@ On the way back, the signature of a response thinking block is forwarded as `rea
 
 For the same behavior in the other direction, where a Messages client reaches a provider that speaks Chat Completions, see [Converting to the Chat Completions format]({{< link-hextra path="/documentation/llm/api-types/messages/#converting-to-the-chat-completions-format" >}}).
 
-## Content parts on passthrough and converted routes {#content-parts-on-passthrough-and-converted-routes}
-
-Some OpenAI-compatible providers, such as Mistral reasoning models, return `message.content` or streaming `delta.content` as an array of typed parts. On a Chat Completions route that passes the response through, those parts stay unchanged. The unchanged parts include `thinking` and `text` parts, so a client can replay the assistant message that it received.
-
-On a route that converts a Chat Completions response to the Messages or Responses format, only `text` parts become response text. `thinking` parts do not become `reasoning_content`, because Mistral rejects `reasoning_content` when a client sends the assistant message back on the next turn.
+> [!NOTE]
+> Mistral reasoning models can return `message.content` or streaming `delta.content` as an array of `thinking` and `text` parts. The built-in [`mistral` provider]({{< link-hextra path="/integrations/llm/providers/mistral/" >}}) supports only the Chat Completions format for chat requests. On a Chat Completions route, agentgateway passes the parts through unchanged. Messages and Responses requests to this provider are converted to Chat Completions. The converted reply drops the reasoning. The reply has no `thinking` block or reasoning item, and it keeps only the text parts.
 
 ## File parts on a converted route {#file-parts-on-a-converted-route}
 
