@@ -85,7 +85,7 @@ This guide uses GitHub as the example provider. For other providers, see [Use ot
 1. Create a `config.yaml` file. The configuration routes `/oauth2/*` requests to OAuth2 Proxy for login and callback handling, and protects the MCP application with an `extAuthz` policy that checks authentication and extracts the user's identity.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      accessLog:
        add:

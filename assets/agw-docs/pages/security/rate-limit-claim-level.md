@@ -4,7 +4,7 @@ Create claim-level rate limits with CEL expressions.
 
 The limit that you applied in the previous section is shared by every request on the route, so one busy client can exhaust it for everyone else. To limit each caller separately, set the `key` field to a CEL expression. Each distinct value that the expression returns gets its own token bucket with the limits of that rule. The expression typically reads a claim in a JWT, such as `jwt.sub` for a limit per user, `jwt.team` for a limit per team, or `jwt.sub + "/" + request.path` for a limit per user per path. This way, you can enforce claim-level limits without an external rate limit service.
 
-In production, key the limit on a value that the client cannot choose, which means a claim from a [JWT authentication policy]({{< link-hextra path="/documentation/security/jwt/" >}}) that targets the same route.
+In production, key the limit on a value that the client cannot choose, which means a claim from a {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication policy]({{< link-hextra path="/documentation/security/extauth/jwt/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication policy]({{< link-hextra path="/documentation/security/jwt/" >}}){{< /version >}} that targets the same route.
 
 ```yaml
     rateLimit:
