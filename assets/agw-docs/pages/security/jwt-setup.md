@@ -159,7 +159,7 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
    }
    ```
 
-   The validated `Authorization` header is not forwarded to the backend by default, so it is not shown in the response. To keep the token in its original request location for later policies, set `preserveToken: true`. To forward only a backend credential, use the `passthrough` backend authentication method instead.
+   The gateway removes the validated JWT from the `Authorization` header before it forwards the request, so the response does not show the `Authorization` header.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,2.2.x" >}} To keep the token in its original location for later policies, set `preserveToken: true`. To forward the validated JWT to the backend only, use the `passthrough` backend authentication method instead. For a comparison of the two options, see [Pass through client credentials]({{< link-hextra path="/documentation/security/backend-authn/key/#pass-through-client-credentials" >}}).{{< /version >}}
   
 
 ## Authorize requests by a JWT claim

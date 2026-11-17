@@ -156,7 +156,7 @@ For **health-aware P2C load balancing** across individual Pod replicas, use the 
 
 Agentgateway will automatically discover all Pod endpoints behind the Service and apply its P2C load balancing algorithm with health-aware scoring across them.
 
-If requests with the same session or user value should prefer the same Pod endpoint, configure `sessionAffinity` on the whole {{< reuse "agw-docs/snippets/backend.md" >}} or in a backend policy that targets the whole backend. Do not target an individual AI provider. For more information, see [Session affinity]({{< link-hextra path="/documentation/traffic-management/load-balancing/#session-affinity" >}}).
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}To prefer the same Pod endpoint for requests that share a session or user value, configure session affinity. For more information, see [Session affinity on AI backends]({{< link-hextra path="/documentation/traffic-management/load-balancing/#session-affinity-ai" >}}).{{< /version >}}
 
 ## Before you begin
 

@@ -1,4 +1,4 @@
-You can use an {{< reuse "agw-docs/snippets/policy.md" >}} to apply HTTP connection settings to the agentgateway proxy. These settings include idle connection timeouts, limits for connections to and from the gateway, and more. Note that these options are applied to HTTP/1 or HTTP/2 requests only when indicated.
+You can use an {{< reuse "agw-docs/snippets/policy.md" >}} to apply HTTP connection settings to the agentgateway proxy. These settings include the maximum buffer size, HTTP/1.1 idle timeouts and header limits, and HTTP/2 flow control and keepalive. Some settings apply only to HTTP/1.1 or only to HTTP/2, as noted in each section.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
