@@ -260,4 +260,22 @@ psql "postgres://user:password@host:5432/dbname" \
 
 ## Disable database logging
 
-Agentgateway writes request logs to `config.logging.database`. If that field is not set, agentgateway writes request logs to `config.database` instead. To stop writing access logs to a database, remove both fields, and then restart agentgateway. If you keep `config.database` for other features, such as budgets or hybrid configuration storage, agentgateway keeps writing request logs to that database. After you remove both fields, access logs continue to go to stdout, and the database-backed UI pages and the `agctl standalone logs` and `agctl standalone analytics` commands become unavailable.
+To stop writing request logs to a database, set `config.logging.database.enabled` to `false`, and then restart agentgateway. Agentgateway starts no request log store, even if `config.database` is set for other features, such as budgets or hybrid configuration storage.
+
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+config:
+  logging:
+    database:
+      enabled: false
+```
+
+Access logs continue to go to stdout. The database-backed UI pages and the `agctl standalone logs` and `agctl standalone analytics` commands become unavailable.
+
+The `enabled` field works as follows:
+
+| Value | Behavior |
+| -- | -- |
+| Not set | Agentgateway stores request logs if `config.logging.database.url` or `config.database.url` is set. |
+| `true` | Agentgateway stores request logs. Either `config.logging.database.url` or `config.database.url` must be set. |
+| `false` | Agentgateway does not store request logs. The other `config.logging.database` settings are ignored. |
