@@ -4,4 +4,6 @@ weight: 10
 description: Install the agentgateway control plane in your Kubernetes cluster.
 ---
 
+{{< reuse "agw-docs/snippets/ai-assistant-quickstart.md" >}}
+
 {{< reuse "agw-docs/pages/agentgateway/quickstart/install.md" >}}

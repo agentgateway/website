@@ -8,6 +8,8 @@ description: Install and run agentgateway, or route traffic to MCP, LLM, or HTTP
 Get started with agentgateway on Kubernetes. Install the control plane, or jump to a quick start that routes traffic to the backend you need.
 
 
+{{< reuse "agw-docs/snippets/ai-assistant-quickstart.md" >}}
+
 ## Before you begin
 
 These guides assume you have a Kubernetes cluster, `kubectl`, and `helm`. For quick testing, you can use [Kind](https://kind.sigs.k8s.io/).
