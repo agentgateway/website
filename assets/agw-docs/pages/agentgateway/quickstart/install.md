@@ -2,7 +2,14 @@ Install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane and get
 
 ## Before you begin
 
-These steps assume that you have a Kubernetes cluster, `kubectl`, and `helm` already set up. For quick testing, you can use [Kind](https://kind.sigs.k8s.io/).
+Set up the following prerequisites.
+
+* A Kubernetes cluster. For quick testing, you can use [Kind](https://kind.sigs.k8s.io/).
+* [`kubectl`](https://kubernetes.io/docs/tasks/tools/), to manage the cluster.
+* [`helm`](https://helm.sh/docs/intro/install/), to install agentgateway.
+* [`jq`](https://jqlang.org/download/), to format the responses in the quick start guides that follow this one.
+
+To create a Kind cluster, run the following command.
 
 ```sh
 kind create cluster
