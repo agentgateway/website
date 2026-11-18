@@ -4090,6 +4090,7 @@ _Appears in:_
 | `Perplexity` |  |
 | `Typesafe` |  |
 | `Nebius` |  |
+| `CoreWeave` |  |
 | `Custom` |  |
 
 
