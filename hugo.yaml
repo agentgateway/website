@@ -152,7 +152,7 @@ params:
       sync: true
 
   theme:
-    default: light
+    default: system
     displayToggle: true
 
   footer:
