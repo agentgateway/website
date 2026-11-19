@@ -3,7 +3,9 @@
   harnesses at the left edge, converges behind the headline (the gateway), and
   fans out to LLM providers, MCP servers, and A2A agents at the right edge.
   Bursts of prompt injection (red) are blocked and scatter at the gateway; PII
-  (amber) passes through masked as blocks.
+  (amber) passes through masked as blocks. At xl+, callouts pop off the streams
+  (cache hits, cheaper routing, per-call cost, auth, budgets) and two corner
+  cards count requests, tokens, spend, savings, and blocks as traffic lands.
 
   Rendered absolutely inside the hero, behind the copy. Pills only show at xl+;
   below that, particles enter and leave from virtual points at the edges.
@@ -11,18 +13,18 @@
   Honors prefers-reduced-motion, pauses off-screen, and follows the site theme.
 */}}
 {{- $agents := slice
-  (dict "name" "Users"       "icon" "/integrations/users.svg"  "x" "3%" "y" "24%" "d" "0s")
-  (dict "name" "Claude Code" "icon" "/integrations/claude.svg" "x" "7%" "y" "36%" "d" "-2s")
-  (dict "name" "Codex"       "icon" "/integrations/openai.svg" "x" "2%" "y" "48%" "d" "-4s")
-  (dict "name" "Cursor"      "icon" "/integrations/cursor.svg" "x" "6%" "y" "60%" "d" "-1s")
-  (dict "name" "kagent"      "icon" "/integrations/kagent.svg" "x" "3%" "y" "72%" "d" "-3s")
+  (dict "name" "Users"       "icon" "/integrations/users.svg"  "x" "3%" "y" "20%" "d" "0s")
+  (dict "name" "Claude Code" "icon" "/integrations/claude.svg" "x" "7%" "y" "31%" "d" "-2s")
+  (dict "name" "Codex"       "icon" "/integrations/openai.svg" "x" "2%" "y" "42%" "d" "-4s")
+  (dict "name" "Cursor"      "icon" "/integrations/cursor.svg" "x" "6%" "y" "53%" "d" "-1s")
+  (dict "name" "kagent"      "icon" "/integrations/kagent.svg" "x" "3%" "y" "64%" "d" "-3s")
 }}
 {{- $dests := slice
-  (dict "name" "OpenAI"      "icon" "/integrations/openai.svg"        "x" "3%" "y" "24%" "d" "-1s")
-  (dict "name" "Anthropic"   "icon" "/integrations/anthropic.svg"     "x" "7%" "y" "36%" "d" "-3s")
-  (dict "name" "Gemini"      "icon" "/integrations/google-gemini.svg" "x" "2%" "y" "48%" "d" "-5s")
-  (dict "name" "MCP servers" "icon" "/integrations/mcp.svg"           "x" "6%" "y" "60%" "d" "0s")
-  (dict "name" "A2A agents"  "icon" "/integrations/a2a.svg"           "x" "3%" "y" "72%" "d" "-2s")
+  (dict "name" "OpenAI"      "icon" "/integrations/openai.svg"        "x" "3%" "y" "20%" "d" "-1s")
+  (dict "name" "Anthropic"   "icon" "/integrations/anthropic.svg"     "x" "7%" "y" "31%" "d" "-3s")
+  (dict "name" "Gemini"      "icon" "/integrations/google-gemini.svg" "x" "2%" "y" "42%" "d" "-5s")
+  (dict "name" "MCP servers" "icon" "/integrations/mcp.svg"           "x" "6%" "y" "53%" "d" "0s")
+  (dict "name" "A2A agents"  "icon" "/integrations/a2a.svg"           "x" "3%" "y" "64%" "d" "-2s")
 }}
 <div data-flow aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
   <canvas data-flow-canvas class="absolute inset-0 h-full w-full [mask-image:radial-gradient(ellipse_40%_48%_at_50%_50%,rgba(0,0,0,0.15),black_85%)] max-sm:opacity-70 max-sm:[mask-image:radial-gradient(ellipse_75%_38%_at_50%_45%,rgba(0,0,0,0.1),black_100%)]"></canvas>
@@ -40,6 +42,23 @@
     <img src="{{ .icon }}" alt="" class="h-3.5 w-3.5 opacity-70 brightness-0 dark:opacity-90 dark:invert">{{ .name }}
   </div>
   {{- end }}
+
+  <!-- callout template, cloned by the script (kept in markup so its classes are compiled) -->
+  <span data-flow-callout class="absolute left-0 top-0 hidden whitespace-nowrap rounded-full border px-2.5 py-1 font-geist-mono text-[11px] shadow-sm backdrop-blur transition-[opacity,transform] duration-700 ease-out"></span>
+
+  <!-- live analytics cards -->
+  <div class="absolute bottom-[15%] left-[2.5%] hidden w-52 animate-float rounded-2xl border border-black/10 bg-white/70 p-4 font-geist-mono text-[11px] text-neutral-500 shadow-sm backdrop-blur [animation-delay:-2s] xl:block dark:border-white/10 dark:bg-white/[0.04] dark:text-neutral-400 dark:shadow-black/40">
+    <div class="mb-3 flex items-center gap-2 uppercase tracking-wider"><span class="relative flex h-1.5 w-1.5"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60"></span><span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span></span>Analytics</div>
+    <div class="flex justify-between py-0.5"><span>Requests</span><span data-stat="req" class="tabular-nums text-neutral-900 dark:text-white">18,240</span></div>
+    <div class="flex justify-between py-0.5"><span>Tokens</span><span data-stat="tok" class="tabular-nums text-neutral-900 dark:text-white">4.21M</span></div>
+    <div class="flex justify-between py-0.5"><span>Cache hit</span><span data-stat="cache" class="tabular-nums text-violet-600 dark:text-violet-300">61%</span></div>
+  </div>
+  <div class="absolute bottom-[15%] right-[2.5%] hidden w-52 animate-float rounded-2xl border border-black/10 bg-white/70 p-4 font-geist-mono text-[11px] text-neutral-500 shadow-sm backdrop-blur [animation-delay:-4s] xl:block dark:border-white/10 dark:bg-white/[0.04] dark:text-neutral-400 dark:shadow-black/40">
+    <div class="mb-3 uppercase tracking-wider">Cost &amp; control</div>
+    <div class="flex justify-between py-0.5"><span>Spend</span><span data-stat="cost" class="tabular-nums text-neutral-900 dark:text-white">$212.40</span></div>
+    <div class="flex justify-between py-0.5"><span>Saved</span><span data-stat="saved" class="tabular-nums text-emerald-600 dark:text-emerald-400">$131.86</span></div>
+    <div class="flex justify-between py-0.5"><span>Blocked</span><span data-stat="blocked" class="tabular-nums text-red-600 dark:text-red-400">37</span></div>
+  </div>
 </div>
 
 <script>
@@ -86,11 +105,11 @@
   function pick(s) { return s.charAt((Math.random() * s.length) | 0); }
 
   var parts = [];
-  function spawn(kind, si, di, jit) {
+  function spawn(kind, si, di, jit, b) {
     if (!srcs.length || !dsts.length) return;
     si = si == null ? (Math.random() * srcs.length) | 0 : si;
     di = di == null ? (Math.random() * dsts.length) | 0 : di;
-    parts.push({ si: si, di: di, t: 0, phase: 1, kind: kind,
+    parts.push({ si: si, di: di, t: 0, phase: 1, kind: kind, b: b,
       g: pick(kind === 'bad' ? BAD : kind === 'pii' ? PII : OK),
       j: (Math.random() - 0.5) * (jit == null ? 90 : jit), k: (Math.random() - 0.5) * 40,
       dur: 3 + Math.random() * 1.6, a: 0.3 + Math.random() * 0.5 });
@@ -100,14 +119,77 @@
     de.style.borderColor = 'rgba(139,92,246,0.6)'; setTimeout(function () { de.style.borderColor = ''; }, 260);
   }
 
+  // ---- callouts: what the gateway did to a request (cost, cache, routing, policy) ----
+  // Colors are inline: Tailwind here only compiles classes that appear in rendered HTML.
+  var CC = { // [dark, light] -> [border, background, text]
+    cache: [['rgba(167,139,250,.35)', 'rgba(139,92,246,.14)', '#ddd6fe'], ['rgba(124,58,237,.25)', 'rgba(245,243,255,.9)', '#6d28d9']],
+    route: [['rgba(56,189,248,.35)', 'rgba(14,165,233,.14)', '#bae6fd'], ['rgba(2,132,199,.25)', 'rgba(240,249,255,.9)', '#0369a1']],
+    cost:  [['rgba(52,211,153,.35)', 'rgba(16,185,129,.14)', '#a7f3d0'], ['rgba(5,150,105,.25)', 'rgba(236,253,245,.9)', '#047857']],
+    info:  [['rgba(255,255,255,.16)', 'rgba(255,255,255,.06)', '#d4d4d8'], ['rgba(0,0,0,.1)', 'rgba(255,255,255,.9)', '#52525b']],
+    bad:   [['rgba(248,113,113,.45)', 'rgba(239,68,68,.16)', '#fecaca'], ['rgba(220,38,38,.3)', 'rgba(254,242,242,.92)', '#b91c1c']],
+    pii:   [['rgba(251,191,36,.45)', 'rgba(245,158,11,.16)', '#fde68a'], ['rgba(217,119,6,.3)', 'rgba(255,251,235,.92)', '#b45309']]
+  };
+  function ri(a, b) { return a + ((Math.random() * (b - a + 1)) | 0); }
+  var OUT_CALLS = [
+    function () { return ['cache hit · −' + ri(84, 97) + '% tokens', 'cache']; },
+    function () { return ['routed → gpt-5.4-mini · −' + ri(70, 82) + '% cost', 'route']; },
+    function () { return ['$0.00' + ri(12, 48) + ' · ' + ['claude-code', 'codex', 'cursor', 'kagent'][ri(0, 3)], 'cost']; },
+    function () { return ['budget · ' + ri(31, 64) + '% used', 'info']; },
+    function () { return ['p95 · ' + ri(610, 940) + ' ms', 'info']; },
+    function () { return ['failover → anthropic', 'route']; },
+    function () { return ['semantic cache · $0.00', 'cost']; }
+  ];
+  var IN_CALLS = [
+    function () { return ['auth · jwt ✓', 'info']; },
+    function () { return ['rate limit · ok', 'info']; },
+    function () { return ['virtual key · team-platform', 'info']; }
+  ];
+  var tpl = root.querySelector('[data-flow-callout]'), activeCallouts = 0;
+  function callout(x, y, text, kind) {
+    if (activeCallouts >= 4) return;
+    activeCallouts++;
+    var el = tpl.cloneNode(false), c = CC[kind][dark ? 0 : 1];
+    el.removeAttribute('data-flow-callout'); el.classList.remove('hidden'); el.textContent = text;
+    el.style.borderColor = c[0]; el.style.backgroundColor = c[1]; el.style.color = c[2];
+    var pos = function (dy) { return 'translate(' + x.toFixed(1) + 'px,' + (y + dy).toFixed(1) + 'px) translate(-50%,-50%)'; };
+    el.style.opacity = '0'; el.style.transform = pos(0);
+    tpl.parentNode.insertBefore(el, tpl);
+    requestAnimationFrame(function () { requestAnimationFrame(function () { el.style.opacity = '1'; el.style.transform = pos(-14); }); });
+    setTimeout(function () { el.style.opacity = '0'; el.style.transform = pos(-30); }, 1800);
+    setTimeout(function () { el.remove(); activeCallouts--; }, 2600);
+  }
+  function pickPart(test) {
+    var c = parts.filter(test);
+    return c.length ? c[(Math.random() * c.length) | 0] : null;
+  }
+
+  // ---- live analytics counters ----
+  var S = { req: 18240, tok: 4.21e6, cache: 61, cost: 212.40, saved: 131.86, blocked: 37 }, statEls = {};
+  [].forEach.call(root.querySelectorAll('[data-stat]'), function (e) { statEls[e.getAttribute('data-stat')] = e; });
+  function renderStats() {
+    if (!statEls.req) return;
+    statEls.req.textContent = Math.round(S.req).toLocaleString('en-US');
+    statEls.tok.textContent = (S.tok / 1e6).toFixed(2) + 'M';
+    statEls.cache.textContent = Math.round(S.cache) + '%';
+    statEls.cost.textContent = '$' + S.cost.toFixed(2);
+    statEls.saved.textContent = '$' + S.saved.toFixed(2);
+    statEls.blocked.textContent = S.blocked;
+  }
+  function delivered() {
+    if (Math.random() < 0.35) S.req += 1;
+    S.tok += 300 + Math.random() * 1400;
+    var c = 0.0004 + Math.random() * 0.0035; S.cost += c; S.saved += c * (0.45 + Math.random() * 0.35);
+  }
+
   var acc = 0, nextBurst = 2.5, burstKind = 'bad', last = 0, running = false, raf = 0;
+  var live = false, burstId = 0, announced = {}, counted = {}, nextOut = 1.2, nextIn = 2.4, statT = 0, cacheT = 0;
   function step(dt) {
     acc += dt * (W < 640 ? 16 : 34);
     while (acc > 1) { spawn(Math.random() < 0.05 ? 'pii' : 'ok'); acc -= 1; }
     nextBurst -= dt;
     if (nextBurst <= 0 && srcs.length) {
-      var si = (Math.random() * srcs.length) | 0, di = (Math.random() * dsts.length) | 0, kind = burstKind;
-      for (var n = 0; n < 16; n++) setTimeout(function () { spawn(kind, si, di, 18); }, n * 30);
+      var si = (Math.random() * srcs.length) | 0, di = (Math.random() * dsts.length) | 0, kind = burstKind, id = ++burstId;
+      for (var n = 0; n < 16; n++) setTimeout(function () { spawn(kind, si, di, 18, id); }, n * 30);
       burstKind = burstKind === 'bad' ? 'pii' : 'bad';
       nextBurst = 3.5 + Math.random() * 2.5;
     }
@@ -118,13 +200,14 @@
       if (p.t >= 1) {
         if (p.phase === 1) {
           if (p.kind === 'bad') {
+            if (p.b && !counted[p.b]) { counted[p.b] = 1; S.blocked += 1; }
             var ang = Math.PI + (Math.random() - 0.5) * 2.6, sp = 50 + Math.random() * 110;
             p.phase = 3; p.x = gw.x - gw.r; p.y = gw.y + p.j * 0.1; p.vx = Math.cos(ang) * sp; p.vy = Math.sin(ang) * sp; p.life = 1;
             continue;
           }
           if (p.kind === 'pii') p.kind = 'masked';
           p.phase = 2; p.t = 0; p.dur *= 0.9;
-        } else { flashDst(p.di); parts.splice(i, 1); continue; }
+        } else { flashDst(p.di); delivered(); parts.splice(i, 1); continue; }
       }
       var s, e, t = p.t, dx;
       if (p.phase === 1) {
@@ -132,6 +215,11 @@
         e = { x: gw.x - gw.r, y: gw.y }; dx = e.x - s.x;
         p.x = bez(s.x, s.x + dx * 0.55, e.x - dx * 0.35, e.x, t);
         p.y = bez(s.y, s.y, e.y, e.y, t) + p.j * Math.pow(1 - t, 1.5) * Math.min(1, t * 5);
+        if (live && W >= 1024 && p.b && !announced[p.b] && p.x > W * 0.19) {
+          announced[p.b] = 1;
+          if (p.kind === 'bad') callout(p.x, p.y - 22, 'prompt injection · blocked', 'bad');
+          else callout(p.x, p.y - 22, 'PII masked · email, card', 'pii');
+        }
       } else {
         e = dsts[p.di]; if (!e) { parts.splice(i, 1); continue; }
         s = { x: gw.x + gw.r, y: gw.y }; dx = e.x - s.x;
@@ -140,6 +228,22 @@
       }
     }
     if (parts.length > 900) parts.splice(0, parts.length - 900);
+
+    if (live && W >= 1024) {
+      nextOut -= dt; nextIn -= dt;
+      if (nextOut <= 0) {
+        var po = pickPart(function (q) { return q.phase === 2 && q.kind === 'ok' && q.x > W * 0.74 && q.x < W * 0.84; });
+        if (po) { var oc = OUT_CALLS[(Math.random() * OUT_CALLS.length) | 0](); callout(po.x, po.y - 18, oc[0], oc[1]); }
+        nextOut = 0.9 + Math.random() * 0.8;
+      }
+      if (nextIn <= 0) {
+        var pi = pickPart(function (q) { return q.phase === 1 && q.kind === 'ok' && !q.b && q.x > W * 0.12 && q.x < W * 0.18; });
+        if (pi) { var ic = IN_CALLS[(Math.random() * IN_CALLS.length) | 0](); callout(pi.x, pi.y - 18, ic[0], ic[1]); }
+        nextIn = 2.4 + Math.random() * 1.6;
+      }
+    }
+    cacheT -= dt; if (cacheT <= 0) { S.cache = Math.max(55, Math.min(68, S.cache + (Math.random() - 0.45) * 2)); cacheT = 1.5; }
+    statT -= dt; if (live && statT <= 0) { renderStats(); statT = 0.3; }
   }
 
   function draw() {
@@ -173,6 +277,7 @@
     layout();
     if (reduce) { for (var i = 0; i < 240; i++) step(1 / 30); draw(); return; }
     for (var k = 0; k < 120; k++) step(1 / 30);   // prefill so the hero never starts empty
+    live = true;
     new IntersectionObserver(function (en) { en[0].isIntersecting ? start() : stop(); }).observe(root);
     document.addEventListener('visibilitychange', function () { document.hidden ? stop() : start(); });
   }
