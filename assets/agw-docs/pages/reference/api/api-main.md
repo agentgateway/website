@@ -798,6 +798,7 @@ _Appears in:_
 - [ModelBackendAuth](#modelbackendauth)
 - [OAuthTokenExchange](#oauthtokenexchange)
 - [OpenAIModerationAuth](#openaimoderationauth)
+- [PromptGuardAuth](#promptguardauth)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -928,6 +929,7 @@ _Appears in:_
 - [BackendAuth](#backendauth)
 - [BedrockGuardrailsAuth](#bedrockguardrailsauth)
 - [ModelBackendAuth](#modelbackendauth)
+- [PromptGuardAuth](#promptguardauth)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -1210,6 +1212,7 @@ _Appears in:_
 - [BedrockGuardrailsPolicy](#bedrockguardrailspolicy)
 - [GoogleModelArmorPolicy](#googlemodelarmorpolicy)
 - [OpenAIModerationPolicy](#openaimoderationpolicy)
+- [PromptGuardPolicy](#promptguardpolicy)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -1282,6 +1285,7 @@ _Appears in:_
 - [BedrockGuardrailsPolicy](#bedrockguardrailspolicy)
 - [GoogleModelArmorPolicy](#googlemodelarmorpolicy)
 - [OpenAIModerationPolicy](#openaimoderationpolicy)
+- [PromptGuardPolicy](#promptguardpolicy)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -1345,6 +1349,7 @@ _Appears in:_
 - [BedrockGuardrailsPolicy](#bedrockguardrailspolicy)
 - [GoogleModelArmorPolicy](#googlemodelarmorpolicy)
 - [OpenAIModerationPolicy](#openaimoderationpolicy)
+- [PromptGuardPolicy](#promptguardpolicy)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -1370,6 +1375,7 @@ _Appears in:_
 - [GoogleModelArmorPolicy](#googlemodelarmorpolicy)
 - [ModelPolicies](#modelpolicies)
 - [OpenAIModerationPolicy](#openaimoderationpolicy)
+- [PromptGuardPolicy](#promptguardpolicy)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -1419,6 +1425,7 @@ _Appears in:_
 - [GoogleModelArmorPolicy](#googlemodelarmorpolicy)
 - [ModelPolicies](#modelpolicies)
 - [OpenAIModerationPolicy](#openaimoderationpolicy)
+- [PromptGuardPolicy](#promptguardpolicy)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -1565,7 +1572,7 @@ _Appears in:_
 | `version` _[ShortString](#shortstring)_ | Version of the Guardrail policy to use for the backend. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `region` _[ShortString](#shortstring)_ | AWS region where the guardrail is deployed, for example<br />`us-west-2`). |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether the guardrail's verdict is enforced or only<br />observed. `Reject` (the default) enforces the guardrail: a blocked<br />assessment rejects the request/response and an anonymized assessment masks<br />the matched content. `Audit` runs the guardrail in observe mode: it is<br />invoked and its assessment recorded (metrics + structured log), but the<br />request/response is never blocked or masked. |  | Optional: \{\} <br /> |
-| `policies` _[BedrockGuardrailsPolicy](#bedrockguardrailspolicy)_ | Policies for communicating with AWS Bedrock Guardrails. |  | Optional: \{\} <br /> |
+| `policies` _[BedrockGuardrailsPolicy](#bedrockguardrailspolicy)_ | Policies for communicating with the provider.<br />This field is deprecated; prefer `policies` on the prompt guard entry.<br />It may not be set together with the guard-level `policies`. |  | Optional: \{\} <br /> |
 
 
 #### BedrockGuardrailsAuth
@@ -2751,6 +2758,7 @@ _Appears in:_
 - [BackendAuthCredential](#backendauthcredential)
 - [GoogleModelArmorAuth](#googlemodelarmorauth)
 - [ModelBackendAuth](#modelbackendauth)
+- [PromptGuardAuth](#promptguardauth)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -2834,7 +2842,7 @@ _Appears in:_
 | `projectId` _[ShortString](#shortstring)_ | Google Cloud project ID. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `location` _[ShortString](#shortstring)_ | Google Cloud location, for example `us-central1`.<br />Defaults to `us-central1` if not specified. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether flagged content is rejected or only observed.<br />`Reject` (the default) rejects flagged content; `Audit` records the<br />would-be rejection without blocking. |  | Optional: \{\} <br /> |
-| `policies` _[GoogleModelArmorPolicy](#googlemodelarmorpolicy)_ | Policies for communicating with Google Model Armor. |  | Optional: \{\} <br /> |
+| `policies` _[GoogleModelArmorPolicy](#googlemodelarmorpolicy)_ | Policies for communicating with the provider.<br />This field is deprecated; prefer `policies` on the prompt guard entry.<br />It may not be set together with the guard-level `policies`. |  | Optional: \{\} <br /> |
 
 
 #### GoogleModelArmorAuth
@@ -3576,6 +3584,7 @@ _Appears in:_
 - [OAuthClientAuth](#oauthclientauth)
 - [OAuthPrivateKeyJWT](#oauthprivatekeyjwt)
 - [OpenAIModerationAuth](#openaimoderationauth)
+- [PromptGuardAuth](#promptguardauth)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -4547,7 +4556,7 @@ _Appears in:_
 | `failureMode` _[FailureMode](#failuremode)_ | Behavior when the provider is unavailable or returns an error.<br />`FailOpen` allows the request to continue; `FailClosed` (default) rejects it. |  | Optional: \{\} <br /> |
 | `model` _string_ | Moderation model to use. For example,<br />`omni-moderation`. |  | Optional: \{\} <br /> |
 | `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether flagged content is rejected or only observed.<br />`Reject` (the default) rejects flagged content; `Audit` records the<br />would-be rejection without blocking. |  | Optional: \{\} <br /> |
-| `policies` _[OpenAIModerationPolicy](#openaimoderationpolicy)_ | Policies for communicating with OpenAI. |  | Optional: \{\} <br /> |
+| `policies` _[OpenAIModerationPolicy](#openaimoderationpolicy)_ | Policies for communicating with the provider.<br />This field is deprecated; prefer `policies` on the prompt guard entry.<br />It may not be set together with the guard-level `policies`. |  | Optional: \{\} <br /> |
 
 
 #### OpenAIModerationAuth
@@ -4808,6 +4817,52 @@ _Appears in:_
 | `cacheMessageOffset` _integer_ | Shifts the message cache point further back in the<br />conversation. 0 (default) places it at the second-to-last message.<br />Higher values move it N additional messages towards the start, clamped<br />to bounds. |  | Minimum: 0 <br />Optional: \{\} <br /> |
 
 
+#### PromptGuardAuth
+
+
+
+PromptGuardAuth configures credentials for prompt guard provider requests.
+Which methods are supported depends on the guard:
+  - `openAIModeration`: `key` or `secretRef`.
+  - `bedrockGuardrails`: `key`, `secretRef`, or `aws`.
+  - `googleModelArmor`: `gcp`.
+
+_Validation:_
+- ExactlyOneOf: [key secretRef aws gcp]
+
+_Appears in:_
+- [PromptGuardPolicy](#promptguardpolicy)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `key` _string_ | Inline key. This option is the least secure; usage of a `Secret` is<br />preferred. |  | MaxLength: 2048 <br />Optional: \{\} <br /> |
+| `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Credential source for the key, defaulting to a Kubernetes `Secret`. By<br />default, the value is read from the `Authorization` key; set<br />`secretRef.key` to override it. A `Bearer ` prefix is stripped only from<br />the default `Authorization` key. |  | Optional: \{\} <br /> |
+| `location` _[AuthorizationLocation](#authorizationlocation)_ | Where keys are inserted. Defaults to the `Authorization` header with the<br />`Bearer ` prefix. Applies to `key` and `secretRef`. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
+| `aws` _[AwsAuth](#awsauth)_ | AWS authentication method. Use `aws: \{\}` for default AWS SDK credential<br />discovery. |  | Optional: \{\} <br /> |
+| `gcp` _[GcpAuth](#gcpauth)_ | Google authentication method. Use `gcp: \{\}` for default Google<br />credential discovery. |  | Optional: \{\} <br /> |
+
+
+#### PromptGuardPolicy
+
+
+
+PromptGuardPolicy configures calls to a prompt guard provider.
+
+
+
+_Appears in:_
+- [PromptguardRequest](#promptguardrequest)
+- [PromptguardResponse](#promptguardresponse)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend |  | Optional: \{\} <br /> |
+| `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
+| `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
+| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
+| `auth` _[PromptGuardAuth](#promptguardauth)_ | Settings for authenticating to the prompt guard provider. |  | ExactlyOneOf: [key secretRef aws gcp] <br />Optional: \{\} <br /> |
+
+
 #### PromptGuardStreamingMode
 
 _Underlying type:_ _string_
@@ -4845,6 +4900,7 @@ _Appears in:_
 | `openAIModeration` _[OpenAIModeration](#openaimoderation)_ | Passes prompt data through the OpenAI Moderations<br />endpoint.<br />See https://developers.openai.com/api/reference/resources/moderations for more information. |  | Optional: \{\} <br /> |
 | `bedrockGuardrails` _[BedrockGuardrails](#bedrockguardrails)_ | AWS Bedrock Guardrails settings for prompt<br />guarding. |  | Optional: \{\} <br /> |
 | `googleModelArmor` _[GoogleModelArmor](#googlemodelarmor)_ | Google Model Armor settings for prompt guarding. |  | Optional: \{\} <br /> |
+| `policies` _[PromptGuardPolicy](#promptguardpolicy)_ | Policies for communicating with the prompt guard provider. Not supported<br />for `regex` or `webhook` guards. |  | Optional: \{\} <br /> |
 
 
 #### PromptguardResponse
@@ -4867,6 +4923,7 @@ _Appears in:_
 | `webhook` _[Webhook](#webhook)_ | Webhook that receives responses for prompt guarding. |  | Optional: \{\} <br /> |
 | `bedrockGuardrails` _[BedrockGuardrails](#bedrockguardrails)_ | AWS Bedrock Guardrails settings for prompt<br />guarding. |  | Optional: \{\} <br /> |
 | `googleModelArmor` _[GoogleModelArmor](#googlemodelarmor)_ | Google Model Armor settings for prompt guarding. |  | Optional: \{\} <br /> |
+| `policies` _[PromptGuardPolicy](#promptguardpolicy)_ | Policies for communicating with the prompt guard provider. Not supported<br />for `regex` or `webhook` guards. |  | Optional: \{\} <br /> |
 
 
 #### ProviderFormat
