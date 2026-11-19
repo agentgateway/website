@@ -1,0 +1,11 @@
+{
+  "channel": "current",
+  "skills": [
+    "agentgateway-oss-standalone",
+    "agentgateway-oss-kubernetes"
+  ],
+  "installer": {
+    "package": "skills",
+    "channel": "latest"
+  }
+}
