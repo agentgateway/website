@@ -1,11 +1,7 @@
 {{/*
-  Homepage v2 — monochrome, type-led layout with a large hero video stage.
+  Homepage v2 — monochrome, type-led layout.
 
-  The hero video is driven by front matter in content/_index.md:
-    heroVideo:       path or URL to an .mp4/.webm file (autoplays muted, loops)
-    heroVideoEmbed:  a YouTube/Vimeo embed URL (used if heroVideo is empty)
-    heroVideoPoster: optional poster image for heroVideo
-  With none set, a placeholder stage is rendered in the same slot.
+  The animated traffic flow behind the hero copy lives in partials/hero-flow.html.
 
   Styling is Tailwind utilities only; keyframes live in assets/css/tailwind.config.js.
 */}}
@@ -13,16 +9,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-{{- $video := .Params.heroVideo -}}
-{{- $embed := .Params.heroVideoEmbed -}}
-{{- $poster := .Params.heroVideoPoster -}}
-
 <div class="font-display bg-white text-neutral-950 dark:bg-black dark:text-white antialiased selection:bg-violet-500/30">
 
 <!-- ============ HERO ============ -->
-<section class="relative isolate overflow-hidden pt-40 lg:pt-48 pb-10">
+<section class="relative isolate overflow-hidden pb-10">
   <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 -top-40 -z-10 mx-auto h-[640px] max-w-5xl rounded-full bg-violet-500/20 blur-[140px] dark:bg-violet-600/25"></div>
 
+  <div class="relative isolate pt-40 pb-16 lg:pt-48 lg:pb-24">
+  {{ partial "hero-flow.html" . }}
   <div class="mx-auto max-w-6xl px-6 text-center">
     <a href="https://aaif.io/projects/agentgateway" target="_blank" rel="noopener" class="animate-fade-up -mt-8 inline-flex items-center gap-2 text-xs font-medium tracking-wide text-neutral-600 transition-colors hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-white">
       Part of the
@@ -39,7 +33,7 @@
     </h1>
 
     <p class="animate-fade-up mx-auto mt-8 max-w-2xl text-lg font-light leading-relaxed text-neutral-600 sm:text-xl dark:text-neutral-400">
-      Route, secure, observe, and govern LLM, MCP, A2A, and service traffic in a single high-performance data plane.
+      The open source gateway to route, secure, observe, and govern LLM, MCP, A2A, and service traffic in a single high-performance data plane.
     </p>
 
     <div class="animate-fade-up mt-10 flex flex-wrap items-center justify-center gap-3">
@@ -66,29 +60,6 @@
       <button type="button" id="hp2-copy" class="absolute right-3 top-1/2 -translate-y-1/2 rounded-md border border-white/10 px-2.5 py-1.5 font-display text-xs text-neutral-400 transition-colors hover:border-white/25 hover:text-white">Copy</button>
     </div>
   </div>
-
-  <!-- ============ VIDEO STAGE ============ -->
-  <div class="animate-fade-up mx-auto mt-20 max-w-7xl px-4 sm:px-6">
-    <div class="relative">
-      <div aria-hidden="true" class="absolute -inset-px rounded-[28px] bg-gradient-to-b from-black/15 via-black/5 to-transparent dark:from-white/25 dark:via-white/5"></div>
-      <div aria-hidden="true" class="absolute inset-x-10 -bottom-10 top-10 -z-10 rounded-[40px] bg-violet-500/25 blur-3xl dark:bg-violet-600/30"></div>
-      <div class="relative aspect-video overflow-hidden rounded-[28px] bg-neutral-100 dark:bg-neutral-950">
-        {{- if $video }}
-        <video class="h-full w-full object-cover" src="{{ $video }}"{{ with $poster }} poster="{{ . }}"{{ end }} autoplay muted loop playsinline controls></video>
-        {{- else if $embed }}
-        <iframe class="h-full w-full" src="{{ $embed }}" title="agentgateway overview video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        {{- else }}
-        <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(138,63,252,0.18),transparent_60%)]"></div>
-        <div class="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,0,0,0.05)_1px,transparent_1px)] bg-[size:48px_48px] dark:bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)]"></div>
-        <div class="relative flex h-full flex-col items-center justify-center gap-5 text-center">
-          <span class="flex h-20 w-20 items-center justify-center rounded-full border border-black/15 bg-white/70 backdrop-blur transition-transform hover:scale-105 sm:h-24 sm:w-24 dark:border-white/20 dark:bg-white/10">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l11.1-6.86a1 1 0 0 0 0-1.7L9.52 4.29A1 1 0 0 0 8 5.14z"/></svg>
-          </span>
-          <span class="font-geist-mono text-xs uppercase tracking-[0.2em] text-neutral-500">Product video · coming soon</span>
-        </div>
-        {{- end }}
-      </div>
-    </div>
   </div>
 
 </section>

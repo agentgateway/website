@@ -1,0 +1,182 @@
+{{/*
+  Hero background animation: agent traffic (token glyphs) flows from agents and
+  harnesses at the left edge, converges behind the headline (the gateway), and
+  fans out to LLM providers, MCP servers, and A2A agents at the right edge.
+  Bursts of prompt injection (red) are blocked and scatter at the gateway; PII
+  (amber) passes through masked as blocks.
+
+  Rendered absolutely inside the hero, behind the copy. Pills only show at xl+;
+  below that, particles enter and leave from virtual points at the edges.
+  The center is faded with a mask so the headline stays readable.
+  Honors prefers-reduced-motion, pauses off-screen, and follows the site theme.
+*/}}
+{{- $agents := slice
+  (dict "name" "Claude Code" "icon" "/integrations/claude.svg"     "x" "3%" "y" "24%" "d" "0s")
+  (dict "name" "Codex"       "icon" "/integrations/openai.svg"     "x" "7%" "y" "36%" "d" "-2s")
+  (dict "name" "Cursor"      "icon" "/integrations/cursor.svg"     "x" "2%" "y" "48%" "d" "-4s")
+  (dict "name" "kagent"      "icon" "/integrations/kubernetes.svg" "x" "6%" "y" "60%" "d" "-1s")
+  (dict "name" "LangGraph"   "icon" "/integrations/langgraph.svg"  "x" "3%" "y" "72%" "d" "-3s")
+}}
+{{- $dests := slice
+  (dict "name" "OpenAI"      "icon" "/integrations/openai.svg"        "x" "3%" "y" "24%" "d" "-1s")
+  (dict "name" "Anthropic"   "icon" "/integrations/anthropic.svg"     "x" "7%" "y" "36%" "d" "-3s")
+  (dict "name" "Gemini"      "icon" "/integrations/google-gemini.svg" "x" "2%" "y" "48%" "d" "-5s")
+  (dict "name" "MCP servers" "icon" "/integrations/mcp.svg"           "x" "6%" "y" "60%" "d" "0s")
+  (dict "name" "A2A agents"  "icon" "/integrations/a2a.svg"           "x" "3%" "y" "72%" "d" "-2s")
+}}
+<div data-flow aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+  <canvas data-flow-canvas class="absolute inset-0 h-full w-full [mask-image:radial-gradient(ellipse_40%_48%_at_50%_50%,rgba(0,0,0,0.15),black_85%)] max-sm:opacity-70 max-sm:[mask-image:radial-gradient(ellipse_75%_38%_at_50%_45%,rgba(0,0,0,0.1),black_100%)]"></canvas>
+
+  {{- range $agents }}
+  <div data-flow-src style="left:{{ .x }};top:{{ .y }};animation-delay:{{ .d }}"
+    class="absolute hidden -translate-y-1/2 animate-float items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-1.5 font-geist-mono text-[11px] uppercase tracking-wider text-neutral-600 shadow-sm backdrop-blur xl:flex dark:border-white/10 dark:bg-white/[0.04] dark:text-neutral-300 dark:shadow-black/40">
+    <img src="{{ .icon }}" alt="" class="h-3.5 w-3.5 opacity-70 brightness-0 dark:opacity-80 dark:invert">{{ .name }}
+  </div>
+  {{- end }}
+
+  {{- range $dests }}
+  <div data-flow-dst style="right:{{ .x }};top:{{ .y }};animation-delay:{{ .d }}"
+    class="absolute hidden -translate-y-1/2 animate-float items-center gap-2 rounded-full border border-violet-500/20 bg-violet-50/70 px-3 py-1.5 font-geist-mono text-[11px] uppercase tracking-wider text-neutral-700 shadow-sm backdrop-blur transition-[border-color] duration-300 xl:flex dark:border-violet-400/20 dark:bg-violet-500/[0.06] dark:text-neutral-200 dark:shadow-black/40">
+    <img src="{{ .icon }}" alt="" class="h-3.5 w-3.5 opacity-70 brightness-0 dark:opacity-90 dark:invert">{{ .name }}
+  </div>
+  {{- end }}
+</div>
+
+<script>
+(function () {
+  var root = document.querySelector('[data-flow]');
+  if (!root) return;
+  var hero = root.parentElement;
+  var canvas = root.querySelector('[data-flow-canvas]');
+  var ctx = canvas.getContext('2d');
+  var gwEl = hero.querySelector('h1') || hero;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var html = document.documentElement, dark = html.classList.contains('dark');
+  new MutationObserver(function () { dark = html.classList.contains('dark'); }).observe(html, { attributes: true, attributeFilter: ['class'] });
+
+  // [dark, light] palettes as "r,g,b"
+  var C = {
+    ok:   ['212,212,216', '82,82,91'],
+    out:  ['196,181,253', '124,58,237'],
+    bad:  ['248,113,113', '220,38,38'],
+    pii:  ['251,191,36',  '217,119,6']
+  };
+  function col(k) { return C[k][dark ? 0 : 1]; }
+
+  var W = 0, H = 0, dpr = 1, srcs = [], dsts = [], dstEls = [], gw = null;
+  function visible(el) { return el.offsetParent !== null; }
+  function edgePoints(x) { var a = [], c = gw ? gw.y : H * 0.45; for (var i = 0; i < 6; i++) a.push({ x: x, y: c + H * (i - 2.5) * 0.07 }); return a; }
+  function layout() {
+    var r = root.getBoundingClientRect();
+    W = r.width; H = r.height; dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var g = gwEl.getBoundingClientRect();
+    gw = { x: g.left - r.left + g.width / 2, y: g.top - r.top + g.height / 2, r: Math.min(60, g.width * 0.08) };
+    var se = [].filter.call(root.querySelectorAll('[data-flow-src]'), visible);
+    dstEls = [].filter.call(root.querySelectorAll('[data-flow-dst]'), visible);
+    srcs = se.length ? se.map(function (e) { var b = e.getBoundingClientRect(); return { x: b.right - r.left + 4, y: b.top - r.top + b.height / 2 }; }) : edgePoints(-10);
+    dsts = dstEls.length ? dstEls.map(function (e) { var b = e.getBoundingClientRect(); return { x: b.left - r.left - 4, y: b.top - r.top + b.height / 2 }; }) : edgePoints(W + 10);
+    ctx.font = (W < 640 ? 10 : 12) + 'px "Geist Mono", ui-monospace, monospace';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  }
+
+  function bez(a, b, c, d, t) { var u = 1 - t; return u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d; }
+  var OK = 'abcdefghijklmnopqrstuvwxyz{}[]:"._/<>=01', BAD = 'ignorepreviousinstructions', PII = '@0123456789-.';
+  function pick(s) { return s.charAt((Math.random() * s.length) | 0); }
+
+  var parts = [];
+  function spawn(kind, si, di, jit) {
+    if (!srcs.length || !dsts.length) return;
+    si = si == null ? (Math.random() * srcs.length) | 0 : si;
+    di = di == null ? (Math.random() * dsts.length) | 0 : di;
+    parts.push({ si: si, di: di, t: 0, phase: 1, kind: kind,
+      g: pick(kind === 'bad' ? BAD : kind === 'pii' ? PII : OK),
+      j: (Math.random() - 0.5) * (jit == null ? 90 : jit), k: (Math.random() - 0.5) * 40,
+      dur: 3 + Math.random() * 1.6, a: 0.3 + Math.random() * 0.5 });
+  }
+  function flashDst(i) {
+    var de = dstEls[i]; if (!de || Math.random() > 0.15) return;
+    de.style.borderColor = 'rgba(139,92,246,0.6)'; setTimeout(function () { de.style.borderColor = ''; }, 260);
+  }
+
+  var acc = 0, nextBurst = 2.5, burstKind = 'bad', last = 0, running = false, raf = 0;
+  function step(dt) {
+    acc += dt * (W < 640 ? 16 : 34);
+    while (acc > 1) { spawn(Math.random() < 0.05 ? 'pii' : 'ok'); acc -= 1; }
+    nextBurst -= dt;
+    if (nextBurst <= 0 && srcs.length) {
+      var si = (Math.random() * srcs.length) | 0, di = (Math.random() * dsts.length) | 0, kind = burstKind;
+      for (var n = 0; n < 16; n++) setTimeout(function () { spawn(kind, si, di, 18); }, n * 30);
+      burstKind = burstKind === 'bad' ? 'pii' : 'bad';
+      nextBurst = 3.5 + Math.random() * 2.5;
+    }
+    for (var i = parts.length - 1; i >= 0; i--) {
+      var p = parts[i];
+      if (p.phase === 3) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 50 * dt; p.life -= dt; if (p.life <= 0) parts.splice(i, 1); continue; }
+      p.t += dt / p.dur;
+      if (p.t >= 1) {
+        if (p.phase === 1) {
+          if (p.kind === 'bad') {
+            var ang = Math.PI + (Math.random() - 0.5) * 2.6, sp = 50 + Math.random() * 110;
+            p.phase = 3; p.x = gw.x - gw.r; p.y = gw.y + p.j * 0.1; p.vx = Math.cos(ang) * sp; p.vy = Math.sin(ang) * sp; p.life = 1;
+            continue;
+          }
+          if (p.kind === 'pii') p.kind = 'masked';
+          p.phase = 2; p.t = 0; p.dur *= 0.9;
+        } else { flashDst(p.di); parts.splice(i, 1); continue; }
+      }
+      var s, e, t = p.t, dx;
+      if (p.phase === 1) {
+        s = srcs[p.si]; if (!s) { parts.splice(i, 1); continue; }
+        e = { x: gw.x - gw.r, y: gw.y }; dx = e.x - s.x;
+        p.x = bez(s.x, s.x + dx * 0.55, e.x - dx * 0.35, e.x, t);
+        p.y = bez(s.y, s.y, e.y, e.y, t) + p.j * Math.pow(1 - t, 1.5) * Math.min(1, t * 5);
+      } else {
+        e = dsts[p.di]; if (!e) { parts.splice(i, 1); continue; }
+        s = { x: gw.x + gw.r, y: gw.y }; dx = e.x - s.x;
+        p.x = bez(s.x, s.x + dx * 0.35, e.x - dx * 0.55, e.x, t);
+        p.y = bez(s.y, s.y, e.y, e.y, t) + p.k * Math.sin(Math.PI * t);
+      }
+    }
+    if (parts.length > 900) parts.splice(0, parts.length - 900);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i], a = p.a, c;
+      if (p.phase === 3) { c = col('bad'); a = Math.max(0, p.life); }
+      else if (p.phase === 1) {
+        c = col(p.kind === 'bad' ? 'bad' : p.kind === 'pii' ? 'pii' : 'ok');
+        a *= Math.min(1, p.t * 4) * (p.kind === 'ok' ? 0.75 : 1);
+      } else {
+        c = col(p.kind === 'masked' ? 'pii' : 'out');
+        a *= Math.min(1, (1 - p.t) * 5);
+      }
+      ctx.fillStyle = 'rgba(' + c + ',' + a.toFixed(3) + ')';
+      if (p.kind === 'masked') ctx.fillRect(p.x - 3, p.y - 4, 6, 8);
+      else if (p.phase === 2 && i % 3 === 0) ctx.fillRect(p.x - 1, p.y - 1, 2, 2);
+      else ctx.fillText(p.g, p.x, p.y);
+    }
+  }
+
+  function frame(ts) {
+    var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts;
+    step(dt); draw();
+    if (running) raf = requestAnimationFrame(frame);
+  }
+  function start() { if (running || reduce) return; running = true; last = 0; raf = requestAnimationFrame(frame); }
+  function stop() { running = false; cancelAnimationFrame(raf); }
+
+  function init() {
+    layout();
+    if (reduce) { for (var i = 0; i < 240; i++) step(1 / 30); draw(); return; }
+    for (var k = 0; k < 120; k++) step(1 / 30);   // prefill so the hero never starts empty
+    new IntersectionObserver(function (en) { en[0].isIntersecting ? start() : stop(); }).observe(root);
+    document.addEventListener('visibilitychange', function () { document.hidden ? stop() : start(); });
+  }
+  var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(layout, 150); });
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(init);
+})();
+</script>

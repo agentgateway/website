@@ -63,11 +63,16 @@ module.exports = {
                     from: { opacity: '0', transform: 'translateY(16px)' },
                     to: { opacity: '1', transform: 'translateY(0)' },
                 },
+                float: {
+                    '0%, 100%': { transform: 'translate(0, 0)' },
+                    '50%': { transform: 'translate(3px, -6px)' },
+                },
             },
             animation: {
                 marquee: 'marquee 45s linear infinite',
                 'word-in': 'word-in 600ms cubic-bezier(0.22, 1, 0.36, 1) both',
                 'fade-up': 'fade-up 900ms cubic-bezier(0.22, 1, 0.36, 1) both',
+                float: 'float 6s ease-in-out infinite',
             }
         },
     },
