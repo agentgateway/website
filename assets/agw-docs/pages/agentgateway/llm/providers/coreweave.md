@@ -2,13 +2,14 @@ Configure [CoreWeave Serverless Inference](https://docs.coreweave.com/products/i
 
 You can connect to CoreWeave with an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} or an {{< reuse "agw-docs/snippets/backend.md" >}}. The `CoreWeave` model preset sends Chat Completions requests to `https://api.inference.wandb.ai/v1`. Agentgateway converts Messages and Responses requests to Chat Completions before it sends them to CoreWeave. The {{< reuse "agw-docs/snippets/backend.md" >}} approach sends Chat Completions requests only.
 
+For translated Responses requests, include the conversation history in `input` on each turn. Use `/v1/chat/completions` for image inputs because Responses conversion drops images.
+
 CoreWeave model names use the Hugging Face `<vendor>/<model>` format, such as `meta-llama/Llama-3.1-8B-Instruct`. LoRA adapters use a `wandb-artifact:///<team>/<project>/<artifact-name>:<alias-or-version>` URI as the model name.
 
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 2. To use the {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} approach, allow the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` route kind on the `http` listener of the `agentgateway-proxy` Gateway. For the steps, see [Enable LLM serving on a listener]({{< link-hextra path="/documentation/llm/models/serve/#enable-llm-serving-on-a-listener" >}}).
-3. Optional: Find the CoreWeave team and project to attribute usage to. CoreWeave reads the team and project from the `OpenAI-Project` request header, in the `<team>/<project>` format. If you do not send this header, CoreWeave assigns usage to your default team and a project named `inference`.
 
 ## Set up provider credentials
 
@@ -63,11 +64,6 @@ The models attach directly to the Gateway listener, so you do not create an {{< 
        auth:
          secretRef:
            name: coreweave-secret
-       headers:
-         request:
-           set:
-           - name: OpenAI-Project
-             value: my-team/my-project
    ---
    apiVersion: agentgateway.dev/v1alpha1
    kind: AgentgatewayModel
@@ -87,11 +83,6 @@ The models attach directly to the Gateway listener, so you do not create an {{< 
        auth:
          secretRef:
            name: coreweave-secret
-       headers:
-         request:
-           set:
-           - name: OpenAI-Project
-             value: my-team/my-project
    EOF
    ```
 
@@ -102,7 +93,6 @@ The models attach directly to the Gateway listener, so you do not create an {{< 
    | `spec.match.model` | The model name that clients send in requests. The model forwards the same name to CoreWeave. The `wandb-artifact:///my-team/my-project/*` pattern matches every LoRA artifact URI in the `my-team/my-project` project. |
    | `spec.provider` | The `CoreWeave` preset. The preset supplies the default URL, `https://api.inference.wandb.ai/v1`, and the Chat Completions request format. |
    | `spec.policies.auth.secretRef` | The Secret that holds your CoreWeave API key. |
-   | `spec.policies.headers.request.set` | Optional. Sets the `OpenAI-Project` header to the CoreWeave team and project, in the `<team>/<project>` format, that CoreWeave assigns usage to. |
 
 2. Send a Chat Completions request to the `meta-llama/Llama-3.1-8B-Instruct` model.
 
@@ -128,6 +118,18 @@ The models attach directly to the Gateway listener, so you do not create an {{< 
    ```
    {{% /tab %}}
    {{< /tabs >}}
+
+## Attribute usage to a Forge project
+
+By default, CoreWeave attributes usage to the `inference` project in your default team. To attribute usage to a different project, add the following under `spec.policies` in the model resource and replace `my-team/my-project` with your Forge team and project.
+
+```yaml
+headers:
+  request:
+    set:
+    - name: OpenAI-Project
+      value: my-team/my-project
+```
 
 ## Serve a custom LoRA adapter {#lora}
 
@@ -181,7 +183,7 @@ The built-in model catalog includes prices for the CoreWeave base models. The ca
 
 ## Response settings and prefix caching {#response-settings}
 
-Agentgateway forwards the CoreWeave [response settings](https://docs.coreweave.com/products/inference/serverless/response-settings/json-mode) to CoreWeave without changes. These settings include JSON mode and structured output (`response_format`), tool calling (`tools` and `tool_choice`), and streaming (`stream`). For streaming requests, agentgateway sets `stream_options.include_usage` so that it can record token usage.
+For Chat Completions requests, agentgateway forwards the CoreWeave [response settings](https://docs.coreweave.com/products/inference/serverless/response-settings/json-mode), including JSON mode and structured output (`response_format`), tool calling (`tools` and `tool_choice`), and streaming (`stream`). For streaming requests, agentgateway sets `stream_options.include_usage` so that it can record token usage.
 
 CoreWeave caches prompt prefixes automatically on supported models. When a response reuses the cache, CoreWeave reports the cached tokens in `usage.prompt_tokens_details.cached_tokens`. Agentgateway records these tokens as cache reads and uses the cache read price from the model catalog to compute the cost.
 
