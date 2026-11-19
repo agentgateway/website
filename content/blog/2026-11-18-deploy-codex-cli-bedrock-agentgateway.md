@@ -4,6 +4,7 @@ category: "Tutorial"
 toc: true
 publishDate: 2026-11-18
 author: "Sebastian Maniak"
+image: "img/blog/codex-bedrock-agentgateway/cover.png"
 description: "Run OpenAI's Codex CLI against an OpenAI model hosted on Amazon Bedrock, with open source agentgateway on a kind cluster in the middle. The gateway holds the Bedrock key, publishes one model name, logs every call with tokens and cost to Postgres, and fronts an MCP server. Includes every manifest, the Codex profile, and the things that did not work the first time."
 ---
 

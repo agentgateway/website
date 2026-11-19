@@ -1,6 +1,7 @@
 {{- /*
   Shortcode: lp-list
   Renders a list of child pages as styled article cards showing the date, author, title, summary, and a "Read full article" link.
+  A page that sets `image` in its front matter (a path under assets/, such as img/blog/my-post/cover.png) gets that image at the top of its card.
   Includes click-to-filter category pills above the grid.
 
   Parameters:
@@ -63,6 +64,17 @@
         class="blog-card group flex flex-col h-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-2xl p-6 md:p-7 hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-[0_20px_60px_-15px_rgba(139,92,246,0.4)] transition-all duration-300 hover:scale-[1.01] text-left"
         data-category="{{ $cat }}"
       >
+
+        <!-- Cover image (optional): set `image` in front matter to a path under assets/ -->
+        {{ $href := .RelPermalink }}
+        {{ with .Params.image }}
+          {{ with resources.Get . }}
+            {{ $cover := .Resize "800x webp" }}
+        <a href="{{ $href }}" class="block mb-5 overflow-hidden rounded-xl" tabindex="-1" aria-hidden="true">
+          <img src="{{ $cover.RelPermalink }}" width="{{ $cover.Width }}" height="{{ $cover.Height }}" alt="" loading="lazy" class="w-full h-auto">
+        </a>
+          {{ end }}
+        {{ end }}
 
         <!-- Category badge -->
         {{ with .Params.category }}
