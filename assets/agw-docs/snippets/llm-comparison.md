@@ -13,7 +13,7 @@ Review the following table to compare agentgateway's support of different LLM pr
 | <img class="provider-icon-invert-dark" src="/integrations/providers/ollama.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> Ollama | ✅ | ✅ | ✅¹ | ✅ | - | ✅² | - |
 | <img class="provider-icon-invert-dark" src="/integrations/providers/baseten.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> Baseten | ✅ | ✅¹ | ✅ | - | - | ✅² | - |
 | <img src="/integrations/providers/cerebras.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> Cerebras | ✅ | ✅¹ | ✅¹ | - | - | ✅² | - |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
-| CoreWeave Serverless Inference | ✅ | ✅¹ | ✅¹ | - | - | ✅² | - |{{< /version >}}
+| <img src="/integrations/providers/coreweave.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> CoreWeave Serverless Inference | ✅ | ✅¹ | ✅¹ | - | - | ✅² | - |{{< /version >}}
 | <img src="/integrations/providers/deepinfra.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> Deepinfra | ✅ | ✅¹ | ✅ | ✅ | - | ✅² | - |
 | <img src="/integrations/providers/deepseek.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> Deepseek | ✅ | ✅¹ | ✅ | - | - | ✅² | - |
 | <img src="/integrations/providers/groq.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> Groq | ✅ | ✅ | ✅¹ | - | - | ✅² | - |

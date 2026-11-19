@@ -832,7 +832,7 @@ Use this approach to select the backend with an HTTPRoute. The examples configur
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 The following providers have their own guides with {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}} preset and {{< reuse "agw-docs/snippets/backend.md" >}} examples.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
 
-- [CoreWeave Serverless Inference]({{< link-hextra path="/integrations/llm/providers/coreweave/" >}})
+- <img src="/integrations/providers/coreweave.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> [CoreWeave Serverless Inference]({{< link-hextra path="/integrations/llm/providers/coreweave/" >}})
 - <img class="provider-icon-invert-dark" src="/integrations/providers/nebius.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> [Nebius Token Factory]({{< link-hextra path="/integrations/llm/providers/nebius/" >}}){{< /version >}}
 - <img src="/integrations/providers/perplexity.svg" alt="" width="20" height="20" style="vertical-align:middle;margin-right:0.4rem;"> [Perplexity]({{< link-hextra path="/integrations/llm/providers/perplexity/" >}})
 {{< /version >}}
