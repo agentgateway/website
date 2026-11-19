@@ -79,19 +79,20 @@ tabs:
     video: ""
     items:
       - title: Analytics
-        body: Tokens, calls, and spend over time, broken down by model, user, group, provider, or user agent.
+        body: Tokens, calls, and spend over time, broken down by model, provider, key, or the agent making the call.
         image: /img/homepage/ui/analytics.webp
         href: /docs/standalone/latest/documentation/llm/observability/
-      - title: Who is calling what
-        body: Group traffic by user agent, user, or group to see which apps, SDKs, and agents drive load, and which ones are erroring.
+      - title: Every agent, by name
+        body: The gateway recognizes the harness behind each call, so you can see how much traffic comes from Claude Code, Codex, Cursor, Goose, kagent, or your own agents, and which ones are erroring.
         image: /img/homepage/ui/analytics-users.webp
         href: /docs/standalone/latest/documentation/llm/observability/
-      - title: Request logs
-        body: Every LLM call with status, model, duration, input and output tokens, cache hits, and cost.
+      - title: Live request logs
+        body: Stream every LLM call as it happens, with model, latency, tokens, cache hit rate, and cost. Blocked prompt injections and exhausted budgets show up right next to successful calls.
         image: /img/homepage/ui/logs.webp
+        video: /videos/homepage/logs-live.mp4
         href: /docs/standalone/latest/documentation/llm/observability/
       - title: Full payloads on demand
-        body: Expand any call to inspect the request and response bodies, headers, and the key that sent it.
+        body: Expand any call to see the request and response, the cached versus uncached token split, the client and key that sent it, and what each guardrail did.
         image: /img/homepage/ui/log-detail.webp
         href: /docs/standalone/latest/documentation/llm/observability/
 
