@@ -4,6 +4,7 @@ category: "Tutorial"
 toc: true
 publishDate: 2026-11-19
 author: "Sebastian Maniak"
+image: "img/blog/codex-entra-id-agentgateway/cover.png"
 description: "Make Codex CLI sign in with Microsoft Entra ID before it can reach a model or an MCP server through open source agentgateway. Only members of one Entra group get in, and every prompt is logged with the name of the person who sent it. Includes the Entra app registration, the gateway policies, the Codex profile, and the errors I hit on the way."
 ---
 
