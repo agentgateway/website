@@ -244,6 +244,17 @@ params:
       linkVersion: "latest"
       sections: ["kubernetes", "standalone"]
 
+  # "Previous releases" entry at the bottom of the version dropdown. Older
+  # versions are not kept as live doc trees; their docs are archived as PDFs in
+  # the docs-pdfs releases, and this link filters that list to agentgateway OSS.
+  # The query matches words in release names, not tags. It rides on
+  # `relatedDocs` because that is the extras hook for a dropdown entry with a
+  # fixed URL. No `productName`, so no group header renders.
+  relatedDocs:
+    - versions:
+        - label: "Previous releases"
+          url: "https://github.com/solo-io/docs-pdfs/releases?q=agentgateway+OSS&expanded=true"
+
   # Section registry, alphabetical. A section exists because it is a key here.
   # See docs-theme-extras USAGE.md, "Versions and sections".
   sections:
