@@ -135,6 +135,29 @@ CoreWeave Serverless Inference can serve a LoRA adapter on top of a supported ba
 
 The built-in model catalog includes prices for the CoreWeave base models. The catalog does not include LoRA artifact URIs, so agentgateway does not compute a cost for LoRA requests unless you add the URIs to a custom model catalog.
 
+## Response settings and prefix caching {#response-settings}
+
+Agentgateway forwards the CoreWeave [response settings](https://docs.coreweave.com/products/inference/serverless/response-settings/json-mode) to CoreWeave without changes. These settings include JSON mode and structured output (`response_format`), tool calling (`tools` and `tool_choice`), and streaming (`stream`). For streaming requests, agentgateway sets `stream_options.include_usage` so that it can record token usage.
+
+CoreWeave caches prompt prefixes automatically on supported models. When a response reuses the cache, CoreWeave reports the cached tokens in `usage.prompt_tokens_details.cached_tokens`. Agentgateway records these tokens as cache reads and uses the cache read price from the model catalog to compute the cost.
+
+CoreWeave can reuse a cached prefix for any request that has the same prefix and the same `cache_salt` value. All requests through agentgateway use the same CoreWeave API key. To keep the cache of one caller separate from the cache of other callers, set `cache_salt` for each caller. Use a final transformation, so that agentgateway sets `cache_salt` after it converts Messages and Responses requests to Chat Completions. A transformation that runs before the conversion does not keep `cache_salt`.
+
+The following example sets `cache_salt` from the `sub` claim of the caller's JWT. For the steps to configure JWT authentication, see [JWT authentication]({{< link-hextra path="/documentation/configuration/security/authentication/jwt-authn/" >}}). If you use virtual keys, you can use `apiKey.user` instead.
+
+```yaml
+llm:
+  models:
+  - name: "coreweave/*"
+    provider: coreweave
+    params:
+      apiKey: "$COREWEAVE_API_KEY"
+    transformation:
+      model: llmRequest.model.stripPrefix("coreweave/")
+    finalTransformation:
+      cache_salt: '"tenant-" + jwt.sub'
+```
+
 ## Use a custom provider in earlier versions {#custom-provider}
 
 Versions of agentgateway before the `coreweave` provider was added can connect to CoreWeave Serverless Inference with a [custom provider]({{< link-hextra path="/integrations/llm/providers/custom/" >}}). Declare only the `completions` format, because CoreWeave serves only the Chat Completions API.
