@@ -15,6 +15,8 @@ You can layer multiple protection mechanisms to create comprehensive guardrail p
 - **External moderation**: Leverage built-in model moderation endpoints and cloud provider-specific guardrails for advanced content filtering
 - **Custom webhooks**: Integrate your own guardrail logic for specialized requirements
 
+Azure AI Content Safety guardrails are available only in the [standalone binary](/docs/standalone/main/documentation/llm/prompt-guards/azure-content-safety/). The Kubernetes custom resources have no Azure guard.
+
 ## How guardrails works
 
 Agentgateway checks for content safety in the request and response paths. You can configure multiple prompt guards that run in sequence, allowing you to combine different detection methods.
