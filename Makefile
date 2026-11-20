@@ -131,23 +131,14 @@ PREVIEW ?= $(if $(CF_PAGES),$(filter-out main,$(CF_PAGES_BRANCH)))
 # listed version when it also changes shared files), without the search index. Try it locally with PREVIEW=1 CF_PAGES_BRANCH=pr-tracker-x.
 PR_TRACKER_PREVIEW ?= $(if $(PREVIEW),$(filter pr-tracker-%,$(CF_PAGES_BRANCH)))
 
-# Change highlights (docs-theme-extras v0.4.0+): a preview, and the local
-# servers, mark the text the branch adds or removes compared with main. The
-# script that writes what the overlay shows, static/_extras/changes.json (a
-# folder that ignores itself in git), ships in the docs-theme-extras module, so
-# it runs from the pinned version. CHANGES_SCRIPT is empty when the pinned
-# version has no script, and every use below then does nothing.
-#
-# A preview build runs in Hugo's production environment, where the overlay is
-# off, so `build` turns it on with HUGO_PARAMS_THEMEEXTRAS_CHANGEHIGHLIGHTS on
-# previews only. Production (main) never loads it. The manifest step can never
-# fail the build: Cloudflare Pages clones only the branch, possibly shallow, so
-# when there is no merge-base with origin/main it compares with origin/main
-# directly, and if even that fails the preview just shows no marks.
-# Every other build deletes static/_extras/ first: Hugo copies static files
-# into every build, so a manifest left by a local `make serve` would otherwise
-# publish the branch's unreleased text. NO_CHANGES=1 skips it everywhere.
-# Looked up once, and only by a target that uses it.
+# Change highlights mark what a branch adds or removes compared with main.
+# They're on in previews and local servers, and off in production. The
+# docs-theme-extras script writes the changes to static/_extras/changes.json.
+# On previews, `build` turns the overlay on with
+# HUGO_PARAMS_THEMEEXTRAS_CHANGEHIGHLIGHTS. If the script can't compare with
+# main, the preview shows no highlights instead of failing. Other builds delete
+# static/_extras/ so that a leftover file from `make serve` never ships.
+# NO_CHANGES=1 turns highlights off everywhere.
 CHANGES_SCRIPT = $(eval CHANGES_SCRIPT := $(if $(NO_CHANGES),,$(shell go mod download -json github.com/solo-io/docs-theme-extras 2>/dev/null | python3 -c "import json,os,sys; p=os.path.join(json.load(sys.stdin)['Dir'],'scripts','changes_manifest.py'); print(p if os.path.exists(p) else '')" 2>/dev/null)))$(CHANGES_SCRIPT)
 CHANGES_OUT = static/_extras/changes.json
 CHANGES_ENV = $(if $(and $(PREVIEW),$(CHANGES_SCRIPT)),HUGO_PARAMS_THEMEEXTRAS_CHANGEHIGHLIGHTS=true )
@@ -178,8 +169,7 @@ NO_SEARCH_ENV = $(if $(NO_SEARCH),HUGO_PARAMS_SEARCH_ENABLE=false )
 local-version-config:
 	@$(if $(FULL),:,python3 scripts/local-version-config.py $(if $(VERSION),--version $(VERSION)))
 
-# The local servers start the change-highlights watcher next to `hugo server`
-# (the overlay is already on there), and stop it when the server stops.
+# The local servers run a watcher that updates the change highlights as you edit.
 CHANGES_WATCH = $(if $(CHANGES_SCRIPT),python3 $(CHANGES_SCRIPT) --out $(CHANGES_OUT) --watch & changes_pid=$$!;,:;)
 CHANGES_STOP = if [ -n "$$changes_pid" ]; then kill $$changes_pid 2>/dev/null; fi
 
