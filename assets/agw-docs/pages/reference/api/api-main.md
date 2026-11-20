@@ -1380,13 +1380,33 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `certificateSource` _[BackendTLSCertificateSource](#backendtlscertificatesource)_ | Source for the gateway's client identity and trust roots (`Inline` default, or `SPIFFE`). |  | Optional: \{\} <br /> |
-| `mtlsCertificateRef` _[LocalSecretObjectRef](#localsecretobjectref) array_ | Enables mutual TLS to the backend using `tls.key` and `tls.crt` from the<br />referenced credential source (defaulting to a Kubernetes `Secret`). An<br />optional `ca.cert`, if present, verifies the server certificate, but<br />`caCertificateRefs` takes priority. If unspecified, no client certificate<br />is used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
+| `mtlsCertificateRef` _[BackendTLSCertificateRef](#backendtlscertificateref) array_ | Enables mutual TLS to the backend using `tls.key` and `tls.crt` from the<br />referenced credential source (defaulting to a Kubernetes `Secret`), or from<br />files on the agentgateway pod (kind `File`). An optional `ca.cert`, if<br />present, verifies the server certificate, but `caCertificateRefs` takes<br />priority. If unspecified, no client certificate is used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
 | `caCertificateRefs` _[LocalCACertificateRef](#localcacertificateref) array_ | CA certificate source to use to verify the server certificate. Omitted kind<br />and `ConfigMap` select a ConfigMap; `Secret` selects a Secret. The bundle is<br />read from the `ca.crt` key unless `key` names a different one. If unset, the<br />system's trusted certificates are used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
 | `insecureSkipVerify` _[InsecureTLSMode](#insecuretlsmode)_ | Originates TLS but skips verification of the backend's certificate<br />WARNING: insecure; only use if the risks are understood<br />Modes:<br />* `All` disables all TLS verification<br />* `Hostname` trusts the CA certificate but ignores hostname/SAN mismatches.<br />  Still insecure; prefer `verifySubjectAltNames` where possible. |  | Optional: \{\} <br /> |
 | `sni` _[SNI](#sni)_ | Server Name Indicator (`SNI`) to use in the TLS<br />handshake. If unset, the `SNI` is automatically set based on the<br />destination hostname. |  | MaxLength: 253 <br />MinLength: 1 <br />Pattern: `^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Optional: \{\} <br /> |
 | `verifySubjectAltNames` _[ShortString](#shortstring) array_ | Subject Alternative Names (`SAN`)<br />to verify in the server certificate.<br />If not present, the destination hostname is automatically used. |  | MaxItems: 16 <br />MaxLength: 256 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `alpnProtocols` _[TinyString](#tinystring)_ | Application-Layer Protocol Negotiation (`ALPN`)<br />value to use in the TLS handshake.<br />If not present, defaults to `["h2", "http/1.1"]`. |  | MaxItems: 16 <br />MaxLength: 64 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `keyExchangeGroups` _[KeyExchangeGroup](#keyexchangegroup) array_ | Ordered list of key exchange groups for a TLS connection.<br />For example: `X25519_MLKEM768,X25519`. |  | Optional: \{\} <br /> |
+
+
+#### BackendTLSCertificateRef
+
+
+
+References the backend mTLS client credential: a same-namespace `Secret` (or custom
+credential via `group`/`kind`), or with kind `File`, files on the agentgateway pod.
+
+
+
+_Appears in:_
+- [BackendTLS](#backendtls)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | Name of the referenced credential. Required unless `kind` is `File`. |  | Optional: \{\} <br /> |
+| `group` _string_ | API group of the referenced credential; empty selects the core API group. |  | Optional: \{\} <br /> |
+| `kind` _string_ | Kind of the referenced credential; empty defaults to `Secret`. `File` reads from `file`. |  | Optional: \{\} <br /> |
+| `file` _[BackendTLSFile](#backendtlsfile)_ | Paths on the agentgateway pod's local filesystem, which must be allowed by the gateway's<br />`fileAccess` config. Required when `kind` is `File`. |  | Optional: \{\} <br /> |
 
 
 #### BackendTLSCertificateSource
@@ -1405,6 +1425,25 @@ _Appears in:_
 | --- | --- |
 | `Inline` | BackendTLSCertificateSourceInline uses the inline `mtlsCertificateRef`/`caCertificateRefs`<br />(or the system trust roots when unset). This is the default.<br /> |
 | `SPIFFE` | BackendTLSCertificateSourceSPIFFE sources the gateway's X.509-SVID and trust bundle from<br />the SPIFFE Workload API (mutual TLS).<br /> |
+
+
+#### BackendTLSFile
+
+
+
+BackendTLSFile references client certificate, key and CA bundle files on the agentgateway
+pod's local filesystem. The controller does not read them; it forwards the paths to the gateway.
+
+
+
+_Appears in:_
+- [BackendTLSCertificateRef](#backendtlscertificateref)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `cert` _[LongString](#longstring)_ | Path to the client certificate file. |  | MaxLength: 1024 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `key` _[LongString](#longstring)_ | Path to the client certificate's private key file. |  | MaxLength: 1024 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `root` _[LongString](#longstring)_ | Path to a CA bundle file used to verify the backend's certificate.<br />If unset, the system's trusted certificates are used. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### BackendTunnel
@@ -3607,7 +3646,6 @@ _Appears in:_
 - [APIKeyAuthentication](#apikeyauthentication)
 - [AwsAuth](#awsauth)
 - [AzureAuth](#azureauth)
-- [BackendTLS](#backendtls)
 - [JwtSignAuth](#jwtsignauth)
 
 | Field | Description | Default | Validation |
@@ -4099,6 +4137,7 @@ _Appears in:_
 | `Perplexity` |  |
 | `Typesafe` |  |
 | `Nebius` |  |
+| `CoreWeave` |  |
 | `Custom` |  |
 
 
