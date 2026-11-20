@@ -11,7 +11,6 @@
 #   make fetch-test-artifacts-serve   Use latest CI test results and run the site
 #   make test-run-serve              Run doc tests locally, then run the site
 #   make fetch-test-artifacts-build  Use latest CI test results and build for prod
-#   make fetch-test-artifacts-build-preview  Same, as a preview with change highlights
 #
 # First-time setup:
 #   make deps              Install Python deps (e.g. for doc test scripts)
@@ -123,7 +122,8 @@ check-node-deps:
 # On a Cloudflare Pages preview (CF_PAGES is set and the branch isn't main), skip
 # the version trees that aren't in hugo.yaml's `params.versions`, unless the
 # branch changed one of them. Production (main) and plain local builds still
-# build everything. PREVIEW=1 tries the preview build locally.
+# build everything. To try a preview build locally, including change
+# highlights, run `make fetch-test-artifacts-build PREVIEW=1`.
 PREVIEW ?= $(if $(CF_PAGES),$(filter-out main,$(CF_PAGES_BRANCH)))
 
 # pr-tracker-* branches come in batches and fill the Cloudflare build queue, so
@@ -372,18 +372,9 @@ playwright-update-images: playwright-install
 # One-step targets that chain: test data → inject status → build or serve.
 #----------------------------------------------------------------------------------
 
-# Fetch CI test results, inject status, build site for production. On a
-# Cloudflare Pages preview branch this is already a preview build (see PREVIEW).
+# Fetch CI test results, inject status, build site for production
 .PHONY: fetch-test-artifacts-build
 fetch-test-artifacts-build: test-artifacts-fetch test-status build
-
-# Same, but always a preview build, on any branch: skips the unlisted version
-# trees and turns on change highlights (what this branch adds or removes,
-# compared with main). Use it to try a preview locally, or as an explicit
-# preview build command.
-.PHONY: fetch-test-artifacts-build-preview
-fetch-test-artifacts-build-preview:
-	$(MAKE) fetch-test-artifacts-build PREVIEW=1
 
 # Run doc tests, inject status, build site
 .PHONY: test-run-build
