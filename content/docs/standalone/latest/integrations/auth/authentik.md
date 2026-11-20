@@ -39,7 +39,7 @@ authentik needs PostgreSQL and Redis alongside its server and worker, so run the
    ```yaml
    services:
      postgresql:
-       image: docker.io/library/postgres:16-alpine
+       image: docker.io/library/postgres:19-alpine
        container_name: authentik-postgresql
        environment:
          POSTGRES_USER: authentik
@@ -56,7 +56,7 @@ authentik needs PostgreSQL and Redis alongside its server and worker, so run the
        container_name: authentik-redis
 
      server:
-       image: ghcr.io/goauthentik/server:2026.5.6
+       image: ghcr.io/goauthentik/server:2026.8.6
        container_name: authentik-server
        command: server
        environment: &ak-env
@@ -79,7 +79,7 @@ authentik needs PostgreSQL and Redis alongside its server and worker, so run the
            condition: service_started
 
      worker:
-       image: ghcr.io/goauthentik/server:2026.5.6
+       image: ghcr.io/goauthentik/server:2026.8.6
        container_name: authentik-worker
        command: worker
        environment: *ak-env

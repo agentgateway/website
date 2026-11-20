@@ -332,7 +332,7 @@ The following example runs the `ratelimit` server and its Redis backing store lo
    # docker-compose.yaml
    services:
      redis:
-       image: redis:7-alpine
+       image: redis:8-alpine
        ports: ["6379:6379"]
 
      ratelimit:

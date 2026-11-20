@@ -48,7 +48,7 @@ spec:
     spec:
       containers:
         - name: mcp-server-everything
-          image: node:20-alpine
+          image: node:26-alpine
           command: ["npx"]
           args: ["-y", "@modelcontextprotocol/server-everything", "streamableHttp"]
           ports:
