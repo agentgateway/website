@@ -290,6 +290,8 @@ Each entry includes the OpenAI model object fields `id`, `object`, `created`, an
 - `capabilities`: Whether the model supports `reasoning`, `structured_outputs`, `tools`, and `temperature`.
 - `supported_parameters`: The request parameters that the model accepts, derived from its limits and capabilities.
 
+Agentgateway looks up catalog metadata by provider and model name. It uses the upstream model when the model overrides it, and otherwise the model name that the client sends. An Azure deployment name that differs from the catalog ID, such as `agw-openai`, gets no metadata. To get metadata, name the deployment after the catalog ID, such as `gpt-4o`. If the model does not override the upstream model, you can also add a model transformation that maps the catalog ID to the deployment name. In either case, you can instead add an `azure` entry for the deployment name, with the metadata fields that you want, such as `limits`, to your own [model catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}).
+
 To return only the first listed models, add the `limit` query parameter. To look up one model by ID, send a request to `/v1/models/<model-id>` or `/models/<model-id>`.
 
 ```sh

@@ -279,6 +279,8 @@ Cost calculations match this value to catalog tiers with a `serviceTier` field. 
 
 Unlisted providers or tiers leave `llm.serviceTier` unset.
 
+Agentgateway reads the tier of every Azure response with the Azure tier names in this table, including responses from Claude models on Azure AI Foundry. If such a response reports the Anthropic `standard` tier, no Azure tier name matches. `llm.serviceTier` stays unset, and the request uses `standard` rates.
+
 For Bedrock tier requests and the response header used to detect the tier, see [Service tier]({{< link-hextra path="/integrations/llm/providers/bedrock/#service-tier" >}}).
 
 To record the tier in the access log, follow these steps.

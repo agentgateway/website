@@ -1,6 +1,6 @@
 ## About
 
-The `azure` backend authentication method gets a Microsoft Entra ID token and writes it to the `Authorization` header of every request that the gateway forwards to the backend. The gateway requests the token for the Azure Cognitive Services scope, or for the Azure AI scope when the backend is an Azure AI Foundry endpoint, and it caches the credential after the first successful use.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} To authenticate to Microsoft Graph or another Microsoft Entra-protected backend, configure the token scopes.{{< /version >}}
+The `azure` backend authentication method gets a Microsoft Entra ID token and writes it to the `Authorization` header of every request that the gateway forwards to the backend. The gateway requests the token for the Azure Cognitive Services scope, or for the Azure AI scope when the backend is an Azure AI Foundry endpoint, and it caches the credential after the first successful use.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} Decisions and SystemOne requests to an Azure AI Foundry resource go to `{resourceName}.cognitiveservices.azure.com`. When you do not set `scopes`, the gateway requests the Azure Cognitive Services scope, `https://cognitiveservices.azure.com/.default`, for them.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} To authenticate to Microsoft Graph or another Microsoft Entra-protected backend, configure the token scopes.{{< /version >}}
 
 The method has two forms.
 
@@ -8,6 +8,10 @@ The method has two forms.
 * **Explicit.** You name one credential source: a Secret that holds service principal credentials, a managed identity, or a workload identity. Use an explicit source when the gateway must use an identity other than the one that the environment would give it.
 
 At most one credential source may be set. The API server rejects a policy that sets two.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+When you configure a [callout proxy]({{< link-hextra path="/documentation/setup/customize/callout-proxy/" >}}), the gateway sends its Microsoft Entra ID token requests, such as for a client secret or workload identity, through the forward proxy. Token requests to loopback and link-local endpoints, such as the instance metadata endpoint at `169.254.169.254`, [bypass the proxy]({{< link-hextra path="/documentation/setup/customize/callout-proxy/#destinations-that-bypass-the-forward-proxy" >}}).
+{{< /version >}}
 
 ## Before you begin
 
