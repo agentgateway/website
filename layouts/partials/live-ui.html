@@ -1,0 +1,83 @@
+{{- /*
+  Interactive agentgateway UI on the homepage, in the spirit of the kagent.dev live demo.
+
+  The frame embeds the real agentgateway admin UI from static/live-ui/, built from the
+  agentgateway release by scripts/build-live-ui.sh. A mock backend inside that page
+  (scripts/live-ui/mock-api.js) serves sample data and live traffic in the browser, so
+  visitors can click through every page without a gateway.
+
+  The guided tours (assets/js/live-ui.js) navigate the embedded UI and highlight parts of
+  it. The UI must be same-origin so the tour can read element positions, so the frame's
+  address is set by the script from the page's own host (data-src), not by src, which
+  canonifyURLs would rewrite to the configured baseURL host. The tour
+  picker is a side panel on the right that slides open, collapses to a tab, and hides
+  while a tour runs.
+
+  Light and dark: the window chrome and tour UI use dark: variants, and the script keeps
+  the embedded UI's own theme in step with the site's theme toggle.
+*/ -}}
+{{- $tours := slice
+  (dict "id" "general" "name" "General overview" "steps" 8 "desc" "Models, keys, guardrails, logs, analytics, and MCP." "icon" "M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18M12 3a9 9 0 1 1 0 18 9 9 0 0 1 0-18z")
+  (dict "id" "build" "name" "Build an LLM gateway" "steps" 8 "desc" "Add models, failover, keys, and guardrails, then send a request." "icon" "M4 7h16M4 12h16M4 17h10")
+  (dict "id" "cost" "name" "Cost & analytics" "steps" 7 "desc" "See spend by model, user, and harness, and set budgets." "icon" "M4 20V10M10 20V4M16 20v-7M22 20H2")
+-}}
+<section id="live-ui" class="relative mx-auto max-w-7xl px-4 pb-28 sm:px-6" aria-label="Interactive agentgateway UI demo">
+  <div aria-hidden="true" class="pointer-events-none absolute inset-x-16 -bottom-4 top-24 -z-10 rounded-[48px] bg-violet-500/20 blur-3xl dark:bg-violet-600/25"></div>
+
+  <div data-lu class="relative overflow-hidden rounded-2xl border border-black/10 bg-white font-display text-[13px] text-neutral-800 shadow-2xl shadow-violet-950/15 dark:border-white/10 dark:bg-[#07080c] dark:text-neutral-200 dark:shadow-violet-950/30">
+    <!-- window chrome -->
+    <div class="flex items-center gap-3 border-b border-black/[0.07] bg-neutral-100 px-4 py-2.5 dark:border-white/[0.07] dark:bg-[#0b0d12]">
+      <div class="flex gap-1.5" aria-hidden="true"><span class="h-3 w-3 rounded-full bg-[#ff5f57]"></span><span class="h-3 w-3 rounded-full bg-[#febc2e]"></span><span class="h-3 w-3 rounded-full bg-[#28c840]"></span></div>
+      <div class="ml-2 hidden min-w-0 flex-1 justify-center sm:flex">
+        <span class="truncate rounded-md bg-black/[0.05] px-3 py-1 font-geist-mono text-[11px] text-neutral-500 dark:bg-white/[0.05] dark:text-neutral-400">localhost:15000<span data-lu-path>/ui/</span></span>
+      </div>
+      <div class="ml-auto flex items-center gap-2 sm:ml-0">
+        <span class="hidden items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-300 md:inline-flex"><span class="relative flex h-1.5 w-1.5"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60"></span><span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400"></span></span>Live sample traffic</span>
+        <button type="button" data-lu-panel-toggle aria-controls="lu-tours" aria-expanded="false" class="inline-flex items-center gap-2 rounded-full bg-violet-600 px-4 py-1.5 text-[13px] font-medium text-white shadow-lg shadow-violet-900/20 transition hover:bg-violet-500 dark:bg-violet-500 dark:shadow-violet-900/40 dark:hover:bg-violet-400"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true"><path d="M5 3l14 9-14 9V3z"/></svg>Guided tours</button>
+      </div>
+    </div>
+
+    <div data-lu-stage class="relative h-[640px] lg:h-[760px]">
+      <iframe data-lu-frame data-src="/live-ui/" title="agentgateway UI (interactive demo with sample data)" loading="lazy" class="absolute inset-0 h-full w-full border-0 bg-white dark:bg-[#07080c]"></iframe>
+
+      <!-- tour: highlight ring + popover -->
+      <div data-lu-ring class="pointer-events-none absolute z-20 hidden rounded-lg ring-2 ring-violet-500 ring-offset-2 ring-offset-white transition-all duration-300 dark:ring-violet-400/80 dark:ring-offset-[#07080c]"></div>
+      <div data-lu-pop role="dialog" aria-live="polite" aria-label="Tour" class="absolute z-30 hidden w-[calc(100%-2rem)] max-w-xs rounded-xl border border-violet-500/30 bg-white/95 p-4 shadow-2xl shadow-violet-950/20 backdrop-blur transition-[top,left] duration-300 dark:border-violet-400/30 dark:bg-[#12101c]/95 dark:shadow-black/60">
+        <div class="flex items-center justify-between"><span data-lu-step class="text-[11px] text-violet-600 dark:text-violet-300"></span><button type="button" data-lu-tour-end class="text-neutral-400 hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-white" aria-label="Close tour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="h-3.5 w-3.5" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+        <div data-lu-ttitle class="mt-1 text-[14px] font-semibold text-neutral-900 dark:text-white"></div>
+        <p data-lu-tbody class="mt-1 text-[12.5px] leading-relaxed text-neutral-600 dark:text-neutral-300"></p>
+        <div class="mt-3 flex items-center justify-between"><button type="button" data-lu-prev class="text-[12px] text-neutral-500 hover:text-neutral-900 disabled:invisible dark:text-neutral-400 dark:hover:text-white">← Back</button><button type="button" data-lu-next class="rounded-md bg-violet-600 px-3 py-1 text-[12px] font-medium text-white hover:bg-violet-500 dark:bg-violet-500 dark:hover:bg-violet-400">Next</button></div>
+      </div>
+
+      <!-- tour picker: side panel, collapsed to a tab when closed -->
+      <button type="button" data-lu-tab data-open="false" aria-controls="lu-tours" class="absolute right-0 top-1/2 z-30 flex -translate-y-1/2 items-center gap-2 rounded-l-xl border border-r-0 border-violet-500/30 bg-white/95 px-2 py-4 text-[12px] font-medium text-violet-700 shadow-xl shadow-violet-950/15 backdrop-blur transition hover:bg-violet-50 data-[open=true]:hidden dark:border-violet-400/30 dark:bg-[#12141b]/95 dark:text-violet-200 dark:shadow-black/60 dark:hover:bg-violet-500/20 [writing-mode:vertical-rl]"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3.5 w-3.5 rotate-90" aria-hidden="true"><path d="M5 3l14 9-14 9V3z"/></svg>Guided tours</button>
+      <aside id="lu-tours" data-lu-panel data-open="false" aria-label="Guided tours" class="absolute inset-y-0 right-0 z-30 flex w-full translate-x-full flex-col border-l border-violet-500/20 bg-white/[0.97] shadow-[-24px_0_60px_-24px_rgba(46,16,101,0.25)] backdrop-blur transition-transform duration-500 ease-out data-[open=true]:translate-x-0 dark:border-violet-400/20 dark:bg-[#101218]/[0.97] dark:shadow-[-24px_0_60px_-20px_rgba(0,0,0,0.8)] sm:w-[21rem]">
+        <div class="flex items-start gap-3 border-b border-black/[0.07] px-5 py-4 dark:border-white/[0.07]">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 text-[15px] font-semibold text-neutral-900 dark:text-white"><span class="relative flex h-2 w-2 shrink-0"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-60"></span><span class="relative inline-flex h-2 w-2 rounded-full bg-violet-500 dark:bg-violet-400"></span></span>Guided tours</div>
+            <p class="mt-1 text-[12.5px] leading-relaxed text-neutral-500 dark:text-neutral-400">This is the real agentgateway UI with live sample traffic. Click around on your own, or pick a tour.</p>
+          </div>
+          <button type="button" data-lu-panel-close class="ml-auto shrink-0 rounded-md p-1 text-neutral-400 transition hover:bg-black/[0.05] hover:text-neutral-900 dark:text-neutral-500 dark:hover:bg-white/[0.06] dark:hover:text-white" aria-label="Hide tours"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
+        </div>
+        <div class="flex flex-1 flex-col gap-2.5 overflow-y-auto p-4">
+          {{- range $tours }}
+          <button type="button" data-lu-tour-start="{{ .id }}" class="group flex items-start gap-3 rounded-xl border border-black/10 bg-black/[0.02] p-4 text-left transition hover:border-violet-500/50 hover:bg-violet-500/[0.06] dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-violet-400/50 dark:hover:bg-violet-500/10">
+            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-600 transition group-hover:bg-violet-500/20 dark:bg-violet-500/15 dark:text-violet-300 dark:group-hover:bg-violet-500/25"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-[18px] w-[18px]" aria-hidden="true"><path d="{{ .icon }}"/></svg></span>
+            <span class="min-w-0 flex-1">
+              <span class="flex items-center justify-between gap-2"><span class="text-[14px] font-medium text-neutral-900 dark:text-white">{{ .name }}</span><span class="shrink-0 text-[11px] text-neutral-400 dark:text-neutral-500">{{ .steps }} steps</span></span>
+              <span class="mt-1 block text-[12.5px] leading-snug text-neutral-600 dark:text-neutral-400">{{ .desc }}</span>
+              <span class="mt-2 inline-flex items-center gap-1 text-[12px] font-medium text-violet-600 group-hover:text-violet-700 dark:text-violet-300 dark:group-hover:text-violet-200">Start tour<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3 w-3 transition group-hover:translate-x-0.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+            </span>
+          </button>
+          {{- end }}
+        </div>
+        <p class="border-t border-black/[0.07] px-5 py-3 text-[11.5px] text-neutral-500 dark:border-white/[0.07]">Press Esc to leave a tour. Changes you make stay in this tab only.</p>
+      </aside>
+    </div>
+  </div>
+
+  <p class="mx-auto mt-6 max-w-3xl text-center text-[14px] text-neutral-500">This is the agentgateway UI, running on sample traffic in your browser. Click around: send a prompt through a guardrail, call an MCP tool, add a virtual key, and watch logs and spend update. <a href="/docs/standalone/latest/quickstart/" class="text-violet-600 hover:underline dark:text-violet-400">Run it yourself →</a></p>
+
+  {{- $js := resources.Get "js/live-ui.js" | minify | fingerprint }}
+  <script src="{{ $js.RelPermalink }}" defer></script>
+</section>
