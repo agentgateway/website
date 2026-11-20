@@ -454,9 +454,12 @@
   {{- if $isLandingPage -}}
   {{- /* Homepage: flat, full-width bar (logo / centered links / pill CTAs).
          Fixed, transparent at the top; gains a blurred backdrop once scrolled
-         (nav.js toggles .scrolled on the first .navbar). */ -}}
+         (nav.js toggles .scrolled on the first .navbar).
+         The background and blur sit on ::before, not the header: backdrop-filter on the
+         header would make it the containing block for the theme menu (position: fixed),
+         which then opens off screen once the page is scrolled. */ -}}
   <div class="agw-home-nav-wrap fixed inset-x-0 top-0 z-50 hidden lg:block">
-    <header class="navbar group/nav border-b border-transparent transition-colors duration-300 [&.scrolled]:border-black/5 [&.scrolled]:bg-white/75 [&.scrolled]:backdrop-blur-xl dark:[&.scrolled]:border-white/5 dark:[&.scrolled]:bg-black/60">
+    <header class="navbar group/nav relative border-b border-transparent transition-colors duration-300 before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:transition-colors before:duration-300 [&.scrolled]:border-black/5 [&.scrolled]:before:bg-white/75 [&.scrolled]:before:backdrop-blur-xl dark:[&.scrolled]:border-white/5 dark:[&.scrolled]:before:bg-black/60">
       <div class="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-5 font-display">
         <a href="/" class="flex items-center" aria-label="agentgateway home">
           <img src="/agw-light.svg" alt="agentgateway" class="h-7 w-auto dark:hidden">
