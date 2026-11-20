@@ -152,7 +152,7 @@ params:
       sync: true
 
   theme:
-    default: light
+    default: system
     displayToggle: true
 
   footer:
@@ -184,7 +184,16 @@ params:
     issueRepo: agentgateway/website
 
   llms:
-    docsIntro: agentgateway is an open source proxy and gateway that unifies HTTP, gRPC, LLM, MCP, and A2A traffic in one data plane.
+    # Printed in the root /llms.txt only, after the index sentence and before
+    # the section links. Needs docs-theme-extras with params.llms.rootNote
+    # (solo-io/docs-theme-extras#95).
+    rootNote: >-
+      AI coding assistants can install the Agentgateway skills with
+      `npx skills add https://agentgateway.dev`; choose `agentgateway-oss-standalone`
+      for standalone configuration, including Kubernetes hosting, or
+      `agentgateway-oss-kubernetes` for the controller and Gateway API.
+      [Skill index](https://agentgateway.dev/.well-known/agent-skills/index.json).
+    docsIntro: agentgateway is an open source proxy and gateway that unifies HTTP, gRPC, LLM, MCP, and A2A traffic in one data plane. AI agents can install skills that set up agentgateway with `npx skills add https://agentgateway.dev` (index at https://agentgateway.dev/.well-known/agent-skills/index.json).
 
   editURL:
     enable: false
@@ -235,12 +244,12 @@ params:
   # are still written out, because omitting `sections` means "every section" and
   # would silently claim any section added later ships these too.
   versions:
-    - version: "1.7.x"
+    - version: "1.8.x"
       dropdown: "main"
       linkVersion: "main"
       sections: ["kubernetes", "standalone"]
-    - version: "1.6.x"
-      dropdown: "1.6 (latest)"
+    - version: "1.7.x"
+      dropdown: "1.7 (latest)"
       linkVersion: "latest"
       sections: ["kubernetes", "standalone"]
 

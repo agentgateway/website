@@ -4,7 +4,6 @@ weight: 67
 description: Monitor agentgateway with metrics, distributed traces, and access logs.
 prev: /docs/integrations
 next: /docs/operations
-test: skip
 disableCards: true
 aliases:
   - ../integrations/observability/

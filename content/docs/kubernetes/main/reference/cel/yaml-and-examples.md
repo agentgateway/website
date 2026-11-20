@@ -2,7 +2,6 @@
 title: CEL in YAML and example expressions
 weight: 2
 description: How to embed CEL expressions in YAML configuration, plus worked examples for common use cases.
-test: skip
 ---
 
 ## CEL in YAML
@@ -64,7 +63,7 @@ default(jwt.role, "user")
 ```yaml
 # Include logs where there was no response or there was an error
 filter: |
-   !has(response) || response.code > 299
+   !has(response.code) || response.code > 299
 fields:
   add:
     user.agent: 'request.headers["user-agent"]'
@@ -85,6 +84,8 @@ fields:
       )
 
 ```
+
+{{< reuse "agw-docs/snippets/cel-upstream-calls-access-log.md" >}}
 
 ### Authorization {#authorization}
 

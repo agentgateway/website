@@ -47,7 +47,7 @@ This guide routes OpenShell's gRPC control traffic through agentgateway. It does
      enabled: true
      gateway:
        create: true
-       className: agentgateway
+       className: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
        name: openshell-ingress
    ```
 
@@ -59,7 +59,7 @@ This guide routes OpenShell's gRPC control traffic through agentgateway. It does
    | `server.auth.allowUnauthenticatedUsers` | Accepts CLI requests without credentials and treats them as a local developer. Use for local development only. |
    | `grpcRoute.enabled` | Creates the GRPCRoute that sends gRPC requests to the OpenShell Service. |
    | `grpcRoute.gateway.create` | Creates a Gateway in the release namespace. |
-   | `grpcRoute.gateway.className` | Selects the `agentgateway` GatewayClass, so that agentgateway provisions the proxy. |
+   | `grpcRoute.gateway.className` | Selects the `{{< reuse "agw-docs/snippets/gatewayclass.md" >}}` GatewayClass, so that agentgateway provisions the proxy. |
    | `grpcRoute.gateway.name` | Names the Gateway `openshell-ingress`. The proxy Service takes the name of the Gateway, so the name must differ from the OpenShell Service named `openshell`. |
 
 2. Install OpenShell with the example values.
@@ -213,7 +213,7 @@ Replace the example hostname and identity provider settings with your own values
        - gateway.example.com
      gateway:
        create: true
-       className: agentgateway
+       className: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
        name: openshell-ingress
        listener:
          protocol: HTTPS

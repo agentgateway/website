@@ -41,7 +41,7 @@ To explicitly set request-based rate limits, set the rate limiting type to `requ
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     localRateLimit:
@@ -58,7 +58,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -76,7 +76,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -92,9 +92,9 @@ routes:
 ```
 {{< /tab >}}
 {{< tab name="traffic-ratelimiting-local example" >}}
-For a runnable version of the routing-based configuration, see the [`traffic-ratelimiting-local` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-ratelimiting-local) in the agentgateway repository.
+For a runnable version of the routing-based configuration, see the [`traffic-ratelimiting-local` example](https://github.com/agentgateway/agentgateway/tree/v1.5.0/examples/traffic-ratelimiting-local) in the agentgateway repository.
 
-{{% github-yaml url="https://agentgateway.dev/examples/traffic-ratelimiting-local/config.yaml" %}}
+{{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.5.0/examples/traffic-ratelimiting-local/config.yaml" %}}
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -107,7 +107,7 @@ For a runnable version of the routing-based configuration, see the [`traffic-rat
 #   * That requests are actually limited at runtime — requires driving traffic
 #     past the configured bucket, which the page does not exercise.
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -124,7 +124,7 @@ EOF
 agentgateway -f config.yaml --validate-only
 
 cat <<'EOF' > config-llm.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     localRateLimit:
@@ -141,7 +141,7 @@ EOF
 agentgateway -f config-llm.yaml --validate-only
 
 cat <<'EOF' > config-mcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -202,7 +202,7 @@ Below shows an example rate limit configuration that allows 5,000 tokens per hou
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     localRateLimit:
@@ -225,7 +225,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -249,7 +249,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -283,7 +283,7 @@ routes:
 #   * The token-based and failOpen fragments on this page are focused field-
 #     reference snippets, not standalone configs, so they are not tested here.
 cat <<'EOF' > config2.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -306,7 +306,7 @@ EOF
 agentgateway -f config2.yaml --validate-only
 
 cat <<'EOF' > config2-llm.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     localRateLimit:
@@ -329,7 +329,7 @@ EOF
 agentgateway -f config2-llm.yaml --validate-only
 
 cat <<'EOF' > config2-mcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -428,7 +428,7 @@ With the server running, configure agentgateway to connect to it and specify whi
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     remoteRateLimit:
@@ -455,7 +455,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -483,7 +483,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -521,7 +521,7 @@ routes:
 #   * The failOpen and backend-connection-policy snippets below are focused
 #     field-reference fragments, not standalone configs, so they are not tested.
 cat <<'EOF' > config3.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -548,7 +548,7 @@ EOF
 agentgateway -f config3.yaml --validate-only
 
 cat <<'EOF' > config3-llm.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     remoteRateLimit:
@@ -575,7 +575,7 @@ EOF
 agentgateway -f config3-llm.yaml --validate-only
 
 cat <<'EOF' > config3-mcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -605,14 +605,14 @@ agentgateway -f config3-mcp.yaml --validate-only
 
 Each descriptor value is a [CEL expression]({{< link-hextra path="/documentation/configuration/traffic-management/transformations" >}}).
 
-For a complete runnable setup, including the Envoy rate limit service configuration and the Docker commands to run it with Redis, see the [`traffic-ratelimiting-global` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-ratelimiting-global) in the agentgateway repository.
+For a complete runnable setup, including the Envoy rate limit service configuration and the Docker commands to run it with Redis, see the [`traffic-ratelimiting-global` example](https://github.com/agentgateway/agentgateway/tree/v1.5.0/examples/traffic-ratelimiting-global) in the agentgateway repository.
 
 {{% details title="Configuration from the traffic-ratelimiting-global example" closed="true" %}}
-{{% github-yaml url="https://agentgateway.dev/examples/traffic-ratelimiting-global/config.yaml" %}}
+{{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.5.0/examples/traffic-ratelimiting-global/config.yaml" %}}
 
 The example also defines the limits on the rate limit server side:
 
-{{% github-yaml url="https://agentgateway.dev/examples/traffic-ratelimiting-global/ratelimit-config.yaml" %}}
+{{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.5.0/examples/traffic-ratelimiting-global/ratelimit-config.yaml" %}}
 {{% /details %}}
 
 #### Failure behavior

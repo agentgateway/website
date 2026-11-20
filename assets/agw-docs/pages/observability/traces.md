@@ -145,7 +145,7 @@ routes:
 5. View traces. 
    1. From the **Service** drop down, select the service name you configured, such as `agentgateway`.
    2. Click **Find Traces**. 
-   3. Verify that you can see trace spans for listing the MCP tools (`list_tools`) and calling a tool (`call_tool`).
+   3. Verify that you can see trace spans for listing the MCP tools (`tools/list`) and calling a tool (`tools/call`).
    
    {{< reuse-image src="img/jaeger-traces.png">}}
 
@@ -268,7 +268,7 @@ You can optionally enrich the traces that are captured by the agentgateway with 
 8. View traces. 
    1. From the **Service** drop down, select `agentgateway`. 
    2. Click **Find Traces**. 
-   3. Verify that you can see trace spans for listing the MCP tools (`list_tools`) and calling a tool (`call_tool`).
+   3. Verify that you can see trace spans for listing the MCP tools (`tools/list`) and calling a tool (`tools/call`).
    4. Expand a trace and verify that you see the `custom-tag=test` and `user=me` tags for each trace span. 
    
    {{< reuse-image src="img/jaeger-traces-tags.png">}} 

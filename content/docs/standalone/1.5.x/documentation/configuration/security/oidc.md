@@ -67,7 +67,7 @@ export OIDC_COOKIE_SECRET="$(python3 -c 'import os; print(os.urandom(32).hex())'
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     oidc:
@@ -87,7 +87,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -108,7 +108,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -138,7 +138,7 @@ Review the following example for a Keycloak IdP.
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     oidc:
@@ -158,7 +158,7 @@ llm:
 {{< /tab >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -179,7 +179,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -201,9 +201,9 @@ routes:
 ```
 {{< /tab >}}
 {{< tab name="traffic-oidc example" >}}
-For a complete runnable setup, including a Compose file that starts a preconfigured local Keycloak instance, see the [`traffic-oidc` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-oidc) in the agentgateway repository.
+For a complete runnable setup, including a Compose file that starts a preconfigured local Keycloak instance, see the [`traffic-oidc` example](https://github.com/agentgateway/agentgateway/tree/v1.5.0/examples/traffic-oidc) in the agentgateway repository.
 
-{{% github-yaml url="https://agentgateway.dev/examples/traffic-oidc/config.yaml" %}}
+{{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.5.0/examples/traffic-oidc/config.yaml" %}}
 {{< /tab >}}
 {{< /tabs >}}
 

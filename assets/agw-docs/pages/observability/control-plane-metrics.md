@@ -84,26 +84,6 @@ The following steps show you how to view the raw metrics endpoint of the control
    agentgateway_controller_reconciliations_total{controller="gatewayclass-provisioner",result="success"} 2
    ```
 
-{{< doc-test paths="control-plane-metrics" >}}
-YAMLTest -f - <<'EOF'
-- name: Control plane metrics endpoint returns HTTP 200
-  retries: 3
-  http:
-    url: "http://localhost:9092/metrics"
-    method: GET
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: agentgateway
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
-
 ## Control plane metrics reference {#reference}
 
 Review the following table to understand more about each metric.
@@ -123,8 +103,11 @@ Helpful terms:
 
 * Transform: The process of the control plane converting high-level resources or intermediate representations (IR) into lower-level representations into the structure that the XDS API expects for a snapshot.
 
-{{< version include-if="1.7.x" >}}
+{{< version include-if="1.8.x" >}}
 {{< reuse "agw-docs/snippets/metrics-control-plane-main.md" >}}
+{{< /version >}}
+{{< version include-if="1.7.x" >}}
+{{< reuse "agw-docs/snippets/metrics-control-plane-1.7.x.md" >}}
 {{< /version >}}
 {{< version include-if="1.6.x" >}}
 {{< reuse "agw-docs/snippets/metrics-control-plane-1.6.x.md" >}}

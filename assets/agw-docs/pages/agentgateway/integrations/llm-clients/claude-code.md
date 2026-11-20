@@ -58,10 +58,6 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/claude-code-openai-config.md" >}}
 {{% /version %}}
 
-{{< doc-test paths="claude-code-openai-validate" >}}
-agentgateway -f config.yaml --validate-only
-{{< /doc-test >}}
-
 ### Connect Claude Code {#openai-connect}
 
 1. Configure Claude Code to point to your agentgateway instance.
@@ -128,11 +124,6 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 {{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/claude-code-anthropic-config.md" >}}
 {{% /version %}}
-
-{{< doc-test paths="claude-code-anthropic-validate" >}}
-export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-test}"
-agentgateway -f config.yaml --validate-only
-{{< /doc-test >}}
 
 ### Connect Claude Code {#anthropic-connect}
 

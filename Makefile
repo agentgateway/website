@@ -126,6 +126,11 @@ check-node-deps:
 # build everything. PREVIEW=1 tries the preview build locally.
 PREVIEW ?= $(if $(CF_PAGES),$(filter-out main,$(CF_PAGES_BRANCH)))
 
+# pr-tracker-* branches come in batches and fill the Cloudflare build queue, so
+# their previews build only the version trees the branch changed (plus the first
+# listed version when it also changes shared files), without the search index. Try it locally with PREVIEW=1 CF_PAGES_BRANCH=pr-tracker-x.
+PR_TRACKER_PREVIEW ?= $(if $(PREVIEW),$(filter pr-tracker-%,$(CF_PAGES_BRANCH)))
+
 # Change highlights (docs-theme-extras v0.4.0+): a preview, and the local
 # servers, mark the text the branch adds or removes compared with main. The
 # script that writes what the overlay shows, static/_extras/changes.json (a
@@ -150,11 +155,11 @@ CHANGES_ENV = $(if $(and $(PREVIEW),$(CHANGES_SCRIPT)),HUGO_PARAMS_THEMEEXTRAS_C
 .PHONY: build
 build: check-node-deps
 	$(if $(PREVIEW),pip3 install -q pyyaml || true)
-	$(if $(PREVIEW),python3 scripts/local-version-config.py --preview-base origin/main)
+	$(if $(PREVIEW),python3 scripts/local-version-config.py --preview-base origin/main $(if $(PR_TRACKER_PREVIEW),--only-changed))
 	$(if $(CHANGES_ENV),git rev-parse --verify -q origin/main > /dev/null || git fetch --depth=1 --no-tags origin main:refs/remotes/origin/main || true)
 	$(if $(CHANGES_ENV),python3 $(CHANGES_SCRIPT) --base origin/main --out $(CHANGES_OUT) || python3 $(CHANGES_SCRIPT) --base origin/main --exact-base --out $(CHANGES_OUT) || true)
 	$(if $(CHANGES_ENV),,rm -rf $(dir $(CHANGES_OUT)))
-	$(CHANGES_ENV)hugo --gc --minify $(if $(PREVIEW),--config hugo.yaml$(COMMA)hugo-local-versions.yaml)
+	$(CHANGES_ENV)$(if $(PR_TRACKER_PREVIEW),HUGO_PARAMS_SEARCH_ENABLE=false )hugo --gc --minify $(if $(PREVIEW),--config hugo.yaml$(COMMA)hugo-local-versions.yaml)
 
 # The local servers build only the versions listed in hugo.yaml's
 # `params.versions`. content/docs/ also holds every older version tree, which

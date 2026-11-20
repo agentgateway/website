@@ -2,7 +2,6 @@
 title: "CLI"
 description: CLI commands and flags for the ingress2gateway tool
 weight: 10
-test: skip
 ---
 This page focuses on the commands you’ll use most often.
 

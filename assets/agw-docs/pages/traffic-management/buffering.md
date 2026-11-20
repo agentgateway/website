@@ -37,7 +37,7 @@ Use a {{< reuse "/agw-docs/snippets/policy.md" >}} to set a buffer limit on your
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that sets the maximum HTTP body buffer size.
 
-   ```yaml {paths="buffering"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -103,30 +103,6 @@ Use a {{< reuse "/agw-docs/snippets/policy.md" >}} to set a buffer limit on your
     }
    }
    ```
-
-{{< doc-test paths="buffering" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for maxbuffer policy in config dump
-  retries: 20
-  http:
-    url: http://localhost:15000
-    skipSslVerification: true
-    method: GET
-    path: /config_dump
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: agentgateway-proxy
-  expect:
-    bodyContains:
-    - '"maxBufferSize"'
-    - '2097152'
-EOF
-{{< /doc-test >}}
 
 ### Cleanup
 

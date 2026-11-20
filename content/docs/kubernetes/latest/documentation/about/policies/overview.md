@@ -2,7 +2,6 @@
 title: Overview
 weight: 1
 description: Learn about the different policy sections.
-test: skip
 ---
 
 The {{< reuse "agw-docs/snippets/policy.md" >}} custom resource lets you apply traffic management, security, observability, and backend connection policies to your agentgateway resources.

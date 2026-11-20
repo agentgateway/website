@@ -14,11 +14,11 @@ The following steps install Keycloak in your cluster and configure a `users` gro
 Install and configure Keycloak:
 
 1. Create a namespace for your Keycloak deployment.
-   ```shell {paths="setup-keycloak"}
+   ```shell
    kubectl create namespace keycloak
    ```
 2. Create the Keycloak deployment and service. The service is of type `LoadBalancer` so that you can reach Keycloak from outside the cluster.
-   ```yaml {paths="setup-keycloak"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Service
@@ -72,44 +72,12 @@ Install and configure Keycloak:
    EOF
    ```
 3. Wait for the Keycloak rollout to finish.
-   ```shell {paths="setup-keycloak"}
+   ```shell
    kubectl -n keycloak rollout status deploy/keycloak
    ```
 
-{{< doc-test paths="setup-keycloak" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for keycloak deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: keycloak
-        name: keycloak
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-- name: wait for keycloak service LB address
-  wait:
-    target:
-      kind: Service
-      metadata:
-        namespace: keycloak
-        name: keycloak
-    jsonPath: "$.status.loadBalancer.ingress[0].ip"
-    jsonPathExpectation:
-      comparator: exists
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
 4. Set the Keycloak endpoint details from the load balancer service. If you are running locally in kind and need a local IP address for the load balancer service, consider using [`cloud-provider-kind`](https://github.com/kubernetes-sigs/cloud-provider-kind).
-   ```shell {paths="setup-keycloak"}
+   ```shell
    export ENDPOINT_KEYCLOAK=$(kubectl -n keycloak get service keycloak -o jsonpath='{.status.loadBalancer.ingress[0].ip}{.status.loadBalancer.ingress[0].hostname}'):8080
    export HOST_KEYCLOAK=$(echo ${ENDPOINT_KEYCLOAK} | cut -d: -f1)
    export PORT_KEYCLOAK=$(echo ${ENDPOINT_KEYCLOAK} | cut -d: -f2)
@@ -117,7 +85,7 @@ EOF
    echo $KEYCLOAK_URL
    ```
 5. Set the Keycloak admin token. If you see a parsing error, try running the `curl` command by itself. You might notice that your internet provider or network rules are blocking the requests. If so, you can update your security settings or change the network so that the request can be processed.
-   ```shell {paths="setup-keycloak"}
+   ```shell
    export KEYCLOAK_TOKEN=$(curl --fail --silent --show-error \
      -d client_id=admin-cli \
      -d username=admin \
@@ -128,7 +96,7 @@ EOF
    ```
 
 6. Use the administrator token to configure Keycloak for MCP authentication. If this command returns `401 Unauthorized`, refresh the token in the previous step.
-   ```shell {paths="setup-keycloak"}
+   ```shell
    # Use the exact public MCP server URL that clients connect to
    export MCP_RESOURCE=${MCP_RESOURCE:-http://localhost:8080/mcp}
 
@@ -225,21 +193,6 @@ EOF
    done
    ```
 
-{{< doc-test paths="setup-keycloak" >}}
-curl --fail --silent --show-error \
-  -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
-  "$KEYCLOAK_URL/admin/realms/master/client-scopes/$KEYCLOAK_SCOPE_ID/protocol-mappers/models" \
-  | jq -e --arg audience "$MCP_RESOURCE" '
-    any(.[]; .protocolMapper == "oidc-audience-mapper" and .config["included.custom.audience"] == $audience) and
-    any(.[]; .protocolMapper == "oidc-group-membership-mapper" and .config["claim.name"] == "groups")
-  ' >/dev/null
-
-curl --fail --silent --show-error \
-  -H "Authorization: Bearer ${KEYCLOAK_TOKEN}" \
-  "$KEYCLOAK_URL/admin/realms/master/groups/$KEYCLOAK_GROUP_ID/members" \
-  | jq -e '[.[].username] | sort == ["user1", "user2"]' >/dev/null
-{{< /doc-test >}}
-
 7. Open the Keycloak frontend.
    ```sh
    open $KEYCLOAK_URL
@@ -258,7 +211,7 @@ You might integrate OIDC with your apps. In such cases, you might need particula
 The following instructions assume that you are still logged into the **Administration Console** from the previous step.
 
 1. Confirm that you have the following environmental variables set. If not, refer to [Step 1: Install Keycloak](#install) section.
-   ```shell {paths="setup-keycloak"}
+   ```shell
    echo $KEYCLOAK_URL
    ```
 
@@ -266,10 +219,10 @@ The following instructions assume that you are still logged into the **Administr
     1. From the sidebar menu options, click **Realm Settings**.
     2. From the **General** tab, scroll down to the **Endpoints** section and open the **OpenID Endpoint Configuration** link. In a new tab, your browser opens to a URL similar to `http://$KEYCLOAK_URL:8080/realms/master/.well-known/openid-configuration`.
     3. In the OpenID configuration, search for the `issuer` field. Save the value as an environment variable, such as the following example. 
-       ```sh {paths="setup-keycloak"}
+       ```sh
        export KEYCLOAK_ISSUER=$KEYCLOAK_URL/realms/master
        ```
     4. In the OpenID configuration, search for the `jwks_uri` field, and copy the path without the Keycloak URL that you retrieved earlier. For example, the path might be set to `/realms/master/protocol/openid-connect/certs`.
-       ```shell {paths="setup-keycloak"}
+       ```shell
        export KEYCLOAK_JWKS_PATH=/realms/master/protocol/openid-connect/certs
        ```

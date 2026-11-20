@@ -2,10 +2,6 @@
 title: Streamable HTTP
 weight: 15
 description: Connect to MCP servers via streamable HTTP with automatic session management
-test:
-  mcp-stateless:
-  - file: ${versionRoot}/integrations/mcp/servers/http.md
-    path: mcp-stateless
 ---
 
 Connect to an MCP server via streamable HTTP. 
@@ -66,7 +62,7 @@ Agentgateway encrypts session IDs with an AES-256-GCM key, which is 32 random by
 If agentgateway has nowhere to save a generated key, it leaves session IDs unencrypted and logs a warning at startup. This happens in the following cases.
 
 * You use `readOnly` storage mode.
-* Agentgateway cannot write to the configuration file, such as a read-only Docker mount or the ConfigMap of a [Helm installation]({{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}).
+* Agentgateway cannot write to the configuration file, such as a read-only Docker mount or the ConfigMap of a [Helm installation]({{% upstream %}}{{< link-hextra path="/documentation/setup/install/helm/#helm-session-secret" >}}{{% /upstream %}}{{% downstream %}}{{< link-hextra path="/documentation/setup/install/helm/" >}}{{% /downstream %}}).
 * You pass the configuration inline with `--config`.
 
 An unencrypted session ID is only base64-encoded, so a client can read the target names and upstream session IDs in it.
@@ -96,7 +92,7 @@ You can turn on stateless mode in the UI or in your configuration file.
 {{% tab name="UI" %}}
 These steps assume an MCP server that you already added, as described in [Configure the agentgateway](#configure-the-agentgateway).
 
-1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**.
+1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**. Expand **MCP behavior**.
 2. For **State mode**, select **Stateless**.
 
    {{< reuse-image src="img/ui-mcp-settings-stateless.png" srcDark="img/ui-mcp-settings-stateless-dark.png" alt="MCP servers settings drawer with the state mode set to Stateless" >}}
@@ -114,7 +110,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 Set `statefulMode` to `stateless` on the MCP configuration.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   statefulMode: stateless
@@ -128,77 +124,6 @@ mcp:
 
 When you send an `initialize` request through agentgateway in stateless mode, the response returns `HTTP 200` with no `Mcp-Session-Id` header. In the default stateful mode, the same request returns an `Mcp-Session-Id` header that pins the session to a backend.
 
-{{< doc-test paths="mcp-stateless" >}}
-# WHAT THIS TEST VALIDATES:
-#   * statefulMode: stateless is accepted and the MCP endpoint serves an initialize request (HTTP 200)
-#   * In stateless mode, the initialize response does NOT include an Mcp-Session-Id header
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The visible example uses a streamable HTTP upstream (host: http://localhost:3005/mcp/);
-#     the hidden test config uses a self-contained stdio target so no external MCP server is
-#     needed. statefulMode governs the downstream (client-facing) session, independent of the
-#     upstream transport, so the stateless behavior under test is the same.
-#   * The default stateful contrast (Mcp-Session-Id present) is covered by other pages that
-#     use the default configuration.
-{{< /doc-test >}}
-
-{{< doc-test paths="mcp-stateless" >}}
-# Install agentgateway binary
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
-{{< doc-test paths="mcp-stateless" >}}
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  port: 3000
-  statefulMode: stateless
-  targets:
-  - name: everything
-    stdio:
-      cmd: npx
-      args: ["@modelcontextprotocol/server-everything"]
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="mcp-stateless" >}}
-agentgateway -f config.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-{{< /doc-test >}}
-
-{{< doc-test paths="mcp-stateless" >}}
-YAMLTest -f - <<'EOF'
-- name: MCP endpoint accepts initialize request in stateless mode
-  http:
-    url: "http://localhost:3000"
-    path: /mcp
-    method: POST
-    headers:
-      content-type: application/json
-      accept: "application/json, text/event-stream"
-    body: |
-      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="mcp-stateless" >}}
-# Assert that stateless mode does not return an Mcp-Session-Id header
-if curl -sS -D - -o /dev/null -X POST http://localhost:3000/mcp/ \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json, text/event-stream' \
-  -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}' \
-  | grep -qi 'mcp-session-id'; then
-  echo "FAIL: stateless mode returned an Mcp-Session-Id header"
-  exit 1
-fi
-echo "PASS: no Mcp-Session-Id header in stateless mode"
-{{< /doc-test >}}
-
 ## Request body limits {#mcp-request-body-limits}
 
 The MCP listener applies the gateway HTTP body buffer limit to JSON-RPC request bodies from streamable HTTP and legacy Server-Sent Events (SSE) POST requests. If a request body exceeds the configured limit, the client receives HTTP 413 and a response body that includes the configured byte limit. Malformed JSON that stays within the limit receives HTTP 400.
@@ -210,7 +135,7 @@ A browser page on any origin can resolve a hostname it controls to `127.0.0.1` a
 Agentgateway is usually a proxy in front of other servers rather than a browser-facing localhost server, so this check is off by default. Turn it on with `dnsRebindingProtection` when you run agentgateway on a developer machine and a browser can reach the MCP port.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   dnsRebindingProtection: true
@@ -253,7 +178,7 @@ Then, connect agentgateway to your MCP server. You can use the UI or a configura
 1. Create a configuration with an empty `mcp` section, and start agentgateway. You add the MCP server and the CORS policy in the UI.
    ```sh
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    mcp:
      port: 3000
      targets: []
@@ -283,7 +208,7 @@ Instead of step 5, you can click **Apply CORS** in the **Tool Playground**. That
 1. Create a configuration for your agentgateway to connect to your MCP server. Make sure to expose the `Mcp-Session-Id` header in the CORS configuration for session persistence.
    ```yaml
    cat <<EOF > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
    mcp:
      port: 3000
      policies:

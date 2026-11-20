@@ -47,7 +47,7 @@ Route traffic to major LLM providers through a **unified OpenAI-compatible API**
 
 Don't see your provider? Many LLMs expose OpenAI-compatible APIs. Agentgateway can route to **any provider** that supports the OpenAI API format, including:
 
-- **Cohere**, **Fireworks**, **Groq**{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}, **Meta**{{< /version >}}, **Mistral**{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}, **Perplexity**{{< /version >}}, **Together AI**
+- **Cohere**, **Fireworks**, **Groq**{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}, **Meta**{{< /version >}}, **Mistral**{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}, **Nebius Token Factory**{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}, **Perplexity**{{< /version >}}, **Together AI**
 - **Ollama**, **LM Studio**, **vLLM**, **llama.cpp** (local models)
 - Any custom or self-hosted endpoint with OpenAI-compatible `/v1/chat/completions`
 

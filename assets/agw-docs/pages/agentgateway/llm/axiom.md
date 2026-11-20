@@ -135,7 +135,7 @@ spec:
   frontend:
     tracing:
       backendRef:
-        group: agentgateway.dev
+        group: {{< reuse "agw-docs/snippets/group.md" >}}
         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
         name: axiom-traces
         port: 443
@@ -154,7 +154,7 @@ spec:
     accessLog:
       otlp:
         backendRef:
-          group: agentgateway.dev
+          group: {{< reuse "agw-docs/snippets/group.md" >}}
           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
           name: axiom-logs
           port: 443

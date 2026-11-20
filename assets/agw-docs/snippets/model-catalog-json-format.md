@@ -85,17 +85,36 @@ For page-billed document models, set `perPage` instead of token rates. The follo
 ```
 {{% /version %}}
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+For audio models that bill by duration, set `perAudioMinute`. The following example charges `$0.006` for each minute of audio that the OpenAI `whisper-1` model transcribes or translates.
+
+```json
+{
+  "providers": {
+    "openai": {
+      "models": {
+        "whisper-1": {
+          "rates": { "perAudioMinute": "0.006" }
+        }
+      }
+    }
+  }
+}
+```
+{{% /version %}}
+
 Key points:
 
 - Lookups are by **provider id** (such as `openai`, `anthropic`, or `gcp.gemini`) and **model name** (such as `gpt-4o-mini`).
 - Rates are **strings** (exact decimals), in **USD per 1,000,000 tokens**.
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}- `perPage` is **USD per page** for document or OCR models that report page usage, not USD per 1,000,000 tokens.{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}- `perAudioMinute` is **USD per minute of audio** for transcription and translation models that report the audio duration, not USD per 1,000,000 tokens.{{< /version >}}
 - If a rate is omitted, that token type is not priced for the model.
 - `tiers[]` is optional. Each tier selects alternate `rates` when the request context length is **over** the tier's `contextOver` value. Tiers must be ordered by strictly increasing `contextOver`.
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}- Set `serviceTier` to `standard`, `flex`, `priority`, or `reserved` to select rates by served tier. Omit it to match any tier. Omit `contextOver` to apply the rule from zero context tokens. See [Service tiers](#service-tiers) for tier detection.
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}- Set `serviceTier` to {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}`standard`, `flex`, `priority`, or `reserved`{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}`standard`, `flex`, `priority`, `reserved`, `ultrafast`, or `fast`{{< /version >}} to select rates by served tier. Omit it to match any tier. Omit `contextOver` to apply the rule from zero context tokens. See [Service tiers](#service-tiers) for tier detection.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} Use `fast` for Anthropic fast mode, which the response reports as `usage.speed: "fast"`.{{< /version >}}
 - Within each `serviceTier` group, `contextOver` values must strictly increase. Entries without `serviceTier` form a separate group. Different groups can reuse `contextOver` values.
 - A `serviceTier` tier overlays the rates for the request's context length. A rate that the `serviceTier` tier omits falls back to the standard rate for that context length.{{< /version >}}
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}- To price Anthropic 1-hour cache writes separately, add `cacheWrite1h` beside `cacheWrite` in a model's `rates` or a tier's `rates`. If you omit `cacheWrite1h`, 1-hour cache writes use the `cacheWrite` rate.{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}- To price prompt-cache writes with an extended time to live (TTL) separately, add a `cacheWriteDetails` map beside `cacheWrite` in a model's `rates` or a tier's `rates`. The keys are `1h` for Anthropic 1-hour writes and `12h` for OpenAI 12-hour writes, such as `"cacheWriteDetails": {"1h": "10"}`. Writes for a TTL that you omit use the `cacheWrite` rate. For more information, see [Cache writes by TTL](#cache-write-details).{{< /version >}}
 {{% version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" %}}
 - `tags[]` is optional. Tags describe a model instead of pricing it, so a model entry can carry tags with no rates at all.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,2.2.x" >}} For more information, see [Model tags](#model-tags).{{< /version >}}
 {{% /version %}}

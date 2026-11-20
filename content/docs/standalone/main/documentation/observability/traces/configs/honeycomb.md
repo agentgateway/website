@@ -2,7 +2,6 @@
 title: Honeycomb
 weight: 40
 description: Export agentgateway traces to Honeycomb by using its OTLP ingestion endpoint.
-test: skip
 ---
 
 [Honeycomb](https://www.honeycomb.io/) is an observability platform. You can send traces directly to Honeycomb by setting your API key as a header on every export request.
@@ -13,7 +12,7 @@ test: skip
 Add the following tracing configuration to your `config.yaml`. Replace `<your-honeycomb-api-key>` with your Honeycomb API key.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: api.honeycomb.io:443

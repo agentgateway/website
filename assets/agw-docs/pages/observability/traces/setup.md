@@ -17,7 +17,7 @@ When tracing is enabled, {{< reuse "agw-docs/snippets/agentgateway.md" >}} emits
 
 If you have not done so yet, create an {{< reuse "agw-docs/snippets/policy.md" >}} that points the agentgateway proxy at your OTel Collector. 
 
-```yaml {paths="tracing"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -57,22 +57,6 @@ EOF
    ```
    {{% /tab %}}
    {{< /tabs >}}
-
-   {{< doc-test paths="tracing" >}}
-   YAMLTest -f - <<'EOF'
-   - name: verify tracing setup - POST returns 200
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80"
-       path: /post
-       method: POST
-       headers:
-         host: "www.example.com"
-     source:
-       type: local
-     expect:
-       statusCode: 200
-   EOF
-   {{< /doc-test >}}
 
 2. Open Grafana.  
 

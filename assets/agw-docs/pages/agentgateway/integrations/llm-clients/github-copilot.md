@@ -29,11 +29,6 @@ You can configure agentgateway in the UI or in your configuration file.
 {{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/github-copilot-config.md" >}}
 {{% /version %}}
 
-{{< doc-test paths="copilot-validate" >}}
-export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"
-agentgateway -f /tmp/test-copilot.yaml --validate-only
-{{< /doc-test >}}
-
 ## Configure GitHub Copilot
 
 1. Open VS Code Settings (`Cmd + ,` on macOS, `Ctrl + ,` on Windows/Linux).

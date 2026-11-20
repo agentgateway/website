@@ -2,13 +2,19 @@
 title: Transform requests
 weight: 55
 description: Dynamically compute and set LLM request fields using CEL expressions.
-test:
-  transformations:
-  - file: ${versionRoot}/documentation/llm/transformations.md
-    path: transformations
 ---
 
 Use LLM request transformations to dynamically compute and set fields in LLM requests using {{< gloss "CEL (Common Expression Language)" >}}Common Expression Language (CEL){{< /gloss >}} expressions. Transformations let you enforce policies such as capping token usage or conditionally modifying request parameters, without changing client code.
+
+Use the following table to choose the field for what you want to change.
+
+| What you want to change | Setting to use | Guide |
+| -- | -- | -- |
+| Fields in the LLM request body, by the names that the client sent | `transformation` | [Configure LLM request transformations](#configure-llm-request-transformations) |
+| Fields in the LLM request body, by the names that the provider receives after agentgateway converts the request | `finalTransformation` | [Transform requests after provider conversion](#transform-requests-after-provider-conversion) |
+| A header to a fixed value | `requestHeaders`, which needs no CEL | [Example: Set the Anthropic workspace header]({{< link-hextra path="/integrations/llm/providers/anthropic/#use-claude-platform-on-aws" >}}) |
+| A header to a value that is computed from the incoming request | `requestTransformation` | [Modify the HTTP request to the provider](#llm-request-transformation) |
+| The complete set of headers, the whole request body, or request metadata | `requestTransformation`, with `replace`, `body`, or `metadata` | [Modify the HTTP request to the provider](#llm-request-transformation) |
 
 To learn more about CEL, see the following resources:
 
@@ -22,75 +28,69 @@ To learn more about CEL, see the following resources:
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-{{< doc-test paths="transformations" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * All three example configs are accepted by agentgateway (--validate-only), so
-#     the `transformation` and `finalTransformation` fields and their CEL
-#     expressions are correct.
-#   * "Configure LLM request transformations": a client request that asks for 5000
-#     max_tokens reaches the provider capped at 10.
-#   * "Conditionally set fields based on headers": the same request reaches the
-#     provider with 100 max_tokens as an admin user and 10 as a regular user.
-#   * "Transform requests after provider conversion": a request that asks for 5000
-#     max_tokens reaches the provider with max_completion_tokens capped at 10,
-#     which only holds if the transformation ran AFTER the conversion renamed the
-#     field. A pre-conversion transformation on max_completion_tokens would not
-#     produce this result.
-#
-# HOW THE ASSERTIONS WORK:
-#   The tests run against a local mock LLM instead of OpenAI, so no provider API
-#   key is needed and no live completion is billed. The mock reports the
-#   max_tokens value it received as usage.completion_tokens, so asserting on
-#   completion_tokens asserts what agentgateway actually sent upstream - which is
-#   what these transformations are documented to change.
-# Install agentgateway binary
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< reuse "agw-docs/snippets/start-mock-llm.md" >}}
-{{< /doc-test >}}
-
 ## Configure LLM request transformations
 
-1. Create a configuration file with your LLM transformation settings. The following example caps `max_tokens` to 10, regardless of what the client requests.
-   ```yaml {paths="transformations"}
-   cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   llm:
-     models:
-     - name: "*"
-       provider: openAI
-       params:
-         apiKey: "$OPENAI_API_KEY"
-       transformation:
-         max_tokens: "min(llmRequest.max_tokens, 10)"
-   EOF
-   ```
+1. Configure a transformation that caps `max_tokens` to 10, regardless of what the client requests. You can configure the transformation in the UI or in your configuration file.
 
-   | Setting | Description |
-   | -- | -- |
-   | `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use the `llmRequest` variable to access the original LLM request body. |
+   {{< tabs >}}
+   {{% tab name="UI" %}}
+   1. Start agentgateway with a model that has no transformation.
 
-   > [!NOTE]
-   > Transformations take priority over `overrides` for the same field. If an expression fails to evaluate, the field is silently removed from the request.
+      ```sh
+      cat <<'EOF' > config.yaml
+      # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+      llm:
+        models:
+        - name: "*"
+          provider: openAI
+          params:
+            apiKey: "$OPENAI_API_KEY"
+      EOF
+      agentgateway -f config.yaml
+      ```
 
-2. Run the agentgateway.
+   2. Open **LLM** > **Models** in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), such as [http://localhost:15000/ui/llm/models](http://localhost:15000/ui/llm/models). Click the **Edit model** icon for the `*` model.
+   3. Expand **Advanced** > **Model policies** > **Transformation**.
+   4. In the **LLM request fields** section, enter `max_tokens` as the field name and `min(llmRequest.max_tokens, 10)` as the CEL expression, and click **Add**.
+
+      {{< reuse-image src="img/ui-llm-model-transformation.png" srcDark="img/ui-llm-model-transformation-dark.png" alt="Edit model drawer with the Transformation section expanded, showing the max_tokens field set to min(llmRequest.max_tokens, 10)" >}}
+
+   5. Click **Save model**.
+
+   The UI writes the `transformation` map that the **Config file** tab shows. Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+   {{% /tab %}}
+   {{% tab name="Config file" %}}
+   1. Create a configuration file with your LLM transformation settings.
+      ```yaml
+      cat <<'EOF' > config.yaml
+      # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+      llm:
+        models:
+        - name: "*"
+          provider: openAI
+          params:
+            apiKey: "$OPENAI_API_KEY"
+          transformation:
+            max_tokens: "min(llmRequest.max_tokens, 10)"
+      EOF
+      ```
+
+      | Setting | Description |
+      | -- | -- |
+      | `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use the `llmRequest` variable to access the original LLM request body. |
+
+      > [!NOTE]
+      > Transformations take priority over `overrides` for the same field. If an expression fails to evaluate, the field is silently removed from the request.
+
+   2. Start agentgateway.
+      ```sh
+      agentgateway -f config.yaml
+      ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+2. Send a request with `max_tokens` set to a value greater than 1024. The transformation caps it to 10 before the request reaches the LLM provider.
    ```sh
-   agentgateway -f config.yaml
-   ```
-
-   {{< doc-test paths="transformations" >}}
-   # Cap max_tokens: validate the documented config, then run it against the mock LLM.
-   {{< reuse "agw-docs/snippets/point-config-at-mock-llm.md" >}}
-   agentgateway -f config-mock.yaml &
-   AGW_PID=$!
-   trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
-   sleep 3
-   {{< /doc-test >}}
-
-3. Send a request with `max_tokens` set to a value greater than 1024. The transformation caps it to 10 before the request reaches the LLM provider.
-   ```sh {paths="transformations"}
    curl -s 'http://localhost:4000/v1/chat/completions' \
    --header 'Content-Type: application/json' \
    --data '{
@@ -104,32 +104,6 @@ To learn more about CEL, see the following resources:
      ]
    }' | jq .
    ```
-
-   {{< doc-test paths="transformations" >}}
-   YAMLTest -f - <<'EOF'
-   - name: request with max_tokens transformation returns capped completion
-     http:
-       url: "http://localhost:4000"
-       path: /v1/chat/completions
-       method: POST
-       headers:
-         content-type: application/json
-       body: |
-         {
-           "model": "gpt-3.5-turbo",
-           "max_tokens": 5000,
-           "messages": [{"role": "user", "content": "Tell me a short story"}]
-         }
-     source:
-       type: local
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.usage.completion_tokens"
-           comparator: equals
-           value: 10
-   EOF
-   {{< /doc-test >}}
 
    Example output:
    ```console {hl_lines=[2]}
@@ -155,10 +129,22 @@ To learn more about CEL, see the following resources:
 
 Use a CEL expression in the model-level `transformation` field to dynamically set `max_tokens` based on the caller's identity from a request header. This example gives admin users a higher token limit than regular users.
 
-```yaml {paths="transformations"}
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+You can configure the transformation in the UI or in your configuration file.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. If agentgateway is not running yet, start it with the configuration from step 1 of [Configure LLM request transformations](#configure-llm-request-transformations).
+2. Open **LLM** > **Models**, and click the **Edit model** icon for the `*` model.
+3. Expand **Advanced** > **Model policies** > **Transformation**.
+4. In the **LLM request fields** section, set the `max_tokens` field.
+   * If the field is already in the list, click **Remove** next to it.
+   * Enter `max_tokens` as the field name and `request.headers['x-user-id'] == 'admin' ? 100 : 10` as the CEL expression, and click **Add**.
+5. Click **Save model**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+```yaml
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -174,24 +160,17 @@ EOF
 | -- | -- |
 | `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use `request.headers` to access incoming HTTP headers and `llmRequest` to access the original LLM request body. |
 
-{{< doc-test paths="transformations" >}}
-# Header-conditional max_tokens: restart the gateway on the second config, again
-# pointed at the mock LLM. This block must stay textually different from the
-# restart block in the previous section: the extractor silently drops a block whose
-# content is byte-identical to one it already selected, which would leave the
-# assertions below running against the previous section's config.
-kill $AGW_PID 2>/dev/null
-sleep 1
-{{< reuse "agw-docs/snippets/point-config-at-mock-llm.md" >}}
-agentgateway -f config-mock.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
-sleep 3
-{{< /doc-test >}}
+If agentgateway is still running from the previous section, it reloads `config.yaml` automatically when you save the file. Otherwise, start agentgateway.
+
+```sh
+agentgateway -f config.yaml
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 Send a request as an admin user and verify the response uses the higher token limit.
 
-```sh {paths="transformations"}
+```sh
 curl -s http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "x-user-id: admin" \
@@ -203,7 +182,7 @@ curl -s http://localhost:4000/v1/chat/completions \
 
 Send a request as a regular user and verify the response is capped at the lower token limit.
 
-```sh {paths="transformations"}
+```sh
 curl -s http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "x-user-id: alice" \
@@ -212,54 +191,6 @@ curl -s http://localhost:4000/v1/chat/completions \
     "messages": [{"role": "user", "content": "Tell me a story"}]
   }' | jq .
 ```
-
-{{< doc-test paths="transformations" >}}
-YAMLTest -f - <<'EOF'
-- name: admin user gets higher token limit
-  http:
-    url: "http://localhost:4000"
-    path: /v1/chat/completions
-    method: POST
-    headers:
-      content-type: application/json
-      x-user-id: admin
-    body: |
-      {
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "Tell me a story"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.usage.completion_tokens"
-        comparator: equals
-        value: 100
-
-- name: regular user gets lower token limit
-  http:
-    url: "http://localhost:4000"
-    path: /v1/chat/completions
-    method: POST
-    headers:
-      content-type: application/json
-      x-user-id: alice
-    body: |
-      {
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "Tell me a story"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.usage.completion_tokens"
-        comparator: equals
-        value: 10
-EOF
-{{< /doc-test >}}
 
 In the responses, the admin user receives up to 100 completion tokens while the regular user is capped at 10.
 
@@ -281,54 +212,73 @@ The difference shows in the field names. When a client sends `max_tokens` to an 
 
 A `transformation` entry must target `max_tokens`, the name that the client sent. A `finalTransformation` entry must target `max_completion_tokens`, the name that the provider receives.
 
-1. Create a configuration file that caps the converted field and removes a field from the provider request. The `min()` expression caps `max_completion_tokens` at 10. The `fail("remove")` expression always fails to evaluate, which deletes `reasoning_effort` from the request.
+1. Configure a final transformation that caps the converted field and removes a field from the provider request. The `min()` expression caps `max_completion_tokens` at 10. The `fail("remove")` expression always fails to evaluate, which deletes `reasoning_effort` from the request. You can configure the transformation in the UI or in your configuration file.
 
-   ```yaml {paths="transformations"}
-   cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   llm:
-     models:
-     - name: "*"
-       provider: openAI
-       params:
-         apiKey: "$OPENAI_API_KEY"
-       finalTransformation:
-         max_completion_tokens: "min(llmRequest.max_completion_tokens, 10)"
-         reasoning_effort: 'fail("remove")'
-   EOF
-   ```
+   {{< tabs >}}
+   {{% tab name="UI" %}}
+   1. If agentgateway is not running yet, start it with a model that has no transformation.
 
-   | Setting | Description |
-   | -- | -- |
-   | `finalTransformation` | A map of provider request field names to CEL expressions. Each key is the field to set in the converted request; each value is a CEL expression. Entries take priority over `overrides` for the same field. |
+      ```sh
+      cat <<'EOF' > config.yaml
+      # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+      llm:
+        models:
+        - name: "*"
+          provider: openAI
+          params:
+            apiKey: "$OPENAI_API_KEY"
+      EOF
+      agentgateway -f config.yaml
+      ```
 
-   > [!WARNING]
-   > In a `finalTransformation` expression, `llmRequest` is the **converted** request body, not the request that the client sent. An expression that reads a field which the converted body does not have, such as `llmRequest.max_tokens` for an OpenAI provider, fails to evaluate. A failed expression removes the target field, so a mistyped field name silently deletes the field that you meant to set. For more information about the expression language, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
+   2. Open **LLM** > **Models**, and click the **Edit model** icon for the `*` model.
+   3. Expand **Advanced** > **Model policies**. If the **Transformation** section has entries from a previous section, click **Remove** next to each one.
+   4. Expand **Final transformation**. In the **Provider request fields** section, add each of the following fields. For each field, enter the field name and the CEL expression, and click **Add**.
+      * `max_completion_tokens`: `min(llmRequest.max_completion_tokens, 10)`
+      * `reasoning_effort`: `fail("remove")`
 
-2. Run the agentgateway.
+      {{< reuse-image src="img/ui-llm-model-final-transformation.png" srcDark="img/ui-llm-model-final-transformation-dark.png" alt="Edit model drawer with the Final transformation section expanded, showing max_completion_tokens and reasoning_effort provider request fields" >}}
+
+   5. Click **Save model**.
+
+   The UI writes the `finalTransformation` map that the **Config file** tab shows.
+   {{% /tab %}}
+   {{% tab name="Config file" %}}
+   1. Create a configuration file with the final transformation.
+
+      ```yaml
+      cat <<'EOF' > config.yaml
+      # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+      llm:
+        models:
+        - name: "*"
+          provider: openAI
+          params:
+            apiKey: "$OPENAI_API_KEY"
+          finalTransformation:
+            max_completion_tokens: "min(llmRequest.max_completion_tokens, 10)"
+            reasoning_effort: 'fail("remove")'
+      EOF
+      ```
+
+      | Setting | Description |
+      | -- | -- |
+      | `finalTransformation` | A map of provider request field names to CEL expressions. Each key is the field to set in the converted request; each value is a CEL expression. Entries take priority over `overrides` for the same field. |
+
+      > [!WARNING]
+      > In a `finalTransformation` expression, `llmRequest` is the **converted** request body, not the request that the client sent. An expression that reads a field which the converted body does not have, such as `llmRequest.max_tokens` for an OpenAI provider, fails to evaluate. A failed expression removes the target field, so a mistyped field name silently deletes the field that you meant to set. For more information about the expression language, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
+
+   2. If agentgateway is still running from a previous section, it reloads `config.yaml` automatically when you save the file. Otherwise, start agentgateway.
+
+      ```sh
+      agentgateway -f config.yaml
+      ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+2. Send a request that sets `max_tokens` and `reasoning_effort`. The conversion renames `max_tokens` to `max_completion_tokens`, and the transformation then caps that field at 10 and drops `reasoning_effort`.
 
    ```sh
-   agentgateway -f config.yaml
-   ```
-
-   {{< doc-test paths="transformations" >}}
-   # Post-conversion transformations: restart the gateway on the third config of this
-   # guide, again pointed at the mock LLM. The comment differs from the two restart
-   # blocks in the preceding sections on purpose: the extractor drops a block whose
-   # content is byte-identical to one it already selected, which would leave the
-   # assertion below running against the header-conditional config.
-   kill $AGW_PID 2>/dev/null
-   sleep 1
-   {{< reuse "agw-docs/snippets/point-config-at-mock-llm.md" >}}
-   agentgateway -f config-mock.yaml &
-   AGW_PID=$!
-   trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
-   sleep 3
-   {{< /doc-test >}}
-
-3. Send a request that sets `max_tokens` and `reasoning_effort`. The conversion renames `max_tokens` to `max_completion_tokens`, and the transformation then caps that field at 10 and drops `reasoning_effort`.
-
-   ```sh {paths="transformations"}
    curl -s 'http://localhost:4000/v1/chat/completions' \
    --header 'Content-Type: application/json' \
    --data '{
@@ -344,33 +294,6 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
    }' | jq .
    ```
 
-   {{< doc-test paths="transformations" >}}
-   YAMLTest -f - <<'EOF'
-   - name: post-conversion transformation caps the converted field
-     http:
-       url: "http://localhost:4000"
-       path: /v1/chat/completions
-       method: POST
-       headers:
-         content-type: application/json
-       body: |
-         {
-           "model": "gpt-3.5-turbo",
-           "max_tokens": 5000,
-           "reasoning_effort": "high",
-           "messages": [{"role": "user", "content": "Tell me a short story"}]
-         }
-     source:
-       type: local
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.usage.completion_tokens"
-           comparator: equals
-           value: 10
-   EOF
-   {{< /doc-test >}}
-
    Example output:
 
    ```console {hl_lines=[2]}
@@ -385,6 +308,70 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
    ```
 
    The `completion_tokens` value reflects a completion capped at 10 tokens, which confirms that the transformation reached the converted request.
+
+## Modify the HTTP request to the provider {#llm-request-transformation}
+
+Use `requestTransformation` to change the HTTP request that agentgateway sends to the provider, such as its headers or metadata. For a header with a fixed value, use `requestHeaders` instead, which needs no CEL. If both set the same header, the `requestHeaders` value is sent, because `requestHeaders` runs after `requestTransformation`.
+
+The `requestTransformation` expressions can read the HTTP request, such as `request.headers`. For parsed JSON LLM request bodies, they can read fields such as `llmRequest.model`. They can also read `llm.requestModel`, the model from the incoming URL or body before provider overrides. To change individual fields in the LLM request body, use `transformation` or `finalTransformation`. You can set either one together with `requestTransformation` on the same provider or model.
+
+The UI has no field for `requestTransformation`. Use your configuration file for the steps in this section.
+
+1. Create a configuration file that selects an OpenAI project from a client header. The provider default sets the `openai-project` header based on the `x-team` request header, and removes `x-team` so that it is not sent to OpenAI. The `gpt-4o-batch` model sets its own `requestTransformation`, which replaces the provider default for that model.
+
+   > [!WARNING]
+   > Because a model-level `requestTransformation` replaces the provider default completely, the model loses every setting in the default, not only the ones it overrides. In the following example, `gpt-4o-batch` repeats `remove: [x-team]`. Without that line, requests to `gpt-4o-batch` would send the `x-team` header to OpenAI.
+
+   ```yaml
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+   llm:
+     providers:
+     - name: openai-prod
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+       defaults:
+         requestTransformation:
+           set:
+             openai-project: '"x-team" in request.headers && request.headers["x-team"] == "research" ? "proj_research" : "proj_default"'
+           remove:
+           - x-team
+     models:
+     - name: gpt-4o
+       provider:
+         reference: openai-prod
+       params:
+         model: gpt-4o
+     - name: gpt-4o-batch
+       provider:
+         reference: openai-prod
+       params:
+         model: gpt-4o-mini
+       requestTransformation:
+         set:
+           openai-project: '"proj_batch"'
+         remove:
+         - x-team
+   EOF
+   ```
+
+   | Setting | Description |
+   | -- | -- |
+   | `llm.providers[].defaults.requestTransformation` | The HTTP request transformation for every model that references the provider and does not set its own `requestTransformation`. |
+   | `llm.models[].requestTransformation` | The HTTP request transformation for one model. If set, it replaces the provider default completely. The two are not merged. |
+   | `set` | Headers to set. Each value is a CEL expression. To set a fixed string, quote the string inside the expression, such as `'"proj_batch"'`. |
+   | `add` | Headers to append. Each value is a CEL expression. |
+   | `remove` | Header names to remove. |
+   | `replace` | A CEL expression that returns the complete set of headers. It is applied before `add`, `set`, and `remove`. |
+   | `body` | A CEL expression that returns a replacement request body. The replacement happens before agentgateway converts the request to the provider format, and before `transformation` and `finalTransformation` run, so the new body must be a valid request for the API that the client called. |
+   | `metadata` | Metadata values to add. Each value is a CEL expression. |
+
+2. If agentgateway is still running from a previous section, it reloads `config.yaml` automatically when you save the file. Otherwise, start agentgateway.
+
+   ```sh
+   agentgateway -f config.yaml
+   ```
 
 ## Available CEL variables
 
@@ -409,6 +396,14 @@ For a complete list of available variables and functions, see the [CEL reference
 
 Enforce a maximum token limit regardless of what the client requests.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. In **LLM** > **Models**, click the **Edit model** icon for the model, and expand **Advanced** > **Model policies** > **Transformation**.
+2. In the **LLM request fields** section, enter the following field name and CEL expression, and click **Add**.
+   * `max_tokens`: `min(llmRequest.max_tokens, 1024)`
+3. Click **Save model**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 llm:
   models:
@@ -419,11 +414,21 @@ llm:
     transformation:
       max_tokens: "min(llmRequest.max_tokens, 1024)"
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Set temperature based on headers
 
 Allow callers to control creativity through a header while enforcing bounds.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. In **LLM** > **Models**, click the **Edit model** icon for the model, and expand **Advanced** > **Model policies** > **Transformation**.
+2. In the **LLM request fields** section, enter the following field name and CEL expression, and click **Add**.
+   * `temperature`: `request.headers['x-creativity'] == 'high' ? 0.9 : 0.1`
+3. Click **Save model**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 llm:
   models:
@@ -434,11 +439,22 @@ llm:
     transformation:
       temperature: "request.headers['x-creativity'] == 'high' ? 0.9 : 0.1"
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Combine multiple transformations
 
 Apply several field-level transformations in a single configuration.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. In **LLM** > **Models**, click the **Edit model** icon for the model, and expand **Advanced** > **Model policies** > **Transformation**.
+2. In the **LLM request fields** section, add each of the following fields. For each field, enter the field name and the CEL expression, and click **Add**.
+   * `max_tokens`: `request.headers['x-user-tier'] == 'premium' ? 4096 : 256`
+   * `temperature`: `request.headers['x-user-tier'] == 'premium' ? 0.8 : 0.3`
+3. Click **Save model**.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 ```yaml
 llm:
   models:
@@ -450,6 +466,8 @@ llm:
       max_tokens: "request.headers['x-user-tier'] == 'premium' ? 4096 : 256"
       temperature: "request.headers['x-user-tier'] == 'premium' ? 0.8 : 0.3"
 ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Next steps
 

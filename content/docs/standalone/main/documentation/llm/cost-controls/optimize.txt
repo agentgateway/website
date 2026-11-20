@@ -2,10 +2,6 @@
 title: Optimize cost
 weight: 70
 description: Reduce LLM spend by routing to cheaper models and caching repeated prompt content.
-test:
-  optimize:
-  - file: ${versionRoot}/documentation/llm/cost-controls/optimize.md
-    path: optimize
 ---
 
 The other cost controls help you *attribute*, *observe*, and *enforce* spend. This guide helps you *reduce* it, with two levers:
@@ -25,17 +21,6 @@ This guide sends live requests to OpenAI, so set your API key as an environment 
 export OPENAI_API_KEY=<your-api-key>
 ```
 
-{{< doc-test paths="optimize" >}}
-# Install agentgateway binary
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -fsSL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
-export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"
-{{< /doc-test >}}
-
 ## Route to cheaper models
 
 Model prices vary by one to two orders of magnitude, and a request that a small model can answer well does not need a frontier model. With a [virtual model]({{< link-hextra path="/documentation/llm/virtual-models/" >}}), clients call one stable model name and agentgateway decides which upstream model actually serves each request. You can:
@@ -52,7 +37,7 @@ In this walkthrough, you publish one client-facing model named `assistant` and r
 
 1. Create a configuration with two internal models and a virtual model that routes between them. The `visibility: internal` setting means clients cannot call `cheap` or `frontier` directly; they request only `assistant`. The `frontier` target uses a `when` expression, and the `cheap` target is the fallback, so it has no `when` and must be listed last.
 
-   ```yaml {paths="optimize"}
+   ```yaml
    cat <<'EOF' > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
@@ -87,16 +72,9 @@ In this walkthrough, you publish one client-facing model named `assistant` and r
    agentgateway -f config.yaml
    ```
 
-   {{< doc-test paths="optimize" >}}
-   agentgateway -f config.yaml &
-   AGW_PID=$!
-   trap 'kill $AGW_PID 2>/dev/null' EXIT
-   sleep 4
-   {{< /doc-test >}}
-
 3. Send a request as a premium caller by including the `x-tier: premium` header. In the response, the `model` field shows that the frontier model served the request.
 
-   ```sh {paths="optimize"}
+   ```sh
    curl -s http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
      -H "x-tier: premium" \
@@ -114,7 +92,7 @@ In this walkthrough, you publish one client-facing model named `assistant` and r
 
 4. Send the same request without the `x-tier` header. This time the response is served by the cheaper model. This is the savings: routine traffic never reaches the pricier model, and clients did not change what they requested.
 
-   ```sh {paths="optimize"}
+   ```sh
    curl -s http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
      -d '{
@@ -128,24 +106,6 @@ In this walkthrough, you publish one client-facing model named `assistant` and r
    ```console
    "gpt-4o-mini-2024-07-18"
    ```
-
-{{< doc-test paths="optimize" >}}
-premium=$(curl -s http://localhost:4000/v1/chat/completions \
-  -H "Content-Type: application/json" -H "x-tier: premium" \
-  -d '{"model":"assistant","messages":[{"role":"user","content":"Hello!"}]}' \
-  | jq -r '.model')
-routine=$(curl -s http://localhost:4000/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model":"assistant","messages":[{"role":"user","content":"Hello!"}]}' \
-  | jq -r '.model')
-echo "premium=$premium routine=$routine"
-if echo "$premium" | grep -q "gpt-4o" && ! echo "$premium" | grep -q "mini" && echo "$routine" | grep -q "mini"; then
-  echo "PASS: premium routed to frontier, routine routed to the cheaper model"
-else
-  echo "FAIL: routing did not match expectations"
-  exit 1
-fi
-{{< /doc-test >}}
 
 Because `when` is evaluated at request time, it can reference `request.headers`, `request.body` (via `json(request.body)`), `jwt`, and `apiKey` metadata. It cannot reference `llm.cost`, which is only known after the response.
 

@@ -2,7 +2,6 @@
 title: Span attribute reference
 weight: 20
 description: Reference for the default HTTP, conditional, generative AI, and MCP span attributes emitted by agentgateway, including policy call child spans.
-test: skip
 aliases:
   - ../../../reference/observability/traces/
 ---

@@ -14,7 +14,7 @@ Additionally, fields are populated only if they are referenced in a CEL expressi
 
 Each policy execution consistently gets the current view of the request and response. For example, during logging, any manipulations from earlier policies (such as transformations or external processing) are observable in the CEL context.
 
-For the full list of fields and types on every top-level object, see the [CEL reference]({{< link-hextra path="/reference/cel/cel-context" >}}) page. It is generated from the [agentgateway CEL schema](https://github.com/agentgateway/agentgateway/blob/main/schema/cel.md) and is the source of truth for nested fields (for example, `source.address` or `llm.inputTokens`).
+For the full list of fields and types on every top-level object, see the [CEL reference]({{< link-hextra path="/reference/cel/cel-context" >}}) page. It is generated from the [agentgateway CEL schema](https://github.com/agentgateway/agentgateway/blob/v1.5.0/schema/cel.md) and is the source of truth for nested fields (for example, `source.address` or `llm.inputTokens`).
 
 > [!NOTE]
 > The `llm` object carries both normalized and provider-reported token counts. `llm.inputTokens` and `llm.totalTokens` include the tokens read from or written to the prompt cache, so they mean the same thing for every provider. `llm.providerInputTokens` and `llm.providerTotalTokens` report what the provider sent. For guidance on which one to read, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
@@ -57,6 +57,6 @@ The following functions can be used in all policy types.
 To define reusable functions from CEL expressions, see
 [Custom functions]({{< link-hextra path="/reference/cel/custom-functions/" >}}).
 
-{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel-functions.md" section="Functions" %}}
+{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/tags/v1.5.0/schema/cel-functions.md" section="Functions" %}}
 
-{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel-functions.md" section="Standard Functions" %}}
+{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/tags/v1.5.0/schema/cel-functions.md" section="Standard Functions" %}}

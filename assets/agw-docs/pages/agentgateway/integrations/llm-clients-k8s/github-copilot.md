@@ -24,12 +24,12 @@ Configure [GitHub Copilot](https://github.com/features/copilot) in VS Code to us
    ```json
    {
      "github.copilot.advanced": {
-       "debug.overrideProxyUrl": "http://<INGRESS_GW_ADDRESS>/<route-path>"
+       "debug.overrideProxyUrl": "http://<INGRESS_GW_ADDRESS>/v1"
      }
    }
    ```
 
-   For example, if your HTTPRoute uses path `/openai`, use `http://<INGRESS_GW_ADDRESS>/openai`.
+   Replace `<INGRESS_GW_ADDRESS>` with your gateway address. This base URL needs the route from the **OpenAI v1/chat/completions** tab of the [OpenAI provider guide]({{< link-hextra path="/integrations/llm/providers/openai/" >}}), which forwards every path to the backend. The **Custom route** tab rewrites every request to `/v1/chat/completions`, so it does not work with clients that add their own path, such as `/chat/completions`.
 
 4. Save the file and reload VS Code (`Cmd + Shift + P` > **Developer: Reload Window**).
 

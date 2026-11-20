@@ -334,7 +334,7 @@ This release fills in the pieces that agentgateway needs to serve as an egress p
 - **Forward proxy authentication**: A client can authenticate with the `Proxy-Authorization` header instead of `Authorization`. Agentgateway reads the credential from that header, strips it before the request goes upstream, and marks it sensitive so that its value is not logged. A failed `CONNECT` authentication returns a `407` response with a `Proxy-Authenticate` header, as the HTTP specification requires.
 - **Backend connection timeouts**: A backend can set `connectTimeout`, the `keepalives` settings, and the connection pool settings. The `requestTimeout` field sets the deadline for a response.
 
-For a worked example, see the [`traffic-egress-proxy` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-egress-proxy) in the agentgateway repository, and for the timeout fields, see [Timeouts]({{< link-hextra path="/documentation/configuration/resiliency/timeouts/" >}}).
+For a worked example, see the [`traffic-egress-proxy` example](https://github.com/agentgateway/agentgateway/tree/v1.5.0/examples/traffic-egress-proxy) in the agentgateway repository, and for the timeout fields, see [Timeouts]({{< link-hextra path="/documentation/configuration/resiliency/timeouts/" >}}).
 
 #### Session affinity
 

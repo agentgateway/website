@@ -6,9 +6,9 @@
 
 2. Create a `config.yaml` file with the following configuration.
 
-   ```sh {paths="meta-validate"}
+   ```sh
    cat > config.yaml <<'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "meta/*"
@@ -35,7 +35,7 @@
 
 3. Validate the configuration.
 
-   ```sh {paths="meta-validate"}
+   ```sh
    agentgateway -f config.yaml --validate-only
    ```
 

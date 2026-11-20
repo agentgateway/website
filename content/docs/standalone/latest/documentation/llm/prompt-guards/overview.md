@@ -70,8 +70,10 @@ Request and response guards run only on route types that carry an LLM conversati
 | `responses` | Yes |
 | `generateContent` | Yes |
 | `realtime` | Only when streaming guardrails are enabled. The `reject` action applies, but `mask` does not, because WebSocket frames cannot be rewritten. |
+| `systemOne` | No |
 | `embeddings` | No |
 | `rerank` | No |
+| `decisions` | No |
 | `anthropicTokenCount` | No |
 | `geminiCountTokens` | No |
 | `models` | No |
@@ -130,9 +132,8 @@ The following guardrail runs a credit card detector and OpenAI moderation, both 
 > Audit mode changes only whether the gateway acts on the verdict. The guard still calls its provider, so an external guard in audit mode adds the same latency and the same provider cost as an enforcing guard.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
-  gateways: [default]
   models:
   - name: gpt-4o
     provider: openai
@@ -158,9 +159,14 @@ A provider error is not a verdict, so `action: audit` does not change how an err
 
 ## Guard scope {#scope}
 
-A request guard does not inspect the whole request. By default, a guard reads the system prompt and the text of regular user and assistant messages. Tool call content is left alone, so a Social Security number that a tool returns to the model reaches the provider unmasked.
+By default, guards inspect the following content:
 
-Set the `scope` field on a request guard to choose what the guard reads.
+- **Request guards:** The system prompt, regular user and assistant message text, and tool call results.
+- **Response guards:** Regular message text, including plaintext reasoning blocks.
+
+Guards do not scan tool call arguments by default. Sensitive data in those arguments can pass through unmasked.
+
+Set the `scope` field on a request or response guard to choose what the guard reads.
 
 ```yaml
 llm:
@@ -171,31 +177,48 @@ llm:
       apiKey: "$OPENAI_API_KEY"
     guardrails:
       request:
-      - scope: [systemPrompt, messages, toolOutput]
+      - scope: [systemPrompt, messages, toolOutput, toolInput]
         regex:
-          action: mask
+          action: reject
           rules:
           - builtin: ssn
+      response:
+      - scope: [messages, toolInput]
+        regex:
+          action: reject
+          rules:
+          - pattern: "(?i)internal-only"
 ```
 
 | Value | What the guard reads |
 | -- | -- |
 | `systemPrompt` | The system or developer prompt. |
-| `messages` | Regular user and assistant message text. |
+| `messages` | Regular user and assistant message text, including plaintext reasoning blocks in responses. |
 | `toolInput` | Tool call arguments, which the model usually produces. |
-| `toolOutput` | Tool call results that are fed back to the model. |
+| `toolOutput` | Tool call results that are fed back to the model, including results from server-side tools. |
 
 > [!WARNING]
-> A `scope` **replaces** the default, it does not add to it. A guard with `scope: [toolOutput]` reads tool results and stops reading messages, so content that the guard used to catch passes through. To cover messages and tool results with one guard, list both values.
+> Setting `scope` **replaces** the default. For example, `scope: [toolInput]` scans only tool call arguments. The guard no longer checks the system prompt, messages, or tool results. To include `toolInput` alongside the request defaults, list all four values as shown in the previous example.
 
-Four rules govern the field:
+These rules govern the field:
 
-- **Omit `scope` to keep the default.** The default is `systemPrompt` and `messages`. An empty list is rejected with `scope must not be empty; omit it to use the default`.
-- **Only the `regex` and `bedrockGuardrails` guards accept a scope other than the default.** Any other guard type fails to load with `only regex and bedrockGuardrails guards support a non-default scope`. Other guard types always read the default.
-- **The field applies to request guards only.** A response guard has no `scope`.
+- **Omit `scope` to keep the default.** The request default is `systemPrompt`, `messages`, and `toolOutput`. The response default is `messages`. An empty list is rejected with `scope must not be empty; omit it to use the default (systemPrompt + messages + toolOutput)`.
+- **Supported guards:** `regex`, `openAIModeration`, `bedrockGuardrails`, `googleModelArmor`, and `azureContentSafety` accept `scope`.
+- **Provider calls use only text in scope.** If a request has no text in scope, the guard skips the provider call.
+- **Streaming response guards support only message scope.** If `streaming: Enabled` and a response guard sets `scope`, every value must be `messages`.
+- **Encrypted payloads are excluded.** Signed response payloads are scanned, but a `mask` action that would change signed content rejects the response instead.
 - **Masking `toolInput` can produce invalid JSON.** In APIs that carry tool arguments as opaque JSON, such as chat completions, the whole argument string is treated as one piece of text. A rule that matches across the JSON punctuation rewrites the arguments into something the provider cannot parse. Prefer `toolOutput`, or write a `toolInput` pattern that matches only a value.
 
 For a worked example, see [Regex filters]({{< link-hextra path="/documentation/llm/prompt-guards/regex/#scope" >}}).
+
+### Webhook scope {#webhook-scope}
+
+A webhook always receives the request messages or response choices. You cannot change this content with `scope`. See [Webhooks]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/" >}}).
+
+- **Request webhook:** Omit `scope`, or set it to exactly `[systemPrompt, messages]` or `[systemPrompt, messages, toolOutput]`. Either value is accepted, and the webhook receives the same content.
+- **Response webhook:** Omit `scope` or set only `[messages]`.
+
+Other values prevent the configuration from loading.
 
 ## Shared and model-specific guardrails
 
@@ -237,6 +260,22 @@ llm:
 > To protect a streamed response, use `action: reject`. When the guard matches, agentgateway ends the stream and sends a `guardrail_blocked` error event to the client.
 
 Request guards do not have this limit. A request is buffered before it reaches the LLM provider, so both `mask` and `reject` apply to requests whether or not the client asks for a streamed response.
+
+### Streaming latency {#streaming-latency}
+
+When you set `streaming: Enabled` and configure at least one response guard, agentgateway does not forward each streamed chunk when it arrives. Instead, the proxy repeats the following cycle until the response ends:
+
+1. The proxy holds chunks until it collects 1024 bytes of response text, including reasoning text, or until the response ends.
+2. The response guards check that text.
+3. If the guards pass, the proxy sends the held chunks to the client. If a guard blocks the text, the proxy drops the held chunks and ends the stream. Text that the proxy sent in an earlier cycle already reached the client.
+
+This behavior applies to SSE responses and to the text deltas of OpenAI Realtime WebSocket traffic.
+
+Response guards change how a streamed response reaches the client in the following ways:
+
+- **A short response arrives as one chunk.** If the response has less than 1024 bytes of text, the client receives the full response at once when the response ends. This is expected behavior, not a bug.
+- **The time to first byte increases, and the rest of the response arrives in bursts.** The client gets the first chunk only after the LLM generates 1024 bytes of text and the guards check it. After that, the response arrives in bursts of about 1024 bytes of text. Each check adds the latency of the guard, such as a call to an external moderation service or a webhook.
+- **You cannot change the threshold.** No setting or environment variable changes the 1024-byte value. If your clients need the first tokens immediately, leave `streaming` unset or set it to `Disabled`. Streamed responses then reach the client without delay, but the response guards do not check them. The guards still check buffered responses.
 
 ## Choosing the right approach
 

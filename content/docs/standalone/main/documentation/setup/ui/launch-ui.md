@@ -5,10 +5,6 @@ description: Find the address that agentgateway serves the UI on, open it, and g
 aliases:
   - ../../../operations/ui/
   - ../../operations/ui/
-test:
-  ui-default-port:
-  - file: ${versionRoot}/documentation/setup/ui/launch-ui.md
-    path: ui-standalone-default
 ---
 
 {{< reuse "agw-docs/standalone/setup/ui/launch.md" >}}

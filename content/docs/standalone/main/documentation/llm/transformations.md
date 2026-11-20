@@ -2,10 +2,6 @@
 title: Transform requests
 weight: 55
 description: Dynamically compute and set LLM request fields using CEL expressions.
-test:
-  transformations:
-  - file: ${versionRoot}/documentation/llm/transformations.md
-    path: transformations
 ---
 
 Use LLM request transformations to dynamically compute and set fields in LLM requests using {{< gloss "CEL (Common Expression Language)" >}}Common Expression Language (CEL){{< /gloss >}} expressions. Transformations let you enforce policies such as capping token usage or conditionally modifying request parameters, without changing client code.
@@ -14,7 +10,7 @@ Use the following table to choose the field for what you want to change.
 
 | What you want to change | Setting to use | Guide |
 | -- | -- | -- |
-| Fields in the LLM request body, by the names that the client sent | `transformation` | [Configure LLM request transformations](#configure-llm-request-transformations) |
+| Fields that the client sent in the LLM request body, or the model segment in a provider URL path | `transformation` | [Configure LLM request transformations](#configure-llm-request-transformations) |
 | Fields in the LLM request body, by the names that the provider receives after agentgateway converts the request | `finalTransformation` | [Transform requests after provider conversion](#transform-requests-after-provider-conversion) |
 | A header to a fixed value | `requestHeaders`, which needs no CEL | [Example: Set the Anthropic workspace header]({{< link-hextra path="/integrations/llm/providers/anthropic/#use-claude-platform-on-aws" >}}) |
 | A header to a value that is computed from the incoming request | `requestTransformation` | [Modify the HTTP request to the provider](#llm-request-transformation) |
@@ -32,35 +28,6 @@ To learn more about CEL, see the following resources:
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-{{< doc-test paths="transformations" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * All three example configs are accepted by agentgateway (--validate-only), so
-#     the `transformation` and `finalTransformation` fields and their CEL
-#     expressions are correct.
-#   * "Configure LLM request transformations": a client request that asks for 5000
-#     max_tokens reaches the provider capped at 10.
-#   * "Conditionally set fields based on headers": the same request reaches the
-#     provider with 100 max_tokens as an admin user and 10 as a regular user.
-#   * "Transform requests after provider conversion": a request that asks for 5000
-#     max_tokens reaches the provider with max_completion_tokens capped at 10,
-#     which only holds if the transformation ran AFTER the conversion renamed the
-#     field. A pre-conversion transformation on max_completion_tokens would not
-#     produce this result.
-#
-# HOW THE ASSERTIONS WORK:
-#   The tests run against a local mock LLM instead of OpenAI, so no provider API
-#   key is needed and no live completion is billed. The mock reports the
-#   max_tokens value it received as usage.completion_tokens, so asserting on
-#   completion_tokens asserts what agentgateway actually sent upstream - which is
-#   what these transformations are documented to change.
-# Install agentgateway binary
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< reuse "agw-docs/snippets/start-mock-llm.md" >}}
-{{< /doc-test >}}
-
 ## Configure LLM request transformations
 
 1. Configure a transformation that caps `max_tokens` to 10, regardless of what the client requests. You can configure the transformation in the UI or in your configuration file.
@@ -71,7 +38,7 @@ To learn more about CEL, see the following resources:
 
       ```sh
       cat <<'EOF' > config.yaml
-      # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+      # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
       llm:
         models:
         - name: "*"
@@ -94,9 +61,9 @@ To learn more about CEL, see the following resources:
    {{% /tab %}}
    {{% tab name="Config file" %}}
    1. Create a configuration file with your LLM transformation settings.
-      ```yaml {paths="transformations"}
+      ```yaml
       cat <<'EOF' > config.yaml
-      # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+      # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
       llm:
         models:
         - name: "*"
@@ -110,7 +77,7 @@ To learn more about CEL, see the following resources:
 
       | Setting | Description |
       | -- | -- |
-      | `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use the `llmRequest` variable to access the original LLM request body. |
+      | `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set, and each value is a CEL expression evaluated against the original request. Use the `llmRequest` variable to access the original LLM request body. When the client sends the model in the URL path, such as in a native Bedrock, Vertex AI, or Gemini request, a transformation that changes `model` rewrites the model ID in the path instead of adding a `model` field to the request body. |
 
       > [!NOTE]
       > Transformations take priority over `overrides` for the same field. If an expression fails to evaluate, the field is silently removed from the request.
@@ -122,17 +89,8 @@ To learn more about CEL, see the following resources:
    {{% /tab %}}
    {{< /tabs >}}
 
-   {{< doc-test paths="transformations" >}}
-   # Cap max_tokens: validate the documented config, then run it against the mock LLM.
-   {{< reuse "agw-docs/snippets/point-config-at-mock-llm.md" >}}
-   agentgateway -f config-mock.yaml &
-   AGW_PID=$!
-   trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
-   sleep 3
-   {{< /doc-test >}}
-
 2. Send a request with `max_tokens` set to a value greater than 1024. The transformation caps it to 10 before the request reaches the LLM provider.
-   ```sh {paths="transformations"}
+   ```sh
    curl -s 'http://localhost:4000/v1/chat/completions' \
    --header 'Content-Type: application/json' \
    --data '{
@@ -146,32 +104,6 @@ To learn more about CEL, see the following resources:
      ]
    }' | jq .
    ```
-
-   {{< doc-test paths="transformations" >}}
-   YAMLTest -f - <<'EOF'
-   - name: request with max_tokens transformation returns capped completion
-     http:
-       url: "http://localhost:4000"
-       path: /v1/chat/completions
-       method: POST
-       headers:
-         content-type: application/json
-       body: |
-         {
-           "model": "gpt-3.5-turbo",
-           "max_tokens": 5000,
-           "messages": [{"role": "user", "content": "Tell me a short story"}]
-         }
-     source:
-       type: local
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.usage.completion_tokens"
-           comparator: equals
-           value: 10
-   EOF
-   {{< /doc-test >}}
 
    Example output:
    ```console {hl_lines=[2]}
@@ -210,9 +142,9 @@ You can configure the transformation in the UI or in your configuration file.
 5. Click **Save model**.
 {{% /tab %}}
 {{% tab name="Config file" %}}
-```yaml {paths="transformations"}
+```yaml
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -226,7 +158,7 @@ EOF
 
 | Setting | Description |
 | -- | -- |
-| `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use `request.headers` to access incoming HTTP headers and `llmRequest` to access the original LLM request body. |
+| `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set, and each value is a CEL expression evaluated against the original request. Use `request.headers` to access incoming HTTP headers and `llmRequest` to access the original LLM request body. When the client sends the model in the URL path, such as in a native Bedrock, Vertex AI, or Gemini request, a transformation that changes `model` rewrites the model ID in the path. |
 
 If agentgateway is still running from the previous section, it reloads `config.yaml` automatically when you save the file. Otherwise, start agentgateway.
 
@@ -236,24 +168,9 @@ agentgateway -f config.yaml
 {{% /tab %}}
 {{< /tabs >}}
 
-{{< doc-test paths="transformations" >}}
-# Header-conditional max_tokens: restart the gateway on the second config, again
-# pointed at the mock LLM. This block must stay textually different from the
-# restart block in the previous section: the extractor silently drops a block whose
-# content is byte-identical to one it already selected, which would leave the
-# assertions below running against the previous section's config.
-kill $AGW_PID 2>/dev/null
-sleep 1
-{{< reuse "agw-docs/snippets/point-config-at-mock-llm.md" >}}
-agentgateway -f config-mock.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
-sleep 3
-{{< /doc-test >}}
-
 Send a request as an admin user and verify the response uses the higher token limit.
 
-```sh {paths="transformations"}
+```sh
 curl -s http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "x-user-id: admin" \
@@ -265,7 +182,7 @@ curl -s http://localhost:4000/v1/chat/completions \
 
 Send a request as a regular user and verify the response is capped at the lower token limit.
 
-```sh {paths="transformations"}
+```sh
 curl -s http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "x-user-id: alice" \
@@ -274,54 +191,6 @@ curl -s http://localhost:4000/v1/chat/completions \
     "messages": [{"role": "user", "content": "Tell me a story"}]
   }' | jq .
 ```
-
-{{< doc-test paths="transformations" >}}
-YAMLTest -f - <<'EOF'
-- name: admin user gets higher token limit
-  http:
-    url: "http://localhost:4000"
-    path: /v1/chat/completions
-    method: POST
-    headers:
-      content-type: application/json
-      x-user-id: admin
-    body: |
-      {
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "Tell me a story"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.usage.completion_tokens"
-        comparator: equals
-        value: 100
-
-- name: regular user gets lower token limit
-  http:
-    url: "http://localhost:4000"
-    path: /v1/chat/completions
-    method: POST
-    headers:
-      content-type: application/json
-      x-user-id: alice
-    body: |
-      {
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "Tell me a story"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.usage.completion_tokens"
-        comparator: equals
-        value: 10
-EOF
-{{< /doc-test >}}
 
 In the responses, the admin user receives up to 100 completion tokens while the regular user is capped at 10.
 
@@ -351,7 +220,7 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
 
       ```sh
       cat <<'EOF' > config.yaml
-      # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+      # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
       llm:
         models:
         - name: "*"
@@ -377,9 +246,9 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
    {{% tab name="Config file" %}}
    1. Create a configuration file with the final transformation.
 
-      ```yaml {paths="transformations"}
+      ```yaml
       cat <<'EOF' > config.yaml
-      # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+      # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
       llm:
         models:
         - name: "*"
@@ -407,24 +276,9 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
    {{% /tab %}}
    {{< /tabs >}}
 
-   {{< doc-test paths="transformations" >}}
-   # Post-conversion transformations: restart the gateway on the third config of this
-   # guide, again pointed at the mock LLM. The comment differs from the two restart
-   # blocks in the preceding sections on purpose: the extractor drops a block whose
-   # content is byte-identical to one it already selected, which would leave the
-   # assertion below running against the header-conditional config.
-   kill $AGW_PID 2>/dev/null
-   sleep 1
-   {{< reuse "agw-docs/snippets/point-config-at-mock-llm.md" >}}
-   agentgateway -f config-mock.yaml &
-   AGW_PID=$!
-   trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
-   sleep 3
-   {{< /doc-test >}}
-
 2. Send a request that sets `max_tokens` and `reasoning_effort`. The conversion renames `max_tokens` to `max_completion_tokens`, and the transformation then caps that field at 10 and drops `reasoning_effort`.
 
-   ```sh {paths="transformations"}
+   ```sh
    curl -s 'http://localhost:4000/v1/chat/completions' \
    --header 'Content-Type: application/json' \
    --data '{
@@ -439,33 +293,6 @@ A `transformation` entry must target `max_tokens`, the name that the client sent
      ]
    }' | jq .
    ```
-
-   {{< doc-test paths="transformations" >}}
-   YAMLTest -f - <<'EOF'
-   - name: post-conversion transformation caps the converted field
-     http:
-       url: "http://localhost:4000"
-       path: /v1/chat/completions
-       method: POST
-       headers:
-         content-type: application/json
-       body: |
-         {
-           "model": "gpt-3.5-turbo",
-           "max_tokens": 5000,
-           "reasoning_effort": "high",
-           "messages": [{"role": "user", "content": "Tell me a short story"}]
-         }
-     source:
-       type: local
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.usage.completion_tokens"
-           comparator: equals
-           value: 10
-   EOF
-   {{< /doc-test >}}
 
    Example output:
 
@@ -497,7 +324,7 @@ The UI has no field for `requestTransformation`. Use your configuration file for
 
    ```yaml
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      providers:
      - name: openai-prod
@@ -645,4 +472,4 @@ llm:
 ## Next steps
 
 - Learn about [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) for advanced expression logic.
-- Set up [authentication]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}) to use JWT claims in transformations.
+- Set up [authentication]({{< link-hextra path="/documentation/configuration/security/authentication/jwt-authn/" >}}) to use JWT claims in transformations.

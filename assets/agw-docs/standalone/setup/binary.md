@@ -29,7 +29,7 @@ agentgateway
 Agentgateway creates a `config.yaml` file in your user config directory, which is `$XDG_CONFIG_HOME/agentgateway` if that variable is set and `~/.config/agentgateway` otherwise. The generated file configures a `default` gateway on port 4000, attaches the UI to that gateway, and points agentgateway at a SQLite database in the same directory. The database powers the **Analytics** and **Logs** pages in the UI, and the other features that record data while agentgateway runs. For more information, see [Database]({{< link-hextra path="/documentation/setup/database/" >}}).
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   database:
     url: sqlite:///home/example/.config/agentgateway/data.db

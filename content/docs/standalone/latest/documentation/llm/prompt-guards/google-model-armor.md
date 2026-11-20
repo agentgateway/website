@@ -32,7 +32,7 @@ Configure the `guardrails` field under `llm.models[]` in your agentgateway confi
 
 ```yaml
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -67,6 +67,27 @@ EOF
 | `projectId` | The Google Cloud project ID where the Model Armor template is configured. |
 | `location` | The region where the Model Armor template is deployed. Defaults to `us-central1`. |
 | `policies.backendAuth.gcp` | GCP authentication configuration. Agentgateway uses the credentials available in the environment, such as Application Default Credentials. |
+
+## Guard scope {#scope}
+
+By default, a request guard sends Model Armor the system prompt, message text, and tool call results. A response guard sends only response message text.
+
+Set `scope` to change which text the guard sends. This example excludes tool call results from the request guard.
+
+```yaml
+guardrails:
+  request:
+  - scope: [systemPrompt, messages]
+    googleModelArmor:
+      templateId: <your-template-id>
+      projectId: <your-project-id>
+      location: <location>
+      policies:
+        backendAuth:
+          gcp: {}
+```
+
+If no text is in scope, the guard skips the call to Model Armor. For supported values and restrictions, see [Guard scope]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#scope" >}}).
 
 ## Test the guardrail
 

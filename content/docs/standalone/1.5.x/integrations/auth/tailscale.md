@@ -40,7 +40,7 @@ Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authentic
    {{< tabs >}}
    {{% tab name="Linux" %}}
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      accessLog:
        add:
@@ -80,7 +80,7 @@ Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authentic
    {{% /tab %}}
    {{% tab name="macOS" %}}
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    frontendPolicies:
      accessLog:
        add:
@@ -198,7 +198,7 @@ Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authentic
 4. Check the agentgateway logs. After a successful request, the logs show the Tailscale identity from the access log fields that you configured.
 
    ```
-   info request ... tailscale.node=your-machine-name tailscale.email=you@example.com
+   info request ... tailscale.node="your-machine-name" tailscale.email="you@example.com"
    ```
 
 <!--
@@ -222,5 +222,5 @@ ls -la /var/run/tailscale/tailscaled.sock
 {{< cards >}}
   {{< card path="/documentation/configuration/security/external-authz" title="External authorization" subtitle="ExtAuthz configuration reference" >}}
   {{< card path="/documentation/configuration/security/" title="Security configuration" subtitle="Complete security options" >}}
-  {{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-tailscale-auth" title="traffic-tailscale-auth example" subtitle="Agentgateway config example that protects a plain HTTP backend" >}}
+  {{< card link="https://github.com/agentgateway/agentgateway/tree/v1.5.0/examples/traffic-tailscale-auth" title="traffic-tailscale-auth example" subtitle="Agentgateway config example that protects a plain HTTP backend" >}}
 {{< /cards >}}

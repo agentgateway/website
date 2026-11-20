@@ -14,13 +14,24 @@ class Handler(BaseHTTPRequestHandler):
         length = int(self.headers.get("content-length") or 0)
         request = json.loads(self.rfile.read(length) or b"{}")
         cap = request.get("max_tokens") or request.get("max_completion_tokens") or 0
-        message = dict(role="assistant", content="mock completion")
-        choice = dict(index=0, finish_reason="length", message=message)
-        usage = dict(prompt_tokens=1, completion_tokens=cap, total_tokens=cap + 1)
-        response = dict(id="chatcmpl-mock", object="chat.completion", created=0)
-        response["model"] = request.get("model", "mock")
-        response["choices"] = [choice]
-        response["usage"] = usage
+        model = request.get("model", "mock")
+        if self.path.rstrip("/") == "/v1/responses":
+            response = dict(id="resp-mock", object="response", created_at=0, status="completed")
+            response["model"] = model
+            response["output"] = [{
+                "type": "message",
+                "role": "assistant",
+                "content": [{"type": "output_text", "text": "mock completion"}],
+            }]
+            response["usage"] = dict(input_tokens=1, output_tokens=cap, total_tokens=cap + 1)
+        else:
+            message = dict(role="assistant", content="mock completion")
+            choice = dict(index=0, finish_reason="length", message=message)
+            usage = dict(prompt_tokens=1, completion_tokens=cap, total_tokens=cap + 1)
+            response = dict(id="chatcmpl-mock", object="chat.completion", created=0)
+            response["model"] = model
+            response["choices"] = [choice]
+            response["usage"] = usage
         payload = json.dumps(response).encode()
         self.send_response(200)
         self.send_header("content-type", "application/json")

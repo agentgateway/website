@@ -2,7 +2,6 @@
 title: Cloud providers
 weight: 10
 description: Run agentgateway on AWS, Google Cloud, or Azure, and authenticate to each provider's managed model services.
-test: skip
 aliases:
   - platforms/
 ---

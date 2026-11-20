@@ -22,7 +22,7 @@ Configure the `guardrails` field under `llm.models[]` in your agentgateway confi
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -45,9 +45,9 @@ llm:
 ```
 {{< /tab >}}
 {{< tab name="llm-prompt-guard example" >}}
-The following routing-based configuration is from the [`llm-prompt-guard` example](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-prompt-guard) in the agentgateway repository.
+The following routing-based configuration is from the [`llm-prompt-guard` example](https://github.com/agentgateway/agentgateway/tree/v1.5.0/examples/llm-prompt-guard) in the agentgateway repository.
 
-{{% github-yaml url="https://agentgateway.dev/examples/llm-prompt-guard/azure-content-safety-config.yaml" %}}
+{{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.5.0/examples/llm-prompt-guard/azure-content-safety-config.yaml" %}}
 {{< /tab >}}
 {{< /tabs >}}
 

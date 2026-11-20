@@ -13,7 +13,7 @@ Keep the TCP connection alive by sending out probes after the connection has bee
 ### Set up TCP keepalive
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that applies TCP keepalive settings to the httpbin service. 
-   ```yaml {paths="tcp-keepalive"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -86,25 +86,6 @@ Keep the TCP connection alive by sending out probes after the connection has bee
       }
       ```
 -->
-
-{{< doc-test paths="tcp-keepalive" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for tcp keepalive policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: httpbin
-        name: httpbin-keepalive
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
 <!-- TODO: Re-enable config dump assertion once the known issue where
      the config dump does not reflect keepalive policy updates is fixed.
 YAMLTest -f - <<'EOF'
@@ -137,7 +118,7 @@ EOF
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="tcp-keepalive"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} httpbin-keepalive -n httpbin
 ```
 
@@ -148,7 +129,7 @@ Keep the HTTP connection alive by sending out probes after the connection has be
 ### Set up HTTP keepalive
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that applies HTTP keepalive settings on the agentgateway proxy. 
-   ```yaml {paths="http-keepalive"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -222,25 +203,6 @@ Keep the HTTP connection alive by sending out probes after the connection has be
       }
       ```
 -->
-
-{{< doc-test paths="http-keepalive" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for http keepalive policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: httpbin
-        name: httpbin-keepalive
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
 <!-- TODO: Re-enable config dump assertion once the known issue where
      the config dump does not reflect keepalive policy updates is fixed.
 YAMLTest -f - <<'EOF'
@@ -273,7 +235,7 @@ EOF
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="http-keepalive"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} httpbin-keepalive -n httpbin
 ```
 

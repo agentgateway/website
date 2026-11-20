@@ -106,6 +106,29 @@ In this configuration, agentgateway calls the Moderation API for each request an
    Content blocked by moderation policy
    ```
 
+## Guard scope {#scope}
+
+By default, the moderation prompt guard sends the system prompt, message text, and tool call results to the Moderation API. Set `scope` to change which text it sends.
+
+This example checks only tool call results.
+
+```yaml
+promptGuard:
+  request:
+  - scope:
+    - ToolOutput
+    openAIModeration:
+      policies:
+        auth:
+          secretRef:
+            name: openai-secret
+      model: omni-moderation-latest
+```
+
+If no text is in scope, the guard skips the API call and lets the request continue. The `scope` field does not apply to inline moderation.
+
+For supported values and restrictions, see [Guard scope]({{< link-hextra path="/documentation/llm/guardrails/overview/#scope" >}}).
+
 ## Moderate content inline on the OpenAI provider
 
 In this configuration, agentgateway adds a `moderation` parameter to each request that it sends to OpenAI, and OpenAI moderates the content as part of the completion. No separate call to the Moderation API is made.

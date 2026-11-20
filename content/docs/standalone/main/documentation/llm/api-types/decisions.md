@@ -28,7 +28,9 @@ These providers accept Decisions and SystemOne requests. Other providers reject 
 |----------|--------------------------------------|--------------------------------------|
 | [`openAI`]({{< link-hextra path="/integrations/llm/providers/openai/" >}}) | Sent natively. | Translated to the Decisions format. |
 | [`typesafe`]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}) | Translated to the SystemOne format. | Sent natively. |
+| [`azure`]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the `openAI` resource type | Sent natively. | Translated to the Decisions format. |
 | [`azure`]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the `foundry` resource type | Translated to the SystemOne format. | Sent natively. |
+| [`copilot`]({{< link-hextra path="/integrations/llm/providers/copilot/" >}}) with `microsoft-decision-1` | Translated to the SystemOne format. | Sent natively. |
 | [`custom`]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with `decisions`, without `systemOne` | Sent natively. | Translated to the Decisions format. |
 | [`custom`]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with `systemOne`, without `decisions` | Translated to the SystemOne format. | Sent natively. |
 
@@ -49,7 +51,7 @@ Version 1.6 had no Decisions or SystemOne route type. With the `llm` configurati
 With the simplified `llm` configuration, no route setup is needed. Agentgateway maps `/v1/decisions` to `decisions` and `/v1/systemone` to `systemOne`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -61,7 +63,7 @@ llm:
 For a `custom` provider, declare the upstream format as `decisions` or `systemOne`. Agentgateway appends `/decisions` or `/systemone` to `baseUrl`. This example uses `decisions`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: decisions-model
@@ -79,7 +81,7 @@ For explicit routing, use the `gateways` and `routes` configuration. Map `/v1/de
 Without this map, requests default to `completions`. A Decisions request then fails with `failed to parse Completions request`.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 4000

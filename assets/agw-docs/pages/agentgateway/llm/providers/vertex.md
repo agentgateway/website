@@ -73,7 +73,7 @@ Configure [Vertex AI](https://cloud.google.com/products/gemini-enterprise-agent-
      - backendRefs:
        - name: vertex-ai
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -98,7 +98,7 @@ Configure [Vertex AI](https://cloud.google.com/products/gemini-enterprise-agent-
        backendRefs:
        - name: vertex-ai
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -123,7 +123,7 @@ Configure [Vertex AI](https://cloud.google.com/products/gemini-enterprise-agent-
        backendRefs:
        - name: vertex-ai
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -279,4 +279,8 @@ Use the following request body with the route that you created.
   ]
 }
 ```
+{{% /version %}}
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
+{{< reuse "agw-docs/snippets/gemini-reasoning-effort.md" >}}
 {{% /version %}}

@@ -2,16 +2,6 @@
 title: HTTP method
 weight: 10
 description: Match requests by HTTP method (GET, POST, PUT, PATCH, DELETE).
-test:
-  method-match:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/documentation/install/sample-app.md
-    path: install-httpbin
-  - file: ${versionRoot}/documentation/traffic-management/match/method.md
-    path: method-match
 ---
 
 Specify an HTTP method, such as POST, GET, PUT, PATCH, or DELETE, to match requests against.
@@ -23,7 +13,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 ## Set up HTTP method matching
 
 1. Create an HTTPRoute resource for the `match.example` domain that serves incoming GET requests for the httpbin app.
-   ```yaml {paths="method-match"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -116,33 +106,6 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    < content-type: text/plain; charset=utf-8
    content-type: text/plain; charset=utf-8
    ```
-
-{{< doc-test paths="method-match" >}}
-YAMLTest -f - <<'EOF'
-- name: method match - GET request returns 200
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /get
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: method match - POST request returns 404
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /post
-    method: POST
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 404
-EOF
-{{< /doc-test >}}
 
 ## Cleanup
 

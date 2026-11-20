@@ -26,7 +26,7 @@ Agentgateway configuration has a few top level sections:
 ### Example configuration file {#example-file}
 
 ```yaml
-{{% github url="https://agentgateway.dev/examples/mcp-basic/config.yaml" %}}
+{{% github url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.5.0/examples/mcp-basic/config.yaml" %}}
 ```
 
 ## Update configuration {#add}
@@ -56,7 +56,7 @@ Agentgateway's core configuration is made up of gateways, {{< gloss "Listener" >
 A minimal configuration that accepts HTTP traffic on port 3000 and forwards it to a backend running on `localhost:8000` looks like the following example.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000

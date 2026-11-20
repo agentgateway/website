@@ -2,7 +2,6 @@
 title: Messages
 weight: 30
 description: Send requests through agentgateway using the Anthropic Messages API.
-test: skip
 ---
 
 The Anthropic Messages API (`/v1/messages`) is the native interface for Anthropic Claude models.
@@ -21,7 +20,7 @@ The related [`/v1/messages/count_tokens`]({{< link-hextra path="/documentation/l
 In the simplified `llm` configuration, agentgateway automatically maps `/v1/messages` requests to the `messages` route type, so no explicit route configuration is required.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -33,7 +32,7 @@ llm:
 To configure the route type explicitly, use the `gateways` and `routes` format and set the `messages` route type in the `policies.ai.routes` map. To also support token counting, map `/v1/messages/count_tokens` to the `anthropicTokenCount` route type.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 4000
@@ -72,7 +71,7 @@ Agentgateway uses the first of these formats that the provider supports.
 
 The first three rows are values that a `custom` provider declares in its `formats` list. Built-in providers support a fixed set of formats. The `openAI`, `ollama`, `groq`, `huggingface`, and `xai` providers support both `responses` and `completions`. The `azure` provider also supports both formats for models other than Claude.
 
-Bedrock Converse is not a `formats` value. A [`bedrock` provider]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) supports only Converse, so agentgateway always converts Messages requests to that format.
+Bedrock Converse is not a `formats` value. A [`bedrock` provider]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) handles Messages requests based on the Bedrock endpoint. On Mantle, Claude models receive the native Anthropic Messages format. On Runtime, agentgateway converts Messages requests to Bedrock Converse.
 
 When a provider supports both `responses` and `completions`, agentgateway always converts Messages requests to Responses. This rule is fixed, regardless of the `formats` list order.
 
@@ -167,6 +166,8 @@ The Bedrock Converse conversion carries extended-thinking history in both direct
 The Bedrock Converse conversion preserves tool choice for Messages requests. The `auto` value becomes the Bedrock `toolChoice.auto` value, and `any` becomes `toolChoice.any`. A `tool` choice becomes `toolChoice.tool`. The `none` value or an omitted tool choice is omitted, and the tools are still sent, so the model can still call them. Extended thinking does not rewrite the choice. A model that rejects forced tool use with thinking returns a provider error.
 
 On the way out, a `thinking` block in the message history becomes a Bedrock `reasoningContent.reasoningText` block, with its signature. A `redacted_thinking` block becomes a Bedrock `reasoningContent.redactedContent` block, so that a client can replay encrypted reasoning that Bedrock returned on an earlier turn. `document`, `search_result`, `server_tool_use`, and `web_search_tool_result` blocks are dropped because Bedrock Converse has no equivalent block types.
+
+Bedrock Converse has no system role inside the message list. A system message that comes before any user or assistant message is added to the Bedrock system prompt. A system message after a user or assistant message stays in place instead: its text is sent as user text wrapped in `<system-reminder>` tags, and its cache markers are kept. Moving the message into the system prompt would change the cached prefix of every request. When the system message follows a tool call, its text is sent after the tool results, because tool results must directly follow the tool call.
 
 Each `cache_control` marker becomes a Bedrock cache point after the content that the marker is on, and the `cache_control.ttl` value becomes the TTL of the cache point. The conversion drops some content before sending the request to Bedrock. When dropped content has a cache marker, the marker moves to nearby content that the conversion keeps:
 

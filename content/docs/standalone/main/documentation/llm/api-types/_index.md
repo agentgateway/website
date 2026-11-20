@@ -2,7 +2,6 @@
 title: API types
 weight: 15
 description: Supported LLM API endpoint types and route configurations
-test: skip
 ---
 
 Agentgateway natively supports multiple LLM API endpoint types.

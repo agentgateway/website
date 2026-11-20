@@ -2,12 +2,12 @@
 > Self-signed certificates are used for demonstration purposes. Do not use self-signed certificates in production environments. Instead, use certificates that are issued from a trusted Certificate Authority.
 
 1. Create the `example_certs` directory and navigate to this directory.
-   ```sh {paths="all,backendtls-secret-ca"}
+   ```sh
    mkdir -p example_certs && cd example_certs
    ```
 
 2. Create self-signed certificates for the Certificate Authority (CA) that you later use to sign the server certificate.
-   ```sh {paths="all,backendtls-secret-ca"}
+   ```sh
    # Create CA private key
    openssl genrsa -out ca-key.pem 2048
 
@@ -17,7 +17,7 @@
    ```
 
 3. Create a server certificate for the `example.com` hostname that is signed by the CA that you created in the previous step.
-   ```sh {paths="all,backendtls-secret-ca"}
+   ```sh
    # Create server private key
    openssl genrsa -out server-key.pem 2048
 

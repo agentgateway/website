@@ -23,7 +23,7 @@ To set the same deadlines on a route instead, see
 
 1. Create the backend timeout policy.
 
-   ```yaml {paths="backend-timeouts"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -66,43 +66,6 @@ To set the same deadlines on a route instead, see
      jq '[.policies[] | select(.name.name == "httpbin-backend-timeouts")] | .[0]'
    ```
 
-{{< doc-test paths="backend-timeouts" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for backend timeout policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: httpbin
-        name: httpbin-backend-timeouts
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 2
-- name: wait for backend timeouts in config dump
-  retries: 20
-  http:
-    url: http://localhost:15000
-    path: /config_dump
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: agentgateway-proxy
-  expect:
-    bodyContains:
-    - '"httpbin-backend-timeouts"'
-    - '"connectTimeout":"2s"'
-    - '"requestTimeout":"5s"'
-EOF
-{{< /doc-test >}}
-
 ## Set a webhook timeout
 
 A guardrail webhook, external authorization server, or external processor is
@@ -117,7 +80,7 @@ worked example, see
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="backend-timeouts"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} \
   httpbin-backend-timeouts -n httpbin
 ```

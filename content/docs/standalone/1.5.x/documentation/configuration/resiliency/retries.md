@@ -16,13 +16,12 @@ Attaches to: {{< badge content="Route" path="/documentation/configuration/routes
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
-When a backend request fails, agentgateway can be configured to *{{< gloss "Retry" >}}retry{{< /gloss >}}* the request.
-When a retry is attempted, a different backend will be preferred (if possible).
+When a backend request fails, agentgateway can be configured to *{{< gloss "Retry" >}}retry{{< /gloss >}}* the request. Keep in mind that each retry goes to the same route backend as the original request. For LLM traffic, if you also want to configure failover so that an endpoint is marked as unhealthy and a request tried with a different endpoint, use [failover routing with virtual models]({{< link-hextra path="/documentation/llm/virtual-models/#failover-routing" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -44,7 +43,7 @@ mcp:
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -73,7 +72,7 @@ routes:
 #   * That failed requests are actually retried at runtime — requires a backend
 #     that returns the retry-able codes the page omits to drive the behavior.
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -94,7 +93,7 @@ EOF
 agentgateway -f config.yaml --validate-only
 
 cat <<'EOF' > config-mcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:

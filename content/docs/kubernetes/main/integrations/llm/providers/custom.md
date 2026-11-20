@@ -2,7 +2,6 @@
 title: Custom providers
 weight: 22
 description: Configure unsupported, self-hosted, and non-standard LLM providers with explicit API formats, paths, and backend targets.
-test: skip
 ---
 
 Use custom providers for unsupported, self-hosted, or non-standard LLM
@@ -29,8 +28,8 @@ For first-class providers such as OpenAI, Anthropic, Gemini, Vertex AI, Azure,
 Bedrock, and Ollama, use the dedicated provider page unless you need explicit
 format or backend target control. Some providers expose the standard OpenAI API
 shape but have no first-class {{< reuse "agw-docs/snippets/backend.md" >}} type,
-such as Cohere, DeepSeek, Groq, Mistral, Perplexity, Together AI, and xAI. For
-these providers, use [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}) before using a custom provider.
+such as Cohere, DeepSeek, Groq, Mistral, Nebius Token Factory, Perplexity,
+Together AI, and xAI. For these providers, use [OpenAI-compatible providers]({{< link-hextra path="/integrations/llm/providers/openai-compatible/" >}}) before using a custom provider.
 
 For TypeSafe Jev with an {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}},
 set `spec.provider: Typesafe` unless you need custom target control. Use
@@ -234,6 +233,19 @@ The following cases do not round-trip.
 | A `redacted_thinking` block, sent to a `Completions` provider | Dropped, because it holds nothing that an OpenAI-compatible engine can replay. |
 | An Anthropic messages request that takes the Responses conversion instead | The thinking history is dropped from the converted request, with no error and no warning, so the model loses its prior reasoning. See [Anthropic messages to the Responses format](#anthropic-messages-to-the-responses-format). |
 
+### Inline file parts {#inline-file-parts}
+
+For an OpenAI chat completions client that reaches a `Messages` provider, an
+inline `file` content part in a user message becomes a Messages `document`
+block. Set `file.file_data` to a base64 `data:` URI, such as
+`data:application/pdf;base64,<base64>`. The document title comes from
+`file.filename`. A `prompt_cache_breakpoint` on the file part becomes an
+ephemeral `cache_control` breakpoint on the document block.
+
+The conversion rejects a `file_id`, raw base64 string, remote URL, or file part
+with no content. Those forms have no inline content to send to the Messages
+provider.
+
 ### Anthropic messages to the Completions format
 
 Agentgateway converts an Anthropic messages request to Chat Completions only when
@@ -396,7 +408,7 @@ spec:
         type: PathPrefix
         value: /v1/chat/completions
     backendRefs:
-    - group: agentgateway.dev
+    - group: {{< reuse "agw-docs/snippets/group.md" >}}
       kind: {{< reuse "agw-docs/snippets/backend.md" >}}
       name: qwen-inferencepool
 ```

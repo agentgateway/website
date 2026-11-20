@@ -2,7 +2,6 @@
 title: Responses
 weight: 20
 description: Send requests through agentgateway using the OpenAI Responses API.
-test: skip
 ---
 
 The OpenAI Responses API (`/v1/responses`) is OpenAI's interface for stateful, multi-step model interactions.
@@ -26,7 +25,7 @@ During flattening, the conversion copies namespace descriptions onto each functi
 In the simplified `llm` configuration, agentgateway automatically maps `/v1/responses` requests to the `responses` route type, so no explicit route configuration is required.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -38,7 +37,7 @@ llm:
 To configure the route type explicitly, use the `gateways` and `routes` format and set the `responses` route type in the `policies.ai.routes` map.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 4000

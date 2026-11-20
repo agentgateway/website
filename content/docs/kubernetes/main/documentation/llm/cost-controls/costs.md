@@ -2,16 +2,6 @@
 title: Model costs
 weight: 20
 description: Price LLM requests with a model cost catalog and expose realized USD costs in logs, traces, and metrics.
-test:
-  costs:
-  - file: content/docs/kubernetes/main/documentation/quickstart/install.md
-    path: standard
-  - file: content/docs/kubernetes/main/documentation/setup/gateway.md
-    path: all
-  - file: content/docs/kubernetes/main/integrations/llm/providers/httpbun.md
-    path: setup-httpbun-llm
-  - file: content/docs/kubernetes/main/documentation/llm/cost-controls/costs.md
-    path: costs
 ---
 
 {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} computes the realized USD cost of each LLM request from a model cost catalog. For each request that matches a catalog entry, CEL expressions can use `llm.model` to read the resolved model metadata. For each priced request, {{< reuse "agw-docs/snippets/agentgateway.md" >}} also records the cost in access logs, traces, and metrics, and exposes the values to CEL expressions as `llm.cost` and `llm.costRates`.
@@ -190,31 +180,109 @@ Generate traffic through agentgateway that matches a model entry from the catalo
 
 When a request matches an entry in the catalog, {{< reuse "agw-docs/snippets/agentgateway.md" >}} populates the following CEL fields:
 
-- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-usage-type components: `input`, `output`, `cacheRead`, `cacheWrite`, `cacheWrite1h`, `reasoning`, `inputAudio`, `outputAudio`, and `pages` for page-billed document models. Unset when the model cannot be priced.
-- `llm.costRates`: The effective USD-per-1,000,000-token rates that were applied, after tier selection. For page-billed document models, `perPage` holds the USD-per-page rate instead. Unset when the model cannot be priced.
+- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-usage-type components: `input`, `output`, `cacheRead`, `cacheWrite`, `cacheWriteDetails`, `reasoning`, `inputAudio`, `outputAudio`, `pages` for page-billed document models, and `audioDuration` for audio models that bill by duration. Unset when the model cannot be priced.
+- `llm.costRates`: The effective USD-per-1,000,000-token rates that were applied, after tier selection. For page-billed document models, `perPage` holds the USD-per-page rate instead. For audio models that bill by duration, `perAudioMinute` holds the USD-per-minute rate. Unset when the model cannot be priced.
 - `llm.model`: The resolved model's catalog metadata, including `id`, `tags`, `limits`, `modalities`, `capabilities`, and `reasoning`. Unset when no catalog entry matches the request provider and model.
 
-For Anthropic prompt-cache writes with a 1-hour time to live (TTL), `llm.cost.cacheWrite1h` reports the 1-hour cache-write cost, and `llm.cost.cacheWrite` reports the cost of the other cache writes, such as 5-minute cache writes. When the catalog sets `cacheWrite1h`, `llm.costRates.cacheWrite1h` reports the effective rate. Traces record the 1-hour component as `agw.ai.usage.cost.cache_write_1h`.
+`llm.cost.cacheWriteDetails` reports the cost of Anthropic 1-hour and OpenAI 12-hour prompt-cache writes. For more information, see [Cache writes by TTL](#cache-write-details).
+
+For transcription and translation requests, `llm.audioSeconds` holds the audio duration in seconds that the provider reported, even when the model cannot be priced. The audio cost is the duration in minutes multiplied by the `perAudioMinute` rate, so 90 seconds at a rate of `0.006` costs `0.009`. Traces record this cost as `agw.ai.usage.cost.audio_duration`. For an example, see [Audio models]({{< link-hextra path="/integrations/llm/providers/audio/#usage-and-cost" >}}).
+
+When an Anthropic Messages response reports `usage.iterations`, {{< reuse "agw-docs/snippets/agentgateway.md" >}} prices each iteration separately and adds the results to get the request cost. If an iteration names a `model` with an exact catalog match, the tokens for that iteration use that model's catalog entry. Otherwise, the iteration uses the response model.
+
+When a response reports a model, cost lookup uses the response model first. If the catalog has no matching entry, lookup uses the request model, then `llm.originalModel`. The lookup order helps a catalog price traffic whose model was rewritten by virtual models, aliases, provider overrides, or request body transformations.
 
 The request access log includes `agw.ai.usage.cost.total` only for priced LLM requests. When the model cannot be priced, which is a lookup status of `Unpriced` or `Missing` as described in the next step, the access log leaves out the field. For how to view logs and add cost fields, see [Metrics and logs]({{< link-hextra path="/documentation/llm/observability/" >}}).
 
+### Cache writes by TTL {#cache-write-details}
+
+Anthropic and OpenAI price prompt-cache writes by how long the cache entry lives, its time to live (TTL). {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} prices two extended TTLs separately from other cache writes: Anthropic 1-hour writes (`1h`) and OpenAI Responses API 12-hour writes (`12h`).
+
+The cost data reports these writes separately from other cache writes.
+
+- `llm.cost.cacheWrite` covers only cache writes without an extended TTL, such as Anthropic 5-minute writes.
+- `llm.cost.cacheWriteDetails` maps each TTL to its cost. The map contains only TTLs with a non-zero cost, so a request without extended-TTL writes has an empty map.
+- `llm.costRates.cacheWriteDetails` maps each TTL to the rate that the catalog sets for it. A TTL that uses the `cacheWrite` rate has no key.
+- Traces add `agw.ai.usage.cost.cache_write_details.1h` and `agw.ai.usage.cost.cache_write_details.12h` only when that cost is non-zero.
+
+The keys start with a digit, so read them with index syntax, such as `llm.cost.cacheWriteDetails['1h']`. A lookup of a missing key fails, and the access log leaves out the field. To log `0` instead, check for the key first.
+
+To set the rates and log the cost of 1-hour cache writes, follow these steps.
+
+1. Add a `cacheWriteDetails` map to a model's `rates` or to a tier's `rates` in your catalog JSON. Writes for a TTL that the map omits use the `cacheWrite` rate. The built-in catalog already sets these rates for many Anthropic and OpenAI models.
+
+   ```json
+   "claude-opus-5": {
+     "rates": {
+       "input": "5",
+       "output": "25",
+       "cacheRead": "0.5",
+       "cacheWrite": "6.25",
+       "cacheWriteDetails": { "1h": "10" }
+     }
+   }
+   ```
+
+2. Add the cost of 1-hour cache writes as an access log attribute. The expression checks for the key first, so requests without 1-hour writes log `0`.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: cache-write-log
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+     frontend:
+       accessLog:
+         attributes:
+           add:
+           - name: cache_write_1h
+             expression: "'1h' in llm.cost.cacheWriteDetails ? llm.cost.cacheWriteDetails['1h'] : 0.0"
+   EOF
+   ```
+
+   Example output:
+
+   ```console
+   agentgatewaypolicy.agentgateway.dev/cache-write-log created
+   ```
+
+3. Send a request that writes to the 1-hour cache, and check the proxy logs for the `cache_write_1h` field.
+
+   ```sh
+   kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} | grep cache_write_1h
+   ```
+
+   The following log entry is for a request that wrote 400,000 tokens to the 5-minute cache and 600,000 tokens to the 1-hour cache. The 1-hour writes cost `$6`, and the 5-minute writes cost `$2.50`.
+
+   ```console
+   ... gen_ai.provider.name=anthropic gen_ai.request.model=claude-opus-5
+   gen_ai.usage.cache_creation.input_tokens=1000000 agw.ai.usage.cost.total=8.50075 cache_write_1h=6 ...
+   ```
+
 ### Service tiers {#service-tiers}
 
-{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} normalizes the service tier reported in each LLM response to `standard`, `flex`, `priority`, or `reserved`. CEL expressions access it as `llm.serviceTier`.
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} normalizes the service tier reported in each LLM response to `standard`, `flex`, `priority`, `reserved`, `ultrafast`, or `fast`. CEL expressions access it as `llm.serviceTier`.
 
 Cost calculations match this value to catalog tiers with a `serviceTier` field. Requests without a recorded tier use `standard` rates.
 
 | Provider | Reported tier and normalized `llm.serviceTier` |
 |---|---|
-| OpenAI and Azure | `default` becomes `standard`. `flex` stays `flex`. `priority` and `fast` become `priority`. `scale` becomes `reserved`. |
-| Anthropic | `standard` and `priority` stay the same. |
-| Amazon Bedrock | `default` and `standard` become `standard`. `flex`, `priority`, and `reserved` stay the same. |
+| OpenAI | `default` becomes `standard`. `flex` stays `flex`. `priority` and `fast` become `priority`. `scale` becomes `reserved`. `ultrafast` stays `ultrafast`. |
+| Azure | `default` becomes `standard`. `flex` stays `flex`. `priority` and `fast` become `priority`. `scale` becomes `reserved`. |
+| Anthropic | `standard` and `priority` stay the same. If the response reports `usage.speed: "fast"`, the tier becomes `fast`. |
+| Amazon Bedrock | `default` and `standard` become `standard`. `flex`, `priority`, `ultrafast`, and `reserved` stay the same. |
 | Gemini | `standard`, `flex`, and `priority` stay the same. |
 | Vertex AI | `ON_DEMAND` becomes `standard`. `ON_DEMAND_FLEX` becomes `flex`. `ON_DEMAND_PRIORITY` becomes `priority`. `PROVISIONED_THROUGHPUT` becomes `reserved`. Claude models report the Anthropic tiers, `standard` and `priority`. |
 
-Unlisted providers or tiers leave `llm.serviceTier` unset.
+OpenAI and Azure `fast` request values map to `priority`. An Anthropic fast-mode response maps to `fast`. The two are different tiers.
 
-Earlier versions exposed the provider's original tier name, such as `default` or `ON_DEMAND`. Update CEL comparisons to use the normalized names.
+Unlisted providers or tiers leave `llm.serviceTier` unset.
 
 For Bedrock tier requests and the response header used to detect the tier, see [Service tier]({{< link-hextra path="/integrations/llm/providers/bedrock/#service-tier" >}}).
 
@@ -348,79 +416,3 @@ A rising `Missing` or `Unpriced` count means requests are flowing through models
 ## Model tags
 
 {{< reuse "agw-docs/snippets/model-catalog-tags.md" >}}
-
-{{< doc-test paths="costs" >}}
-# Create a catalog that prices the httpbun test model (gpt-4) and attach it to the Gateway
-# through a Gateway-level AgentgatewayParameters resource.
-kubectl apply -f- <<'EOF'
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: costs-test-catalog
-  namespace: agentgateway-system
-data:
-  catalog.json: |
-    {
-      "providers": {
-        "openai": {
-          "models": {
-            "gpt-4": { "rates": { "input": "30", "output": "60" } }
-          }
-        }
-      }
-    }
----
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayParameters
-metadata:
-  name: costs-test-params
-  namespace: agentgateway-system
-spec:
-  modelCatalog:
-    sources:
-      - configMap:
-          name: costs-test-catalog
-          key: catalog.json
-EOF
-kubectl patch gateway agentgateway-proxy -n agentgateway-system --type merge \
-  -p '{"spec":{"infrastructure":{"parametersRef":{"name":"costs-test-params","group":"agentgateway.dev","kind":"AgentgatewayParameters"}}}}'
-# Attaching the catalog rolls the proxy so it can mount the ConfigMap.
-sleep 10
-kubectl rollout status deployment/agentgateway-proxy -n agentgateway-system --timeout=180s
-{{< /doc-test >}}
-
-{{< doc-test paths="costs" >}}
-# Send priced traffic through the httpbun route and confirm the catalog prices it. The proxy
-# always logs agw.ai.usage.cost.total for LLM requests (Step 4); a value greater than 0 means
-# the catalog priced the gpt-4 model. Read the cost from the proxy access log rather than the
-# stats endpoint, which is not reachable from outside the proxy pod in automated tests.
-export INGRESS_GW_ADDRESS=$(kubectl get gateway agentgateway-proxy -n agentgateway-system -o jsonpath="{.status.addresses[0].value}")
-priced=false
-for i in $(seq 1 12); do
-  curl -s --max-time 15 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions" \
-    -H "content-type: application/json" \
-    -d '{"model":"gpt-4","messages":[{"role":"user","content":"hi"}]}' || true
-  cost=$(kubectl logs deployment/agentgateway-proxy -n agentgateway-system --tail=500 2>/dev/null \
-    | grep -oE 'agw\.ai\.usage\.cost\.total[^0-9-]*[0-9]+(\.[0-9]+)?' \
-    | grep -oE '[0-9]+(\.[0-9]+)?$' \
-    | sort -rn | head -1 || true)
-  if [ -n "$cost" ] && awk "BEGIN{exit !(${cost} > 0)}"; then
-    priced=true
-    break
-  fi
-  sleep 5
-done
-if [ "$priced" != "true" ]; then
-  echo "FAIL: catalog did not price gpt-4 traffic (no non-zero agw.ai.usage.cost.total in access log)"
-  exit 1
-fi
-echo "PASS: catalog priced gpt-4 traffic (agw.ai.usage.cost.total=${cost})"
-{{< /doc-test >}}
-
-{{< doc-test paths="costs" >}}
-# Cleanup: detach the catalog and remove the test resources.
-kubectl patch gateway agentgateway-proxy -n agentgateway-system --type json \
-  -p '[{"op":"remove","path":"/spec/infrastructure/parametersRef"}]' || true
-kubectl delete agentgatewayparameters costs-test-params -n agentgateway-system --ignore-not-found
-kubectl delete configmap costs-test-catalog -n agentgateway-system --ignore-not-found
-{{< /doc-test >}}

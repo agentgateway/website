@@ -1,0 +1,23 @@
+---
+title: CEL playground
+weight: 1
+description: Try out CEL expressions interactively in the agentgateway UI.
+---
+
+You can try out CEL expressions directly in the built-in CEL playground in the agentgateway UI. The playground uses agentgateway's actual CEL runtime, so built-in agentgateway functions and any [custom functions]({{< link-hextra path="/reference/cel/custom-functions/" >}}) loaded from your configuration are available for testing.
+
+To open the playground:
+
+1. Run agentgateway.
+   ```sh
+   agentgateway -f config.yaml
+   ```
+
+2. Open the [CEL playground](http://localhost:15000/ui/cel/).
+
+3. In the **Expression** box, enter the CEL expression that you want to test.
+4. In the **Request Context YAML** box, edit the sample request context that the CEL expression is evaluated against.
+5. To test your CEL expression, click **Evaluate**. The **Result** card shows the value returned by the CEL evaluation.
+
+{{< reuse-image-light src="img/cel-playground.png" >}}
+{{< reuse-image-dark srcDark="img/cel-playground-dark.png" >}}

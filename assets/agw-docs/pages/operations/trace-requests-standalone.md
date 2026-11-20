@@ -33,7 +33,7 @@ You can run `agctl proxy trace` in two modes:
 If you do not already have a setup, the following minimal `config.yaml` works for the examples in this guide.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -43,23 +43,6 @@ routes:
   backends:
   - host: 127.0.0.1:8000
 ```
-
-{{< doc-test paths="trace-validate" >}}
-# Install agentgateway binary
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-
-cat > /tmp/agctl-trace-config.yaml << 'EOF'
-gateways:
-  default:
-    port: 3000
-    protocol: HTTP
-routes:
-- name: httpbin
-  backends:
-  - host: 127.0.0.1:8000
-EOF
-agentgateway -f /tmp/agctl-trace-config.yaml --validate-only
-{{< /doc-test >}}
 
 ## Start agentgateway
 

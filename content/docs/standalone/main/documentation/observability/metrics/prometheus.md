@@ -34,11 +34,12 @@ Set up a Prometheus instance and use PromQL queries to query them. The steps to 
    EOF
    ```
 
-2. Run Prometheus with Docker.
+2. Run Prometheus with Docker. The `--add-host` flag lets the container reach agentgateway on your machine as `host.docker.internal`, which Docker Engine on Linux does not provide by default.
 
    ```sh
    docker run -d --name prometheus \
      -p 9090:9090 \
+     --add-host=host.docker.internal:host-gateway \
      -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml \
      prom/prometheus:latest
    ```

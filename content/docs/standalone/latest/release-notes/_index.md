@@ -2,7 +2,6 @@
 title: Release notes
 weight: 120
 description: Review what changed in each agentgateway release.
-test: skip
 disableCards: true
 ---
 

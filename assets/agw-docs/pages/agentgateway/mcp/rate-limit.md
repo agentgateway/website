@@ -84,7 +84,7 @@ Review the following table for example use cases and configuration guidance.
 Also, check out the rate limiting guides for other use cases:
 
 - [LLM rate limiting by token expenses]({{< link-hextra path="/documentation/llm/rate-limit" >}}).
-- [HTTP rate limiting]({{< link-hextra path="/documentation/security/rate-limit-http" >}}).
+- {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[HTTP rate limiting]({{< link-hextra path="/documentation/security/rate-limit/local" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[HTTP rate limiting]({{< link-hextra path="/documentation/security/rate-limit-http" >}}){{< /version >}}.
 
 ## Before you begin
 
@@ -99,7 +99,7 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
 
    {{< version include-if="1.5.x" >}}For an MCP JSON-RPC request, the 429 is converted to an HTTP 200 response that carries a JSON-RPC error with code `-32003`.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}For an MCP JSON-RPC request, the 429 is converted to an HTTP 200 response. A rate-limited `tools/call` request gets a tool result with `isError: true`, so that MCP clients can show a tool-execution error instead of treating the session as broken. Other requests, such as `initialize` and `tools/list`, get a JSON-RPC error with code `-32003`.{{< /version >}}
 
-   ```yaml {paths="mcp-local-rate-limit"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -119,25 +119,6 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
            burst: 10
    EOF
    ```
-
-   {{< doc-test paths="mcp-local-rate-limit" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for mcp-rate-limit policy to be accepted
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: default
-           name: mcp-rate-limit
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 120
-         intervalSeconds: 2
-   EOF
-   {{< /doc-test >}}
 
 2. Verify that the policy is attached.
 
@@ -256,7 +237,7 @@ spec:
 EOF
 ```
 
-Size a keyed limit the same way as a shared one: the bucket counts HTTP requests, not tool calls, so each client still spends roughly 3 to 5 requests per tool call session. Reading `jwt` claims requires [MCP authentication]({{< link-hextra path="/documentation/mcp/auth/" >}}) on the same traffic. Clients whose key cannot be evaluated, such as unauthenticated callers, share one bucket. {{< reuse "agw-docs/snippets/ratelimit-key-buckets.md" >}} For more information about keyed limits, see [Claim-level budget limits]({{< link-hextra path="/documentation/security/rate-limit-http/#claim-level" >}}).
+Size a keyed limit the same way as a shared one: the bucket counts HTTP requests, not tool calls, so each client still spends roughly 3 to 5 requests per tool call session. Reading `jwt` claims requires [MCP authentication]({{< link-hextra path="/documentation/mcp/auth/" >}}) on the same traffic. Clients whose key cannot be evaluated, such as unauthenticated callers, share one bucket. {{< reuse "agw-docs/snippets/ratelimit-key-buckets.md" >}} For more information about keyed limits, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Claim-level budget limits]({{< link-hextra path="/documentation/security/rate-limit/local/#claim-level" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Claim-level budget limits]({{< link-hextra path="/documentation/security/rate-limit-http/#claim-level" >}}){{< /version >}}.
 {{< /version >}}
 
 ## Per-tool rate limits with CEL descriptors {#global-per-tool}
@@ -264,7 +245,7 @@ Size a keyed limit the same way as a shared one: the bucket counts HTTP requests
 Local rate limiting treats every POST to `/mcp` identically. But some tools are more expensive than others, and so they deserve tighter limits. Global rate limiting with CEL descriptors lets you look inside the MCP request body and apply different ceilings per tool name.
 
 > [!NOTE]
-> Global rate limiting requires an external [Envoy Rate Limit service](https://github.com/envoyproxy/ratelimit) backed by Redis. For a complete guide on global rate limiting architecture and setup, see the [Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit-global" >}}).
+> Global rate limiting requires an external [Envoy Rate Limit service](https://github.com/envoyproxy/ratelimit) backed by Redis. For a complete guide on global rate limiting architecture and setup, see the {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit/global" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Global rate limiting guide]({{< link-hextra path="/documentation/security/rate-limit-global" >}}){{< /version >}}.
 
 The following steps show how to set up global rate limiting infrastructure and configure per-tool rate limits using CEL expressions.
 
@@ -549,6 +530,6 @@ The following steps show how to set up global rate limiting infrastructure and c
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="mcp-local-rate-limit"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} mcp-rate-limit -n default
 ```

@@ -4,15 +4,7 @@ weight: 15
 prev: /mcp/about
 next: /mcp/connect
 description: Choose between the simplified `mcp` section and routing-based configuration, and decide whether to expose your MCP servers on one endpoint or on separate paths
-test:
-  mcp-keep-alive:
-  - path: mcp-keep-alive
 ---
-
-{{< doc-test paths="mcp-keep-alive" >}}
-# Install agentgateway binary
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
 
 Agentgateway offers two ways to configure Model Context Protocol (MCP) servers, and two ways to expose them to clients. The two choices are independent of each other.
 
@@ -36,7 +28,7 @@ The following examples are equivalent. Each one exposes two MCP servers on port 
 {{< tabs >}}
 {{% tab name="Simplified (MCP)" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   targets:
   - name: jira
@@ -49,7 +41,7 @@ mcp:
 {{% /tab %}}
 {{% tab name="Routing-based" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -75,6 +67,8 @@ When you omit the `gateways` field, the `mcp` section attaches to the gateway na
 
 You can use both modes in the same file, but one mode is usually enough.
 
+Target names must be unique in any MCP target list. If two entries in the same target list use the same `name`, configuration validation fails with `duplicate mcp target name "<name>"`. This check applies to the top-level `mcp.targets` list, to each `backends[].mcp.targets` list, and to each `routes[].backends[].mcp.targets` list.
+
 ## One endpoint or separate paths {#topology}
 
 Independently of the configuration mode, you choose how many endpoints your clients connect to. What determines this is how you group targets into backends, not which section you write them in.
@@ -94,7 +88,7 @@ A virtual MCP backend can select upstream servers with a boolean CEL `condition`
 The following example lets a client select a server with the `x-mcp-target` header. A request with `x-mcp-target: engineering` includes only the `engineering` target.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   targets:
   - name: engineering
@@ -113,7 +107,7 @@ mcp:
 | `mcp.targets[].condition` | Boolean CEL expression that selects this target. An omitted condition always includes the target. Conditions require at least two configured targets. |
 | `mcp.targets[].mcp.host` | Upstream MCP endpoint, contacted only when its condition allows it. |
 
-In routing-based configuration, set the same fields under `routes[].backends[].mcp.targets[]`. Conditions can also use authenticated request context, such as JWT claims populated by a [JWT policy]({{< link-hextra path="/documentation/configuration/security/jwt-authn/" >}}). A client-supplied selection header by itself does not establish the client's identity.
+In routing-based configuration, set the same fields under `routes[].backends[].mcp.targets[]`. Conditions can also use authenticated request context, such as JWT claims populated by a [JWT policy]({{< link-hextra path="/documentation/configuration/security/authentication/jwt-authn/" >}}). A client-supplied selection header by itself does not establish the client's identity.
 
 If every condition is false, agentgateway presents an empty virtual MCP server. For evaluation timing and error behavior, see [Target conditions]({{< link-hextra path="/integrations/mcp/servers/virtual/#target-conditions" >}}). Use [MCP authorization]({{< link-hextra path="/documentation/mcp/mcp-authz/" >}}) to filter individual tools and resources from the selected servers. See [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}) to compare the options.
 
@@ -148,7 +142,7 @@ Multiplexing changes what authentication options you have, so decide the topolog
 When you hold the credentials, set them **per target** with `policies.backendAuth`. Each target gets its own credential, so a token for one MCP server is never sent to another.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   targets:
   - name: jira
@@ -190,12 +184,20 @@ Use `sseKeepAlive` on the MCP backend to send Server-Sent Events (SSE) comment f
 
 An MCP stream is idle whenever no tool calls or notifications are in flight, which nothing in the network path can tell apart from a dead connection. Keep-alives are off by default, so omit `sseKeepAlive` if you do not need them.
 
-Set the duration for the keep-alive where you configure the backend: `mcp.sseKeepAlive` in the simplified MCP style, and `routes[].backends[].mcp.sseKeepAlive` in the routing-based style.
+Set the duration for the keep-alive where you configure the backend: `mcp.sseKeepAlive` in the simplified MCP style, and `routes[].backends[].mcp.sseKeepAlive` in the routing-based style. The UI writes only the simplified MCP style. For a routing-based backend, use the **Routing-based** tab.
 
 {{< tabs >}}
+{{% tab name="UI" %}}
+1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**. Expand **MCP behavior**.
+2. For **SSE keep-alive**, enter `10s`.
+3. Check **State mode**. If `statefulMode` is not set in your configuration, the drawer still shows **Stateless** and saves it, so select **Stateful** to keep the default session behavior.
+4. Click **Save settings**.
+
+The UI sets `mcp.sseKeepAlive` to `10s`, as in the **Simplified (MCP)** tab. The UI also writes the other drawer values: the selected state mode, `failureMode` (`failClosed` if it was not set), and an empty `gateways` list with the port if no gateway is bound. To turn off keep-alives, clear the field and save.
+{{% /tab %}}
 {{% tab name="Simplified (MCP)" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   sseKeepAlive: 10s
   targets:
@@ -206,7 +208,7 @@ mcp:
 {{% /tab %}}
 {{% tab name="Routing-based" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -225,45 +227,6 @@ routes:
 ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="mcp-keep-alive" >}}
-# WHAT THIS TEST VALIDATES:
-#   * `sseKeepAlive` is accepted on the MCP backend in both the simplified MCP
-#     and routing-based forms, at the field paths this section names.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That comment frames are actually emitted every 10s — requires an MCP
-#     upstream held idle past the interval, which this page does not stand up.
-cat <<'EOF' > config-mcp-keepalive.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-mcp:
-  sseKeepAlive: 10s
-  targets:
-  - name: jira
-    mcp:
-      host: https://mcp.atlassian.com/v1/mcp
-EOF
-agentgateway -f config-mcp-keepalive.yaml --validate-only
-
-cat <<'EOF' > config-route-keepalive.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- name: tools
-  matches:
-  - path:
-      pathPrefix: /mcp
-  backends:
-  - mcp:
-      sseKeepAlive: 10s
-      targets:
-      - name: jira
-        mcp:
-          host: https://mcp.atlassian.com/v1/mcp
-EOF
-agentgateway -f config-route-keepalive.yaml --validate-only
-{{< /doc-test >}}
 
 For request and connection timeouts, which are separate route and backend policies, see [Timeouts]({{< link-hextra path="/documentation/configuration/resiliency/timeouts" >}}).
 

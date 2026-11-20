@@ -52,7 +52,7 @@ In this example, you remove the `x-debug-trace` request header before the reques
 
 2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your transformation rules.
 
-   ```yaml {paths="remove-header"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -71,22 +71,6 @@ In this example, you remove the `x-debug-trace` request header before the reques
            - x-debug-trace
    EOF
    ```
-
-   {{< doc-test paths="remove-header" >}}
-   YAMLTest -f - <<'EOF'
-   - name: verify x-debug-trace header is stripped from request
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/get"
-       method: GET
-       headers:
-         host: www.example.com
-         x-debug-trace: "true"
-     source:
-       type: local
-     expect:
-       statusCode: 200
-   EOF
-   {{< /doc-test >}}
 
 3. Send another request with the `x-debug-trace` request header. Verify that you get back a 200 HTTP response code and that the `x-debug-trace` header is no longer present in the headers echoed back by httpbin.
 
@@ -137,6 +121,6 @@ In this example, you remove the `x-debug-trace` request header before the reques
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="remove-header"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} transformation -n httpbin
 ```

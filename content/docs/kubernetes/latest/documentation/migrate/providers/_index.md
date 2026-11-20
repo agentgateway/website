@@ -2,7 +2,6 @@
 title: "Providers"
 description: Configure providers for migrating Ingress resources to Gateway API
 weight: 20
-test: skip
 ---
 
 Providers provide the source input for migrating to **Gateway API** and **agentgateway** resources.

@@ -2,7 +2,6 @@
 title: Release notes
 weight: 950
 description: Review what changed in each release, and which versions are supported.
-test: skip
 disableCards: true
 ---
 

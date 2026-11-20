@@ -17,7 +17,7 @@ Install `agctl`, the command-line tool that you use to inspect and debug agentga
 | `agctl catalog` | Manage the model catalogs that price LLM requests, including importing catalog data from supported pricing sources. |{{< /version >}}{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 | `agctl migrate` | Migrate agentgateway resources to newer configurations. |{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}{{< conditional-text include-if="standalone" >}}
 | `agctl standalone` | Manage the configuration resources, virtual keys, budgets, and recorded LLM traffic of a standalone agentgateway. For more information, see [Manage standalone agentgateway](#standalone). |{{< /conditional-text >}}{{< /version >}}
-| `agctl version` | Print version information for the `agctl` CLI. |{{< version include-if="main" >}}{{< conditional-text include-if="kubernetes" >}}
+| `agctl version` | Print version information for the `agctl` CLI. |{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}{{< conditional-text include-if="kubernetes" >}}
 | `agctl bug-report` | Collect agentgateway resources, logs, and metrics from your cluster into an archive that you can attach to a bug report. Secret values are redacted. |{{< /conditional-text >}}{{< /version >}}
 | `agctl completion` | Turn on autocompletion for your shell in `bash`, `zsh`, `fish`, or `powershell`. |
 

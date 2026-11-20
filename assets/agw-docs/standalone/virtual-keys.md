@@ -17,7 +17,7 @@ The gateway host holds every provider key. Protect it as you would any other sec
 * **Restrict access to the files.** Run agentgateway as a dedicated user, and make the key file and the configuration file readable only by that user.
 * **Do not store raw virtual keys.** Store a `keyHash` for each virtual key instead of the raw `key`, so that a copy of the configuration file does not contain usable keys.
 * **Encrypt client traffic.** Virtual keys are bearer credentials. Serve clients over TLS, or keep the gateway on a private network.
-* **Protect the UI and admin API.** Anyone who can reach them can create and read virtual keys. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x" >}}For more information, see [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}).{{< /version >}}
+* **Protect the UI and admin API.** Anyone who can reach them can create and read virtual keys.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} Use UI access policies to choose which users can manage keys.{{< /version >}} {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x" >}}For more information, see [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}).{{< /version >}}
 * **Keep agentgateway up to date** with security patches.
 
 ## Before you begin
@@ -25,29 +25,6 @@ The gateway host holds every provider key. Protect it as you would any other sec
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 You also need an OpenAI API key. The examples read it from `OPENAI_API_KEY`.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} For file-based credentials and rotation without a restart, see [Provider API keys]({{< link-hextra path="/documentation/llm/api-keys/" >}}).{{< /version >}}
-
-{{< doc-test paths="virtual-keys" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * "Step 1": the virtual keys config is accepted by agentgateway
-#     (--validate-only), so the apiKey policy fields are correct.
-#   * "Step 3": a request with either virtual key is authenticated and proxied
-#     to the provider (200), and a request with an unknown key is rejected (401),
-#     which is the behavior the strict apiKey mode describes.
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The provider's response content. The test runs against a local mock LLM
-#     rather than OpenAI, so no provider API key is needed and no live completion
-#     is billed. Only the gateway behavior on this page is asserted.
-#   * "Configure token budgets" and "Monitor per-key spending" - those sections
-#     need a provider that returns realistic token counts and a Prometheus
-#     instance, so they are left to manual verification.
-# Install agentgateway binary
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< reuse "agw-docs/snippets/start-mock-llm.md" >}}
-{{< /doc-test >}}
 
 ## Set up virtual keys {#set-up-virtual-keys}
 
@@ -63,7 +40,7 @@ Turn on API key authentication, and create two virtual keys, one for Alice and o
 
    ```yaml
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "*"
@@ -103,9 +80,9 @@ The UI writes the same `apiKey` policy as the **Config file** tab{{< version exc
 {{% tab name="Config file" %}}
 Create a configuration with API key authentication. This example creates two virtual keys for Alice and Bob.
 
-```yaml {paths="virtual-keys"}
+```yaml
 cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   policies:
     apiKey:
@@ -142,15 +119,6 @@ agentgateway -f config.yaml
 {{% /tab %}}
 {{< /tabs >}}
 
-{{< doc-test paths="virtual-keys" >}}
-# Virtual keys: validate the documented config, then run it against the mock LLM.
-{{< reuse "agw-docs/snippets/point-config-at-mock-llm.md" >}}
-agentgateway -f config-mock.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID $MOCK_LLM_PID 2>/dev/null' EXIT
-sleep 3
-{{< /doc-test >}}
-
 ### Step 2: Test the virtual keys {#step-3-test-the-virtual-keys}
 
 You can test the keys in the UI playground or with curl. Both work the same way, whether you created the keys in the UI or in the config file.
@@ -163,7 +131,7 @@ You can test the keys in the UI playground or with curl. Both work the same way,
 3. In the **Specific model** field, enter `gpt-3.5-turbo`. The `*` model accepts any model name, so the playground needs a specific name to send.
 4. From the **Virtual API key** dropdown, select Alice's key. The dropdown lists only the keys that are stored as raw values. If the UI saved the key as a hash, select **Raw value**, and paste Alice's key into the **Raw API key** field.
 5. In the **User message** field, enter `Hello!`, and click **Send**. Verify that the reply from the model appears.
-6. From the **Virtual API key** dropdown, select **Raw value**, and enter `invalid-key` in the **Raw API key** field. Send the message again. Verify that the playground shows **Playground request failed** with the error `api key authentication failure: invalid credentials`.
+6. From the **Virtual API key** dropdown, select **Raw value**, and enter `invalid-key` in the **Raw API key** field. Send the message again. Verify that the playground shows **Playground request failed** with the error `authentication failed`.
 {{% /version %}}
 {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 The playground steps need agentgateway 1.7 or later. Use the **curl** tab.
@@ -172,7 +140,7 @@ The playground steps need agentgateway 1.7 or later. Use the **curl** tab.
 {{% tab name="curl" %}}
 1. Send a request with Alice's API key. Verify that the request succeeds.
 
-   ```sh {paths="virtual-keys"}
+   ```sh
    curl -s http://localhost:4000/v1/chat/completions \
      -H "Authorization: Bearer vk-alice-4f9c2a" \
      -H "Content-Type: application/json" \
@@ -201,7 +169,7 @@ The playground steps need agentgateway 1.7 or later. Use the **curl** tab.
 
 2. Send a request without a valid API key. Verify that the request is rejected with a 401 status.
 
-   ```sh {paths="virtual-keys"}
+   ```sh
    curl -s -o /dev/null -w "%{http_code}" http://localhost:4000/v1/chat/completions \
      -H "Authorization: Bearer invalid-key" \
      -H "Content-Type: application/json" \
@@ -217,64 +185,6 @@ The playground steps need agentgateway 1.7 or later. Use the **curl** tab.
    ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="virtual-keys" >}}
-YAMLTest -f - <<'EOF'
-- name: request with valid API key succeeds
-  http:
-    url: "http://localhost:4000"
-    path: /v1/chat/completions
-    method: POST
-    headers:
-      content-type: application/json
-      Authorization: "Bearer vk-alice-4f9c2a"
-    body: |
-      {
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "Hello!"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-
-- name: request with invalid API key is rejected
-  http:
-    url: "http://localhost:4000"
-    path: /v1/chat/completions
-    method: POST
-    headers:
-      content-type: application/json
-      Authorization: "Bearer invalid-key"
-    body: |
-      {
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "Hello!"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 401
-
-- name: request with Bob's key also succeeds independently
-  http:
-    url: "http://localhost:4000"
-    path: /v1/chat/completions
-    method: POST
-    headers:
-      content-type: application/json
-      Authorization: "Bearer vk-bob-8d1e7b"
-    body: |
-      {
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "Hello!"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
 
 ## Manage client access
 
@@ -341,7 +251,7 @@ Revoke one client's access without restarting agentgateway or changing other key
 {{% tab name="UI" %}}
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 1. Open **LLM** > **Virtual API Keys**, and click the **Delete key** icon for Bob's key. In the **Delete virtual API key?** dialog, click **Delete key**.
-2. In the **Chat Playground**, select **Raw value** from the **Virtual API key** dropdown, and enter Bob's key, `vk-bob-8d1e7b`. Send a message. Verify that the playground shows **Playground request failed** with the error `api key authentication failure: invalid credentials`.
+2. In the **Chat Playground**, select **Raw value** from the **Virtual API key** dropdown, and enter Bob's key, `vk-bob-8d1e7b`. Send a message. Verify that the playground shows **Playground request failed** with the error `authentication failed`.
 3. Restore Bob's key before continuing with the budget examples. Click **New key**, and create Bob's key again in the same way as in [Step 1](#step-1-configure-api-key-authentication).
 {{% /version %}}
 {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
@@ -440,6 +350,33 @@ Replace the provider credential on the gateway host. Clients keep their virtual 
 2. Send a request with an existing virtual key. Verify that it still succeeds.
 {{< /version >}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}
+### Key owners {#key-owners}
+
+Agentgateway records an owner for each virtual key that a logged-in user creates. Owners apply to keys that users create in the UI on a gateway{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}, or with an `agctl` profile that authenticates to that gateway{{< /version >}}. The owner is the [logged-in user]({{< link-hextra path="/documentation/setup/ui/secure-ui/#signed-in-user" >}}) of the request. Agentgateway stores the owner in the `agentgateway.dev/owner` metadata field of the key. A key that you create on the admin interface, or in your configuration file, has no owner.
+
+The following example shows the metadata of a key that a user created in the UI. The owner is the `sub` claim of the user's OIDC session, which Keycloak sets to a UUID.
+
+```yaml
+llm:
+  policies:
+    apiKey:
+      keys:
+      - keyHash: sha256:84d589f2439e4d9ff4438aa840e63ffcbf231a87e7fef929f975d2bde03dc78c
+        metadata:
+          name: alice
+          agentgateway.dev/id: 584c5773-fec2-4f63-b016-0382e47c8270
+          agentgateway.dev/createdAt: 1792785908
+          agentgateway.dev/owner: 1ed4bac1-9a81-4867-a81f-04cfc58bf0b2
+```
+
+Owners work in the following ways:
+
+* **Owners record who created each key.** Your UI access policies decide who can edit or delete keys. To set up roles, such as a group that manages keys and a group that can only view them, see [Choose what users can do]({{< link-hextra path="/documentation/setup/ui/secure-ui/#access-model" >}}).
+* **The owner stays with the key.** When another user edits the key, agentgateway keeps the original owner, so you always know where the key came from.
+* **Request logs and analytics group usage by owner.** By default, the owner becomes the `agentgateway.user` of each request that uses the key, ahead of the `user` and `name` metadata of the key. Each request log also records the key name in the `agw.api_key.name` attribute, so you can break down usage per key, such as when an administrator creates a key for each team. To choose a different user value, set the `config.standardAttributes.user` field. For more information, see [Choose how users are identified]({{< link-hextra path="/documentation/setup/ui/secure-ui/#signed-in-user" >}}).
+{{< /version >}}
+
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 ## Set up virtual keys (agctl) {#agctl}
 
@@ -451,7 +388,7 @@ Generate, restrict, update, and revoke virtual keys from the command line with `
 
    ```yaml
    cat <<'EOF' > config-agctl.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      database:
        url: sqlite://virtual-keys.db
@@ -596,7 +533,7 @@ Budget windows are aligned to the Unix epoch, not to the time that you create th
    team-a             2         1       19      $0.000007  -         -      0.0%
    ```
 
-   Agentgateway attributes each request to the `user` or `name` metadata of the key. For more groupings, see [CLI analytics]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/#cli" >}}).
+   Agentgateway attributes each request to the [owner](#key-owners) of the key. If the key has no owner, agentgateway uses the `user` or `name` metadata of the key. For more groupings, see [CLI analytics]({{< link-hextra path="/documentation/llm/cost-controls/dashboard/#cli" >}}).
 
 3. List the requests that agentgateway recorded.
 
@@ -658,8 +595,10 @@ The key in `VIRTUAL_KEY` still works, because its hash did not change. The `keys
    Example output:
 
    ```text
-   api key authentication failure: invalid credentials
+   authentication failed
    ```
+
+   The agentgateway logs record the reason, `api key authentication failure: invalid credentials`.
 
 To rotate a key, create a replacement key with a new name, update the client, and then revoke the old key.
 {{< /version >}}

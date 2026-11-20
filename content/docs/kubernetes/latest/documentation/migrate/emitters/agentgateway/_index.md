@@ -2,7 +2,6 @@
 title: "Agentgateway"
 description: "How ingress-nginx annotations map to Gateway API + AgentgatewayPolicy resources."
 weight: 30
-test: skip
 ---
 
 The Agentgateway Emitter supports generating **Gateway API** resources plus **agentgateway**-specific extensions

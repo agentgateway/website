@@ -132,9 +132,8 @@ The following guardrail runs a credit card detector and OpenAI moderation, both 
 > Audit mode changes only whether the gateway acts on the verdict. The guard still calls its provider, so an external guard in audit mode adds the same latency and the same provider cost as an enforcing guard.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
-  gateways: [default]
   models:
   - name: gpt-4o
     provider: openai
@@ -261,6 +260,22 @@ llm:
 > To protect a streamed response, use `action: reject`. When the guard matches, agentgateway ends the stream and sends a `guardrail_blocked` error event to the client.
 
 Request guards do not have this limit. A request is buffered before it reaches the LLM provider, so both `mask` and `reject` apply to requests whether or not the client asks for a streamed response.
+
+### Streaming latency {#streaming-latency}
+
+When you set `streaming: Enabled` and configure at least one response guard, agentgateway does not forward each streamed chunk when it arrives. Instead, the proxy repeats the following cycle until the response ends:
+
+1. The proxy holds chunks until it collects 1024 bytes of response text, including reasoning text, or until the response ends.
+2. The response guards check that text.
+3. If the guards pass, the proxy sends the held chunks to the client. If a guard blocks the text, the proxy drops the held chunks and ends the stream. Text that the proxy sent in an earlier cycle already reached the client.
+
+This behavior applies to SSE responses and to the text deltas of OpenAI Realtime WebSocket traffic.
+
+Response guards change how a streamed response reaches the client in the following ways:
+
+- **A short response arrives as one chunk.** If the response has less than 1024 bytes of text, the client receives the full response at once when the response ends. This is expected behavior, not a bug.
+- **The time to first byte increases, and the rest of the response arrives in bursts.** The client gets the first chunk only after the LLM generates 1024 bytes of text and the guards check it. After that, the response arrives in bursts of about 1024 bytes of text. Each check adds the latency of the guard, such as a call to an external moderation service or a webhook.
+- **You cannot change the threshold.** No setting or environment variable changes the 1024-byte value. If your clients need the first tokens immediately, leave `streaming` unset or set it to `Disabled`. Streamed responses then reach the client without delay, but the response guards do not check them. The guards still check buffered responses.
 
 ## Choosing the right approach
 

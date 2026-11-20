@@ -33,7 +33,9 @@ You can inspect raw metrics directly from either endpoint without installing any
       curl http://localhost:15020/metrics
       ```
 
-Both endpoints return metrics in the [OpenMetrics](https://openmetrics.io/) format. All agentgateway metrics use the `agentgateway_` prefix. For the full list of available metrics, see [Control plane metrics]({{< link path="/documentation/observability/metrics/control-plane/" >}}) and [Data plane metrics]({{< link path="/documentation/observability/metrics/dataplane/" >}}).
+The data plane endpoint returns metrics in the [OpenMetrics](https://openmetrics.io/) format. The control plane endpoint returns metrics in the classic Prometheus text format. For more information about the data plane format, see [Metrics format]({{< link path="/documentation/observability/metrics/dataplane/#metrics-format" >}}).
+
+All agentgateway metrics use the `agentgateway_` prefix. For the full list of available metrics, see [Control plane metrics]({{< link path="/documentation/observability/metrics/control-plane/" >}}) and [Data plane metrics]({{< link path="/documentation/observability/metrics/dataplane/" >}}).
 
 ## Scrape metrics for querying and visualization
 
@@ -129,7 +131,7 @@ Before you begin, make sure that you have the following:
 * Prometheus Operator v0.88.0 or later, which adds the `scrapeNativeHistograms` field to the ServiceMonitor and PodMonitor CRDs.
 
 > [!NOTE]
-> The [OTel stack guide]({{< link path="/documentation/observability/otel-stack/" >}}) installs `kube-prometheus-stack` version {{< reuse "agw-docs/versions/otel-stack-prometheus.md" >}}, which might include an older Prometheus Operator. Check the version of your Prometheus Operator before you continue. `kube-prometheus-stack` version 81.0.0 and later include Prometheus Operator v0.88.0 or later. With an older Prometheus Operator, the Kubernetes API server drops the `scrapeNativeHistograms` field from the ServiceMonitor and PodMonitor and Prometheus does not scrape native histograms.
+> {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}The [OTel stack guide]({{< link path="/documentation/observability/otel-stack/" >}}) installs `kube-prometheus-stack` version {{< reuse "agw-docs/versions/otel-stack-prometheus.md" >}}, which includes Prometheus Operator v0.88.0 or later. The Helm chart always sets the `scrapeNativeHistograms` field on the ServiceMonitor and PodMonitor, even when native histogram scraping is off. With an older Prometheus Operator, Helm 4 fails any install or upgrade that creates the ServiceMonitor or PodMonitor, because the CRDs do not declare `scrapeNativeHistograms`. Helm 3 installs the resources without the field and prints a warning, and Prometheus does not scrape native histograms.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}The [OTel stack guide]({{< link path="/documentation/observability/otel-stack/" >}}) installs `kube-prometheus-stack` version {{< reuse "agw-docs/versions/otel-stack-prometheus.md" >}}, which includes Prometheus Operator v0.88.0 or later. If you enable native histogram scraping with an older Prometheus Operator, Helm 4 fails the install or upgrade because the CRDs do not declare `scrapeNativeHistograms`. Helm 3 installs the resources without the field and prints a warning, and Prometheus does not scrape native histograms.{{< /version >}}
 
 1. Make the proxies emit native and classic histograms. Add the following setting to the `rawConfig` of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that your Gateway uses. For how to create and attach the resource, see [`rawConfig`]({{< link path="/documentation/setup/customize/customize/#rawconfig" >}}). The proxy reads this setting only at startup, so the proxy pods restart.
 
@@ -194,7 +196,7 @@ Before you begin, make sure that you have the following:
 
 ### Scrape additional proxy pods {#other-proxies}
 
-The {{< reuse "agw-docs/snippets/agentgateway.md" >}} Helm chart creates a single PodMonitor resource in the release namespace when `monitoring.enabled` is set to `true`. By default, the PodMonitor resource only finds proxy pods that are deployed to the same release namespace. Because gateway proxies run in the namespace of the Gateway resource that provisions them, proxies in other namespaces are not scraped automatically. To scape proxy pods in other namespaces, you must use the `namespaceSelector` field. 
+The {{< reuse "agw-docs/snippets/agentgateway.md" >}} Helm chart creates a single PodMonitor resource in the release namespace when `monitoring.enabled` is set to `true`. By default, the PodMonitor resource only finds proxy pods that are deployed to the same release namespace. Because gateway proxies run in the namespace of the Gateway resource that provisions them, proxies in other namespaces are not scraped automatically. To scrape proxy pods in other namespaces, you must use the `namespaceSelector` field. 
 
 **Scrape proxies in all namespaces**: 
 

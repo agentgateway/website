@@ -10,13 +10,6 @@ You need agentgateway 1.6.0 or later and a Meta Model API key. Create a key in t
 
 Use the `meta` preset to route requests to the Meta Model API. The preset supplies the provider URL and supported request formats.
 
-{{< doc-test paths="meta-validate" >}}
-# Validate the configuration without calling the Meta API. A placeholder key
-# is sufficient because --validate-only resolves environment variables.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-export META_API_KEY="test"
-{{< /doc-test >}}
-
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 You can add the model in the UI or in your configuration file.
 

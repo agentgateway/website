@@ -13,7 +13,7 @@ sequenceDiagram
 
     AGW->>AGW: Basic auth check:<br/>No Authorization header found
 
-    AGW-->>C: 401 Unauthorized<br/>"no basic authentication credentials found"
+    AGW-->>C: 401 Unauthorized{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}<br/>"authentication failed"{{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}<br/>"no basic authentication credentials found"{{< /version >}}
 
     Note over C,Backend: Retry with credentials
 
@@ -103,10 +103,10 @@ The agentgateway proxy requires the password that the user uses to authenticate 
    ...
    < HTTP/1.1 401 Unauthorized
    HTTP/1.1 401 Unauthorized
-
-   basic authentication failure: no basic authentication credentials found%   
    ...
    ```
+
+   {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The response body names the reason, such as `basic authentication failure: no basic authentication credentials found`.{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The response body says only `authentication failed`. The proxy logs record the reason, such as `basic authentication failure: no basic authentication credentials found`.{{< /version >}}
 
 4. Encode the expected user credentials in base64 format.
    ```sh

@@ -2,34 +2,6 @@
 title: Path
 weight: 10
 description: Match requests by path using exact, prefix, or regex patterns.
-test:
-  path-match-exact:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/documentation/install/sample-app.md
-    path: install-httpbin
-  - file: ${versionRoot}/documentation/traffic-management/match/path.md
-    path: path-match-exact
-  path-match-prefix:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/documentation/install/sample-app.md
-    path: install-httpbin
-  - file: ${versionRoot}/documentation/traffic-management/match/path.md
-    path: path-match-prefix
-  path-match-regex:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/documentation/install/sample-app.md
-    path: install-httpbin
-  - file: ${versionRoot}/documentation/traffic-management/match/path.md
-    path: path-match-regex
 ---
 
 Match the targeted path of an incoming request against specific path criteria. 
@@ -41,7 +13,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 ## Set up exact matching
 
 1. Create an HTTPRoute resource for the `match.example` domain that matches incoming requests on the `/status/200` exact path.
-   ```yaml {paths="path-match-exact"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -115,71 +87,11 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    < content-type: text/plain; charset=utf-8
    content-type: text/plain; charset=utf-8
    ```
-   
-{{< doc-test paths="path-match-exact" >}}
-for i in $(seq 1 100); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/get" -H "host: match.example" && break
-  sleep 2
-done
-YAMLTest -f - <<'EOF'
-- name: wait for httpbin-match HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-match
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-- name: wait for httpbin-match HTTPRoute refs to be resolved
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-match
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-- name: exact path match - /status/200 returns 200
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /status/200
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: exact path match - /headers returns 404
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /headers
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 404
-EOF
-{{< /doc-test >}}
 
 ## Set up prefix path matching
 
 1. Create an HTTPRoute resource for the `match.example` domain that matches incoming requests on the `/anything` prefix path.
-   ```yaml {paths="path-match-prefix"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -276,66 +188,6 @@ EOF
    < content-type: text/plain; charset=utf-8
    content-type: text/plain; charset=utf-8
    ```
-   
-{{< doc-test paths="path-match-prefix" >}}
-for i in $(seq 1 100); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/get" -H "host: match.example" && break
-  sleep 2
-done
-YAMLTest -f - <<'EOF'
-- name: wait for httpbin-match HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-match
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-- name: wait for httpbin-match HTTPRoute refs to be resolved
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-match
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-- name: prefix path match - /anything/team1 returns 200
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /anything/team1
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: prefix path match - /headers returns 404
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /headers
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 404
-EOF
-{{< /doc-test >}}
 
 ## Set up regex matching
 
@@ -357,7 +209,7 @@ Use [RE2 syntax](https://github.com/google/re2/wiki/Syntax) for regular expressi
      * `[.]` matches a literal period.
      * `\\d.*` matches a single digit followed by zero or any character.
      * Allowed pattern: `/anything/dogs/3.0-game`, not allowed: `/anything/birds`
-   ```yaml {paths="path-match-regex"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1beta1
    kind: HTTPRoute
@@ -480,116 +332,151 @@ Use [RE2 syntax](https://github.com/google/re2/wiki/Syntax) for regular expressi
    content-type: text/plain; charset=utf-8
    ```
 
+## Optional: Normalize paths before matching {#normalize-paths}
 
-{{< doc-test paths="path-match-regex" >}}
-for i in $(seq 1 100); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/get" -H "host: match.example" && break
-  sleep 2
-done
-YAMLTest -f - <<'EOF'
-- name: wait for httpbin-match HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-match
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-- name: wait for httpbin-match HTTPRoute refs to be resolved
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-match
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-- name: regex path match - /anything/this-is-my-path-1 returns 200
-  retries: 1
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /anything/this-is-my-path-1
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: regex path match - /anything/stores/us/entities returns 200
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /anything/stores/us/entities
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: regex path match - /anything/dogs/3.0-game returns 200
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /anything/dogs/3.0-game
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: regex path match - /anything returns 404
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /anything
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 404
-- name: regex path match - /anything/stores/us/south/entities returns 404
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /anything/stores/us/south/entities
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 404
-- name: regex path match - /anything/birds/1.1-game returns 404
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80"
-    path: /anything/birds/1.1-game
-    method: GET
-    headers:
-      host: match.example
-  source:
-    type: local
-  expect:
-    statusCode: 404
-EOF
-{{< /doc-test >}}
+By default, path matching uses the request path as agentgateway receives it. Use an {{< reuse "agw-docs/snippets/policy.md" >}} to normalize request paths before route matching, policy evaluation, and forwarding to the backend. The policy applies to every route on the Gateway. For all normalization rules, the order in which they run, and the paths that they reject, see [Path normalization]({{< link-hextra path="/documentation/security/path-normalization/" >}}). The following steps use the `httpbin-match` HTTPRoute from [Set up regex matching](#set-up-regex-matching).
+
+1. Send a request to the `/anything//stores/./us/entities` path. This path contains a repeated slash and a `.` segment. The `--path-as-is` option stops curl from resolving the `.` segment before curl sends the request. Verify that you get back a 404 HTTP response code, because the path does not match the `/anything/stores/[^/]+?/entities` regex pattern.
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -vi --path-as-is http://$INGRESS_GW_ADDRESS:80/anything//stores/./us/entities -H "host: match.example"
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -vi --path-as-is localhost:8080/anything//stores/./us/entities -H "host: match.example"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+   ```
+   > GET /anything//stores/./us/entities HTTP/1.1
+   ...
+   < HTTP/1.1 404 Not Found
+   HTTP/1.1 404 Not Found
+   < content-type: text/plain
+   content-type: text/plain
+   < content-length: 15
+   content-length: 15
+   <
+   route not found
+   ```
+
+2. Create a policy that normalizes repeated slashes, dot segments, and percent-encoded unreserved characters for all routes on the `agentgateway-proxy` Gateway.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: normalize-paths
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+     frontend:
+       http:
+         normalize:
+         - MergeSlash
+         - DotSegment
+         - DecodeUnreserved
+   EOF
+   ```
+
+   | Field | Description |
+   | -- | -- |
+   | `spec.frontend.http.normalize` | The normalization rules to apply. `MergeSlash` collapses repeated slashes, `DotSegment` resolves `.` and `..` segments, and `DecodeUnreserved` decodes percent-encoded unreserved characters. The `DotSegment` and `DecodeUnreserved` rules also reject a path with malformed percent-encoding or `%00`. |
+
+3. Send the same request again. Verify that you get back a 200 HTTP response code. The `url` field in the response body shows the normalized `/anything/stores/us/entities` path that the httpbin app received.
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -vi --path-as-is http://$INGRESS_GW_ADDRESS:80/anything//stores/./us/entities -H "host: match.example"
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -vi --path-as-is localhost:8080/anything//stores/./us/entities -H "host: match.example"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+   ```
+   > GET /anything//stores/./us/entities HTTP/1.1
+   ...
+   < HTTP/1.1 200 OK
+   HTTP/1.1 200 OK
+   < Access-Control-Allow-Credentials: true
+   Access-Control-Allow-Credentials: true
+   < Access-Control-Allow-Origin: *
+   Access-Control-Allow-Origin: *
+   < Content-Type: application/json; encoding=utf-8
+   Content-Type: application/json; encoding=utf-8
+   < Content-Length: 316
+   Content-Length: 316
+   <
+
+   {
+     "args": {},
+     "headers": {
+       "Accept": [
+         "*/*"
+       ],
+       "Host": [
+         "match.example"
+       ],
+       "User-Agent": [
+         "curl/8.7.1"
+       ]
+     },
+     "origin": "10.244.0.7:43306",
+     "url": "http://match.example/anything/stores/us/entities",
+     "data": "",
+     "files": null,
+     "form": null,
+     "json": null
+   }
+   ```
+
+4. Send a request with an escaped NUL character (`%00`) in the path. Verify that you get back a 400 HTTP response code, because the `DotSegment` and `DecodeUnreserved` rules reject `%00`.
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -vi --path-as-is http://$INGRESS_GW_ADDRESS:80/anything/stores/us%00/entities -H "host: match.example"
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -vi --path-as-is localhost:8080/anything/stores/us%00/entities -H "host: match.example"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+   ```
+   > GET /anything/stores/us%00/entities HTTP/1.1
+   ...
+   < HTTP/1.1 400 Bad Request
+   HTTP/1.1 400 Bad Request
+   < content-type: text/plain
+   content-type: text/plain
+   < content-length: 15
+   content-length: 15
+   <
+   invalid request
+   ```
 
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} normalize-paths -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete httproute httpbin-match -n httpbin --ignore-not-found
 ```
 

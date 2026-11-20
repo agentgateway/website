@@ -59,7 +59,13 @@ spec:
     protocol: HTTPS
     port: 443
     hostname: "ai.example.com"  # External DNS creates this record
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - name: ai-example-com-tls  # A TLS Secret for ai.example.com
 ```
+
+An HTTPS listener needs a `tls` block with a certificate. To issue and renew the certificate automatically, see the [cert-manager integration](../../networking/cert-manager).
 
 External DNS automatically:
 1. Watches for Gateway resources

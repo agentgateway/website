@@ -11,11 +11,6 @@ Agentgateway extracts token usage from supported LLM APIs automatically. {{< ver
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-{{< doc-test paths="costs" >}}
-# Install agentgateway binary
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
 ## Configure a model catalog
 
 {{% version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" %}}
@@ -179,15 +174,21 @@ MODEL_CATALOG_PATHS=./costs/catalog.json,./costs/overrides.json agentgateway -f 
 
 When a request matches an entry in the catalog, agentgateway populates these CEL fields:
 
-- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-token-type components such as `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, and `outputAudio`. Unset when the model cannot be priced.
+- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-token-type components such as `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, and `outputAudio`.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} The components also include `pages`, `cacheWriteDetails`, and `audioDuration`.{{< /version >}} Unset when the model cannot be priced.
 - `llm.costRates`: The effective USD-per-1,000,000-token rates that were applied. Includes the same per-token-type fields when available. Unset when the model cannot be priced.
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 - `llm.model`: The resolved model's catalog metadata, including `id`, `tags`, `limits`, `modalities`, `capabilities`, and `reasoning`. Unset when no catalog entry matches the request provider and model.
 {{< /version >}}
 
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}For Anthropic prompt-cache writes with a 1-hour time to live (TTL), `llm.cost.cacheWrite1h` reports the 1-hour cache-write cost. `llm.cost.cacheWrite` reports the cost for cache writes that do not use a 1-hour TTL, such as 5-minute cache writes. When the catalog includes `cacheWrite1h`, `llm.costRates.cacheWrite1h` reports the effective rate.{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}`llm.cost.cacheWriteDetails` reports the cost of Anthropic 1-hour and OpenAI 12-hour prompt-cache writes. For more information, see [Cache writes by TTL](#cache-write-details).{{< /version >}}
+
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}When an Anthropic Messages response reports `usage.iterations`, the request cost uses a separate calculation for each iteration. If an iteration names a `model` with an exact catalog match, the tokens for that iteration use that model's catalog entry. Otherwise, the iteration uses the response model. The request cost is the sum of those iteration costs.{{< /version >}}
+
+{{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}When a response reports a model, cost lookup uses the response model first. If the catalog has no matching entry, lookup uses the request model, then `llm.originalModel`. The lookup order helps a catalog price traffic whose model was rewritten by virtual models, aliases, provider overrides, or request body transformations.{{< /version >}}
 
 {{< version exclude-if="1.5.x" >}}For page-billed document models, `llm.cost.pages` reports the page-cost component, and `llm.costRates.perPage` reports the USD-per-page rate that was applied.{{< /version >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}For audio models that bill by duration, `llm.cost.audioDuration` reports the audio-duration cost component, and `llm.costRates.perAudioMinute` reports the USD-per-minute rate that was applied. For transcription and translation requests, `llm.audioSeconds` holds the audio duration in seconds that the provider reported, even when the model cannot be priced. For an example, see [Audio]({{< link-hextra path="/documentation/llm/api-types/audio/" >}}).{{< /version >}}
 
 The request access log includes `agw.ai.usage.cost.total` only for priced LLM requests. When the model cannot be priced, the access log leaves out the field.
 Traces always include the full breakdown:
@@ -196,16 +197,16 @@ Traces always include the full breakdown:
 * `agw.ai.usage.cost.output`
 * `agw.ai.usage.cost.cache_read`
 * `agw.ai.usage.cost.cache_write`
-{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}* `agw.ai.usage.cost.cache_write_1h`{{< /version >}}
 * `agw.ai.usage.cost.reasoning`
 * `agw.ai.usage.cost.input_audio`
 * `agw.ai.usage.cost.output_audio`
 {{< version exclude-if="1.5.x" >}}* `agw.ai.usage.cost.pages`{{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}* `agw.ai.usage.cost.audio_duration`{{< /version >}}
 
 As these are loaded into the CEL context, they can be explicitly emitted as well.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     add:
@@ -222,31 +223,88 @@ A priced request produces an access log entry that includes cost data.
 gen_ai.usage.input_tokens=14 gen_ai.usage.output_tokens=6 agw.ai.usage.cost.total=0.0000057 ...
 ```
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
+### Cache writes by TTL {#cache-write-details}
+
+Anthropic and OpenAI price prompt-cache writes by how long the cache entry lives, its time to live (TTL). {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} prices two extended TTLs separately from other cache writes: Anthropic 1-hour writes (`1h`) and OpenAI Responses API 12-hour writes (`12h`).
+
+The cost data reports these writes separately from other cache writes.
+
+- `llm.cost.cacheWrite` covers only cache writes without an extended TTL, such as Anthropic 5-minute writes.
+- `llm.cost.cacheWriteDetails` maps each TTL to its cost. The map contains only TTLs with a non-zero cost, so a request without extended-TTL writes has an empty map.
+- `llm.costRates.cacheWriteDetails` maps each TTL to the rate that the catalog sets for it. A TTL that uses the `cacheWrite` rate has no key.
+- Traces add `agw.ai.usage.cost.cache_write_details.1h` and `agw.ai.usage.cost.cache_write_details.12h` only when that cost is non-zero.
+
+The keys start with a digit, so read them with index syntax, such as `llm.cost.cacheWriteDetails['1h']`. A lookup of a missing key fails, and the access log leaves out the field. To log `0` instead, check for the key first.
+
+To set the rates and log the cost of 1-hour cache writes, follow these steps.
+
+1. Add a `cacheWriteDetails` map to a model's `rates` or to a tier's `rates`. Writes for a TTL that the map omits use the `cacheWrite` rate. The built-in catalog already sets these rates for many Anthropic and OpenAI models.
+
+   ```json
+   {
+     "providers": {
+       "anthropic": {
+         "models": {
+           "claude-opus-5": {
+             "rates": {
+               "input": "5",
+               "output": "25",
+               "cacheRead": "0.5",
+               "cacheWrite": "6.25",
+               "cacheWriteDetails": { "1h": "10" }
+             }
+           }
+         }
+       }
+     }
+   }
+   ```
+
+2. Add the cost of 1-hour cache writes as an access log field. The expression checks for the key first, so requests without 1-hour writes log `0`.
+
+   ```yaml
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+   frontendPolicies:
+     accessLog:
+       add:
+         cache_write_1h: "'1h' in llm.cost.cacheWriteDetails ? llm.cost.cacheWriteDetails['1h'] : 0.0"
+   ```
+
+3. Send a request that writes to the 1-hour cache, and check the access log for the `cache_write_1h` field. The following log entry is for a request that wrote 400,000 tokens to the 5-minute cache and 600,000 tokens to the 1-hour cache. The 1-hour writes cost `$6`, and the 5-minute writes cost `$2.50`.
+
+   ```console
+   ... gen_ai.provider.name=anthropic gen_ai.request.model=claude-opus-5
+   gen_ai.usage.cache_creation.input_tokens=1000000 agw.ai.usage.cost.total=8.50075 cache_write_1h=6 ...
+   ```
+{{% /version %}}
+
 {{% version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" %}}
 ### Service tiers {#service-tiers}
 
-Agentgateway normalizes the service tier reported in each LLM response to `standard`, `flex`, `priority`, or `reserved`. CEL expressions access it as `llm.serviceTier`.
+Agentgateway normalizes the service tier reported in each LLM response to {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}}`standard`, `flex`, `priority`, or `reserved`{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}}`standard`, `flex`, `priority`, `reserved`, `ultrafast`, or `fast`{{< /version >}}. CEL expressions access it as `llm.serviceTier`.
 
 Cost calculations match this value to catalog tiers with a `serviceTier` field. Requests without a recorded tier use `standard` rates.
 
 | Provider | Reported tier and normalized `llm.serviceTier` |
 |---|---|
-| OpenAI and Azure | `default` becomes `standard`. `flex` stays `flex`. `priority` and `fast` become `priority`. `scale` becomes `reserved`. |
-| Anthropic | `standard` and `priority` stay the same. |
-| Amazon Bedrock | `default` and `standard` become `standard`. `flex`, `priority`, and `reserved` stay the same. |
+| OpenAI | `default` becomes `standard`. `flex` stays `flex`. `priority` and `fast` become `priority`. `scale` becomes `reserved`.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}} `ultrafast` stays `ultrafast`.{{< /version >}} |
+| Azure | `default` becomes `standard`. `flex` stays `flex`. `priority` and `fast` become `priority`. `scale` becomes `reserved`. |
+| Anthropic | `standard` and `priority` stay the same.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}} If the response reports `usage.speed: "fast"`, the tier becomes `fast`.{{< /version >}} |
+| Amazon Bedrock | `default` and `standard` become `standard`. {{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}}`flex`, `priority`, and `reserved` stay the same.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}}`flex`, `priority`, `reserved`, and `ultrafast` stay the same.{{< /version >}} |
 | Gemini | `standard`, `flex`, and `priority` stay the same. |
 | Vertex AI | `ON_DEMAND` becomes `standard`. `ON_DEMAND_FLEX` becomes `flex`. `ON_DEMAND_PRIORITY` becomes `priority`. `PROVISIONED_THROUGHPUT` becomes `reserved`. Claude models report the Anthropic tiers, `standard` and `priority`. |
 
-Unlisted providers or tiers leave `llm.serviceTier` unset.
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}}OpenAI and Azure `fast` request values map to `priority`. An Anthropic fast-mode response maps to `fast`. The two are different tiers.{{< /version >}}
 
-Earlier versions exposed the provider's original tier name, such as `default` or `ON_DEMAND`. Update CEL comparisons to use the normalized names.
+Unlisted providers or tiers leave `llm.serviceTier` unset.
 
 For Bedrock tier requests and the response header used to detect the tier, see [Service tier]({{< link-hextra path="/integrations/llm/providers/bedrock/#service-tier" >}}).
 
 To record the tier in the access log, add `llm.serviceTier` as a field.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   accessLog:
     add:
@@ -315,36 +373,3 @@ Usually, you do not need to write catalog JSON by hand. Use `agctl {{< reuse "ag
 
 {{< reuse "agw-docs/snippets/model-catalog-tags.md" >}}
 {{% /version %}}
-
-{{< doc-test paths="costs" >}}
-# Verify that agentgateway loads a catalog from a file source.
-cat > /tmp/costs-catalog.json <<'EOF'
-{
-  "providers": {
-    "openai": {
-      "models": {
-        "gpt-4o-mini": {
-          "rates": { "input": "0.15", "output": "0.6", "cacheRead": "0.075" }
-        }
-      }
-    }
-  }
-}
-EOF
-cat > /tmp/costs-config.yaml <<'EOF'
-config:
-  modelCatalog:
-  - file: /tmp/costs-catalog.json
-llm:
-  models:
-  - name: gpt-4o-mini
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-EOF
-agentgateway -f /tmp/costs-config.yaml > /tmp/costs-agw.log 2>&1 &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-grep -qE "model catalog (re)?loaded" /tmp/costs-agw.log
-{{< /doc-test >}}

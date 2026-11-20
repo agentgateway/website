@@ -123,7 +123,7 @@ export MOCK_IDP_CLAIMS='{"groups":["AI-Users"]}'
 1. Create a `config.yaml` file that exposes a sample MCP server on port 3000 and protects it with the `okta` provider.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 3000

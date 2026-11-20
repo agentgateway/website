@@ -2,7 +2,6 @@
 title: Responses
 weight: 20
 description: Send requests through agentgateway using the OpenAI Responses API.
-test: skip
 ---
 
 The OpenAI Responses API (`/v1/responses`) is OpenAI's interface for stateful, multi-step model interactions.
@@ -19,12 +18,14 @@ Responses requests can include namespace tools. When the selected provider takes
 
 A function tool choice can use the bare member name only when that name is unique across the namespace tools. When more than one namespace has a function with the same name, set the tool choice function name to `namespace__function`. Chat Completions and Bedrock conversions cannot enforce `allowed_tools` choices or convert custom namespace members. Requests that use those features fail before they reach the provider.
 
+During flattening, the conversion copies namespace descriptions onto each function tool. If the copied namespace descriptions exceed 8 MiB for one request, the request fails with `RequestTooLarge` before it reaches the provider.
+
 ## Route type configuration
 
 In the simplified `llm` configuration, agentgateway automatically maps `/v1/responses` requests to the `responses` route type, so no explicit route configuration is required.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -36,7 +37,7 @@ llm:
 To configure the route type explicitly, use the `gateways` and `routes` format and set the `responses` route type in the `policies.ai.routes` map.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 4000
@@ -60,6 +61,8 @@ routes:
 ## Usage in converted replies
 
 Responses replies follow OpenAI usage conventions, even when agentgateway converts the upstream provider response from another format. When a provider reports prompt-cache tokens, `usage.input_tokens` includes those tokens. When they are available, cache counts are also reported separately in `usage.input_tokens_details.cached_tokens` and `usage.input_tokens_details.cache_write_tokens`.
+
+When a Gemini OpenAI-compatible response reports reasoning tokens separately from `usage.completion_tokens`, converted Responses replies include both visible output and reasoning tokens in `usage.output_tokens`.
 
 ## Using the API
 

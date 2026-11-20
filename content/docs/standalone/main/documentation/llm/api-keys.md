@@ -25,7 +25,7 @@ You can set the provider API key in the UI or in your configuration file.
 
    ```sh
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models: []
    EOF
@@ -38,7 +38,7 @@ You can set the provider API key in the UI or in your configuration file.
 5. For the **Provider API key**, select one of the following options.
    * **API key**: Enter the key itself, such as `sk-proj....`. The UI writes the key inline in the `params.apiKey` field. This option is the least secure. Only use this option for quick tests.
    * **Env var**: Enter the name of the environment variable, such as `OPENAI_API_KEY`. The UI writes `apiKey: $OPENAI_API_KEY`. The variable must be set in the environment that agentgateway runs in, or the save fails.
-   * **File**: Enter the path to a file that holds the key, such as `/etc/agentgateway/openai-key.txt`. The UI writes `apiKey: {file: <path>}`. Agentgateway reads this file only when it loads the configuration, so a changed key takes effect after the next configuration reload or restart. This option differs from the **File** steps in the **Config file** tab, which use `auth.key.value.file` and pick up a changed key on the next request.
+   * **File**: Enter the path to a file that holds the key, such as `/etc/agentgateway/openai-key.txt`. The UI writes `apiKey: {file: <path>}`. Agentgateway watches the file and reloads the configuration when the file changes, so a rotated key takes effect without a restart. This option differs from the **File** steps in the **Config file** tab, which use `auth.key.value.file` and pick up a changed key on the next request.
    * **Unset**: Configure no provider credential.
 
    {{< reuse-image src="img/ui-llm-model-prefixed.png" srcDark="img/ui-llm-model-prefixed-dark.png" alt="Add model drawer with the OpenAI provider, the default openai/* match, the OPENAI_API_KEY environment variable, and Strip openai/ as the outgoing model" >}}
@@ -59,7 +59,7 @@ You can provide your API key directly in the agentgateway configuration. This op
 1. Configure the agentgateway proxy and enter your key in the `params.apiKey` field directly.
    ```yaml
    cat <<EOF > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "openai/*"
@@ -82,7 +82,7 @@ You can provide your API key directly in the agentgateway configuration. This op
 2. Configure the agentgateway proxy to refer to that environment variable. Agentgateway automatically replaces the value of the variable with the value that is stored in the environment.
    ```yaml
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "openai/*"
@@ -108,7 +108,7 @@ Store the key in a file on the gateway host. Agentgateway watches the file for c
 2. Configure agentgateway to read the file. Relative paths resolve from the directory where you start agentgateway. Use an absolute path in production.
    ```yaml
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    llm:
      models:
      - name: "openai/*"
@@ -144,11 +144,9 @@ Rotate provider keys regularly, when your provider requires it, or after a suspe
 
    | Option | How to replace the key | Restart needed |
    | -- | -- | -- |
-   | File (`auth.key.value.file`) | Replace the file contents. Agentgateway uses the new key for the next request. | No |
+   | File (`auth.key.value.file` or `params.apiKey: {file: <path>}`) | Replace the file contents. With `auth.key.value.file`, agentgateway uses the new key for the next request. With a `params.apiKey` file, agentgateway detects the change and reloads the configuration. | No |
    | Inline | Edit the key in the configuration file. Agentgateway reloads the file when it changes. | No |
    | Environment variable | Set the variable to the new key and restart agentgateway. | Yes |
-
-   For file references in `params.apiKey`, agentgateway reads the key only when loading the configuration. After replacing the key file, save the configuration file to trigger a reload, or restart agentgateway.
 
 3. Send a request through agentgateway, and verify that it succeeds with the new key. If your gateway requires [virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}), add an `Authorization: Bearer <virtual-key>` header.
 

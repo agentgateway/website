@@ -107,7 +107,7 @@ Regex-based prompt guards provide fast, deterministic pattern matching for known
 
 Example configuration that masks credit cards in responses:
 
-```yaml,paths="content-safety-regex"
+```yaml
 kubectl apply -f - <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -214,59 +214,6 @@ Example output showing the credit card masked as `<CREDIT_CARD>`:
   ]
 }
 ```
-
-{{< doc-test paths="content-safety-regex" >}}
-kubectl apply -f - <<EOF
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayPolicy
-metadata:
-  name: content-safety-regex-httpbun
-  namespace: agentgateway-system
-spec:
-  targetRefs:
-  - group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: httpbun-llm
-  backend:
-    ai:
-      promptGuard:
-        response:
-        - regex:
-            builtins:
-            - CreditCard
-            - Ssn
-            - Email
-            action: Mask
-EOF
-
-YAMLTest -f - <<'EOF'
-- name: verify credit card is masked in response
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
-    method: POST
-    headers:
-      content-type: application/json
-    body: |
-      {
-        "model": "gpt-4",
-        "messages": [
-          {
-            "role": "user",
-            "content": "What type of number is 5105105105105100?"
-          }
-        ],
-        "httpbun": {"content": "The number 5105105105105100 is a Mastercard test card number."}
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.choices[0].message.content"
-        comparator: contains
-        value: "<CREDIT_CARD>"
-EOF
-{{< /doc-test >}}
 
 ## Layer 2: External moderation endpoints
 

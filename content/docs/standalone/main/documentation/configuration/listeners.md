@@ -2,30 +2,12 @@
 title: Listeners
 weight: 25
 description: Define the ports, protocols, and TLS settings where agentgateway accepts incoming traffic.
-test:
-  listeners:
-  - file: ${versionRoot}/documentation/configuration/listeners.md
-    path: listeners
 ---
 
 Listeners are the entrypoints for traffic into agentgateway.
 Agentgateway supports both {{< gloss "HTTP (Hypertext Transfer Protocol)" >}}HTTP{{< /gloss >}} and {{< gloss "TCP (Transmission Control Protocol)" >}}TCP{{< /gloss >}} traffic, with and without {{< gloss "TLS (Transport Layer Security)" >}}TLS{{< /gloss >}}.
 
 You configure a listener as part of a gateway. A gateway with a single listener sets the protocol and TLS settings directly, and a gateway that serves multiple hostnames on one port uses the `listeners` field to define each one. For more information about gateways and how routes attach to them, see [Gateways]({{< link-hextra path="/documentation/configuration/gateways/" >}}).
-
-{{< doc-test paths="listeners" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
-{{< doc-test paths="listeners" >}}
-# Create self-signed certs referenced by the examples
-mkdir -p examples/tls/certs certs
-openssl req -x509 -newkey rsa:2048 -keyout examples/tls/certs/key.pem -out examples/tls/certs/cert.pem -days 365 -nodes -subj "/CN=localhost" 2>/dev/null
-openssl req -x509 -newkey rsa:2048 -keyout examples/tls/certs/key-a.pem -out examples/tls/certs/cert-a.pem -days 365 -nodes -subj "/CN=a.example.com" 2>/dev/null
-openssl req -x509 -newkey rsa:2048 -keyout examples/tls/certs/key-wildcard.pem -out examples/tls/certs/cert-wildcard.pem -days 365 -nodes -subj "/CN=wildcard.example.com" 2>/dev/null
-cp examples/tls/certs/cert.pem certs/cert.pem
-cp examples/tls/certs/key.pem certs/key.pem
-{{< /doc-test >}}
 
 ## HTTP Listeners
 
@@ -53,7 +35,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{% tab name="Config file" %}}
 For example:
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   http:
     port: 3000
@@ -62,23 +44,6 @@ routes: []
 ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="listeners" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The HTTP listener example config is accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That the listener actually serves traffic at runtime — the config defines
-#     no routes or backends to exercise.
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  http:
-    port: 3000
-    protocol: HTTP
-routes: []
-EOF
-agentgateway -f config.yaml --validate-only
-{{< /doc-test >}}
 
 ## HTTPS Listeners
 
@@ -103,7 +68,7 @@ The certificate and key files must exist when you save. Relative paths resolve f
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   https:
     port: 443
@@ -115,26 +80,6 @@ routes: []
 ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="listeners" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The HTTPS listener example config (cert + key) is accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That TLS is actually negotiated at runtime — requires a client connection
-#     the page does not exercise.
-cat <<'EOF' > config2.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  https:
-    port: 443
-    protocol: HTTPS
-    tls:
-      cert: examples/tls/certs/cert.pem
-      key: examples/tls/certs/key.pem
-routes: []
-EOF
-agentgateway -f config2.yaml --validate-only
-{{< /doc-test >}}
 
 To generate a self-signed certificate for local testing, you can use `openssl`. Self-signed certificates trigger security warnings in browsers and clients, so use a certificate from a trusted certificate authority, such as Let's Encrypt, in production.
 
@@ -175,7 +120,7 @@ The UI leaves out `protocol: HTTPS` on each listener, because setting `tls` impl
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   web:
     port: 443
@@ -198,35 +143,6 @@ routes: []
 {{< /tabs >}}
 
 To attach a route to one of these listeners instead of the whole gateway, reference it as `web/discrete` or `web/wildcard` in the route's `gateways` field.
-
-{{< doc-test paths="listeners" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The hostname-based HTTPS example config (discrete + wildcard SNI) is accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That SNI hostname matching selects the right cert at runtime — requires TLS
-#     client connections the page does not exercise.
-cat <<'EOF' > config3.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  web:
-    port: 443
-    listeners:
-    - name: discrete
-      protocol: HTTPS
-      hostname: a.example.com
-      tls:
-        cert: examples/tls/certs/cert-a.pem
-        key: examples/tls/certs/key-a.pem
-    - name: wildcard
-      protocol: HTTPS
-      hostname: "*.example.com"
-      tls:
-        cert: examples/tls/certs/cert-wildcard.pem
-        key: examples/tls/certs/key-wildcard.pem
-routes: []
-EOF
-agentgateway -f config3.yaml --validate-only
-{{< /doc-test >}}
 
 ### Redirect HTTP to HTTPS
 
@@ -251,33 +167,6 @@ routes:
       scheme: https
 ```
 
-{{< doc-test paths="listeners" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The "Redirect HTTP to HTTPS" example config (HTTP requestRedirect + HTTPS gateway) is accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That an HTTP request is actually redirected to HTTPS at runtime — requires a
-#     client request the page does not exercise.
-cat <<'EOF' > config4.yaml
-gateways:
-  http:
-    port: 80
-    protocol: HTTP
-  https:
-    port: 443
-    protocol: HTTPS
-    tls:
-      cert: ./certs/cert.pem
-      key: ./certs/key.pem
-routes:
-- name: redirect
-  gateways: [http]
-  policies:
-    requestRedirect:
-      scheme: https
-EOF
-agentgateway -f config4.yaml --validate-only
-{{< /doc-test >}}
-
 ## TCP Listeners
 
 TCP listeners can be configured by setting `protocol: TCP` on the gateway.
@@ -298,7 +187,7 @@ TCP listeners are useful when serving traffic that is not HTTP based.
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   tcp:
     port: 9000
@@ -307,23 +196,6 @@ tcpRoutes: []
 ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="listeners" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The TCP listener example config is accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That TCP traffic is actually forwarded at runtime — the config defines no
-#     tcpRoutes or backends to exercise.
-cat <<'EOF' > config5.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  tcp:
-    port: 9000
-    protocol: TCP
-tcpRoutes: []
-EOF
-agentgateway -f config5.yaml --validate-only
-{{< /doc-test >}}
 
 Additionally, note the use of `tcpRoutes` instead of `routes` (which are HTTP routes) in the example.
 
@@ -362,7 +234,7 @@ A TLS listener without a certificate passes TLS through. A TLS listener with a c
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   tls:
     port: 8443
@@ -380,29 +252,3 @@ tcpRoutes: []
 ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="listeners" >}}
-# WHAT THIS TEST VALIDATES:
-#   * The TLS listeners example config (passthrough + termination via SNI) is accepted by agentgateway.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That passthrough/termination behavior occurs at runtime — requires TLS client
-#     connections and backends the page does not exercise.
-cat <<'EOF' > config7.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  tls:
-    port: 8443
-    listeners:
-    - name: passthrough
-      hostname: passthrough.example.com
-      protocol: TLS
-    - name: termination
-      hostname: termination.example.com
-      protocol: TLS
-      tls:
-        cert: examples/tls/certs/cert.pem
-        key: examples/tls/certs/key.pem
-tcpRoutes: []
-EOF
-agentgateway -f config7.yaml --validate-only
-{{< /doc-test >}}

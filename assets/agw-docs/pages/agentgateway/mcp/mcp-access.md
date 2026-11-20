@@ -91,10 +91,10 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
       --method tools/call \
       --tool-name get_me
       ```
-   2. Verify that the request fails, because no JWT token was provided. 
+   2. Verify that the request fails, because no JWT token was provided. {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The error names the reason, such as `authentication failure: no bearer token found`.{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The error says only `authentication failed`. The proxy logs record the reason, such as `authentication failure: no bearer token found`.{{< /version >}}
       ```console
       Failed to connect to MCP server: Streamable HTTP error:
-      Error POSTing to endpoint: authentication failure: no bearer token found
+      Error POSTing to endpoint: ...
       ```
    {{% /tab %}}
    {{% tab name="UI" %}}
@@ -215,10 +215,10 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    --header "Authorization: Bearer abcdefg"
    ```
 
-   Verify that the connection fails, because no valid JWT token was provided. 
+   Verify that the connection fails, because no valid JWT token was provided. {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The error names the reason, such as `authentication failure: the token header is malformed: Error(InvalidToken)`.{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}The error says only `authentication failed`. The proxy logs record the reason, such as `authentication failure: the token header is malformed: Error(InvalidToken)`.{{< /version >}}
    ```console
    Failed to connect to MCP server: Streamable HTTP error: 
-   Error POSTing to endpoint: authentication failure: the token header is malformed: Error(InvalidToken)
+   Error POSTing to endpoint: ...
    ```
    {{% /tab %}}
    {{% tab name="UI" %}}

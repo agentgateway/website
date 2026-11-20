@@ -3,7 +3,6 @@ title: GitHub Copilot
 weight: 20
 icon: /integrations/providers/bw/copilot.svg
 description: Route agentgateway LLM traffic to models available through GitHub Copilot.
-test: skip
 ---
 
 Configure GitHub Copilot as an LLM provider in agentgateway.
@@ -22,7 +21,7 @@ By default, agentgateway finds the credential on its own, from an environment va
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:
@@ -86,7 +85,7 @@ For example, a Responses request to `gpt-4.1` is converted to Chat Completions, 
 
 | Symptom | Cause and resolution |
 |---------|----------------------|
-| A request returns `500` with `Copilot token not found`. | Agentgateway found no credential. Set `GH_COPILOT_TOKEN`, run `gh auth login`, or set `params.apiKey`. The configuration still passes `--validate-only` because the lookup happens on each request. |
+| A request returns `500` with `backend authentication failed`. The logs show `Copilot token not found`. | Agentgateway found no credential. Set `GH_COPILOT_TOKEN`, run `gh auth login`, or set `params.apiKey`. The configuration still passes `--validate-only` because the lookup happens on each request. |
 | A request returns `400` with `unsupported conversion: from Completions to provider copilot`. | The model does not accept the API format of the request. The error lists the supported formats. Send the request in one of those formats. |
 | GitHub rejects the credential. | The credential is expired, is not accepted by the Copilot API, or belongs to an account without access to the model. Confirm the credential and the account entitlement with GitHub. |
 | Requests to a custom `params.baseUrl` have no `Authorization` header. | Agentgateway discovers the credential only for the default upstream. Set `params.apiKey`. |

@@ -3,47 +3,9 @@ title: Azure
 weight: 15
 icon: /integrations/providers/bw/azure.svg
 description: Route agentgateway LLM traffic to models hosted on Microsoft Azure AI.
-test:
-  azure:
-  - file: ${versionRoot}/integrations/llm/providers/azure.md
-    path: azure
 ---
 
 Configure Microsoft Azure AI as an LLM provider in agentgateway.
-
-{{< doc-test paths="azure" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * "Configuration", all three tabs: the Foundry implicit-auth, Foundry API-key
-#     (`auth.key.location.header`), and Azure OpenAI configs are accepted by
-#     agentgateway (--validate-only), covering `params.azureResourceName`,
-#     `params.azureResourceType`, and `params.azureProjectName`.
-#   * "Advanced configuration", all six tabs: the routing-based configs for
-#     implicit auth, client secret (Foundry and Azure OpenAI), system-assigned and
-#     user-assigned managed identity, and workload identity are all accepted,
-#     covering every `policies.backendAuth.azure.explicitConfig` variant the page
-#     documents.
-#   * "Use Claude models on Azure AI Foundry": the routing-based Claude config is
-#     accepted. This example was missing its `gateways` and `routes` keys until
-#     this test was added, so it could not have been run as written.
-#   * With the Foundry implicit-auth config loaded, agentgateway serves the
-#     wildcard model and resolves it to the `azure` provider.
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * Any authentication method at runtime - external dependency; each needs a
-#     real Azure tenant, resource, and identity (Entra ID, service principal,
-#     managed identity, or workload identity), none of which the test can stand
-#     up. Only that agentgateway accepts each config shape is asserted.
-#   * The verification curl at the end of the Claude Foundry section - external
-#     dependency, as above.
-#   * `params.azureApiVersion` - display-only table row; no example on this page
-#     sets it.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-
-export AZURE_API_KEY="${AZURE_API_KEY:-test}"
-{{< /doc-test >}}
 
 ## Authentication
 
@@ -99,7 +61,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{% tab name="Foundry (implicit auth)" %}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -109,27 +71,12 @@ llm:
       azureResourceType: foundry
       azureProjectName: "your-project-name"
 ```
-
-{{< doc-test paths="azure" >}}
-cat <<'EOF' > config-foundry-implicit.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  models:
-  - name: "*"
-    provider: azure
-    params:
-      azureResourceName: "your-resource-name"
-      azureResourceType: foundry
-      azureProjectName: "your-project-name"
-EOF
-agentgateway -f config-foundry-implicit.yaml --validate-only
-{{< /doc-test >}}
 
 {{% /tab %}}
 {{% tab name="Foundry (API key)" %}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "gpt-4.1"
@@ -145,33 +92,12 @@ llm:
       azureResourceType: foundry
       azureProjectName: "your-project-name"
 ```
-
-{{< doc-test paths="azure" >}}
-cat <<'EOF' > config-foundry-apikey.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  models:
-  - name: "gpt-4.1"
-    provider: azure
-    auth:
-      key:
-        value: "$AZURE_API_KEY"
-        location:
-          header:
-            name: api-key
-    params:
-      azureResourceName: "your-resource-name"
-      azureResourceType: foundry
-      azureProjectName: "your-project-name"
-EOF
-agentgateway -f config-foundry-apikey.yaml --validate-only
-{{< /doc-test >}}
 
 {{% /tab %}}
 {{% tab name="Azure OpenAI (implicit auth)" %}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "gpt-4.1"
@@ -180,20 +106,6 @@ llm:
       azureResourceName: "your-resource-name"
       azureResourceType: openAI
 ```
-
-{{< doc-test paths="azure" >}}
-cat <<'EOF' > config-azure-openai.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  models:
-  - name: "gpt-4.1"
-    provider: azure
-    params:
-      azureResourceName: "your-resource-name"
-      azureResourceType: openAI
-EOF
-agentgateway -f config-azure-openai.yaml --validate-only
-{{< /doc-test >}}
 
 {{% /tab %}}
 {{< /tabs >}}
@@ -223,7 +135,7 @@ For advanced Azure AI scenarios, use the traditional listener/route configuratio
 **Azure AI Foundry with implicit auth**: Use `DefaultAzureCredential` to automatically detect credentials from the environment (Azure CLI, managed identity, workload identity, or environment variables).
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -241,29 +153,6 @@ routes:
           resourceType: foundry
           model: gpt-4.1
 ```
-
-{{< doc-test paths="azure" >}}
-cat <<'EOF' > config-adv-foundry-implicit.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- matches:
-  - path:
-      pathPrefix: /azure
-  backends:
-  - ai:
-      name: azure
-      provider:
-        azure:
-          resourceName: "your-resource-name"
-          projectName: "your-project-name"
-          resourceType: foundry
-          model: gpt-4.1
-EOF
-agentgateway -f config-adv-foundry-implicit.yaml --validate-only
-{{< /doc-test >}}
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
@@ -275,7 +164,7 @@ agentgateway -f config-adv-foundry-implicit.yaml --validate-only
 **Azure AI Foundry with client secret**: Use Azure service principal credentials to authenticate agentgateway with an Azure AI Foundry endpoint.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -301,37 +190,6 @@ routes:
           resourceType: foundry
           model: gpt-4.1
 ```
-
-{{< doc-test paths="azure" >}}
-cat <<'EOF' > config-adv-foundry-client-secret.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- matches:
-  - path:
-      pathPrefix: /azure
-  policies:
-    backendAuth:
-      azure:
-        explicitConfig:
-          clientSecret:
-            tenant_id: "<your-tenant-id>"
-            client_id: "<your-client-id>"
-            client_secret: "<your-client-secret>"
-  backends:
-  - ai:
-      name: azure
-      provider:
-        azure:
-          resourceName: "your-resource-name"
-          projectName: "your-project-name"
-          resourceType: foundry
-          model: gpt-4.1
-EOF
-agentgateway -f config-adv-foundry-client-secret.yaml --validate-only
-{{< /doc-test >}}
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
@@ -342,7 +200,7 @@ agentgateway -f config-adv-foundry-client-secret.yaml --validate-only
 {{% tab name="Client secret" %}}
 **Client secret authentication**
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -364,33 +222,6 @@ routes:
             client_id: "<your-client-id>"
             client_secret: "<your-client-secret>"
 ```
-
-{{< doc-test paths="azure" >}}
-cat <<'EOF' > config-adv-client-secret.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - ai:
-      name: azure
-      provider:
-        azure:
-          resourceName: "your-resource-name"
-          resourceType: openAI
-          model: gpt-4.1
-  policies:
-    backendAuth:
-      azure:
-        explicitConfig:
-          clientSecret:
-            tenant_id: "<your-tenant-id>"
-            client_id: "<your-client-id>"
-            client_secret: "<your-client-secret>"
-EOF
-agentgateway -f config-adv-client-secret.yaml --validate-only
-{{< /doc-test >}}
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
@@ -408,7 +239,7 @@ To use system-assigned managed identity:
 
 Leave `managedIdentity` empty to use the identity of the Azure resource that runs agentgateway.
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -427,30 +258,6 @@ routes:
         explicitConfig:
           managedIdentity: {}
 ```
-
-{{< doc-test paths="azure" >}}
-cat <<'EOF' > config-adv-system-managed-identity.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - ai:
-      name: azure
-      provider:
-        azure:
-          resourceName: "your-resource-name"
-          resourceType: openAI
-          model: gpt-4.1
-  policies:
-    backendAuth:
-      azure:
-        explicitConfig:
-          managedIdentity: {}
-EOF
-agentgateway -f config-adv-system-managed-identity.yaml --validate-only
-{{< /doc-test >}}
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
@@ -468,7 +275,7 @@ To use user-assigned managed identity:
 
 Specify the client ID of the user-assigned managed identity to use. You can also specify the object ID or resource ID instead.
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -492,35 +299,6 @@ routes:
               # objectId: "your-managed-identity-object-id"
               # resourceId: "/subscriptions/.../resourceGroups/.../providers/Microsoft.ManagedIdentity/userAssignedIdentities/..."
 ```
-
-{{< doc-test paths="azure" >}}
-cat <<'EOF' > config-adv-user-managed-identity.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - ai:
-      name: azure
-      provider:
-        azure:
-          resourceName: "your-resource-name"
-          resourceType: openAI
-          model: gpt-4.1
-  policies:
-    backendAuth:
-      azure:
-        explicitConfig:
-          managedIdentity:
-            userAssignedIdentity:
-              clientId: "<your-managed-identity-client-id>"
-              # OR use objectId or resourceId instead
-              # objectId: "your-managed-identity-object-id"
-              # resourceId: "/subscriptions/.../resourceGroups/.../providers/Microsoft.ManagedIdentity/userAssignedIdentities/..."
-EOF
-agentgateway -f config-adv-user-managed-identity.yaml --validate-only
-{{< /doc-test >}}
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
@@ -540,7 +318,7 @@ On AKS, complete the following steps to prepare the cluster.
 
 1. [Enable Microsoft Entra Workload ID on the cluster](https://learn.microsoft.com/azure/aks/workload-identity-deploy-cluster).
 
-2. Create a user-assigned managed identity. Then, grant that identity the least-privilege role that the Azure AI resource requires. For example, the `Azure AI User` role grants access to Azure AI Foundry.
+2. Create a user-assigned managed identity. Then, grant that identity the least-privilege role that the Azure AI resource requires. For example, the `Foundry User` role grants access to Azure AI Foundry. This role was previously named `Azure AI User`. For more information, see [Role-based access control for Microsoft Foundry](https://learn.microsoft.com/azure/foundry/concepts/rbac-foundry).
 
 3. Create a federated credential that trusts the service account that agentgateway uses. By default, the standalone Helm chart names the service account after the Helm release. For a release named `agentgateway` in the `agentgateway` namespace, use the following subject. The subject must match the namespace and the service account name exactly.
 
@@ -563,7 +341,7 @@ On AKS, complete the following steps to prepare the cluster.
 Then, select workload identity in the agentgateway configuration.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -583,31 +361,6 @@ routes:
           workloadIdentity: {}
     backendTLS: {}
 ```
-
-{{< doc-test paths="azure" >}}
-cat <<'EOF' > config-adv-workload-identity.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - ai:
-      name: azure
-      provider:
-        azure:
-          resourceName: "your-resource-name"
-          resourceType: openAI
-          model: gpt-4.1
-  policies:
-    backendAuth:
-      azure:
-        explicitConfig:
-          workloadIdentity: {}
-    backendTLS: {}
-EOF
-agentgateway -f config-adv-workload-identity.yaml --validate-only
-{{< /doc-test >}}
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
@@ -627,7 +380,7 @@ agentgateway -f config-adv-workload-identity.yaml --validate-only
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -650,34 +403,6 @@ routes:
         key:
           value: your-api-key
 ```
-
-{{< doc-test paths="azure" >}}
-cat <<'EOF' > config-claude-foundry.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- name: azure
-  matches:
-  - path:
-      pathPrefix: /azure-anthropic #prefix example
-  backends:
-  - ai:
-      name: azure
-      provider:
-        azure:
-          resourceName: your-foundry-resource
-          projectName: your-project-name
-          resourceType: foundry
-          model: claude-sonnet-4-6
-    policies:
-      backendAuth:
-        key:
-          value: your-api-key
-EOF
-agentgateway -f config-claude-foundry.yaml --validate-only
-{{< /doc-test >}}
 
 {{< reuse "agw-docs/snippets/review-table.md" >}}
 
@@ -701,49 +426,43 @@ curl -X POST http://localhost:4000/azure-anthropic \
   }'
 ```
 
-{{< doc-test paths="azure" >}}
-# Confirm the Foundry implicit-auth config serves the wildcard model and resolves
-# it to the azure provider.
-agentgateway -f config-foundry-implicit.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
+## Use Decisions on Azure
 
-# The default `llm.discovery: catalog` expands `*` into catalog model IDs, so
-# check for a non-empty list rather than a literal `*`.
-SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '.data | length')
-if [ "${SERVED:-0}" -eq 0 ]; then
-  echo "FAIL: /v1/models lists no models for the example config"
-  exit 1
-fi
-PROVIDER=$(curl -sf --max-time 10 http://localhost:15000/config_dump | jq -r '
-  [ .backends[].backend.ai
-    | select(. != null)
-    | .target.providers[].active[].endpoint
-    | .provider | keys[0]
-  ] | first')
-if [ "$PROVIDER" != "azure" ]; then
-  echo "FAIL: expected provider azure but agentgateway resolved $PROVIDER"
-  exit 1
-fi
-echo "✓ The wildcard model is served and resolves to the azure provider"
-{{< /doc-test >}}
+Azure models can answer classification questions about an input, such as which of several choices fits best or how likely a statement is true. {{< reuse "agw-docs/snippets/agentgateway.md" >}} accepts two client request formats for these models:
 
-## Use Microsoft Decision models on Azure AI Foundry
+- **Decisions API** (`/v1/decisions`): The OpenAI-compatible format, with `predicate`, `choice`, and `score` question types. For another example of this API, see the [Jev guardrail guide]({{< link-hextra path="/integrations/llm/guardrails/jev/" >}}).
+- **SystemOne** (`/v1/systemone`): The TypeSafe format, with corresponding `noul`, `choice`, and `score` question types.
 
-[Azure AI Foundry](https://ai.azure.com/) hosts Microsoft Decision models, which answer classification questions about a text, such as which of several choices fits best or how likely a statement is true. {{< reuse "agw-docs/snippets/agentgateway.md" >}} accepts two request formats for these models:
+Choose the Azure endpoint that hosts your model. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} converts requests and responses to the upstream endpoint's native format.
 
-- **Decisions API** (`/v1/decisions`): The OpenAI-compatible format. {{< reuse "agw-docs/snippets/agentgateway.md" >}} converts the request and the response to and from the native SystemOne format. For another example of this API, see the [Jev guardrail guide]({{< link-hextra path="/integrations/llm/guardrails/jev/" >}}).
-- **SystemOne** (`/v1/systemone`): The native format of the model. {{< reuse "agw-docs/snippets/agentgateway.md" >}} forwards the request unchanged.
+- **Azure OpenAI**: Deploy a model that supports the [Azure OpenAI Decisions API](https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/decisions), such as `gpt-6-luna`. Azure OpenAI receives both client formats at `/openai/v1/decisions`: Decisions requests are sent unchanged, and SystemOne requests are converted to Decisions.
+- **Azure AI Foundry**: Deploy Microsoft-Decision-1 in your Foundry resource. Foundry receives both client formats at `https://{resourceName}.cognitiveservices.azure.com/providers/microsoft/v1/systemone`: SystemOne requests are sent unchanged, and Decisions requests are converted to SystemOne.
 
-Both formats use the Foundry resource endpoint, `https://{resourceName}.cognitiveservices.azure.com/providers/microsoft/v1/systemone`. In SystemOne, a question of type `noul` returns the probability that a statement is true. The Decisions API calls this question type `predicate`.
+Before you begin, sign in with the Azure CLI or the Azure Developer CLI as an identity that has inference access to the resource.
 
-Before you begin, deploy Microsoft-Decision-1 in your Foundry resource. Then sign in with the Azure CLI or the Azure Developer CLI as an identity that has inference access to the Foundry resource.
-
-1. Save the following configuration as `config-decisions.yaml`. Replace the resource name and deployment name with your own values.
+1. Save the following configuration as `config-decisions.yaml`. Choose the tab for the endpoint that hosts your model, and replace the resource and deployment names with your own values.
 
    {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
+   {{< tabs >}}
+   {{% tab name="Azure OpenAI" %}}
+   ```yaml
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+   llm:
+     models:
+     - auth:
+         azure:
+           developerImplicit: {}
+       name: azure-decisions
+       params:
+         azureResourceName: my-openai-resource
+         azureResourceType: openAI
+         model: my-decision-deployment
+       provider: azure
+     port: 3000
+   ```
+   {{% /tab %}}
+   {{% tab name="Azure AI Foundry" %}}
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
@@ -751,7 +470,7 @@ Before you begin, deploy Microsoft-Decision-1 in your Foundry resource. Then sig
      - auth:
          azure:
            developerImplicit: {}
-       name: foundry-decision
+       name: azure-decisions
        params:
          azureResourceName: my-foundry-resource
          azureResourceType: foundry
@@ -759,17 +478,19 @@ Before you begin, deploy Microsoft-Decision-1 in your Foundry resource. Then sig
        provider: azure
      port: 3000
    ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
    {{< reuse "agw-docs/snippets/review-table.md" >}}
 
    | Setting | Description |
    |---------|-------------|
-   | `name` | The model name that clients send in the `model` field. This name is not the deployment name. A request with any other model name returns a `404` error. |
-   | `provider` | Set to `azure` for Azure AI Foundry. |
+   | `name` | The model name that clients send in the `model` field. This name is not the Azure deployment name. A request with any other model name returns a `404` error. |
+   | `provider` | Set to `azure` for Azure. |
    | `auth.azure.developerImplicit` | Authenticate with the credentials from your Azure CLI or Azure Developer CLI sign-in. |
-   | `params.azureResourceName` | The Azure AI Foundry resource name used to construct the endpoint hostname. |
-   | `params.azureResourceType` | Set to `foundry` to use Azure AI Foundry endpoints. |
-   | `params.model` | The name of your Foundry deployment. {{< reuse "agw-docs/snippets/agentgateway.md" >}} sends this name upstream and replaces the `model` value in the client request. |
+   | `params.azureResourceName` | The Azure resource name used to construct the endpoint hostname. |
+   | `params.azureResourceType` | Set to `openAI` for Azure OpenAI or `foundry` for Azure AI Foundry. |
+   | `params.model` | The name of your Azure deployment. {{< reuse "agw-docs/snippets/agentgateway.md" >}} sends this name upstream and replaces the `model` value in the client request. |
 
    Both request paths are served from the same model. You do not need to configure a route for each path.
 
@@ -780,50 +501,42 @@ Before you begin, deploy Microsoft-Decision-1 in your Foundry resource. Then sig
    agentgateway -f config-decisions.yaml
    ```
 
-3. In another terminal, send a choice question through the Decisions API.
+3. In another terminal, send a predicate question through the Decisions API.
 
    ```sh
    curl --fail-with-body --max-time 120 http://localhost:3000/v1/decisions \
      -H 'Content-Type: application/json' \
      -d '{
-       "input": "I was charged twice for my subscription.",
-       "model": "foundry-decision",
+       "input": "I was charged twice. Can I get a refund?",
+       "model": "azure-decisions",
        "questions": [{
-         "choices": [
-           {"description": "Payments and invoices", "value": "billing"},
-           {"description": "Software problems", "value": "technical"}
-         ],
-         "instructions": "Which team should handle this support ticket?",
-         "name": "department",
-         "type": "choice"
+         "instructions": "Is the customer asking for a refund?",
+         "name": "refund_requested",
+         "type": "predicate"
        }]
      }'
    ```
 
-   The response includes a `department` choice with a probability for each value, and token usage. The Decisions API also supports `predicate` and `score` questions.
+   The response includes the probability that the customer requested a refund and the request's token usage. For more information about the request format, see [Decisions]({{< link-hextra path="/documentation/llm/api-types/decisions/" >}}).
 
-4. Send the same question in the native SystemOne format. SystemOne takes the text in `state` and the questions as a map keyed by name, and returns an `answers` map. Its question types are `noul`, `choice`, and `score`.
+4. Send the same question in the SystemOne client format. SystemOne takes the input in `state`, the questions as a map keyed by name, and returns an `answers` map.
 
    ```sh
    curl --fail-with-body --max-time 120 http://localhost:3000/v1/systemone \
      -H 'Content-Type: application/json' \
      -d '{
-       "model": "foundry-decision",
+       "model": "azure-decisions",
        "questions": {
-         "department": {
-           "criteria": {
-             "billing": "Payments and invoices",
-             "technical": "Software problems"
-           },
-           "instructions": "Which team should handle this support ticket?",
-           "type": "choice"
+         "refund_requested": {
+           "instructions": "Is the customer asking for a refund?",
+           "type": "noul"
          }
        },
-       "state": "I was charged twice for my subscription."
+       "state": "I was charged twice. Can I get a refund?"
      }'
    ```
 
    > [!NOTE]
-   > Prompt guards are disabled for requests in the native SystemOne format.
+   > Prompt guards are disabled for requests in the SystemOne format.
 
 5. When you finish, stop agentgateway with Ctrl+C.

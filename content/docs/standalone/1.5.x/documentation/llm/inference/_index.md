@@ -48,6 +48,6 @@ service in `services`, and the route backend references it as
 `default/my-model`.
 
 
-{{% github-yaml url="https://agentgateway.dev/examples/llm-standalone-epp/config.yaml" %}}
+{{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/v1.5.0/examples/llm-standalone-epp/config.yaml" %}}
 
-See the [agentgateway llm-standalone-epp example](https://github.com/agentgateway/agentgateway/blob/main/examples/llm-standalone-epp/README.md).
+See the [agentgateway llm-standalone-epp example](https://github.com/agentgateway/agentgateway/blob/v1.5.0/examples/llm-standalone-epp/README.md).

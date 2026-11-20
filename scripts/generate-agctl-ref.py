@@ -85,6 +85,64 @@ def weight_for_filename(filename: str) -> int:
     return 10
 
 
+CONTENT_MODES = ("standalone", "kubernetes")
+
+# Commands that work in only one mode, keyed by slug. Each entry also covers the
+# command's subcommands (agctl-standalone covers agctl-standalone-get). Every other
+# command is published in both modes.
+MODE_ONLY_COMMANDS = {
+    # controller/pkg/cli/standalone/: calls the standalone admin API.
+    "agctl-standalone": "standalone",
+    # The rest resolve their target through the kubeconfig (controller/pkg/cli/kubeutil/).
+    # `agctl proxy trace` and `agctl proxy profile` also take --local, so they stay in both.
+    "agctl-bug-report": "kubernetes",
+    "agctl-controller": "kubernetes",
+    "agctl-migrate": "kubernetes",
+    "agctl-proxy-config": "kubernetes",
+    "agctl-proxy-log": "kubernetes",
+}
+
+
+def command_mode(slug: str) -> str | None:
+    """Return the only mode that a command works in, or None if it works in both."""
+    for prefix, mode in MODE_ONLY_COMMANDS.items():
+        if slug == prefix or slug.startswith(prefix + "-"):
+            return mode
+    return None
+
+
+def gate_cross_mode_links(text: str, page_slug: str) -> str:
+    """Show links to a single-mode command only in that mode.
+
+    The asset is shared by both modes, but the linked page exists in only one of
+    them. A SEE ALSO bullet is gated together with its newline so that the other
+    mode keeps a tight list with no blank line in it.
+    """
+    page_mode = command_mode(page_slug)
+    link_re = re.compile(r"\[[^\]]+\]\(\.\./([a-z0-9-]+)/\)")
+
+    def gate(body: str, mode: str) -> str:
+        return f'{{{{% conditional-text include-if="{mode}" %}}}}{body}{{{{% /conditional-text %}}}}'
+
+    out = []
+    for line in text.splitlines(keepends=True):
+        if line.startswith("* "):
+            match = link_re.search(line)
+            mode = command_mode(match.group(1)) if match else None
+            if mode and mode != page_mode:
+                out.append(gate(line, mode))
+                continue
+
+        def link_sub(match: re.Match) -> str:
+            mode = command_mode(match.group(1))
+            if mode and mode != page_mode:
+                return gate(match.group(0), mode)
+            return match.group(0)
+
+        out.append(link_re.sub(link_sub, line))
+    return "".join(out)
+
+
 def rewrite_file(path: Path) -> None:
     """Fix relative cross-links in cobra-generated Markdown for Hugo reuse assets.
 
@@ -109,18 +167,17 @@ def rewrite_file(path: Path) -> None:
         return f"[{label}](../{slug}/)"
 
     text = re.sub(r"\[([^\]]+)\]\(([a-zA-Z0-9_-]+\.md)\)", link_sub, text)
+    text = gate_cross_mode_links(text, path.stem)
 
     path.write_text(text.lstrip(), encoding="utf-8")
-
-
-CONTENT_MODES = ("standalone", "kubernetes")
 
 
 def write_wrapper_pages(website_dir: str, link_version: str, generated: list[Path]) -> None:
     """Create thin wrapper pages under content/docs/<mode>/<link_version>/reference/agctl/.
 
     Each wrapper just pulls in the matching generated reuse asset, so adding a
-    new agctl subcommand is a no-touch change for the wrapper layer.
+    new agctl subcommand is a no-touch change for the wrapper layer. A command in
+    MODE_ONLY_COMMANDS gets a wrapper in its own mode only.
     """
     for mode in CONTENT_MODES:
         wrapper_dir = Path(website_dir) / "content" / "docs" / mode / link_version / "reference" / "agctl"
@@ -134,6 +191,8 @@ def write_wrapper_pages(website_dir: str, link_version: str, generated: list[Pat
 
         for asset in generated:
             slug = asset.stem  # e.g. "agctl-config-all"
+            if command_mode(slug) not in (None, mode):
+                continue
             title = slug.replace("-", " ")
             weight = weight_for_filename(asset.name)
             wrapper = wrapper_dir / asset.name

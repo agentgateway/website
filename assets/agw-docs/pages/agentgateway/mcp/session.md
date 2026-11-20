@@ -13,6 +13,8 @@ If a client sends a session ID that the proxy cannot decode, the proxy returns `
 
 The proxy encrypts each session ID with a session key. The controller stores the key in a Secret named `<gateway-name>-session-key` in the namespace of the Gateway. The controller creates the Secret only if it does not exist, and never changes the key in it. The Gateway owns the Secret, so deleting the Gateway deletes the key. To use your own key, set the `SESSION_KEY` environment variable in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. The controller then does not manage a Secret. If the controller cannot create the Secret, or another resource controls it, the Gateway reports `Programmed: False` with the reason `DeploymentFailed`.
 
+When a client closes a stateful session with an HTTP `DELETE` request, the proxy decodes the session ID before it sends close requests to the upstream targets. Because all replicas of the Gateway share the session key, any replica can close the upstream sessions. If you set `SESSION_KEY` yourself, use the same value for every replica. Deletion is best effort. Upstream close failures still return `HTTP 202`, and those upstream sessions stay open until the target's idle timeout. If the proxy cannot rebuild a target connection from the session ID, the client receives an error response instead of `HTTP 202`.
+
 A client can reuse a session ID on a different route to the same MCP backend. The request then uses the MCP authorization and MCP guardrail policies of the route that it arrives on, not the route that created the session.
 {{< /version >}}
 

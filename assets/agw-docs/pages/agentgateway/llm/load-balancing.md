@@ -156,33 +156,12 @@ For **health-aware P2C load balancing** across individual Pod replicas, use the 
 
 Agentgateway will automatically discover all Pod endpoints behind the Service and apply its P2C load balancing algorithm with health-aware scoring across them.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}}To prefer the same Pod endpoint for requests that share a session or user value, configure session affinity. For more information, see [Session affinity on AI backends]({{< link-hextra path="/documentation/traffic-management/load-balancing/#session-affinity-ai" >}}).{{< /version >}}
+
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/documentation/setup/gateway/" >}}).
 2. Set up [API access to each LLM provider]({{< link-hextra path="/documentation/llm/api-keys/" >}}) that you want to use.
-
-{{< doc-test paths="load-balancing" >}}
-export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
-kubectl apply -f- <<EOF
-apiVersion: v1
-kind: Secret
-metadata:
-  name: openai-secret
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-type: Opaque
-stringData:
-  Authorization: $OPENAI_API_KEY
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: anthropic-secret
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-type: Opaque
-stringData:
-  Authorization: ${ANTHROPIC_API_KEY:-$OPENAI_API_KEY}
-EOF
-{{< /doc-test >}}
 
 ## Load balance across multiple providers {#multiple-providers}
 
@@ -190,7 +169,7 @@ Create a backend with multiple providers in the same priority group to enable lo
 
 1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} with multiple providers. In this example, requests are load balanced across OpenAI and Anthropic.
 
-   ```yaml,paths="load-balancing"
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -218,49 +197,9 @@ Create a backend with multiple providers in the same priority group to enable lo
    EOF
    ```
 
-{{< doc-test paths="load-balancing" >}}
-# The documented example load balances across OpenAI and Anthropic. The test
-# replaces it with two providers that both point at the httpbun mock LLM, so it
-# needs no provider API key at all and bills nothing. The shape under test is the
-# same as the documented one - two providers in a single priority group - which is
-# what the P2C behavior on this page depends on.
-{{< reuse "agw-docs/snippets/deploy-mock-llm.md" >}}
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-metadata:
-  name: loadbalanced-backend
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  ai:
-    groups:
-      - providers:
-          - name: openai-gpt4
-            openai:
-              model: gpt-4o
-            host: httpbun.default.svc.cluster.local
-            port: 3090
-            path: /llm/chat/completions
-            policies:
-              auth:
-                secretRef:
-                  name: openai-secret
-          - name: openai-gpt35
-            openai:
-              model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
-            host: httpbun.default.svc.cluster.local
-            port: 3090
-            path: /llm/chat/completions
-            policies:
-              auth:
-                secretRef:
-                  name: openai-secret
-EOF
-{{< /doc-test >}}
-
 2. Create an HTTPRoute to route traffic to the backend.
 
-   ```yaml,paths="load-balancing"
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -279,44 +218,10 @@ EOF
          backendRefs:
            - name: loadbalanced-backend
              namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-             group: agentgateway.dev
+             group: {{< reuse "agw-docs/snippets/group.md" >}}
              kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-
-{{< doc-test paths="load-balancing" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for loadbalanced-backend to be accepted
-  wait:
-    target:
-      kind: AgentgatewayBackend
-      metadata:
-        namespace: agentgateway-system
-        name: loadbalanced-backend
-    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 2
-
-- name: wait for loadbalanced-route HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: agentgateway-system
-        name: loadbalanced-route
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
 
 3. Send multiple requests to observe load balancing behavior.
 
@@ -342,48 +247,6 @@ EOF
    {{< /tabs >}}
 
    You'll see responses from both providers, with the P2C algorithm automatically selecting the best provider for each request based on current health and performance metrics.
-
-{{< doc-test paths="load-balancing" >}}
-YAMLTest -f - <<'EOF'
-- name: verify load balanced request succeeds
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/chat"
-    method: POST
-    headers:
-      content-type: application/json
-    body: |
-      {
-        "messages": [{"role": "user", "content": "Say hello in one word"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.usage.total_tokens"
-        comparator: greaterThan
-        value: 0
-
-- name: verify second load balanced request succeeds
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/chat"
-    method: POST
-    headers:
-      content-type: application/json
-    body: |
-      {
-        "messages": [{"role": "user", "content": "Say hello in one word"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.usage.total_tokens"
-        comparator: greaterThan
-        value: 0
-EOF
-{{< /doc-test >}}
 
 ## Traffic splitting for A/B testing {#traffic-splitting}
 
@@ -452,12 +315,12 @@ For a complete guide on traffic splitting patterns, see [Traffic splitting]({{< 
          backendRefs:
            - name: stable-backend
              namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-             group: agentgateway.dev
+             group: {{< reuse "agw-docs/snippets/group.md" >}}
              kind: {{< reuse "agw-docs/snippets/backend.md" >}}
              weight: 80
            - name: canary-backend
              namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-             group: agentgateway.dev
+             group: {{< reuse "agw-docs/snippets/group.md" >}}
              kind: {{< reuse "agw-docs/snippets/backend.md" >}}
              weight: 20
    EOF

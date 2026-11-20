@@ -70,7 +70,8 @@ These attributes follow the [OTel semantic conventions for generative AI spans](
 | `gen_ai.request.model` | Requested model |
 | `gen_ai.response.model` | Model that served the response |
 | `gen_ai.usage.input_tokens` | Input token count |
-| `gen_ai.usage.output_tokens` | Output token count |
+| `gen_ai.usage.output_tokens` | Output token count |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+| `gen_ai.usage.audio_seconds` | Audio duration in seconds for transcription and translation requests |{{< /version >}}
 
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 LLM requests that model routing serves also carry the `agw.ai.original_model` attribute. Model routing serves {{< conditional-text include-if="kubernetes" >}}`{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources{{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}the `llm.models` configuration, including virtual models{{< /conditional-text >}}. The attribute records the model name that the client sent, and `gen_ai.request.model` records the model that reaches the provider after routing. Use the two values together to see which target served a request for a virtual model. Access logs carry the same attribute, including for requests that fail routing, such as a request for a model that does not exist.

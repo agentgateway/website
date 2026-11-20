@@ -39,7 +39,7 @@ To set up advanced observability with Grafana, Prometheus, and OpenTelemetry for
 {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} exposes the `agentgateway_gen_ai_client_token_usage` Prometheus metric that tracks input and output tokens for each request.
 
 1. Port-forward the agentgateway proxy on port 15020.
-   ```sh,paths="cost-tracking"
+   ```sh
    kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15020 &
    sleep 2
    ```
@@ -62,17 +62,6 @@ To set up advanced observability with Grafana, Prometheus, and OpenTelemetry for
 
    The `_sum` suffix shows total tokens consumed, and `_count` shows the number of requests.
 
-{{< doc-test paths="cost-tracking" >}}
-# Verify metrics endpoint is accessible and contains token usage metrics
-curl -s http://localhost:15020/metrics | grep -q "agentgateway_gen_ai_client_token_usage"
-if [ $? -eq 0 ]; then
-  echo "✓ Token usage metrics found"
-else
-  echo "✗ Token usage metrics not found"
-  exit 1
-fi
-{{< /doc-test >}}
-
 For more information about the token usage metric, see the [Semantic conventions for generative AI metrics](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-metrics/) in the OpenTelemetry documentation.
 
 ## Calculate costs from token metrics
@@ -90,7 +79,7 @@ Check your LLM provider's pricing page for current rates. Most providers charge 
 
 - [OpenAI pricing](https://openai.com/api/pricing/)
 - [Anthropic pricing](https://claude.com/pricing)
-- [Google AI pricing](https://ai.google.dev/gemini-api/docs/pricing)
+- [Google AI pricing](https://aistudio.google.com/docs/pricing)
 - [AWS Bedrock pricing](https://aws.amazon.com/bedrock/pricing/)
 - [Azure OpenAI pricing](https://azure.microsoft.com/en-us/pricing/details/azure-openai/)
 
@@ -188,7 +177,7 @@ OpenTelemetry traces include token usage as span attributes. You can view per-re
 
 To enforce per-user spending limits, combine cost tracking with rate limiting:
 
-1. Set up token-based rate limiting with global rate limit descriptors that use `unit: Tokens`, keyed by a per-user value such as the `X-User-ID` header. See the [budget and spend limits guide]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/" >}}).{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} If the budget does not need to be shared across proxy replicas, set `local[].key` instead. This field enforces a claim-level budget with no external rate limit service. {{% upstream %}}See [Claim-level budget limits]({{< link-hextra path="/documentation/llm/rate-limit/#claim-level" >}}).{{% /upstream %}}{{% downstream %}}See [Claim-level rate limits]({{< link-hextra path="/documentation/security/rate-limit-http/#claim-level" >}}).{{% /downstream %}}{{< /version >}}
+1. Set up token-based rate limiting with global rate limit descriptors that use `unit: Tokens`, keyed by a per-user value such as the `X-User-ID` header. See the [budget and spend limits guide]({{< link-hextra path="/documentation/llm/cost-controls/budget-limits/" >}}).{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}} If the budget does not need to be shared across proxy replicas, set `local[].key` instead. This field enforces a claim-level budget with no external rate limit service. {{% upstream %}}See [Claim-level budget limits]({{< link-hextra path="/documentation/llm/rate-limit/#claim-level" >}}).{{% /upstream %}}{{% downstream %}}See {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Claim-level rate limits]({{< link-hextra path="/documentation/security/rate-limit/local/#claim-level" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Claim-level rate limits]({{< link-hextra path="/documentation/security/rate-limit-http/#claim-level" >}}){{< /version >}}.{{% /downstream %}}{{< /version >}}
 
 2. Configure the daily token limit based on your budget. For example, a $10 daily budget for GPT-4 allows approximately 166,000 input tokens or 166,000 output tokens (assuming mixed usage).
 

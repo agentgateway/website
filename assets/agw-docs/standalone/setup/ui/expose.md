@@ -221,6 +221,49 @@ For what you can do from here, see [Launch the UI]({{< link-hextra path="/docume
 
 To save the configuration changes that you make in the UI, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}). In the Helm chart's default read-only storage mode, the UI shows the running configuration, but a save fails because the chart mounts the configuration file read-only.
 
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" %}}
+## Serve behind a stripped path prefix {#path-prefix}
+
+If a reverse proxy or cloud load balancer serves the UI under a path prefix and removes that prefix before forwarding, set `ui.basePath` to the public prefix. The gateway listener still receives and serves `/ui` and `/api`. The browser receives the `ui.basePath` value in links, bundled assets, API calls, and login redirects.
+
+For example, if users open `https://agentgateway.example.com/team/agentgateway/ui/` and the proxy forwards the request to the UI gateway as `/ui/`, set `ui.basePath` to `/team/agentgateway`.
+
+```yaml
+ui:
+  basePath: /team/agentgateway
+  gateways: [ui-gateway]
+```
+
+In a Helm values file, the `ui` section is under `config`, as in the [Helm](#helm) steps.
+
+The `ui.basePath` value must meet the following rules. Otherwise, agentgateway rejects the configuration with an `invalid ui.basePath` error.
+* The value starts with `/`, such as `/agentgateway`.
+* The value does not end with `/`. As a result, `/` on its own is not a valid value.
+* The value does not contain `//`.
+* The value uses only ASCII letters, digits, `/`, `-`, `.`, `_`, `~`, and `%`.
+
+If you protect the UI with OIDC, add the same prefix to the redirect URI, and register that URI in your IdP. For example, in the steps from [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}), set `REDIRECT_URI` to `https://agentgateway.example.com/team/agentgateway/oauth/callback`. Agentgateway removes the prefix from the callback path, so the callback still matches after the proxy strips the prefix.
+
+The following example shows where `basePath` goes when the UI has an `oidc` policy. Add `basePath` to the `ui` section that holds the `oidc` policy from [Secure the UI]({{< link-hextra path="/documentation/setup/ui/secure-ui/" >}}), and keep the issuer, client, and scope values from that guide. Then, apply the change the same way that you applied the `oidc` policy.
+
+```yaml
+ui:
+  basePath: /team/agentgateway
+  gateways: [ui-gateway]
+  policies:
+    oidc:
+      issuer: https://idp.example.com/realms/agentgateway
+      clientId: agentgateway-ui
+      clientSecret: $UI_CLIENT_SECRET
+      redirectURI: https://agentgateway.example.com/team/agentgateway/oauth/callback
+      scopes:
+      - profile
+      - email
+```
+
+After the proxy is in place, open the public UI URL, such as `https://agentgateway.example.com/team/agentgateway/ui/`. Deep links, page reloads, assets, API calls, and the OIDC login flow stay under the public prefix.
+{{% /version %}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
@@ -230,7 +273,7 @@ To save the configuration changes that you make in the UI, see [Configuration st
 1. Remove the `tls` section and the `ui.policies` section from your configuration file, and remove the `ui-gateway` if you no longer want a separate UI port.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 4000

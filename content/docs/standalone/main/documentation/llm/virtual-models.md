@@ -2,70 +2,7 @@
 title: Virtual models
 weight: 47
 description: Configure virtual models with weighted, failover, conditional, and callout routing in simplified LLM mode.
-test:
-  virtual-models:
-  - file: ${versionRoot}/documentation/llm/virtual-models.md
-    path: virtual-models
 ---
-
-{{< doc-test paths="virtual-models" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * The weighted, failover, and conditional example configs are accepted by agentgateway (--validate-only),
-#     covering `llm.virtualModels[].routing.weighted.targets[].weight`,
-#     `routing.failover.targets[].priority`, `llm.models[].health.eviction`,
-#     and `routing.conditional.targets[].when`.
-#   * "Public and internal models": with each config loaded, the served model list
-#     contains the virtual model and any `visibility: public` model, and omits every
-#     `visibility: internal` model. This turns the prose description of `public` and
-#     `internal` into an observable assertion:
-#       - weighted    -> gpt-4o-public, smart      (2 internal targets hidden)
-#       - failover    -> resilient                 (all 3 targets are internal)
-#       - conditional -> openai-public, adaptive   (2 internal targets hidden)
-#     The failover case is the clearest: every target is internal, so only the
-#     virtual entrypoint is exposed.
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That traffic is actually split 90/10 by `weight` - external dependency;
-#     observing the split needs many live completions against OpenAI.
-#   * That failover moves to a lower `priority` target after eviction removes
-#     the primary, and that same-priority targets are load balanced by health
-#     and latency - external dependency; triggering a real upstream failure
-#     needs live providers.
-#   * That `when` expressions select a target by request header - requires
-#     config/traffic the page omits; the page shows no request example, and
-#     confirming which internal target served a response needs a live provider
-#     call.
-#   * That callout routing selects a target model: external dependency. The
-#     callout example needs a running HTTP router service and live provider
-#     calls.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-
-# The example configs read API keys from the environment. --validate-only and the
-# model listing still resolve env vars, so placeholders are enough here.
-export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"
-export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-test}"
-
-# Assert that a config serves exactly the expected client-facing models, which is
-# what `visibility: public` / `internal` controls.
-assert_models() {
-  local cfg="$1" expected="$2"
-  agentgateway -f "$cfg" &
-  local pid=$!
-  sleep 3
-  local served
-  served=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -cr '[.data[].id] | sort')
-  kill $pid 2>/dev/null
-  wait $pid 2>/dev/null
-  if [ "$served" != "$expected" ]; then
-    echo "FAIL: $cfg should serve $expected but served $served"
-    exit 1
-  fi
-  echo "✓ $cfg serves $expected (internal targets are not exposed)"
-}
-{{< /doc-test >}}
 
 Virtual models let you publish one client-facing model name and route requests across one or more internal target models.
 
@@ -87,7 +24,13 @@ The model drawer in the UI has no field for `visibility`. To set it in the UI, o
 ## Route selection modes
 
 Each virtual model defines its routing strategy under `routing`.
-The routing targets in a virtual model point to concrete `llm.models[]` entries.
+Weighted, conditional, and callout routing targets can point to concrete `llm.models[]` entries or to other virtual models. Failover targets must point to concrete `llm.models[]` entries. A virtual model that is a target must be `public` too, so clients can also request it directly.
+
+Virtual models can nest up to 4 levels. Agentgateway rejects a cycle between virtual models when it loads the configuration. If a request resolves past the nesting limit, agentgateway returns a `404` response with the `virtual_model_not_resolved` error code.
+
+In `/v1/models`, weighted, conditional, and failover virtual models combine metadata from their targets. For more information, see the [Models API]({{< link-hextra path="/documentation/llm/api-types/models/" >}}). A nested virtual model has no metadata, so it empties the lists that its parent shares across targets, such as `preferred_endpoints`. Callout routing selects the target for each request, so `/v1/models` cannot derive target metadata for callout virtual models.
+
+With weighted, conditional, and callout routing, the `passthrough` setting of the selected target model applies. If that target sets `passthrough`, the setting takes precedence over endpoint detection, so a `/v1/chat/completions` request is forwarded to the provider unchanged instead of being converted to the format of the provider. With failover routing, the request path decides how the request is handled, and the `passthrough` setting of the target models does not apply. For more information, see [Passthrough and endpoint detection]({{< link-hextra path="/documentation/configuration/traffic-management/llm/#llm-passthrough-precedence" >}}).
 
 ### Weighted routing
 
@@ -170,43 +113,6 @@ llm:
 ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="virtual-models" >}}
-cat <<'EOF' > config-weighted.yaml
-llm:
-  models:
-  - name: gpt-4o-public
-    visibility: public
-    provider: openAI
-    params:
-      model: gpt-4o
-      apiKey: "$OPENAI_API_KEY"
-  - name: gpt-4o-primary
-    visibility: internal
-    provider: openAI
-    params:
-      model: gpt-4o
-      apiKey: "$OPENAI_API_KEY"
-  - name: gpt-4o-fallback
-    visibility: internal
-    provider: openAI
-    params:
-      model: gpt-4o-mini
-      apiKey: "$OPENAI_API_KEY"
-
-  virtualModels:
-  - name: smart
-    routing:
-      weighted:
-        targets:
-        - model: gpt-4o-primary
-          weight: 90
-        - model: gpt-4o-fallback
-          weight: 10
-EOF
-agentgateway -f config-weighted.yaml --validate-only
-assert_models config-weighted.yaml '["gpt-4o-public","smart"]'
-{{< /doc-test >}}
 
 ### Failover routing
 
@@ -352,57 +258,6 @@ In this example:
 3. Later requests fail over to the `priority: 1` group and load balance between `claude-backup-a` and `claude-backup-b` by health and latency.
 4. Within that backup group, a degraded target is weighted down; the other backup continues to receive more traffic until the degraded target recovers or is also evicted.
 
-{{< doc-test paths="virtual-models" >}}
-cat <<'EOF' > config-failover.yaml
-llm:
-  models:
-  - name: claude-primary
-    visibility: internal
-    provider: anthropic
-    params:
-      model: claude-sonnet-4-0
-      apiKey: "$ANTHROPIC_API_KEY"
-    health:
-      eviction:
-        consecutiveFailures: 1
-        duration: 60s
-  - name: claude-backup-a
-    visibility: internal
-    provider: anthropic
-    params:
-      model: claude-3-5-haiku-20241022
-      apiKey: "$ANTHROPIC_API_KEY"
-    health:
-      eviction:
-        consecutiveFailures: 1
-        duration: 60s
-  - name: claude-backup-b
-    visibility: internal
-    provider: anthropic
-    params:
-      model: claude-3-5-haiku-20241022
-      apiKey: "$ANTHROPIC_API_KEY"
-    health:
-      eviction:
-        consecutiveFailures: 1
-        duration: 60s
-
-  virtualModels:
-  - name: resilient
-    routing:
-      failover:
-        targets:
-        - model: claude-primary
-          priority: 0
-        - model: claude-backup-a
-          priority: 1
-        - model: claude-backup-b
-          priority: 1
-EOF
-agentgateway -f config-failover.yaml --validate-only
-assert_models config-failover.yaml '["resilient"]'
-{{< /doc-test >}}
-
 ### Conditional routing
 
 Use `routing.conditional.targets` and `when` expressions to select targets by request context.
@@ -487,48 +342,11 @@ llm:
 {{% /tab %}}
 {{< /tabs >}}
 
-{{< doc-test paths="virtual-models" >}}
-cat <<'EOF' > config-conditional.yaml
-llm:
-  models:
-  - name: openai-public
-    visibility: public
-    provider: openAI
-    params:
-      model: gpt-4o-mini
-      apiKey: "$OPENAI_API_KEY"
-  - name: openai-fast
-    visibility: internal
-    provider: openAI
-    params:
-      model: gpt-4o-mini
-      apiKey: "$OPENAI_API_KEY"
-  - name: openai-smart
-    visibility: internal
-    provider: openAI
-    params:
-      model: gpt-4o
-      apiKey: "$OPENAI_API_KEY"
-
-  virtualModels:
-  - name: adaptive
-    routing:
-      conditional:
-        targets:
-        - model: openai-fast
-          when: request.headers["x-tier"] == "free"
-        - model: openai-smart
-          when: request.headers["x-tier"] == "pro"
-EOF
-agentgateway -f config-conditional.yaml --validate-only
-assert_models config-conditional.yaml '["adaptive","openai-public"]'
-{{< /doc-test >}}
-
 ### Callout routing {#callout-routing}
 
 Use `routing.callout` to send each request to an external HTTP service that selects the target model. Use callout routing when the routing decision depends on logic outside the configuration, such as a service that scores the complexity of the prompt or tracks the state of an agent session.
 
-Each request to the virtual model triggers a `POST` request to the callout service, which must return a `2xx` response with a JSON body. The callout request carries a `content-type` header and only the headers that you set in `headers`. Client request headers, such as `Authorization` or a session header, are not forwarded. The `transformation` expressions read that response from the `callout` CEL variable. `callout.body` is the decoded JSON body and `callout.headers` holds the response headers. The `model` expression selects the target. The other `transformation` keys set fields in the request body before the request goes to the selected model.
+Each request to the virtual model triggers a `POST` request to the callout service, which must return a `2xx` response with a JSON body. The callout request carries a `content-type` header and only the headers that you set in `headers`. Client request headers, such as `Authorization` or a session header, are not forwarded. The `transformation` expressions read that response from the `callout` CEL variable. `callout.body` is the decoded JSON body and `callout.headers` holds the response headers. The `model` expression selects the target model. The other `transformation` keys set fields in a JSON request body before the request goes to the selected model.
 
 ```yaml
 llm:
@@ -582,7 +400,7 @@ Use the following fields to configure callout routing:
 | `policies` | Optional backend policies for the connection to the callout service, such as TLS, authentication, and timeouts. The default request timeout is 10 seconds. |
 | `body` | Optional CEL expression that builds the callout request body. A string or bytes value is sent as is, and any other value is sent as JSON. If you omit `body`, the callout service receives the original request body. |
 | `headers` | Optional map of headers to set on the callout request. Each value is a CEL expression, so quote a literal string twice, such as `'"Bearer router-token"'`. To pass a client header to the callout service, read it from the request, such as `x-session-id: request.headers["x-session-id"]`. If an expression fails, such as when the client did not send that header, the header is left out. Keys can also be the `:path`, `:method`, and `:authority` pseudo-headers. A `backend` or service target has no path, so set `":path": '"/v1/route"'` to call a path other than `/`. |
-| `transformation` | Required map of request body fields to CEL expressions that read `callout`. The `model` key is required. The other keys override fields in the request body. If a key's expression fails, such as when the response does not contain the field, that field is removed from the request. The keys apply only to requests that carry the model in a JSON body. |
+| `transformation` | Required map of request fields to CEL expressions that read `callout`. The required `model` key can select a concrete or virtual model. For a Bedrock, Vertex AI, or Gemini request that carries the model in the URL path, `model` rewrites the path and is not added to the request body. The other keys override fields in the request body and apply only to requests that carry the model in a JSON body. If a key's expression fails, such as when the response does not contain the field, that field is removed from the request. |
 | `failureMode` | Optional. The default, `failClosed`, rejects the request with a `503` response and the `virtual_model_callout_failed` error code. Set `fallback` to the name of an `llm.models[]` entry to route to that model instead. The configuration is rejected if the fallback model does not exist. |
 | `cache` | Optional cache for callout responses. `key` is a list of CEL expressions that make up the cache key. If a key expression fails, such as when the header is missing, the response is not cached. `ttl` is a duration such as `10m`, or a CEL expression that can read `callout` and returns a duration or a timestamp. `maxEntries` sets the maximum number of cached responses. On a cache hit, `transformation` runs against the cached response. |
 

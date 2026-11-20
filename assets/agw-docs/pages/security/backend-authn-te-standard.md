@@ -31,7 +31,7 @@ Configure agentgateway to exchange tokens.
 
 1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} for the token endpoint, pointing at the in-cluster Keycloak Service.
 
-   ```yaml {paths="te-standard"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -47,7 +47,7 @@ Configure agentgateway to exchange tokens.
 
 2. Create a Kubernetes Secret with the gateway client's secret. This matches the `requester-client` secret from the imported realm.
 
-   ```yaml {paths="te-standard"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Secret
@@ -62,7 +62,7 @@ Configure agentgateway to exchange tokens.
 
 3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that attaches the `oauthTokenExchange` method to the `httpbin` Service. The `backendRef` field references the {{< reuse "agw-docs/snippets/backend.md" >}}, `path` sets the token endpoint path, and `grantType` selects the RFC 8693 exchange.
 
-   ```yaml {paths="te-standard"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -97,7 +97,7 @@ Configure agentgateway to exchange tokens.
 
 4. Confirm that the policy is accepted and attached.
 
-   ```sh {paths="te-standard"}
+   ```sh
    kubectl -n httpbin get {{< reuse "agw-docs/snippets/policy.md" >}} backend-token-exchange -o jsonpath='{.status.ancestors[0].conditions[*].type}={.status.ancestors[0].conditions[*].status}{"\n"}'
    ```
 
@@ -142,7 +142,7 @@ Mint the incoming token, send a request through agentgateway with it, and verify
    curl -s http://$INGRESS_GW_ADDRESS:80/headers \
      -H "host: www.example.com" \
      -H "authorization: Bearer $INBOUND_TOKEN" \
-     | jq -r '.headers.Authorization | sub("^Bearer ";"")' \
+     | jq -r '.headers.Authorization[0] | sub("^Bearer ";"")' \
      | cut -d. -f2 \
      | jq -R 'gsub("-";"+") | gsub("_";"/") | . + ("=" * ((4 - (length % 4)) % 4)) | @base64d | fromjson'
    ```
@@ -158,119 +158,6 @@ Mint the incoming token, send a request through agentgateway with it, and verify
    }
    ```
 
-{{< doc-test paths="te-standard" >}}
-# WHAT THIS TEST VALIDATES:
-#   * Keycloak deploys with both realms imported, and the AgentgatewayBackend, client Secret, and
-#     oauthTokenExchange policy all apply cleanly.
-#   * End to end: a token minted as initial-client is exchanged, and httpbin receives a *different*
-#     token whose audience is target-client and whose authorized party (azp) is requester-client.
-#   * Edge validation: with the jwt-edge policy attached, an invalid token and a missing token are
-#     both rejected with a 401 before the gateway calls the token endpoint.
-#   * The preserveToken trap: the same edge policy *without* preserveToken makes every valid request
-#     fail with a 400, which is why the guide marks that field IMPORTANT.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * The port-forward in the visible steps -- local forwarding is unsupported in automated tests, so
-#     the hidden test mints through the gateway instead. KC_HOSTNAME pins the issuer either way.
-#   * Token types, requestedTokenType, and the non-compliant-provider warnings -- those sections are
-#     reference tables, not a walkthrough. requestedTokenType IS enforced at apply time by the CRD
-#     enum, but subjectToken.tokenType is NOT: the API server accepts any string and the data plane
-#     rejects a bad one afterwards, which is what the "Token types" section documents.
-
-# Expose the Keycloak token endpoint through the gateway so tokens can be minted without a
-# port-forward. The issuer stays the pinned in-cluster hostname, so jwtAuthentication still matches.
-kubectl apply -f- <<EOF
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: keycloak
-  namespace: httpbin
-spec:
-  parentRefs:
-  - name: agentgateway-proxy
-    namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-  hostnames:
-  - "keycloak.local"
-  rules:
-  - backendRefs:
-    - name: keycloak
-      port: 8080
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="te-standard" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for the token exchange policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: httpbin
-        name: backend-token-exchange
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="te-standard" >}}
-# Mint the incoming token as initial-client. Keycloak readiness and data plane programming both lag
-# the rollout, and an unready upstream answers 503, so retry until a real token comes back rather
-# than treating any HTTP response as readiness.
-mint_incoming_token() {
-  local out=""
-  for i in $(seq 1 60); do
-    out=$(curl -s --max-time 10 "http://${INGRESS_GW_ADDRESS}:80/realms/backend-oauth/protocol/openid-connect/token" -H "host: keycloak.local" -u initial-client:initial-secret -d grant_type=password -d username=testuser -d password=testpass | jq -r '.access_token // empty' 2>/dev/null || true)
-    [ -n "$out" ] && { printf '%s' "$out"; return 0; }
-    sleep 2
-  done
-  return 1
-}
-
-INBOUND_TOKEN=$(mint_incoming_token) || { echo "FAILED: could not mint the incoming token"; exit 1; }
-test -n "$INBOUND_TOKEN" || { echo "FAILED: could not mint the incoming token"; exit 1; }
-
-# The exchange can lag policy acceptance, so poll until the backend reports azp=requester-client.
-AZP=""
-RESP=""
-for i in $(seq 1 30); do
-  RESP=$(curl -s --max-time 15 "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com"     -H "authorization: Bearer $INBOUND_TOKEN")
-  AZP=$(printf '%s' "$RESP" | python3 -c '
-import sys,json,base64
-try:
-    h=json.load(sys.stdin)["headers"]
-    tok=h.get("Authorization") or h.get("authorization")
-    tok=(tok[0] if isinstance(tok,list) else tok).split()[1]
-    print(json.loads(base64.urlsafe_b64decode(tok.split(".")[1]+"=="))["azp"])
-except Exception:
-    pass')
-  [ "$AZP" = "requester-client" ] && break
-  sleep 2
-done
-if [ "$AZP" != "requester-client" ]; then
-  echo "FAILED: expected the forwarded token azp=requester-client, got '$AZP'"
-  echo "last response body (first 500 chars): $(printf '%s' "$RESP" | head -c 500)"
-  exit 1
-fi
-
-# The forwarded token must also be scoped to the target audience, not the inbound one.
-AUD=$(printf '%s' "$RESP" | python3 -c '
-import sys,json,base64
-try:
-    h=json.load(sys.stdin)["headers"]
-    tok=h.get("Authorization") or h.get("authorization")
-    tok=(tok[0] if isinstance(tok,list) else tok).split()[1]
-    seg=tok.split(".")[1]
-    print(json.loads(base64.urlsafe_b64decode(seg+"="*(-len(seg)%4)))["aud"])
-except Exception:
-    pass')
-[ "$AUD" = "target-client" ] || { echo "FAILED: expected aud=target-client, got '$AUD'"; exit 1; }
-echo "standard token exchange verified (aud=$AUD azp=$AZP)"
-{{< /doc-test >}}
-
 ## Validate the incoming token at the edge {#edge-validation}
 
 The exchange presents the incoming token to the authorization server exactly as it arrived, and does not verify the signature first. Add a route-level `jwtAuthentication` policy so that an invalid or expired token is rejected at the gateway before any call to the token endpoint. The preceding steps leave it out so that the exchange is easy to follow on its own; add it before you use token exchange in production.
@@ -278,9 +165,9 @@ The exchange presents the incoming token to the authorization server exactly as 
 1. Create a second {{< reuse "agw-docs/snippets/policy.md" >}} that validates the incoming token against Keycloak's JWKS. This policy targets the `HTTPRoute`, not the Service, because validation belongs at the route.
 
    > [!IMPORTANT]
-   > Set `preserveToken: true`. By default the gateway removes the JWT after it validates it, so the exchange finds no `subject_token` and every request fails with a `400` and the message `invalid request`. For more information, see [`preserveToken`]({{< link-hextra path="/documentation/security/jwt/setup/" >}}).
+   > Set `preserveToken: true`. By default the gateway removes the JWT after it validates it, so the exchange finds no `subject_token` and every request fails with a `400` and the message `invalid request`. For more information, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[`preserveToken`]({{< link-hextra path="/documentation/security/extauth/jwt/setup/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[`preserveToken`]({{< link-hextra path="/documentation/security/jwt/setup/" >}}){{< /version >}}.
 
-   ```yaml {paths="te-standard"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -326,9 +213,18 @@ The exchange presents the incoming token to the authorization server exactly as 
 
    Example output:
 
+   {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
    ```
    authentication failure: the token header is malformed: Error(InvalidToken)
    ```
+   {{< /version >}}
+   {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+   ```
+   authentication failed
+   ```
+
+   The proxy logs record the reason, such as `authentication failure: the token header is malformed: Error(InvalidToken)`.
+   {{< /version >}}
 
 4. Send a request with no token at all. The gateway rejects this case too.
 
@@ -338,88 +234,18 @@ The exchange presents the incoming token to the authorization server exactly as 
 
    Example output:
 
+   {{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
    ```
    authentication failure: no bearer token found
    ```
+   {{< /version >}}
+   {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+   ```
+   authentication failed
+   ```
 
-{{< doc-test paths="te-standard" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for the edge jwt policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: httpbin
-        name: jwt-edge
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="te-standard" >}}
-# Re-mint, because the edge policy now rejects anything that does not validate.
-INBOUND_TOKEN=$(mint_incoming_token) || { echo "FAILED: could not re-mint the incoming token"; exit 1; }
-test -n "$INBOUND_TOKEN" || { echo "FAILED: could not re-mint the incoming token"; exit 1; }
-
-# With preserveToken: true the exchange still runs behind edge validation.
-OK=""
-for i in $(seq 1 30); do
-  OK=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "http://${INGRESS_GW_ADDRESS}:80/headers"     -H "host: www.example.com" -H "authorization: Bearer $INBOUND_TOKEN")
-  [ "$OK" = "200" ] && break
-  sleep 2
-done
-[ "$OK" = "200" ] || { echo "FAILED: expected 200 with a valid token and preserveToken, got $OK"; exit 1; }
-
-BAD=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "http://${INGRESS_GW_ADDRESS}:80/headers"   -H "host: www.example.com" -H "authorization: Bearer not-a-valid-token")
-[ "$BAD" = "401" ] || { echo "FAILED: expected 401 with an invalid token, got $BAD"; exit 1; }
-
-NONE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "http://${INGRESS_GW_ADDRESS}:80/headers"   -H "host: www.example.com")
-[ "$NONE" = "401" ] || { echo "FAILED: expected 401 with no token, got $NONE"; exit 1; }
-echo "edge validation verified (valid=$OK invalid=$BAD none=$NONE)"
-{{< /doc-test >}}
-
-{{< doc-test paths="te-standard" >}}
-# Prove the preserveToken trap the guide calls out: drop the field and the exchange loses its
-# subject_token, so a valid request fails with a 400. Then restore it for the rest of the guide.
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/policy.md" >}}
-metadata:
-  name: jwt-edge
-  namespace: httpbin
-spec:
-  targetRefs:
-  - group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: httpbin
-  traffic:
-    jwtAuthentication:
-      providers:
-      - issuer: "http://keycloak.httpbin.svc.cluster.local:8080/realms/backend-oauth"
-        jwks:
-          remote:
-            jwksPath: /realms/backend-oauth/protocol/openid-connect/certs
-            backendRef:
-              group: ""
-              kind: Service
-              name: keycloak
-              port: 8080
-EOF
-
-TRAP=""
-for i in $(seq 1 30); do
-  TRAP=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "http://${INGRESS_GW_ADDRESS}:80/headers"     -H "host: www.example.com" -H "authorization: Bearer $INBOUND_TOKEN")
-  [ "$TRAP" = "400" ] && break
-  sleep 2
-done
-[ "$TRAP" = "400" ] || { echo "FAILED: expected 400 without preserveToken, got $TRAP"; exit 1; }
-echo "preserveToken trap verified (got $TRAP without the field)"
-{{< /doc-test >}}
+   The proxy logs record the reason, such as `authentication failure: no bearer token found`.
+   {{< /version >}}
 
 ## Token types {#token-types}
 
@@ -445,7 +271,7 @@ oauth subjectToken tokenType "not a uri" must be a built-in token type or an abs
 ```
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
-Every request that uses the policy fails with a `500` and the message `oauthTokenExchange configuration is invalid`. The gateway does not call the token endpoint for these requests. Requests that do not use the policy are not affected.
+Every request that uses the policy fails with a `500` and the message `backend authentication failed`. The proxy logs record the cause, `oauthTokenExchange configuration is invalid`. The gateway does not call the token endpoint for these requests. Requests that do not use the policy are not affected.
 {{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 The data plane refuses the policy, so every request on the route fails with a `400` and the message `invalid request`.
 {{< /version >}}
@@ -462,9 +288,18 @@ Unlike the subject and actor token types, `requestedTokenType` is a closed set. 
 
 When you set `requestedTokenType`, the gateway sends `requested_token_type` on the token request, then compares the `issued_token_type` of the response against it. A mismatch fails the exchange with {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}`502`{{< /version >}}{{< version include-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}`500`{{< /version >}}, and the request never reaches the backend.
 
+{{< version include-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ```
 backend authentication failed: token exchange returned issued_token_type urn:ietf:params:oauth:token-type:jwt, expected urn:ietf:params:oauth:token-type:access_token
 ```
+{{< /version >}}
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+```
+backend authentication failed
+```
+
+The proxy logs record the cause, such as `token exchange returned issued_token_type urn:ietf:params:oauth:token-type:jwt, expected urn:ietf:params:oauth:token-type:access_token`.
+{{< /version >}}
 
 > [!NOTE]
 > When you omit `requestedTokenType`, the gateway sends no `requested_token_type` parameter, and it does not check `issued_token_type` at all. The authorization server chooses the type, and the gateway accepts whatever the response returns. Set the field when the type of the issued token matters to the backend.
@@ -504,12 +339,12 @@ Make sure the incoming token's issuer matches the token endpoint's issuer as the
 This guide uses a demo Keycloak and the httpbin sample app. To use token exchange in production:
 
 * **Point at your own authorization server.** Create an {{< reuse "agw-docs/snippets/backend.md" >}} for your IdP (such as Keycloak, Microsoft Entra, Okta, Auth0, or ZITADEL). Use port `443` for automatic backend TLS. Replace the demo realm, client IDs, audiences, and Kubernetes Secret with your own.
-* **Attach the policy to the backends that need scoped tokens.** Target the {{< reuse "agw-docs/snippets/policy.md" >}} at the Services or {{< reuse "agw-docs/snippets/backend.md" >}}s that require their own credential, such as MCP servers, upstream APIs, or LLM providers. Pair it with route-level [JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}) to validate the incoming token first.
+* **Attach the policy to the backends that need scoped tokens.** Target the {{< reuse "agw-docs/snippets/policy.md" >}} at the Services or {{< reuse "agw-docs/snippets/backend.md" >}}s that require their own credential, such as MCP servers, upstream APIs, or LLM providers. Pair it with route-level {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/security/extauth/jwt/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication]({{< link-hextra path="/documentation/security/jwt/" >}}){{< /version >}} to validate the incoming token first.
 * **Use token exchange to preserve agent and user identity.** Token exchange lets the gateway hand each backend a narrowly scoped, per-backend token while preserving the caller's identity end-to-end. In agentic flows, the exchange can carry an agent acting on behalf of a user, so every downstream call keeps an auditable, least-privilege identity chain instead of sharing one broad credential.
 
 ## Cleanup
 
-```sh {paths="te-standard"}
+```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} backend-token-exchange jwt-edge -n httpbin
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} keycloak-token-endpoint -n httpbin
 kubectl delete secret oauth-client -n httpbin
@@ -517,7 +352,3 @@ kubectl delete deployment keycloak -n httpbin
 kubectl delete service keycloak -n httpbin
 kubectl delete configmap backend-oauth-realm -n httpbin
 ```
-
-{{< doc-test paths="te-standard" >}}
-kubectl delete httproute keycloak -n httpbin --ignore-not-found
-{{< /doc-test >}}

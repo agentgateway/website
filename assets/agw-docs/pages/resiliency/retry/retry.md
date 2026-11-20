@@ -16,6 +16,11 @@ A request retry is the number of times a request is retried if it fails. This se
 
 Set up retries to the sample app.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+> [!NOTE]
+> Requests with a body larger than the frontend buffer limit are not retried, because the body must be buffered so that it can be resent. The default limit is 2 MiB, or 32 MiB for LLM requests. To retry larger requests, raise the limit in the `spec.frontend.http.maxBufferSize` field of an {{< reuse "agw-docs/snippets/policy.md" >}}.
+{{< /version >}}
+
 1. Install the experimental Kubernetes Gateway API CRDs.
 
    ```sh
@@ -27,7 +32,7 @@ Set up retries to the sample app.
    {{< tabs >}}
    {{% tab name="HTTPRoute (Kubernetes GW API)" %}}
    1. Create an HTTPRoute that routes requests along the `retry.example` domain to the sample app.
-      ```yaml {paths="retry-in-httproute"}
+      ```yaml
       kubectl apply -f- <<EOF
       apiVersion: gateway.networking.k8s.io/v1
       kind: HTTPRoute
@@ -131,7 +136,7 @@ Set up retries to the sample app.
    {{% /tab %}}
    {{% tab name="HTTPRoute and rule (AgentgatewayPolicy)" %}}
    1. Create an HTTPRoute that routes requests along the `retry.example` domain to the sample app.
-      ```yaml {paths="retry-in-agentgateway"}
+      ```yaml
       kubectl apply -f- <<EOF
       apiVersion: gateway.networking.k8s.io/v1
       kind: HTTPRoute
@@ -158,7 +163,7 @@ Set up retries to the sample app.
       ```
 
    2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that applies a retry policy to the HTTPRoute rule.
-      ```yaml {paths="retry-in-agentgateway"}
+      ```yaml
       kubectl apply -f- <<EOF
       apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
       kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -186,7 +191,7 @@ Set up retries to the sample app.
       | Field | Description |
       |-------|-------------|
       | `targetRefs.sectionName` | Select the HTTPRoute rule that you want to apply the policy to. |
-      | `retry.attempts` | The number of times to retry the request. In this example, you retry the request 3 times. |
+      | `retry.attempts` | The number of times to retry the request. In this example, you retry the request 3 times.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} Set `retry.attempts` to `0` to disable retries.{{< /version >}} |
       | `retry.backoff` | The duration to wait before retrying the request. In this example, you wait 1 second before retrying the request. |
       | `retry.codes` | The condition that must be met for the gateway proxy to retry the request. In this example, the request is retried if a 500 or 503 HTTP response code is returned. |
 
@@ -243,7 +248,7 @@ Set up retries to the sample app.
    {{% /tab %}}
    {{% tab name="Gateway listener" %}}
    1. Create an HTTPRoute that routes requests along the `retry.example` domain to the sample app.
-      ```yaml {paths="retry-in-gatewaylistener"}
+      ```yaml
       kubectl apply -f- <<EOF
       apiVersion: gateway.networking.k8s.io/v1
       kind: HTTPRoute
@@ -268,7 +273,7 @@ Set up retries to the sample app.
       EOF
       ```
    2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that applies a retry policy to the `agentgateway-proxy` Gateway listener. You set up this Gateway in the [before you begin](#before-you-begin) section.
-      ```yaml {paths="retry-in-gatewaylistener"}
+      ```yaml
       kubectl apply -f- <<EOF
       apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
       kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -294,7 +299,7 @@ Set up retries to the sample app.
       | Field | Description |
       |-------|-------------|
       | `targetRefs.sectionName` | Select the Gateway listener that you want to apply the policy to. |
-      | `retry.attempts` | The number of times to retry the request. In this example, you retry the request 3 times. |
+      | `retry.attempts` | The number of times to retry the request. In this example, you retry the request 3 times.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} Set `retry.attempts` to `0` to disable retries.{{< /version >}} |
       | `retry.backoff` | The duration to wait before retrying the request. In this example, you wait 1 second before retrying the request. |
       | `retry.codes` | The condition that must be met for the gateway proxy to retry the request. In this example, the request is retried if a 500 or 503 HTTP response code is returned. |
 
@@ -435,56 +440,6 @@ Simulate a failure for the sample app so that you can verify that the request is
    http.path=/status/500 http.version=HTTP/1.1 http.status=500
    protocol=http retry.attempt=3 duration=1ms
    ```
-  {{< doc-test paths="retry-in-httproute,retry-in-agentgateway,retry-in-gatewaylistener" >}}
-  YAMLTest -f - <<'EOF'
-  - name: wait for retry HTTPRoute to be accepted
-    wait:
-      target:
-        kind: HTTPRoute
-        metadata:
-          namespace: httpbin
-          name: retry
-      jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-      jsonPathExpectation:
-        comparator: equals
-        value: "True"
-      polling:
-        timeoutSeconds: 300
-        intervalSeconds: 5
-  - name: verify request to retry route succeeds
-    http:
-      url: "http://${INGRESS_GW_ADDRESS}"
-      path: /headers
-      method: GET
-      headers:
-        host: retry.example
-    source:
-      type: local
-    expect:
-      statusCode: 200
-  - name: verify request to retry route fails
-    http:
-      url: "http://${INGRESS_GW_ADDRESS}"
-      path: /status/500
-      method: GET
-      headers:
-        host: retry.example
-    source:
-      type: local
-    expect:
-      statusCode: 500
-  - name: Verify that the request was retried. Look for retry.attempt=3 in the output
-    retries: 10
-    command:
-      command: "kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy --tail=1"
-    source:
-      type: local
-    expect:
-      exitCode: 0
-      stdout:
-        contains: "retry.example"
-  EOF
-  {{< /doc-test >}}
 
 
 

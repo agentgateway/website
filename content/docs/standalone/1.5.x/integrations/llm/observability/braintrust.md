@@ -43,7 +43,7 @@ For a self-hosted deployment, replace the host with the Universal API URL for th
 Add a tracing policy to the agentgateway configuration. Braintrust accepts OTLP/HTTP and requires TLS, a bearer token, and an `x-bt-parent` header.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: api.braintrust.dev:443
@@ -133,4 +133,4 @@ Braintrust's Logs view shows root spans. Export the root span for each request; 
 - Keep prompt and response attributes disabled when the request body contains data that should not leave the proxy.
 - Braintrust limits a single OTLP trace request to 10 MB. The tracing policy has no batch size setting, so if the exporter reports HTTP `413`, drop the message content attributes or lower `randomSampling` so that fewer spans are exported.
 
-For more information, see the [Braintrust OpenTelemetry integration](https://www.braintrust.dev/docs/integrations/sdk-integrations/opentelemetry/send-traces-and-logs) and [OpenTelemetry trace setup]({{< link-hextra path="/documentation/observability/traces/setup/" >}}).
+For more information, see the [Braintrust OpenTelemetry integration](https://docs.braintrust.dev/integrations/sdk-integrations/opentelemetry/send-traces-and-logs) and [OpenTelemetry trace setup]({{< link-hextra path="/documentation/observability/traces/setup/" >}}).

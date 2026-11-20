@@ -2,7 +2,6 @@
 title: Set up and customize traces
 weight: 10 
 description: "Configure tracing in agentgateway: enable OTLP export, set up authentication and TLS, control the sampling rate, filter spans, and customize span attributes."
-test: skip
 ---
 
 Agentgateway natively exports distributed traces over OTLP (OpenTelemetry Protocol). Traces include HTTP, MCP, and LLM spans with attributes that follow the [OpenTelemetry semantic conventions for generative AI](https://opentelemetry.io/docs/specs/semconv/gen-ai/).
@@ -32,7 +31,7 @@ The UI saves the policy under `frontendPolicies.tracing` in your configuration.
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: localhost:4317
@@ -72,7 +71,7 @@ For a complete example, see the [Langfuse integration]({{< link-hextra path="/in
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: <your-otlp-endpoint>.com:443
@@ -117,7 +116,7 @@ In the following example, you want to sample 10% of requests.
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: localhost:4317
@@ -143,7 +142,7 @@ The following example exports only spans for requests with an HTTP response code
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: localhost:4317
@@ -193,7 +192,7 @@ The following example sets a custom service name and deployment environment in `
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: localhost:4317
@@ -227,7 +226,7 @@ The following example removes the HTTP protocol version and client address from 
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: localhost:4317

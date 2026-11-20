@@ -3,7 +3,6 @@ title: GitHub Copilot
 weight: 20
 icon: /integrations/providers/bw/copilot.svg
 description: Route agentgateway LLM traffic to models available through GitHub Copilot.
-test: skip
 ---
 
 Configure GitHub Copilot as an LLM provider in agentgateway.
@@ -22,7 +21,7 @@ By default, agentgateway finds the credential on its own, from an environment va
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 
 llm:
   models:
@@ -66,6 +65,39 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   }'
 ```
 
+To evaluate classification questions with `microsoft-decision-1`, send a [Decisions API]({{< link-hextra path="/documentation/llm/api-types/decisions/" >}}) request to `/v1/decisions` or a native SystemOne request to `/v1/systemone`. Agentgateway converts `/v1/decisions` requests and responses to and from Copilot's `/v1/systemone` endpoint, and forwards `/v1/systemone` requests unchanged.
+
+```bash
+curl -X POST http://localhost:4000/v1/decisions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "microsoft-decision-1",
+    "input": "I was charged twice for my subscription.",
+    "questions": [
+      {
+        "name": "billing",
+        "type": "predicate",
+        "instructions": "Is this a billing issue?"
+      }
+    ]
+  }'
+```
+
+```bash
+curl -X POST http://localhost:4000/v1/systemone \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "microsoft-decision-1",
+    "state": "I was charged twice for my subscription.",
+    "questions": {
+      "billing": {
+        "type": "noul",
+        "instructions": "Is this a billing issue?"
+      }
+    }
+  }'
+```
+
 ## Request formats
 
 Copilot models do not all accept the same API format. Agentgateway chooses the formats that it sends to Copilot from the model name, and it converts the client request when the client calls a different format.
@@ -76,17 +108,18 @@ Copilot models do not all accept the same API format. Agentgateway chooses the f
 | `gpt-3*`, `gpt-4*`, `gemini-*` | Chat Completions. |
 | `gpt-5.4`, `gpt-5-mini` | Chat Completions and Responses. |
 | Other `gpt-*`, `grok-*`, `mai-*` | Responses. |
+| `microsoft-decision-*` | SystemOne, which is sent to `/v1/systemone`. |
 | Any other name | Chat Completions. |
 
 Tags in the model catalog take precedence over these built-in rules.
 
-For example, a Responses request to `gpt-4.1` is converted to Chat Completions, and a Messages request to a `claude-*` model passes through. A Chat Completions request to a model that accepts only Responses, such as `gpt-5`, fails.
+For example, a Responses request to `gpt-4.1` is converted to Chat Completions, a Decisions request to `microsoft-decision-1` is converted to SystemOne, and a Messages request to a `claude-*` model passes through. A Chat Completions request to a model that accepts only Responses, such as `gpt-5`, or to `microsoft-decision-1`, fails.
 
 ## Troubleshoot
 
 | Symptom | Cause and resolution |
 |---------|----------------------|
-| A request returns `500` with `Copilot token not found`. | Agentgateway found no credential. Set `GH_COPILOT_TOKEN`, run `gh auth login`, or set `params.apiKey`. The configuration still passes `--validate-only` because the lookup happens on each request. |
+| A request returns `500` with `backend authentication failed`. The logs show `Copilot token not found`. | Agentgateway found no credential. Set `GH_COPILOT_TOKEN`, run `gh auth login`, or set `params.apiKey`. The configuration still passes `--validate-only` because the lookup happens on each request. |
 | A request returns `400` with `unsupported conversion: from Completions to provider copilot`. | The model does not accept the API format of the request. The error lists the supported formats. Send the request in one of those formats. |
 | GitHub rejects the credential. | The credential is expired, is not accepted by the Copilot API, or belongs to an account without access to the model. Confirm the credential and the account entitlement with GitHub. |
 | Requests to a custom `params.baseUrl` have no `Authorization` header. | Agentgateway discovers the credential only for the default upstream. Set `params.apiKey`. |

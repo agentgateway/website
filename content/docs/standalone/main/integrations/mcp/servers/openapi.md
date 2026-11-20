@@ -98,7 +98,7 @@ Then, connect agentgateway to the Petstore server. You can use the UI or a confi
 1. From the directory with the `openapi.json` file, create a configuration with an empty `mcp` section, and start agentgateway. You add the OpenAPI server in the UI.
    ```sh
    cat <<'EOF' > config.yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    mcp:
      port: 3000
      targets: []
@@ -119,26 +119,11 @@ The UI writes the same `openapi` target as the **Config file** tab. The **Config
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 {{% /tab %}}
 {{% tab name="Config file" %}}
-1. Download an OpenAPI configuration for your agentgateway.
-   ```sh
-   curl -L https://agentgateway.dev/examples/mcp-openapi/config.yaml -o config.yaml
-   ```
-
-2. Update the agentgateway configuration file as follows:
-
-   * **Listener**: An HTTP listener is configured and exposed on port 3000.
-   * **Backend**: Use an MCP backend to set up an OpenAPI server based on the Petstore sample app.
-   * **OpenAPI schema**: In the `openapi` target of the configuration file, set the schema source. You can provide the schema as a local file path, an inline string, or a remote URL. This example uses a local file path. 
-   * **CORS policy**: To use the agentgateway UI playground later, add the following CORS policy to your `config.yaml` file. The config automatically reloads when you save the file.
+1. Create an agentgateway configuration file that serves the Petstore API as MCP tools.
 
    ```sh
-   open config.yaml
-   ```
-
-   Reference a local OpenAPI schema file.
-
-   ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    mcp:
      port: 3000
      policies:
@@ -153,9 +138,15 @@ Whether the UI can save depends on your storage mode. For more information, see 
          schema:
            file: openapi.json
          host: localhost:8080
+   EOF
    ```
 
-3. Run the agentgateway. 
+   * **Listener**: An HTTP listener is configured and exposed on port 3000.
+   * **Backend**: An MCP backend sets up an OpenAPI server based on the Petstore sample app.
+   * **OpenAPI schema**: The `openapi` target sets the schema source. You can provide the schema as a local file path, an inline string, or a remote URL. This example uses the local `openapi.json` file that you downloaded. A relative path resolves from the directory where you run agentgateway.
+   * **CORS policy**: Lets the agentgateway UI playground call the MCP server later.
+
+2. Run the agentgateway. 
    ```sh
    agentgateway -f config.yaml
    ```
@@ -323,7 +314,7 @@ Fetch the OpenAPI schema from a remote URL. Agentgateway retrieves the schema at
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -360,7 +351,7 @@ The UI saves the document as a multi-line string in the `schema` field, as in th
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   policies:
@@ -405,7 +396,7 @@ mcp:
 By default, operation paths use the path from the OpenAPI schema's server URL. To replace that prefix without editing the schema, set a non-root path in the target's `host` URI. If the target uses `host`/`port`/`path` or `backend`, set `path` instead.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 mcp:
   port: 3000
   targets:
@@ -426,7 +417,7 @@ OpenAPI backends are inherently stateless because they translate standard REST e
 
 {{< tabs >}}
 {{% tab name="UI" %}}
-1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**.
+1. Open [http://localhost:15000/ui/mcp/servers](http://localhost:15000/ui/mcp/servers) (**MCP** > **Servers**), and click **Settings**. Expand **MCP behavior**.
 2. For **State mode**, select **Stateless**.
 
    {{< reuse-image src="img/ui-mcp-settings-stateless.png" srcDark="img/ui-mcp-settings-stateless-dark.png" alt="MCP servers settings drawer with the state mode set to Stateless" >}}

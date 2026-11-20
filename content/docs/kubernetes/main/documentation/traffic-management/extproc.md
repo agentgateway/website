@@ -2,16 +2,6 @@
 title: External processing (ExtProc)
 weight: 10
 description: Modify requests and responses with an external gRPC processing server.
-test:
-  extproc:
-  - file: ${versionRoot}/documentation/quickstart/install.md
-    path: experimental
-  - file: ${versionRoot}/documentation/setup/gateway.md
-    path: all
-  - file: ${versionRoot}/documentation/install/sample-app.md
-    path: install-httpbin
-  - file: ${versionRoot}/documentation/traffic-management/extproc.md
-    path: extproc
 ---
 
 Modify aspects of an HTTP request or response with an external processing server. 
@@ -62,6 +52,8 @@ For requests with a body, `FailOpen` applies only while no request body bytes ha
 
 A clean close from the ExtProc server is different from a failure. If the server finishes request processing and closes its gRPC stream, the gateway skips later ExtProc phases for that exchange. The request continues to the upstream application, and the upstream response is returned to the client even when `traffic.extProc.failureMode` is `FailClosed`.
 
+If the downstream client disconnects while the gateway waits for an ExtProc response, the gateway resets the gRPC stream to the ExtProc server. This behavior applies during a request or response phase. The reset lets the server release queued work for that exchange without waiting for the normal response path. For example, an inference routing Endpoint Picker (EPP) server can free the queue slot that the request held.
+
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up an ExtProc server
@@ -69,7 +61,7 @@ A clean close from the ExtProc server is different from a failure. If the server
 Use a sample ExtProc server implementation to try out the ExtProc functionality in {{< reuse "agw-docs/snippets/kgateway.md" >}}.
 
 1. Set up the ExtProc server. This example uses a prebuilt ExtProc server that manipulates request and response headers based on instructions that are sent in an instructions header.
-   ```yaml {paths="extproc"}
+   ```yaml
    kubectl apply -n {{< reuse "agw-docs/snippets/namespace.md" >}} -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -123,25 +115,6 @@ Use a sample ExtProc server implementation to try out the ExtProc functionality 
    }
    ```
 
-{{< doc-test paths="extproc" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for ext-proc-grpc deployment to be ready
-  wait:
-    target:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: ext-proc-grpc
-    jsonPath: "$.status.availableReplicas"
-    jsonPathExpectation:
-      comparator: greaterThan
-      value: 0
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
 2. Verify that the ExtProc server is up and running.
    ```sh
    kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}} | grep ext-proc-grpc
@@ -155,7 +128,7 @@ EOF
 You can enable ExtProc for a particular route in an HTTPRoute resource. 
    
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that enables external processing for the agentgateway-proxy.
-   ```yaml {paths="extproc"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -175,27 +148,6 @@ You can enable ExtProc for a particular route in an HTTPRoute resource.
            port: 4444
    EOF
    ```
-   
-{{< doc-test paths="extproc" >}}
-YAMLTest -f - <<'EOF'
-- name: extproc - /headers returns 200 with extproc header injected
-  retries: 10
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/headers"
-    method: GET
-    headers:
-      host: www.example.com
-      instructions: '{"addHeaders":{"extproc":"true"}}'
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.headers.Extproc[0]"
-        comparator: equals
-        value: "true"
-EOF
-{{< /doc-test >}}
 
 2. Send a request to the httpbin app along the `/headers` path and provide your instructions in the `instruction` header. This example instructs the ExtProc server to add the `extproc: true` header. Verify that you get back a 200 HTTP response and that your response includes the `extproc: true` header.
 

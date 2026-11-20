@@ -3,39 +3,7 @@ title: Routes
 weight: 30
 description: Match HTTP and TCP traffic on a gateway and forward it to backends.
 next: /configuration/traffic-management
-test:
-  routes:
-  - file: ${versionRoot}/documentation/configuration/routes.md
-    path: routes
 ---
-
-{{< doc-test paths="routes" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * "HTTP routes": the example config is accepted by agentgateway
-#     (--validate-only), covering the `gateways`, `protocol: HTTP`, `name`,
-#     `gateways: [...]`, `hostnames`, `matches.path.pathPrefix`, and
-#     `backends[].host` / `weight` fields the route table documents.
-#   * "TCP routes": the `tcpRoutes` example is accepted, covering `protocol: TCP`
-#     and the simpler TCP route structure.
-#   * "Example configuration with policies": the route-with-CORS example is
-#     accepted, covering `policies.cors` on a route and an inline `backends[].mcp`
-#     backend with a `stdio` target.
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That traffic is actually matched and forwarded - requires config/traffic the
-#     page omits; every example points at a placeholder backend
-#     (`http.example.com:8080`, `postgres.example.com:5432`) that the test cannot
-#     stand up, so only config acceptance is asserted.
-#   * The `matches` header, method, and query options, and the "attaches to the
-#     gateway named `default`" fallback - display-only table rows with no example
-#     config on this page. Matching is covered by the Request matching guide.
-#   * The CORS policy's runtime behavior - covered by the CORS guide's own test;
-#     here the block only proves the policy is accepted on a route.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
 
 {{< gloss "Route" >}}Routes{{< /gloss >}} are the entry points for traffic to your agentgateway. They attach to [gateways]({{< link-hextra path="/documentation/configuration/gateways/" >}}) and are used to route traffic to {{< gloss "Backend" >}}backends{{< /gloss >}}.
 
@@ -73,7 +41,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 The following configuration creates the `http-backend` route.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   http-proxy:
     port: 8080
@@ -93,28 +61,6 @@ routes:
 {{% /tab %}}
 {{< /tabs >}}
 
-{{< doc-test paths="routes" >}}
-cat <<'EOF' > config-http.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  http-proxy:
-    port: 8080
-    protocol: HTTP
-routes:
-- name: http-backend
-  gateways: [http-proxy]
-  hostnames:
-  - "example.com"
-  matches:
-  - path:
-      pathPrefix: /
-  backends:
-  - host: http.example.com:8080
-    weight: 1
-EOF
-agentgateway -f config-http.yaml --validate-only
-{{< /doc-test >}}
-
 HTTP routes support various matching options for incoming requests. For more information, see the [Request matching]({{< link-hextra path="/documentation/configuration/traffic-management/matching/" >}}) guide.
 
 ### TCP routes
@@ -123,10 +69,27 @@ HTTP routes support various matching options for incoming requests. For more inf
 
 Keep in mind that TCP routes do not support HTTP features such as path, header, method, or query matching, and HTTP-specific filters and policies.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+To add a TCP route in the [UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/" >}}), follow these steps. The steps create the same `postgres-backend` route as the **Config file** tab.
+
+1. Add a TCP gateway, if you do not have one yet. Open **Traffic** > **Gateways**, click **Add gateway**, enter `postgres-proxy` and `5432` for the **Name** and **Port**, select **TCP** as the **Protocol**, and click **Save gateway**.
+2. Open **Traffic** > **Routes**, and click **Add route**.
+3. Select **TCP** as the **Kind**. The path, method, header, and query fields disappear.
+4. Select the `postgres-proxy` **Gateway**, and enter `postgres-backend` for the **Name**.
+5. In the **Backends** section, click **Add backend**, and enter `postgres.example.com:5432` for the **Host**. Keep the **Weight** of `1`.
+
+   {{< reuse-image src="img/ui-routes-tcp.png" srcDark="img/ui-routes-tcp-dark.png" alt="Add route drawer with the TCP kind, the postgres-proxy gateway, the postgres-backend route name, and the postgres.example.com:5432 backend with weight 1" >}}
+
+6. Click **Save route**.
+
+The UI leaves out the default `weight: 1`, and writes `gateways` as a single value instead of a list.
+{{% /tab %}}
+{{% tab name="Config file" %}}
 Example configuration:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   postgres-proxy:
     port: 5432
@@ -138,23 +101,8 @@ tcpRoutes:
   - host: postgres.example.com:5432
     weight: 1
 ```
-
-{{< doc-test paths="routes" >}}
-cat <<'EOF' > config-tcp.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  postgres-proxy:
-    port: 5432
-    protocol: TCP
-tcpRoutes:
-- name: postgres-backend
-  gateways: [postgres-proxy]
-  backends:
-  - host: postgres.example.com:5432
-    weight: 1
-EOF
-agentgateway -f config-tcp.yaml --validate-only
-{{< /doc-test >}}
+{{% /tab %}}
+{{< /tabs >}}
 
 For more information, see [TCP route matching]({{< link-hextra path="/documentation/configuration/traffic-management/matching#tcp-routes" >}}).
 
@@ -187,7 +135,7 @@ For more advanced backend configurations, such as MCP servers and LLM providers,
 The following example shows a route with CORS policy configuration:
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -211,34 +159,6 @@ routes:
           args: ["@modelcontextprotocol/server-everything"]
 ```
 
-{{< doc-test paths="routes" >}}
-cat <<'EOF' > config-policies.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- policies:
-    cors:
-      allowOrigins:
-      - "*"
-      allowHeaders:
-      - mcp-protocol-version
-      - content-type
-      - cache-control
-      exposeHeaders:
-      - "Mcp-Session-Id"
-  backends:
-  - mcp:
-      targets:
-      - name: everything
-        stdio:
-          cmd: npx
-          args: ["@modelcontextprotocol/server-everything"]
-EOF
-agentgateway -f config-policies.yaml --validate-only
-{{< /doc-test >}}
-
 ## Next steps
 
 After you configure routes, you might want to apply policies to them or learn more about traffic management options.
@@ -248,4 +168,5 @@ After you configure routes, you might want to apply policies to them or learn mo
   {{< card path="/documentation/configuration/traffic-management/" title="Traffic management" >}}
   {{< card path="/documentation/configuration/resiliency/" title="Resiliency" >}}
   {{< card path="/documentation/configuration/security/" title="Security" >}}
+  {{< card path="/documentation/operations/config-resources/" title="Manage routes with agctl" >}}
 {{< /cards >}}

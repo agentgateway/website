@@ -4,7 +4,6 @@ weight: 30
 description: Explore performance benchmarks, methodology, and reproduction guidance for agentgateway inference routing.
 aliases:
   - ../benchmarking/
-test: skip
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/benchmarking/standalone.md" >}}

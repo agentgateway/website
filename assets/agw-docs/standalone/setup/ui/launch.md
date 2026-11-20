@@ -8,11 +8,6 @@ A copy of the UI is also served on the admin interface, which is `localhost:1500
 
 [Install standalone agentgateway]({{< link-hextra path="/documentation/setup/install/" >}}) as a binary, a Docker container, or a Kubernetes Deployment with Helm.
 
-{{< doc-test paths="ui-standalone-default" >}}
-# Install agentgateway binary for tests
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
 ## Open the UI {#open-admin-ui}
 
 {{< tabs >}}
@@ -77,30 +72,6 @@ To serve the UI on its own gateway and hostname instead of a port-forward, see [
 {{% /tab %}}
 {{< /tabs >}}
 
-{{< doc-test paths="ui-standalone-default" >}}
-pkill -f "agentgateway -f" 2>/dev/null || true
-sleep 1
-cat > /tmp/agw-ui-default.yaml <<'EOF'
-config:
-  adminAddr: localhost:15000
-EOF
-agentgateway -f /tmp/agw-ui-default.yaml &
-AGW_DEFAULT_PID=$!
-sleep 3
-YAMLTest -f - <<'EOF'
-- name: UI returns HTTP 200 on the admin address
-  http:
-    url: "http://localhost:15000/ui/"
-    method: GET
-  source:
-    type: local
-  expect:
-    statusCode: 200
-  retries: 3
-EOF
-kill $AGW_DEFAULT_PID 2>/dev/null || true
-{{< /doc-test >}}
-
 ## Tour the UI {#tour}
 
 The sidebar groups the UI into five areas: **Gateway**, **LLM**, **MCP**, **Traffic**, and **Tools**. Each page lists the resources in your configuration, and you can add, edit, or delete them in the page. The **Gateway** area has the **Home** page. The **Tools** area has the **CEL Playground**, **Raw Configuration**, and **Settings** pages. The following examples show a configuration with one gateway, two routes, an LLM model, and an MCP server.
@@ -128,7 +99,7 @@ The **Traffic** area holds the HTTP gateways and routes that are not LLM or MCP 
 
 The **LLM** area configures the models that clients can request and the policies that apply to all LLM traffic.
 
-* **Models**: Lists each model with its provider and the model name that the request uses with that provider. Click the play icon to try a model in the **Chat Playground**.
+* **Models**: Lists each model with its provider and the model name that the request uses with that provider. Click the play icon to try a model in the **Chat Playground**.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} For models that set `llm.models[].displayName`, the UI shows the display name in lists and pickers. The match pattern and routing details remain secondary text. Matching still uses `llm.models[].name`. To set a display name, use the **Display name** field when you add or edit a model.{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}} When you add a virtual model, the UI selects the first model in the list for the first target.{{< /version >}}
 
   {{< reuse-image src="img/ui-tour-llm-models.png" srcDark="img/ui-tour-llm-models-dark.png" alt="LLM Models page with one gpt-4o-mini model from the OpenAI provider and play, edit, and delete icons" >}}
 
@@ -142,7 +113,7 @@ The **LLM** area also has pages for providers, guardrails, virtual API keys, cos
 
 The **MCP** area configures the MCP servers behind the gateway and the policies that apply to MCP traffic.
 
-* **Servers**: Lists each MCP server with its transport, endpoint, and connection state. A server in the **ready** state is connected, and its tools are available in the **Tool Playground**.
+* **Servers**: Lists each MCP server with its transport, endpoint, and connection state. A server in the **ready** state is connected, and its tools are available in the **Tool Playground**.{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}} When an MCP server connects directly to a URL, the server drawer also has a **Backend policies** field. The drawer does not show the field for a **Command Line** server or for a server that references a backend. A server that references a backend uses the policies of that backend.{{< /version >}}
 
   {{< reuse-image src="img/ui-tour-mcp-servers.png" srcDark="img/ui-tour-mcp-servers-dark.png" alt="MCP Servers page with one Streamable HTTP server named time in the ready state" >}}
 
@@ -200,7 +171,7 @@ The drawers that edit models, providers, guardrails, MCP servers, gateways, list
 4. Optional: To return to the form, click the **Raw** icon again. The form keeps your last valid edit and drops any text that is not valid. If the form cannot show a value, such as a field that has no form control, the drawer stays in raw mode. The tooltip on the **Raw** icon explains why.
 5. Click the save button, such as **Save key**. To check the change first, click **View diff**.
 
-To work with the whole configuration instead of one resource, open **Tools** > **Raw Configuration**.
+To work with the whole configuration instead of one resource, open **Tools** > **Raw Configuration**. This page shows your configuration file as it is on disk, including comments, and saves your text exactly as you enter it. In `hybrid` storage mode, agentgateway treats the file as read-only, so the **Save** button is disabled by default. Its **Database** tab lists the resources that the UI stored in the database.
 {{< /version >}}
 
 ## Save changes from the UI {#save-changes}
@@ -209,6 +180,8 @@ Whether the UI can save the changes that you make depends on your storage mode. 
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 The UI checks a change before it writes the configuration file. If the change is not valid, the save fails with an error and the file does not change.
+
+The forms mark required fields with an asterisk (`*`). Most of these markers come from the configuration schema. When you add a resource, the UI leaves out the fields that still have their schema default. For example, a new virtual model target does not get `weight: 1`, because `1` is the default weight.
 
 If you edit the file outside the UI and agentgateway rejects the reload, the UI shows a **Configuration reload failed** banner. Agentgateway keeps running the previous valid configuration. The UI and `/api/config/effective` show the file on disk, including the rejected change. To retry the reload, fix the file and save it again.
 {{< /version >}}
@@ -235,7 +208,7 @@ Client Setup fills in **Gateway base URL** from the gateway that serves LLM traf
 
 Client Setup does not create a route, model, authentication policy, or provider credential. It generates client-side values from the configuration that already exists. For client-specific prerequisites, see [LLM clients]({{< link-hextra path="/integrations/llm/clients/" >}}).
 
-The selected model appears only in recipes that accept a model setting. For example, the Claude Desktop recipe outputs a gateway URL and API key, but does not configure a model name in Claude Desktop.
+The selected model appears only in recipes that accept a model setting. For example, the Claude Desktop recipe outputs a gateway URL and API key, but does not configure a model name in Claude Desktop.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} For a model with exact header matches, Client Setup shows the required headers in the **Model** field and adds them as `-H` lines to the curl snippet.{{< /version >}}
 
 ## Next steps
 

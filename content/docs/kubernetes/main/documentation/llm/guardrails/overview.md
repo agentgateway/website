@@ -130,9 +130,6 @@ Audit mode is how you measure a guard before you enforce it. Start a new guard i
 
 The following policy runs a credit card detector and OpenAI moderation, both in audit mode, so that the gateway logs what each guard finds and then forwards the request.
 
-> [!NOTE]
-> Audit mode changes only whether the gateway acts on the verdict. The guard still calls its provider, so an external guard in audit mode adds the same latency and the same provider cost as an enforcing guard.
-
 ```yaml
 kubectl apply -f - <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -157,6 +154,13 @@ spec:
             action: Audit
 EOF
 ```
+
+To record audit results in access logs, add the `guardrails` CEL variable to a frontend access log field. For the field shape and a Gateway-level logging policy, see [Log guardrail results]({{< link-hextra path="/documentation/observability/access-logs/view/#guardrails" >}}).
+
+The proxy also counts guardrail checks in the `agentgateway_guardrail_checks_total` Prometheus counter. The `phase` label is `Request` or `Response`, and the `action` label records the result of the check. An audit guard that finds a match records `action="Audit"`. An audit guard that finds nothing records `action="Allow"`.
+
+> [!NOTE]
+> Audit mode changes only whether the gateway acts on the verdict. The guard still calls its provider, so an external guard in audit mode adds the same latency and the same provider cost as an enforcing guard.
 
 ## Provider failures
 
@@ -269,6 +273,22 @@ spec:
 > To protect a streamed response, use `action: Reject`. When the guard matches, {{< reuse "agw-docs/snippets/agentgateway.md" >}} ends the stream and sends a `guardrail_blocked` error event to the client.
 
 Request guards do not have this limit. A request is buffered before it reaches the LLM provider, so both `Mask` and `Reject` apply to requests whether or not the client asks for a streamed response.
+
+### Streaming latency {#streaming-latency}
+
+When you set `streaming: Enabled` and configure at least one response guard, {{< reuse "agw-docs/snippets/agentgateway.md" >}} does not forward each streamed chunk when it arrives. Instead, the proxy repeats the following cycle until the response ends:
+
+1. The proxy holds chunks until it collects 1024 bytes of response text, including reasoning text, or until the response ends.
+2. The response guards check that text.
+3. If the guards pass, the proxy sends the held chunks to the client. If a guard blocks the text, the proxy drops the held chunks and ends the stream. Text that the proxy sent in an earlier cycle already reached the client.
+
+This behavior applies to SSE responses and to the text deltas of OpenAI Realtime WebSocket traffic.
+
+Response guards change how a streamed response reaches the client in the following ways:
+
+- **A short response arrives as one chunk.** If the response has less than 1024 bytes of text, the client receives the full response at once when the response ends. This is expected behavior, not a bug.
+- **The time to first byte increases, and the rest of the response arrives in bursts.** The client gets the first chunk only after the LLM generates 1024 bytes of text and the guards check it. After that, the response arrives in bursts of about 1024 bytes of text. Each check adds the latency of the guard, such as a call to an external moderation service or a webhook.
+- **You cannot change the threshold.** No setting or environment variable changes the 1024-byte value. If your clients need the first tokens immediately, leave `streaming` unset or set it to `Disabled`. Streamed responses then reach the client without delay, but the response guards do not check them. The guards still check buffered responses.
 
 ## Choosing the right approach
 

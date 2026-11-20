@@ -62,7 +62,7 @@ default(jwt.role, "user")
 ```yaml
 # Include logs where there was no response or there was an error
 filter: |
-   !has(response) || response.code > 299
+   !has(response.code) || response.code > 299
 fields:
   add:
     user.agent: 'request.headers["user-agent"]'

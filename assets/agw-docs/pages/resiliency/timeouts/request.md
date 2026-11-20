@@ -12,7 +12,7 @@ Specify timeouts for a specific route.
 
    1. Configure the HTTPRoute. In the following example, you set a timeout of 2 seconds for the `/delay` path of the httpbin app.
 
-      ```yaml {paths="timeout-in-httproute"}
+      ```yaml
       kubectl apply -f- <<EOF
       apiVersion: gateway.networking.k8s.io/v1
       kind: HTTPRoute
@@ -95,7 +95,7 @@ Specify timeouts for a specific route.
    {{% tab name="Option 2: AgentgatewayPolicy" %}}
    
    1. Configure the HTTPRoute. In the following example, you set a timeout of 2 seconds for the `/delay` path of the httpbin app and add an HTTPRoute rule name to the path. You use the rule name later to apply the timeout to a particular route.
-      ```yaml {paths="timeout-in-trafficpolicy"}
+      ```yaml
       kubectl apply -n httpbin -f- <<EOF
       apiVersion: gateway.networking.k8s.io/v1
       kind: HTTPRoute
@@ -124,7 +124,7 @@ Specify timeouts for a specific route.
 
    2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with your timeout settings and use the `targetRefs.sectionName` to apply the timeout to a specific HTTPRoute rule. In this example, you apply the policy to the `timeout` rule that points to the `/delay` path in your HTTPRoute resource.
 
-      ```yaml {paths="timeout-in-trafficpolicy"}
+      ```yaml
       kubectl apply -f- <<EOF
       apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
       kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -183,7 +183,7 @@ Specify timeouts for a specific route.
    {{% tab name="Option 3: Gateway listener" %}}
    
    1. Create an HTTPRoute that configures a route to the `/delay` path of the httpbin app.
-      ```yaml {paths="timeout-in-gatewaylistener"}
+      ```yaml
       kubectl apply -n httpbin -f- <<EOF
       apiVersion: gateway.networking.k8s.io/v1
       kind: HTTPRoute
@@ -211,7 +211,7 @@ Specify timeouts for a specific route.
 
    2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with your timeout settings and use the `targetRefs.sectionName` to apply the timeout to a Gateway listener.
 
-      ```yaml {paths="timeout-in-gatewaylistener"}
+      ```yaml
       kubectl apply -f- <<EOF
       apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
       kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -369,64 +369,6 @@ Specify timeouts for a specific route.
    http.method=GET http.host=timeout.example http.path=/delay/5 http.version=HTTP/1.1
    http.status=504 protocol=http error="upstream call timeout" duration=2001ms
    ```
-
-{{< doc-test paths="timeout-in-httproute,timeout-in-trafficpolicy,timeout-in-gatewaylistener" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for httpbin-timeout HTTPRoute to be accepted
-  wait:
-    target:
-      kind: HTTPRoute
-      metadata:
-        namespace: httpbin
-        name: httpbin-timeout
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 300
-      intervalSeconds: 5
-- name: verify request under timeout limit succeeds
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}"
-    path: /delay/1
-    method: GET
-    headers:
-      host: timeout.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-- name: verify request over timeout limit returns 504
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}"
-    path: /delay/5
-    method: GET
-    headers:
-      host: timeout.example
-  source:
-    type: local
-  expect:
-    statusCode: 504
-- name: verify timeout in config dump
-  http:
-    url: http://localhost:15000
-    skipSslVerification: true
-    method: GET
-    path: /config_dump
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: agentgateway-proxy
-  expect:
-    bodyContains:
-    - '"requestTimeout":"2s'
-EOF
-{{< /doc-test >}}
 
 ## Cleanup
 

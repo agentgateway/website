@@ -132,7 +132,7 @@ You need a Kubernetes cluster, Helm, and `kubectl`.
      name: kserve-ingress-gateway
      namespace: kserve
    spec:
-     gatewayClassName: agentgateway
+     gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
      listeners:
        - name: http
          protocol: HTTP

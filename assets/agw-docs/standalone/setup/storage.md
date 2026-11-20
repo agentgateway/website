@@ -10,7 +10,7 @@ Agentgateway always reads a configuration file at startup. To control how config
 Set the mode in the `config.storage.mode` field of your configuration file. The mode values are `file`, `hybrid`, and `readOnly`, which are the literal values that the field accepts. Because the field is in the `config` section, agentgateway applies it at startup only, so a change to it takes effect after a restart.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 config:
   storage:
     mode: hybrid          # file, hybrid, or readOnly
@@ -29,7 +29,7 @@ Review the following table to understand this configuration.
 | --- | --- | --- |
 | `file` (default) | Agentgateway writes the resource into your configuration file, adding the section if the file does not have one yet. | No |
 | `hybrid` | Agentgateway keeps your configuration file as a read-only baseline and stores the resource in the database. At read time, it merges the stored resources over the baseline. | Yes |
-| `readOnly` | Agentgateway rejects the write with a `403` response and the message `UI is configured as read-only`. | No |
+| `readOnly` | Agentgateway rejects the write with a `403` response and the message `UI is configured as read-only`. The same applies to **Refresh base costs** on the **LLM Costs** page. For more information, see [Model costs]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). | No |
 
 In `hybrid` mode, agentgateway never writes back to your configuration file. Instead, it stores the resource in the database that you configure in the UI or API, and layers it over the file value when it reads the configuration. Note that you can only update certain resources through the UI or API. For more information, see [What the database stores](#what-the-database-stores).
 
@@ -123,7 +123,7 @@ Use `file` mode when you want the UI to save your changes into the same configur
 3. Review your configuration file. Agentgateway added the server, and created the `mcp` section because the file did not have one.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    gateways:
      default:
        port: 4000
@@ -139,7 +139,7 @@ Use `file` mode when you want the UI to save your changes into the same configur
    > [!NOTE]
    > If you enabled MCP in the UI, the `mcp` section also has a `port` field, because **Enable** writes the capability's default port along with the empty `targets` list.
 
-Agentgateway preserves the schema comment at the top of the file, and reloads the file after it writes to it.
+Agentgateway preserves the schema comment at the top of the file, and reloads the file after it writes to it.{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} Agentgateway edits the file in place, so it also keeps your other comments.{{< /version >}}{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} If agentgateway cannot edit the file in place, it rewrites the whole file, and those comments are lost.{{< /version >}}
 
 > [!IMPORTANT]
 > In this mode the UI is a writer of your configuration file, not only a reader. If you keep your configuration in version control, or if you generate it from another tool, use `readOnly` or `hybrid` mode so that a UI edit cannot overwrite it.
@@ -152,12 +152,16 @@ Agentgateway also writes to your configuration file at startup when you do not s
 
 Use `hybrid` mode when you want the configuration file to stay exactly as you wrote it, and UI edits to persist somewhere else. Agentgateway accepts a `postgres://` or `postgresql://` URL for PostgreSQL, and treats any other value as a SQLite database path.
 
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+{{< reuse "agw-docs/snippets/standalone-hybrid-env-expansion.md" >}}
+{{< /version >}}
+
 1. Set the storage mode and a database URL in your configuration file. A generated configuration already has the `database` field, which points at a SQLite file next to the configuration file. In that case, you add only the `storage` field.
 
    The example also adds an empty `mcp` section. In `hybrid` mode agentgateway treats your file as a read-only baseline, so the UI cannot add a section to it, only resources within a section that already exists. For more information, see [Sections must exist in the file](#sections-must-exist).
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      storage:
        mode: hybrid
@@ -246,7 +250,7 @@ Use `hybrid` mode when you want the configuration file to stay exactly as you wr
    Example output:
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      storage:
        mode: hybrid
@@ -292,7 +296,7 @@ Use `readOnly` mode when your configuration file is the only source of truth and
 1. Set the mode in your configuration file.
 
    ```yaml
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
    config:
      storage:
        mode: readOnly

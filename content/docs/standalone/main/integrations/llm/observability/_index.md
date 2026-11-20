@@ -2,7 +2,6 @@
 title: Observability
 weight: 40
 description: Send LLM telemetry to Axiom, Braintrust, Datadog, Langfuse, LangSmith, and other observability platforms.
-test: skip
 ---
 
 Agentgateway can send LLM telemetry to specialized observability platforms for prompt logging, cost tracking, audit trail, and performance monitoring.
@@ -22,7 +21,7 @@ Agentgateway exports LLM telemetry via OpenTelemetry, which can be forwarded to 
 Enable OpenTelemetry tracing with LLM-specific attributes.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 frontendPolicies:
   tracing:
     host: localhost:4317

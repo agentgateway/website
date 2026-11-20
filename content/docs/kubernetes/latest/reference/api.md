@@ -2,7 +2,6 @@
 title: API reference (single page)
 weight: 10
 description: Review the API reference for agentgateway custom resources.
-test: skip
 ---
 
 {{< reuse "/agw-docs/snippets/api-ref-docs-intro.md" >}}

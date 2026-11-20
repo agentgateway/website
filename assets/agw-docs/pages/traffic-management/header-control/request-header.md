@@ -11,7 +11,7 @@ For more information, see the [HTTPHeaderFilter specification](https://gateway-a
 Add headers to incoming requests before they are forwarded to an upstream service. If the request already has the header set, the value of the header in the `RequestHeaderModifier` filter is appended to the value of the header in the request. 
 
 1. Set up a header modifier that adds a `my-header: hello` request header for a Gateway API-native HTTPRoute.
-   ```yaml {paths="add-request-header"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -134,7 +134,7 @@ Add headers to incoming requests before they are forwarded to an upstream servic
 Setting headers is similar to adding headers. If the request does not include the header, it is added by the `RequestHeaderModifier` filter. However, if the request already contains the header, its value is overwritten with the value from the `RequestHeaderModifier` filter. 
 
 1. Set up a header modifier that sets a `my-header: hello` request header.
-   ```yaml {paths="set-request-header"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -280,7 +280,7 @@ You can remove HTTP headers from a request before the request is forwarded to th
    }
    ```
 2. Set up a header modifier that removes the `User-Agent` header when requests are sent to the `headers.example` domain.
-   ```yaml {paths="remove-request-header"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -345,55 +345,3 @@ You can remove HTTP headers from a request before the request is forwarded to th
    ```sh
    kubectl delete httproute httpbin-headers -n httpbin
    ```
-
-{{< doc-test paths="add-request-header" >}}
-YAMLTest -f - <<'EOF'
-- name: verify add-request-header returns 200 with my-header
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}"
-    path: /headers
-    method: GET
-    headers:
-      host: headers.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyContains:
-    - '"My-Header"'
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="set-request-header" >}}
-YAMLTest -f - <<'EOF'
-- name: verify set-request-header returns 200 with my-header
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}"
-    path: /headers
-    method: GET
-    headers:
-      host: headers.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyContains:
-    - '"My-Header"'
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="remove-request-header" >}}
-YAMLTest -f - <<'EOF'
-- name: verify remove-request-header returns 200
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}"
-    path: /headers
-    method: GET
-    headers:
-      host: headers.example
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}

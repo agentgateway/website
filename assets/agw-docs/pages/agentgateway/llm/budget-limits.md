@@ -138,43 +138,6 @@ spec:
           unit: Hours
 ```
 
-{{< doc-test paths="budget-limits" >}}
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/policy.md" >}}
-metadata:
-  name: local-token-budget
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: agentgateway-proxy
-  traffic:
-    rateLimit:
-      local:
-        - tokens: 10000
-          unit: Hours
-EOF
-
-YAMLTest -f - <<'EOF'
-- name: local-token-budget policy is accepted
-  wait:
-    target:
-      kind: {{< reuse "agw-docs/snippets/policy.md" >}}
-      metadata:
-        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-        name: local-token-budget
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
-
 ## Monitor budget usage
 
 Track how much of each user's budget has been consumed using Prometheus metrics.
@@ -473,4 +436,4 @@ kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
-To remove the rate limit server, follow the [cleanup steps]({{< link-hextra path="/documentation/security/rate-limit-global#cleanup" >}}) in the global rate limiting guide.
+To remove the rate limit server, follow the {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[cleanup steps]({{< link-hextra path="/documentation/security/rate-limit/global#cleanup" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[cleanup steps]({{< link-hextra path="/documentation/security/rate-limit-global#cleanup" >}}){{< /version >}} in the global rate limiting guide.

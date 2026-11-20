@@ -71,7 +71,7 @@ Deploy a gRPC ExtMCP policy server. This example uses a prebuilt sample server t
 The Service uses `appProtocol: kubernetes.io/h2c` so that agentgateway connects to the policy server over cleartext HTTP/2 (gRPC).
 
 > [!NOTE]
-> **Build your own ExtMCP server**: The sample server is for demonstration only. To build your own, implement the `ExtMcp` gRPC service from the [ExtMCP protocol definition](https://github.com/agentgateway/agentgateway/blob/main/crates/protos/proto/ext_mcp.proto). The service has two methods:
+> **Build your own ExtMCP server**: The sample server is for demonstration only. To build your own, implement the `ExtMcp` gRPC service from the [ExtMCP protocol definition](https://github.com/agentgateway/agentgateway/blob/v1.5.0/crates/protos/proto/ext_mcp.proto). The service has two methods:
 >
 > * `CheckRequest`: Called in the request phase, before the call reaches the MCP backend. Return the request unchanged, return mutated `params`, or return an `AuthorizationError` to deny the call.
 > * `CheckResponse`: Called in the response phase, after the MCP backend returns a result. Return the response unchanged, return a mutated `result`, or return an `AuthorizationError` to deny the call.

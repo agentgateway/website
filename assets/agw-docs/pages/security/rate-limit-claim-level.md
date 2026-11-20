@@ -4,7 +4,7 @@ Create claim-level rate limits with CEL expressions.
 
 The limit that you applied in the previous section is shared by every request on the route, so one busy client can exhaust it for everyone else. To limit each caller separately, set the `key` field to a CEL expression. Each distinct value that the expression returns gets its own token bucket with the limits of that rule. The expression typically reads a claim in a JWT, such as `jwt.sub` for a limit per user, `jwt.team` for a limit per team, or `jwt.sub + "/" + request.path` for a limit per user per path. This way, you can enforce claim-level limits without an external rate limit service.
 
-In production, key the limit on a value that the client cannot choose, which means a claim from a [JWT authentication policy]({{< link-hextra path="/documentation/security/jwt/" >}}) that targets the same route.
+In production, key the limit on a value that the client cannot choose, which means a claim from a {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication policy]({{< link-hextra path="/documentation/security/extauth/jwt/" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[JWT authentication policy]({{< link-hextra path="/documentation/security/jwt/" >}}){{< /version >}} that targets the same route.
 
 ```yaml
     rateLimit:
@@ -18,7 +18,7 @@ The following steps key the limit on a request header instead, so that you can s
 
 1. Update the `httpbin-rate-limit` policy from the previous section to key the limit on a user header. The rest of the policy is unchanged, so the route keeps one policy rather than gaining a second one.
 
-   ```yaml {paths="claim-level-rate-limit"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -38,25 +38,6 @@ The following steps key the limit on a request header instead, so that you can s
            key: 'request.headers["x-user"]'
    EOF
    ```
-
-   {{< doc-test paths="claim-level-rate-limit" >}}
-   YAMLTest -f - <<'EOF'
-   - name: wait for the claim-level rate limit policy to be accepted
-     wait:
-       target:
-         kind: AgentgatewayPolicy
-         metadata:
-           namespace: httpbin
-           name: httpbin-rate-limit
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 120
-         intervalSeconds: 2
-   EOF
-   {{< /doc-test >}}
 
 2. Send three requests as one user. The first two succeed, and the third is rejected.
 
@@ -115,40 +96,6 @@ The following steps key the limit on a request header instead, so that you can s
    bob request 2: HTTP 200
    bob request 3: HTTP 429
    ```
-
-   {{< doc-test paths="claim-level-rate-limit" >}}
-   # Drain one user's bucket, then confirm that a different user still gets through.
-   for i in $(seq 1 3); do
-     curl -s -o /dev/null http://${INGRESS_GW_ADDRESS}:80/anything \
-       -H "host: www.example.com" -H "x-user: alice"
-   done
-
-   YAMLTest -f - <<'EOF'
-   - name: the drained user is rate limited
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything"
-       method: GET
-       headers:
-         host: www.example.com
-         x-user: alice
-     source:
-       type: local
-     expect:
-       statusCode: 429
-     retries: 3
-   - name: a different user has its own bucket
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything"
-       method: GET
-       headers:
-         host: www.example.com
-         x-user: bob
-     source:
-       type: local
-     expect:
-       statusCode: 200
-   EOF
-   {{< /doc-test >}}
 
 Review the following behavior before you rely on a claim-level limit.
 

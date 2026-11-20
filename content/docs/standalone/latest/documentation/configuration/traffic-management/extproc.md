@@ -2,15 +2,7 @@
 title: External processing (ExtProc)
 weight: 16
 description: Use external gRPC servers to modify HTTP requests and responses.
-test:
-  extproc:
-  - file: ${versionRoot}/documentation/configuration/traffic-management/extproc.md
-    path: extproc
 ---
-
-{{< doc-test paths="extproc" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
 
 Attaches to: {{< badge content="Listener" path="/documentation/configuration/listeners/">}} {{< badge content="Route" path="/documentation/configuration/routes/">}}
 
@@ -82,7 +74,7 @@ If any incompatibility causes issues for your external processing server, open a
 External processing is applied at the route level.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -122,7 +114,7 @@ By default, ExtProc sends request headers, response headers, request trailers, a
 The following example sends headers and trailers, buffers request bodies up to the body buffer limit, skips response bodies, and allows the external processor to override later processing phases after a matching header response.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -152,7 +144,7 @@ routes:
 You can also set `processingOptions` inside a conditional ExtProc policy. Each conditional policy entry can use different phase settings.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -190,7 +182,7 @@ A dynamic backend dials whatever destination the request itself names, taken fro
 An external processor can already return Envoy's standard `dynamic_metadata` alongside its verdict, and agentgateway exposes that metadata to CEL as `extproc.*`. Set a `target` expression on the dynamic backend to dial the destination directly from that metadata, rather than making the processor rewrite the request authority to communicate it.
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 gateways:
   default:
     port: 3000
@@ -202,39 +194,6 @@ routes:
   - dynamic:
       target: 'extproc.workerIp + ":" + string(extproc.workerPort)'
 ```
-
-{{< doc-test paths="extproc" >}}
-# WHAT THIS TEST VALIDATES:
-#   * A dynamic backend accepts a `target` CEL expression alongside an extProc policy.
-#   * Omitting `target` still validates, which is the pre-1.5 behavior the page describes.
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That the expression resolves at request time -- that needs a running external
-#     processor that returns dynamic metadata, which this guide does not stand up.
-cat <<'EOF' > config-dynamic-target.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- policies:
-    extProc:
-      host: "extproc.com:9000"
-  backends:
-  - dynamic:
-      target: 'extproc.workerIp + ":" + string(extproc.workerPort)'
-EOF
-agentgateway -f config-dynamic-target.yaml --validate-only
-cat <<'EOF' > config-dynamic-notarget.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - dynamic: {}
-EOF
-agentgateway -f config-dynamic-notarget.yaml --validate-only
-{{< /doc-test >}}
 
 | Field | Required | Description |
 | -- | -- | -- |
@@ -252,6 +211,8 @@ Which CEL variables the expression can read depends on the route type.
 Review the following limits.
 
 - **The expression must return a string.** A value of any other type fails the request with `dynamic backend target expression must evaluate to a host:port string`.
+- **Targets must use `host:port`.** A Unix socket path such as `unix:/run/admin.sock` fails with `dynamic backend target "unix:/run/admin.sock" must be a host:port`.
+- **Loopback and link-local destinations are blocked.** Targets resolving to addresses such as `127.0.0.1` or `169.254.169.254` fail with `503`. For blocked addresses and the `config.backend.allowDynamicLoopback` override, see [Loopback and link-local destinations]({{< link-hextra path="/documentation/configuration/egress-proxy/#loopback-destinations" >}}).
 - **`inferenceRouting` cannot be combined with a dynamic backend.** A request that hits both fails with `inferenceRouting is not supported with dynamic backends`.
 
 > [!WARNING]

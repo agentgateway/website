@@ -2,7 +2,6 @@
 title: Advanced settings
 weight: 70
 description: Install agentgateway and related components.
-test: skip
 aliases:
   - ../../install/advanced/
 ---
@@ -188,7 +187,7 @@ The controller image has no shell, so you cannot run commands in the controller 
    agentgateway-86bd4c7557-8nctr   2/2     Running   0          39s
    ```
 
-5. Run a command in the sidecar. For example, list the ports that the controller listens on. The output shows that the [controller admin server]({{< link-hextra path="/documentation/operations/debug/#control-plane" >}}) on port `9095` accepts connections only from inside the pod.
+5. Run a command in the sidecar. For example, list the ports that the controller listens on. The output shows that the [controller admin server]({{% upstream %}}{{< link-hextra path="/documentation/operations/debug/#control-plane" >}}{{% /upstream %}}{{% downstream %}}{{< link-hextra path="/documentation/operations/debug/" >}}{{% /downstream %}}) on port `9095` accepts connections only from inside the pod.
 
    ```sh
    kubectl exec -n {{< reuse "agw-docs/snippets/namespace.md" >}} deploy/{{< reuse "agw-docs/snippets/helm-agentgateway.md" >}} -c debug-shell -- netstat -tln
@@ -260,6 +259,7 @@ Review the following constraints before you set the field.
 | The service account is separate | `serviceAccount.create` still controls whether the chart creates the controller's ServiceAccount. |
 | Bindings also need `serviceAccount.create` | The chart creates the ClusterRoleBindings and RoleBindings only when both `rbac.create` and `serviceAccount.create` are `true`. If you set `serviceAccount.create` to `false` to use an existing service account, the chart still creates the roles but no bindings, so bind the roles to that account yourself. |
 | `rbac.gatewayNamespaces` has no effect | With `rbac.create` set to `false`, the chart creates no RoleBindings in the namespaces that `rbac.gatewayNamespaces` lists. |
+| ClusterTrustBundle read access | If the cluster serves the ClusterTrustBundle API, the controller needs `get`, `list`, and `watch` on `clustertrustbundles` in the `certificates.k8s.io` API group. The rendered ClusterRole already includes this rule, and Kubernetes also grants it to all service accounts through the default `system:cluster-trust-bundle-discovery` ClusterRoleBinding. If you write your own roles and your cluster removes that default binding, add the rule to the controller's ClusterRole, or the controller does not become ready. |
 
 For the full list of chart values, see the [Helm reference]({{< link-hextra path="/reference/helm/" >}}).
 

@@ -2,7 +2,6 @@
 title: Targeting and merging
 weight: 10
 description: Learn how to target and merge policies when multiple policies apply to the same resource.
-test: skip
 ---
 
 ## Policy targeting {#targeting}

@@ -214,3 +214,4 @@ Configure global or provider-specific aliases for your models to refer to your m
 
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
+```

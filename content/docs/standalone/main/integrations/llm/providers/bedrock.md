@@ -3,10 +3,6 @@ title: Amazon Bedrock
 weight: 15
 icon: /integrations/providers/bw/bedrock.svg
 description: Route agentgateway LLM traffic to foundation models on Amazon Bedrock.
-test:
-  bedrock:
-  - file: ${versionRoot}/integrations/llm/providers/bedrock.md
-    path: bedrock
 ---
 
 Configure Amazon Bedrock as an LLM provider in agentgateway.
@@ -14,49 +10,14 @@ Configure Amazon Bedrock as an LLM provider in agentgateway.
 > [!NOTE]
 > Bedrock excludes cached tokens from the input count that it reports. The CEL field `llm.inputTokens` adds them back, so telemetry, metrics, and token-based limits count a cache-heavy request higher than the number that Bedrock reports. To read the Bedrock number itself, use `llm.providerInputTokens`. For more information, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
 
-{{< doc-test paths="bedrock" >}}
-# ============================================================================
-# Doc test coverage for this guide (these comments are not rendered on the page)
-# ============================================================================
-# WHAT THIS TEST VALIDATES:
-#   * "Configuration": the example config is accepted by agentgateway
-#     (--validate-only), so `provider: bedrock` is recognized and
-#     `params.awsRegion` is correct.
-#   * "Passthrough": the `passthrough: detect` config is accepted, including the
-#     `name: us.anthropic*` prefix match.
-#   * "Bedrock Mantle": the `params.bedrockEndpointPreference` config is
-#     accepted, which pins both the field name and the lowercase spelling of the
-#     value. Standalone rejects the capitalized Kubernetes spelling, so this
-#     block is what keeps the two modes from being copied into each other.
-#   * With the base config loaded, agentgateway lists at least one model on
-#     `/v1/models` and resolves the wildcard to the `bedrock` provider in the
-#     configured AWS region. The list is not checked for a literal `*`, because
-#     the default `llm.discovery: catalog` expands the wildcard into the catalog's
-#     Bedrock model IDs.
-#
-# WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * "Authentication" - external dependency; AWS credentials are resolved per
-#     request from the ambient environment, which the test cannot provide.
-#   * The Converse and Invoke boto3 examples - display-only Python snippets that
-#     need real AWS credentials and a Bedrock model grant.
-#   * "Token counting", "Extended thinking and reasoning", and "Structured
-#     outputs" - external dependency; each bills a live Bedrock completion. Their
-#     example responses and the `reasoning_effort` budget table are display-only.
-#   * That format translation to Bedrock's Converse API is correct - a different
-#     layer; verifying the translation needs a live Bedrock upstream.
-#   * Which endpoint a given model actually resolves to under
-#     `bedrockEndpointPreference` - external dependency; the resolution reads
-#     `runtime`/`mantle` tags from an imported catalog, and populating that
-#     catalog calls the AWS model-card pages.
-{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
-{{< /doc-test >}}
-
 > [!NOTE]
 > Agentgateway accepts requests in one of the supported [API formats]({{< link-hextra path="/documentation/llm/api-types/" >}}) (such as the `/v1/chat/completions` request body shape) and returns responses in that format.
 > Agentgateway translates between these formats and Bedrock formats internally using Bedrock's [Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-call.html).
 > Directly sending `Converse` or `Invoke` request shapes are not directly supported; see [passthrough](#passthrough) for more information if you need these APIs.
 
 Bedrock conversion turns the prompt-cache markers in `/v1/messages` and `/v1/chat/completions` requests into Bedrock cache points, including markers on content that the conversion does not send. In `/v1/messages` requests, the Anthropic `cache_control.ttl` value becomes the TTL of the cache point. For where a marker on dropped content goes, see [Converting to the Bedrock Converse format]({{< link-hextra path="/documentation/llm/api-types/messages/#converting-to-the-bedrock-converse-format" >}}). In `/v1/chat/completions` requests, a text part that contains only whitespace is not sent, and the marker on that text part moves to the end of the content before the text part in the same message.
+
+If a request already has prompt-cache markers, the `promptCaching` policy adds no cache points. For more information, see [Prompt caching]({{< link-hextra path="/documentation/configuration/traffic-management/llm/#prompt-caching" >}}).
 
 ## Authentication
 
@@ -78,7 +39,7 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
 5. Keep the default `bedrock/*` in the **Incoming model match** field.
 6. Keep **Ambient** for the **AWS credentials**. To enter an access key instead, select **Static**. This option writes the key to an `auth.aws` block.
 7. For the **AWS region**, enter or select `us-west-2`.
-8. From the **Bedrock endpoint** dropdown, select **Prefer Runtime**. The UI preselects **Prefer Mantle** for a new Bedrock model, and saves the choice as `params.bedrockEndpointPreference`. For more information, see [Bedrock Mantle](#bedrock-mantle).
+8. Keep **Prefer Runtime**, the default, in the **Bedrock endpoint** dropdown. The UI saves `params.bedrockEndpointPreference` only after you select a value. For more information, see [Bedrock Mantle](#bedrock-mantle).
 9. For **Outgoing model**, keep **Strip bedrock/**. This option removes the `bedrock/` prefix before the request is forwarded. To send every request to one model instead, select **Explicit**, and enter the model ID. This option sets `params.model`.
 
    {{< reuse-image src="img/ui-llm-add-model-bedrock-runtime.png" srcDark="img/ui-llm-add-model-bedrock-runtime-dark.png" alt="Add model drawer with Amazon Bedrock selected as the provider, bedrock/* as the incoming model match, Ambient as the AWS credentials, us-west-2 as the AWS region, and Prefer Runtime as the Bedrock endpoint" >}}
@@ -93,7 +54,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "bedrock/*"
@@ -116,122 +77,112 @@ llm:
 {{% /tab %}}
 {{< /tabs >}}
 
-{{< doc-test paths="bedrock" >}}
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+## Passthrough
 
+If your applications directly use the AWS `Converse` or `Invoke` APIs, Agentgateway cannot translate these APIs to other providers. However, it can pass the request through to Bedrock itself following the [passthrough]({{< link-hextra path="/documentation/llm/api-types/passthrough/" >}}) approach. This approach can also provide telemetry data for these requests.
+
+> [!WARNING]
+> Do not set `passthrough` on a Bedrock model that also serves requests in another format, such as `/v1/chat/completions` or `/v1/messages`. The `passthrough` setting takes precedence over endpoint detection. For example, with `passthrough: detect`, a `/v1/chat/completions` request is forwarded to Bedrock unchanged instead of being converted to a Converse request. For more information, see [Passthrough and endpoint detection]({{< link-hextra path="/documentation/configuration/traffic-management/llm/#llm-passthrough-precedence" >}}).
+
+1. Configure the Bedrock model. Requests to the native Bedrock paths, such as `/model/{modelId}/converse` and `/model/{modelId}/invoke`, are passed through by default, and agentgateway still records token usage when it can read it from the response. You do not need to set `passthrough` on the model.
+
+   ```yaml
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+   llm:
+     models:
+     - name: us.anthropic*
+       provider: bedrock
+       params:
+         awsRegion: us-west-2
+   ```
+
+2. Send native Converse or Invoke requests.
+
+   {{< tabs >}}
+   {{% tab name="Converse" %}}
+
+   ```python
+   import json
+
+   import boto3
+
+   client = boto3.client(
+       'bedrock-runtime',
+       region_name='us-west-2',
+       endpoint_url='http://localhost:4000',
+   )
+   response = client.converse(
+       modelId='us.anthropic.claude-sonnet-4-6',
+       messages=[
+           {
+               'role': 'user',
+               'content': [{'text': 'give 1 word answer'}]
+           }
+       ]
+   )
+   print('converse response:')
+   print(response)
+   ```
+
+   {{% /tab %}}
+   {{% tab name="Invoke" %}}
+
+   ```python
+   import json
+
+   import boto3
+
+   client = boto3.client(
+       'bedrock-runtime',
+       region_name='us-west-2',
+       endpoint_url='http://localhost:4000',
+   )
+   response = client.invoke_model(
+       modelId='us.anthropic.claude-sonnet-4-6',
+       body=json.dumps({
+           'anthropic_version': 'bedrock-2023-05-31',
+           'max_tokens': 10,
+           'messages': [
+               {
+                   'role': 'user',
+                   'content': [{'type': 'text', 'text': 'give 1 word answer'}],
+               }
+           ],
+       }),
+   )
+   body = json.loads(response['body'].read())
+
+   print('invoke response:')
+   print(body)
+   ```
+
+   {{% /tab %}}
+   {{< /tabs >}}
+
+### Use a different client-facing model name {#passthrough-model-name}
+
+To let clients send a model name that differs from the Bedrock model ID, such as `aws/us.anthropic.claude-sonnet-4-6`, add a `transformation` that changes `model`. Agentgateway rewrites the model ID in the request path and does not add a `model` field to the request body. Use this configuration instead of the one in the previous steps.
+
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
-  - name: "bedrock/*"
+  - name: aws/*
     provider: bedrock
     params:
       awsRegion: us-west-2
     transformation:
-      model: llmRequest.model.stripPrefix("bedrock/")
-EOF
-agentgateway -f config.yaml --validate-only
-{{< /doc-test >}}
-
-## Passthrough
-
-If your applications directly use the AWS `Converse` or `Invoke` APIs, Agentgateway cannot translate these APIs to other providers.
-However, it can pass the request through to Bedrock itself following the [passthrough]({{< link-hextra path="/documentation/llm/api-types/passthrough/" >}}) approach.
-
-This can provide telemetry data for these requests.
-
-First, setup passthrough mode:
-
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  models:
-  - name: us.anthropic*
-    provider: bedrock
-    params:
-      awsRegion: us-west-2
-    passthrough: detect
+      model: llmRequest.model.stripPrefix("aws/")
 ```
 
-{{< doc-test paths="bedrock" >}}
-cat <<'EOF' > config-passthrough.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  models:
-  - name: us.anthropic*
-    provider: bedrock
-    params:
-      awsRegion: us-west-2
-    passthrough: detect
-EOF
-agentgateway -f config-passthrough.yaml --validate-only
-{{< /doc-test >}}
+{{< reuse "agw-docs/snippets/review-table.md" >}}
 
-Then, you can send native Converse and Invoke requests:
+| Setting | Description |
+|---------|-------------|
+| `name` | The model name to match in incoming requests. The `aws/*` pattern matches any model ID that starts with `aws/`. |
+| `transformation.model` | Removes the `aws/` prefix from the model ID in the request path, so that Bedrock receives its own model ID. |
 
-{{< tabs >}}
-{{% tab name="Converse" %}}
-
-```python
-import json
-
-import boto3
-
-client = boto3.client(
-    'bedrock-runtime',
-    region_name='us-west-2',
-    endpoint_url='http://localhost:4000',
-)
-response = client.converse(
-    modelId='us.anthropic.claude-sonnet-4-6',
-    messages=[
-        {
-            'role': 'user',
-            'content': [{'text': 'give 1 word answer'}]
-        }
-    ]
-)
-print('converse response:')
-print(response)
-```
-
-{{% /tab %}}
-{{% tab name="Invoke" %}}
-
-```python
-import json
-
-import boto3
-
-client = boto3.client(
-    'bedrock-runtime',
-    region_name='us-west-2',
-    endpoint_url='http://localhost:4000',
-)
-response = client.invoke_model(
-    modelId='us.anthropic.claude-sonnet-4-6',
-    body=json.dumps({
-        'anthropic_version': 'bedrock-2023-05-31',
-        'max_tokens': 10,
-        'messages': [
-            {
-                'role': 'user',
-                'content': [{'type': 'text', 'text': 'give 1 word answer'}],
-            }
-        ],
-    }),
-)
-body = json.loads(response['body'].read())
-
-print('invoke response:')
-print(body)
-```
-
-{{% /tab %}}
-{{< /tabs >}}
-
-
-> [!NOTE]
-> Model translations are not supported with passthrough, so avoid using a model match like `aws/*`, as it cannot be transformed.
+In the Converse and Invoke scripts from the previous steps, set `modelId` to the prefixed name, such as `modelId='aws/us.anthropic.claude-sonnet-4-6'`. The request reaches Bedrock at the `/model/us.anthropic.claude-sonnet-4-6/converse` path.
 
 ## Claude Platform on AWS
 
@@ -255,7 +206,7 @@ The **Bedrock endpoint** dropdown is also in the **Add provider** drawer on the 
 {{% /tab %}}
 {{% tab name="Config file" %}}
 ```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
 llm:
   models:
   - name: "*"
@@ -266,21 +217,6 @@ llm:
 ```
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< doc-test paths="bedrock" >}}
-cat <<'EOF' > config-mantle.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-llm:
-  models:
-  - name: "*"
-    provider: bedrock
-    params:
-      awsRegion: us-west-2
-      bedrockEndpointPreference: runtimePreferred
-EOF
-agentgateway -f config-mantle.yaml --validate-only
-{{< /doc-test >}}
 
 | Value | Endpoint selection |
 |-------|--------------------|
@@ -298,7 +234,7 @@ To apply Bedrock Guardrails with either endpoint, including on `llm.models`, use
 
 The Kubernetes API takes the same four values capitalized, such as `RuntimePreferred`, under `spec.ai.provider.bedrock.endpointPreference`. A value that you copy from one mode to the other fails to load.
 
-In the agentgateway UI, the **LLM Models** and **LLM Providers** editors set `bedrockEndpointPreference` to `mantlePreferred` when you change an entry's provider to **Amazon Bedrock**. An existing Bedrock entry that does not set `bedrockEndpointPreference` shows **Prefer Runtime** in the **Bedrock endpoint** selector and keeps the `runtimePreferred` default. The UI writes the field only after you choose a value and save the entry.
+In the agentgateway UI, the **LLM Models** and **LLM Providers** editors do not set `bedrockEndpointPreference` when you change an entry's provider to **Amazon Bedrock**. A Bedrock entry that does not set `bedrockEndpointPreference` shows **Prefer Runtime** in the **Bedrock endpoint** selector and keeps the `runtimePreferred` default. The UI writes the field only after you choose a value and save the entry.
 
 The preference applies to four route types: chat completions, messages, responses, and Anthropic token counting. Every other route type ignores the preference and uses a fixed endpoint.
 
@@ -308,7 +244,7 @@ The preference applies to four route types: chat completions, messages, response
 
 Whether the preference changes the request format that a model accepts depends on the endpoint that it selects. A model that resolves to Runtime accepts the Bedrock Converse format only, and its chat format tags do not apply. A model that resolves to Mantle accepts the formats in its tags, except for `anthropic.claude*` models, which always take the Anthropic Messages format. For more information, see [Chat format tags]({{< link-hextra path="/documentation/llm/cost-controls/costs/#chat-format-tags" >}}).
 
-When a `/v1/messages` or `/v1/messages/count_tokens` request reaches Bedrock Mantle in the Anthropic Messages format, the request keeps the client `anthropic-version` header. If the client sends no version header, the request uses the default `2023-06-01` version.
+When a `/v1/messages` or `/v1/messages/count_tokens` request reaches Bedrock Mantle in the Anthropic Messages format, the request keeps the client `anthropic-version` header. If the client sends no version header, the request uses the default `2023-06-01` version. Agentgateway also removes `oauth-*` values from the `anthropic-beta` header, because Bedrock rejects them.
 
 > [!NOTE]
 > Requests to the Mantle endpoint are signed for the `bedrock-mantle` service rather than `bedrock`. If you scope an IAM policy by service name, grant both before you switch a route to Mantle.
@@ -345,7 +281,7 @@ If the Bedrock model does not support the requested tier, the request fails with
 
 Earlier versions omitted the tier and used the standard tier. To keep that behavior, omit `service_tier` or set it to `auto`.
 
-Bedrock reports the served tier in the `x-amzn-bedrock-service-tier` response header. Agentgateway normalizes it as `llm.serviceTier` to select model catalog rates. The built-in catalog has no Bedrock service-tier rates. To price Bedrock tiers differently, add `serviceTier` tiers for your Bedrock models to your own catalog. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
+Bedrock reports the served tier in the `x-amzn-bedrock-service-tier` response header. Agentgateway normalizes it as `llm.serviceTier` to select model catalog rates. The built-in catalog has `ultrafast` rates for the Bedrock models `openai.gpt-6-astra` and `openai.gpt-6.1-sol`. It has no other Bedrock service-tier rates. To price other Bedrock tiers differently, add `serviceTier` tiers for your Bedrock models to your own catalog. For more information, see [Service tiers]({{< link-hextra path="/documentation/llm/cost-controls/costs/#service-tiers" >}}).
 
 ## Token counting
 
@@ -416,7 +352,7 @@ Some Bedrock models return encrypted reasoning in a `reasoningContent.redactedCo
 | Client API | Encrypted reasoning in the reply | Replay on the next turn |
 |---|---|---|
 | `/v1/messages` | A `redacted_thinking` block. | Send the block back in the message history. The next Bedrock request includes it as `reasoningContent.redactedContent`. |
-| `/v1/responses` | A reasoning item with `encrypted_content`. | Send the reasoning item back in the input. The next Bedrock request includes it as `reasoningContent.redactedContent`. |
+| `/v1/responses` | A reasoning item with `encrypted_content`. Treat the value as opaque. It holds the full reasoning block: the reasoning text and its signature, or Bedrock's encrypted payload. The reasoning text is not encrypted, and response guardrails do not mask it. | Send the reasoning item back in the input. The next Bedrock request includes signed reasoning as `reasoningContent.reasoningText` with its signature, and encrypted reasoning as `reasoningContent.redactedContent`. Agentgateway needs only `encrypted_content` to replay the item, so a client that sends back only `encrypted_content` still works. |
 | `/v1/chat/completions` | Omitted, because the Chat Completions format has no field for encrypted reasoning. Signed reasoning text still arrives in `reasoning_content` and `reasoning_signature`. | Not possible. |
 
 Replay streamed encrypted reasoning the same way as buffered reasoning. Stream events depend on the client API.
@@ -424,7 +360,7 @@ Replay streamed encrypted reasoning the same way as buffered reasoning. Stream e
 | Client API | Streamed reasoning |
 |---|---|
 | `/v1/messages` | Text uses `thinking_delta` events; the signature uses `signature_delta`. Encrypted reasoning arrives as one `redacted_thinking` block after Bedrock finishes the block. |
-| `/v1/responses` | Each reasoning block becomes a `reasoning` output item before the `message` item. Text uses `response.reasoning_text.delta` events. The item's `response.output_item.done` event carries the signature or encrypted payload as `encrypted_content`. |
+| `/v1/responses` | Each reasoning block becomes a `reasoning` output item before the `message` item. Text uses `response.reasoning_text.delta` events. The item's `response.output_item.done` event carries `encrypted_content`, the same opaque carrier of the full reasoning as in a buffered reply. |
 | `/v1/chat/completions` | Text uses `reasoning_content`; the signature uses `reasoning_signature`. Encrypted reasoning is omitted. |
 
 For `/v1/messages` streams, agentgateway buffers encrypted reasoning until the block ends. If the buffered fragments exceed the LLM buffer limit, the stream emits an `api_error` event with `Stream processing error` and stops. The limit is 32 MiB unless you set `frontendPolicies.http.maxBufferSize`. For more information, see [Body buffering]({{< link-hextra path="/documentation/configuration/traffic-management/buffer/" >}}).
@@ -460,30 +396,3 @@ curl "localhost:4000/v1/chat/completions" -H content-type:application/json -d '{
   ]
 }' | jq
 ```
-
-{{< doc-test paths="bedrock" >}}
-# Confirm the base config serves models and that `params.awsRegion` reaches the
-# resolved provider config. The default `llm.discovery: catalog` expands `*` into
-# catalog model IDs, so check for a non-empty list rather than a literal `*`.
-agentgateway -f config.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-
-SERVED=$(curl -sf --max-time 10 http://localhost:4000/v1/models | jq -r '.data | length')
-if [ "${SERVED:-0}" -eq 0 ]; then
-  echo "FAIL: /v1/models lists no models for the example config"
-  exit 1
-fi
-RESOLVED=$(curl -sf --max-time 10 http://localhost:15000/config_dump | jq -r '
-  [ .backends[].backend.ai
-    | select(. != null)
-    | .target.providers[].active[].endpoint
-    | "\(.provider | keys[0])|\(.provider.bedrock.region)"
-  ] | first')
-if [ "$RESOLVED" != "bedrock|us-west-2" ]; then
-  echo "FAIL: expected bedrock|us-west-2 but agentgateway resolved $RESOLVED"
-  exit 1
-fi
-echo "✓ Models are served and the wildcard resolves to bedrock in us-west-2"
-{{< /doc-test >}}

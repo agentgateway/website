@@ -1,7 +1,7 @@
 ---
 title: Gemini
-weight: 20
 icon: /integrations/providers/bw/gemini.svg
+weight: 20
 description: Configure Google Gemini as an LLM provider for agentgateway.
 ---
 

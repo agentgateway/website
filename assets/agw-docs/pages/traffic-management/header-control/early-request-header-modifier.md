@@ -17,7 +17,7 @@ Remove a header that is reserved for use by another service, such as an external
 
 1. Create an HTTPRoute resource that routes requests to the httpbin app through the Gateway that you created before you began.
 
-   ```yaml {paths="remove-reserved-header"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -80,7 +80,7 @@ Remove a header that is reserved for use by another service, such as an external
 
 3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with a transformation to remove the `x-user-id` header. Apply the removal on the Gateway on the `PreRouting` phase.
 
-   ```yaml {paths="remove-reserved-header"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -133,25 +133,6 @@ Remove a header that is reserved for use by another service, such as an external
      }
    }
    ```
-
-
-
-{{< doc-test paths="remove-reserved-header" >}}
-YAMLTest -f - <<'EOF'
-- name: verify request after reserved header removal returns 200
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}"
-    path: /headers
-    method: GET
-    headers:
-      host: transformation.example
-      x-user-id: reserved-user
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
-{{< /doc-test >}}
 
 ## Cleanup
 
