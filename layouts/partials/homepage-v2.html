@@ -2,6 +2,7 @@
   Homepage v2 — monochrome, type-led layout.
 
   The animated traffic flow behind the hero copy lives in partials/hero-flow.html.
+  The clickable agentgateway UI under the hero lives in partials/live-ui.html.
 
   Styling is Tailwind utilities only; keyframes live in assets/css/tailwind.config.js.
 */}}
@@ -63,6 +64,9 @@
   </div>
 
 </section>
+
+<!-- ============ INTERACTIVE UI ============ -->
+{{ partial "live-ui.html" . }}
 
 <!-- ============ CONTRIBUTORS ============ -->
 <section class="border-y border-black/5 py-12 dark:border-white/5">

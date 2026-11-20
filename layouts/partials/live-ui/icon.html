@@ -1,0 +1,45 @@
+{{- /* Lucide-style stroke icons for the interactive UI. Usage: partial "live-ui/icon.html" (dict "n" "home" "c" "h-4 w-4") */ -}}
+{{- $p := dict
+  "home" `<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/>`
+  "bot" `<rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4"/><circle cx="12" cy="3" r="1"/><path d="M9 13v2M15 13v2"/>`
+  "boxes" `<path d="M7.5 3.5 12 6v5l-4.5 2.5L3 11V6z"/><path d="M16.5 3.5 21 6v5l-4.5 2.5L12 11V6z"/><path d="M12 13l4.5-2.5L21 13v5l-4.5 2.5L12 18z"/><path d="M3 13l4.5-2.5L12 13v5l-4.5 2.5L3 18z"/>`
+  "policy" `<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>`
+  "shield" `<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/>`
+  "shieldcheck" `<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>`
+  "key" `<circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.3-9.3"/><path d="m16 7 3 3"/><path d="m14 9 2 2"/>`
+  "coins" `<circle cx="9" cy="9" r="6"/><path d="M18.1 10.4A6 6 0 1 1 10.4 18.1"/><path d="M8 7h2v4"/>`
+  "chart" `<path d="M3 3v18h18"/><path d="M8 17v-5M12 17V8M16 17v-3M20 17V6"/>`
+  "logs" `<path d="M8 21h11a2 2 0 0 0 2-2v-1H10v1a2 2 0 0 1-4 0V5a2 2 0 0 0-2-2H3"/><path d="M19 17V5a2 2 0 0 0-2-2H5"/><path d="M10 8h6M10 12h6"/>`
+  "plug" `<path d="M9 2v6M15 2v6"/><path d="M6 8h12v3a6 6 0 0 1-12 0z"/><path d="M12 17v5"/>`
+  "play" `<path d="m7 4 13 8-13 8z"/>`
+  "server" `<rect x="3" y="3" width="18" height="7" rx="2"/><rect x="3" y="14" width="18" height="7" rx="2"/><path d="M7 6.5h.01M7 17.5h.01"/>`
+  "network" `<rect x="9" y="2" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="16" y="16" width="6" height="6" rx="1"/><path d="M5 16v-3h14v3M12 8v5"/>`
+  "route" `<circle cx="6" cy="19" r="3"/><circle cx="18" cy="5" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/>`
+  "braces" `<path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1"/><path d="M16 21h1a2 2 0 0 0 2-2v-5a2 2 0 0 1 2-2 2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1"/>`
+  "filecode" `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m10 13-2 2 2 2M14 13l2 2-2 2"/>`
+  "sliders" `<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>`
+  "plus" `<path d="M12 5v14M5 12h14"/>`
+  "pencil" `<path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>`
+  "trash" `<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>`
+  "eye" `<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>`
+  "copy" `<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>`
+  "refresh" `<path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/>`
+  "filter" `<path d="M22 3H2l8 9.5V19l4 2v-8.5z"/>`
+  "chevron" `<path d="m6 9 6 6 6-6"/>`
+  "chevronr" `<path d="m9 6 6 6-6 6"/>`
+  "alert" `<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>`
+  "sun" `<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>`
+  "git" `<circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="12" cy="18" r="3"/><path d="M6 9v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V9M12 12v3"/>`
+  "globe" `<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>`
+  "message" `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v6M9 10h6"/>`
+  "send" `<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>`
+  "x" `<path d="M18 6 6 18M6 6l12 12"/>`
+  "check" `<path d="m5 12 5 5L20 7"/>`
+  "user" `<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>`
+  "zap" `<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>`
+  "download" `<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>`
+  "calendar" `<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>`
+  "layers" `<path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/>`
+  "split" `<path d="M16 3h5v5M8 3H3v5M12 22v-8.3a4 4 0 0 0-1.2-2.9L3 3M15 9l6-6"/>`
+-}}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="{{ .c | default "h-4 w-4" }} shrink-0">{{ index $p .n | safeHTML }}</svg>
