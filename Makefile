@@ -122,7 +122,8 @@ check-node-deps:
 # On a Cloudflare Pages preview (CF_PAGES is set and the branch isn't main), skip
 # the version trees that aren't in hugo.yaml's `params.versions`, unless the
 # branch changed one of them. Production (main) and plain local builds still
-# build everything. PREVIEW=1 tries the preview build locally.
+# build everything. To try a preview build locally, including change
+# highlights, run `make fetch-test-artifacts-build PREVIEW=1`.
 PREVIEW ?= $(if $(CF_PAGES),$(filter-out main,$(CF_PAGES_BRANCH)))
 
 # pr-tracker-* branches come in batches and fill the Cloudflare build queue, so
@@ -130,11 +131,26 @@ PREVIEW ?= $(if $(CF_PAGES),$(filter-out main,$(CF_PAGES_BRANCH)))
 # listed version when it also changes shared files), without the search index. Try it locally with PREVIEW=1 CF_PAGES_BRANCH=pr-tracker-x.
 PR_TRACKER_PREVIEW ?= $(if $(PREVIEW),$(filter pr-tracker-%,$(CF_PAGES_BRANCH)))
 
+# Change highlights mark what a branch adds or removes compared with main.
+# They're on in previews and local servers, and off in production. The
+# docs-theme-extras script writes the changes to static/_extras/changes.json.
+# On previews, `build` turns the overlay on with
+# HUGO_PARAMS_THEMEEXTRAS_CHANGEHIGHLIGHTS. If the script can't compare with
+# main, the preview shows no highlights instead of failing. Other builds delete
+# static/_extras/ so that a leftover file from `make serve` never ships.
+# NO_CHANGES=1 turns highlights off everywhere.
+CHANGES_SCRIPT = $(eval CHANGES_SCRIPT := $(if $(NO_CHANGES),,$(shell go mod download -json github.com/solo-io/docs-theme-extras 2>/dev/null | python3 -c "import json,os,sys; p=os.path.join(json.load(sys.stdin)['Dir'],'scripts','changes_manifest.py'); print(p if os.path.exists(p) else '')" 2>/dev/null)))$(CHANGES_SCRIPT)
+CHANGES_OUT = static/_extras/changes.json
+CHANGES_ENV = $(if $(and $(PREVIEW),$(CHANGES_SCRIPT)),HUGO_PARAMS_THEMEEXTRAS_CHANGEHIGHLIGHTS=true )
+
 .PHONY: build
 build: check-node-deps
 	$(if $(PREVIEW),pip3 install -q pyyaml || true)
 	$(if $(PREVIEW),python3 scripts/local-version-config.py --preview-base origin/main $(if $(PR_TRACKER_PREVIEW),--only-changed))
-	$(if $(PR_TRACKER_PREVIEW),HUGO_PARAMS_SEARCH_ENABLE=false )hugo --gc --minify $(if $(PREVIEW),--config hugo.yaml$(COMMA)hugo-local-versions.yaml)
+	$(if $(CHANGES_ENV),git rev-parse --verify -q origin/main > /dev/null || git fetch --depth=1 --no-tags origin main:refs/remotes/origin/main || true)
+	$(if $(CHANGES_ENV),python3 $(CHANGES_SCRIPT) --base origin/main --out $(CHANGES_OUT) || python3 $(CHANGES_SCRIPT) --base origin/main --exact-base --out $(CHANGES_OUT) || true)
+	$(if $(CHANGES_ENV),,rm -rf $(dir $(CHANGES_OUT)))
+	$(CHANGES_ENV)$(if $(PR_TRACKER_PREVIEW),HUGO_PARAMS_SEARCH_ENABLE=false )hugo --gc --minify $(if $(PREVIEW),--config hugo.yaml$(COMMA)hugo-local-versions.yaml)
 
 # The local servers build only the versions listed in hugo.yaml's
 # `params.versions`. content/docs/ also holds every older version tree, which
@@ -153,15 +169,19 @@ NO_SEARCH_ENV = $(if $(NO_SEARCH),HUGO_PARAMS_SEARCH_ENABLE=false )
 local-version-config:
 	@$(if $(FULL),:,python3 scripts/local-version-config.py $(if $(VERSION),--version $(VERSION)))
 
+# The local servers run a watcher that updates the change highlights as you edit.
+CHANGES_WATCH = $(if $(CHANGES_SCRIPT),python3 $(CHANGES_SCRIPT) --out $(CHANGES_OUT) --watch & changes_pid=$$!;,:;)
+CHANGES_STOP = if [ -n "$$changes_pid" ]; then kill $$changes_pid 2>/dev/null; fi
+
 # Start local dev server (drafts and future-dated content shown)
 .PHONY: serve
 serve: check-node-deps local-version-config
-	$(NO_SEARCH_ENV)hugo server --buildDrafts --buildFuture $(LOCAL_VERSIONS_CONFIG)
+	$(CHANGES_WATCH) $(NO_SEARCH_ENV)hugo server --buildDrafts --buildFuture $(LOCAL_VERSIONS_CONFIG); $(CHANGES_STOP)
 
 # Start local server with production-like build (GC, minify, no drafts)
 .PHONY: serve-prod
 serve-prod: check-node-deps local-version-config
-	$(NO_SEARCH_ENV)hugo server --gc --minify $(LOCAL_VERSIONS_CONFIG)
+	$(CHANGES_WATCH) $(NO_SEARCH_ENV)hugo server --gc --minify $(LOCAL_VERSIONS_CONFIG); $(CHANGES_STOP)
 
 # Alias for serve (drafts and future-dated content shown)
 .PHONY: server

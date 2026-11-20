@@ -181,9 +181,14 @@ h6 {
 .dark body,
 .dark .hextra-footer,
 .dark .sidebar-container,
-.dark .hextra-toc,
-.dark .docs-tabs-band {
+.dark .hextra-toc {
     background-color: #030712 !important;
+}
+
+/* The docs-tabs band reads its background from these docs-theme-extras
+   variables (v0.4.0+), so it follows the page instead of Hextra's #111. */
+:root {
+    --solo-tabs-band-bg-dark: #030712;
 }
 
 /* Center all footer content on all screen sizes */
