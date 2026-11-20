@@ -32,7 +32,7 @@ Deploy an MCP server that you want {{< reuse "agw-docs/snippets/agentgateway.md"
        spec:
          containers:
            - name: mcp-server-everything
-             image: node:26-alpine
+             image: node:20-alpine
              command: ["npx"]
              args: ["-y", "@modelcontextprotocol/server-everything", "streamableHttp"]
              ports:

@@ -20,7 +20,7 @@ Install a minimal OTel collector that receives OTLP and writes each log record t
    ```sh
    helm upgrade --install opentelemetry-collector-logs opentelemetry-collector \
    --repo https://open-telemetry.github.io/opentelemetry-helm-charts \
-   --version 0.180.0 \
+   --version 0.127.2 \
    --set mode=deployment \
    --set image.repository="otel/opentelemetry-collector-contrib" \
    --set command.name="otelcol-contrib" \

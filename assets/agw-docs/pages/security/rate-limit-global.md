@@ -162,7 +162,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
        spec:
          containers:
            - name: redis
-             image: redis:8-alpine
+             image: redis:7-alpine
              ports:
                - containerPort: 6379
    ---

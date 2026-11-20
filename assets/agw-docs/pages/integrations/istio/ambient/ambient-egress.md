@@ -88,7 +88,7 @@ spec:
     spec:
       containers:
       - name: curl
-        image: curlimages/curl:8.23.0
+        image: curlimages/curl:8.10.1
         command: ["sleep", "infinity"]
 EOF
 

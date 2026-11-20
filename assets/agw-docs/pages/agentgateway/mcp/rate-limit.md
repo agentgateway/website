@@ -299,7 +299,7 @@ The following steps show how to set up global rate limiting infrastructure and c
        spec:
          containers:
            - name: redis
-             image: redis:8-alpine
+             image: redis:7-alpine
              ports:
                - containerPort: 6379
    ---

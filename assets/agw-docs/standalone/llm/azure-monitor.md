@@ -55,7 +55,7 @@ export OTEL_NAMESPACE="otel-system"
 export OTEL_COLLECTOR_NAME="otel-collector"
 export OTEL_SERVICE_ACCOUNT="otel-collector"
 export OTEL_NETWORK_POLICY="otel-collector-ingress"
-export OTEL_COLLECTOR_IMAGE="otel/opentelemetry-collector-contrib:0.165.0"
+export OTEL_COLLECTOR_IMAGE="otel/opentelemetry-collector-contrib:0.148.0"
 export STANDALONE_POD_MONITOR="agentgateway-standalone-azure-monitor"
 export STANDALONE_LABEL_SELECTOR="app.kubernetes.io/name=agentgateway-standalone,app.kubernetes.io/instance=${STANDALONE_RELEASE},app.kubernetes.io/component=standalone"
 unset AZURE_NAME_PREFLIGHT_PASSED

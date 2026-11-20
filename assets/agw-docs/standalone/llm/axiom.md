@@ -161,7 +161,7 @@ Unlike traces and access logs, Axiom requires the `x-axiom-metrics-dataset` head
      -e AXIOM_DOMAIN \
      -e AXIOM_API_TOKEN \
      -e AXIOM_METRICS_DATASET \
-     otel/opentelemetry-collector-contrib:0.165.0
+     otel/opentelemetry-collector-contrib:0.128.0
    ```
 
 For production deployments, review the collector's resource limits, batching, and deployment model for your expected telemetry volume.

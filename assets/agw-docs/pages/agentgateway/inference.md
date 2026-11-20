@@ -68,7 +68,7 @@ Inference Extension CRDs, agentgateway, and the llm-d Router in Gateway mode.
        spec:
          containers:
            - name: vllm-sim
-             image: ghcr.io/llm-d/llm-d-inference-sim:v1.2.0
+             image: ghcr.io/llm-d/llm-d-inference-sim:v0.8.2
              args:
                - --model
                - Qwen/Qwen3-32B
@@ -162,7 +162,7 @@ Inference Extension CRDs, agentgateway, and the llm-d Router in Gateway mode.
    `HTTPRoute` that attaches to the Gateway.
 
    ```bash
-   export ROUTER_CHART_VERSION=v1.0.0
+   export ROUTER_CHART_VERSION=v0.9.0
 
    helm upgrade -i vllm-qwen3-32b \
      oci://ghcr.io/llm-d/charts/llm-d-router-gateway \
@@ -190,7 +190,7 @@ Inference Extension CRDs, agentgateway, and the llm-d Router in Gateway mode.
    ```
 
    The deployment uses the released
-   `ghcr.io/llm-d/llm-d-router-endpoint-picker:v1.0.0` image.
+   `ghcr.io/llm-d/llm-d-router-endpoint-picker:v0.9.0` image.
 
 6. Send a request through agentgateway.
 

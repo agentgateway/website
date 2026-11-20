@@ -101,7 +101,7 @@ spec:
       serviceAccountName: httpbin
       containers:
       - name: httpbin
-        image: docker.io/mccutchen/go-httpbin:v2.17.0
+        image: docker.io/mccutchen/go-httpbin:v2.15.0
         ports:
         - containerPort: 8080
 ---
@@ -122,7 +122,7 @@ spec:
     spec:
       containers:
       - name: curl
-        image: curlimages/curl:8.23.0
+        image: curlimages/curl:8.10.1
         command: ["sleep", "infinity"]
 EOF
 
