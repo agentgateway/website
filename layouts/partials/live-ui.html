@@ -309,20 +309,47 @@
 </div>
 
 <!-- ===== LOGS ===== -->
+{{- $fsel := "h-9 w-full appearance-none truncate rounded-md border border-white/15 bg-[#0b0d12] pl-8 pr-7 text-[12.5px] text-white outline-none focus:border-purple-400" }}
+{{- $users := slice "admin" }}{{ range $d.people }}{{ $users = $users | append .user }}{{ end }}
+{{- $groups := slice }}{{ range $d.keys }}{{ $groups = $groups | append .team }}{{ end }}
+{{- $uas := slice }}{{ range $d.people }}{{ $uas = $uas | append .ua }}{{ end }}{{ $uas = $uas | append "Chat Playground" }}
+{{- $filters := slice
+  (dict "k" "model" "l" "Models" "all" "All models" "opts" (apply $d.models "index" "." "name"))
+  (dict "k" "user" "l" "Users" "all" "All users" "opts" (uniq $users))
+  (dict "k" "group" "l" "Groups" "all" "All groups" "opts" (uniq $groups))
+  (dict "k" "prov" "l" "Providers" "all" "All providers" "opts" (apply $d.providers "index" "." "name"))
+  (dict "k" "ua" "l" "User agents" "all" "All user agents" "opts" (uniq $uas))
+}}
 <div data-view="logs" class="hidden p-5 sm:p-7">
   <div class="flex flex-wrap items-start justify-between gap-3">
     <div><h2 class="{{ $h1 }}">Logs</h2><p class="{{ $sub }}">Inspect recent LLM calls and request/response payloads.</p></div>
-    <button type="button" data-lu-refresh class="{{ $btn2 }}">{{ partial "live-ui/icon.html" (dict "n" "refresh" "c" "h-3.5 w-3.5") }}Refresh<span data-lu-newcount class="hidden rounded-full bg-purple-500 px-1.5 text-[10px] text-white"></span></button>
+    <div class="flex gap-2">
+      <button type="button" data-toast="Log settings choose which fields and payloads are stored." class="{{ $btn2 }}">{{ partial "live-ui/icon.html" (dict "n" "sliders" "c" "h-3.5 w-3.5") }}Settings</button>
+      <button type="button" data-lu-refresh class="{{ $btn2 }}">{{ partial "live-ui/icon.html" (dict "n" "refresh" "c" "h-3.5 w-3.5") }}Refresh<span data-lu-newcount class="hidden rounded-full bg-purple-500 px-1.5 text-[10px] text-white"></span></button>
+    </div>
   </div>
-  <div class="{{ $card }} mt-5 flex flex-wrap items-end gap-4 p-4">
-    <label><span class="{{ $label }}">Models</span><select data-lf="model" class="{{ $sel }} w-40"><option value="">All models</option>{{ range $d.models }}<option>{{ .name }}</option>{{ end }}</select></label>
-    <label><span class="{{ $label }}">User agents</span><select data-lf="ua" class="{{ $sel }} w-40"><option value="">All user agents</option>{{ range (uniq (apply $d.people "index" "." "ua")) }}<option>{{ . }}</option>{{ end }}<option>Chat Playground</option></select></label>
-    <label><span class="{{ $label }}">HTTP status</span><select data-lf="status" class="{{ $sel }} w-32"><option value="">Any status</option><option value="200">200</option><option value="4xx">4xx</option></select></label>
-    <label class="flex items-center gap-2 pb-1.5 text-[12px] text-neutral-300"><button type="button" role="switch" aria-checked="true" aria-label="Stream" data-sw="stream" data-on="true" class="{{ $sw }}"><span class="{{ $knob }}"></span></button>Stream</label>
+  <div class="{{ $card }} mt-5 p-4">
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+      {{- range $filters }}
+      <label class="min-w-0"><span class="{{ $label }}">{{ .l }}</span>
+        <span class="relative block">{{ partial "live-ui/icon.html" (dict "n" "filter" "c" "pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-300") }}
+          <select data-lf="{{ .k }}" class="{{ $fsel }}"><option value="">{{ .all }}</option>{{ range .opts }}<option>{{ . }}</option>{{ end }}</select>
+          {{ partial "live-ui/icon.html" (dict "n" "chevron" "c" "pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-300") }}</span>
+      </label>
+      {{- end }}
+      <label class="min-w-0"><span class="{{ $label }}">HTTP status</span>
+        <span class="relative block">{{ partial "live-ui/icon.html" (dict "n" "filter" "c" "pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-300") }}
+          <select data-lf="status" class="{{ $fsel }}"><option value="">Any status</option><option value="200">2xx</option><option value="4xx">4xx</option></select>
+          {{ partial "live-ui/icon.html" (dict "n" "chevron" "c" "pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-300") }}</span>
+      </label>
+    </div>
+    <button type="button" role="checkbox" aria-checked="true" data-sw="stream" data-on="true" class="group mt-4 flex items-center gap-2.5 text-[12.5px] font-semibold text-neutral-200">
+      <span class="grid h-4 w-4 place-items-center rounded border border-white/25 transition-colors group-data-[on=true]:border-purple-500 group-data-[on=true]:bg-purple-500">{{ partial "live-ui/icon.html" (dict "n" "check" "c" "h-3 w-3 text-white opacity-0 group-data-[on=true]:opacity-100") }}</span>Stream
+    </button>
   </div>
   <div data-tour="logs" class="{{ $card }} mt-4 overflow-x-auto">
-    <table class="w-full min-w-[980px] text-[12px]">
-      <thead class="{{ $th }}"><tr><th class="px-3 py-2.5">Time</th><th class="px-3">Status</th><th class="px-3">Model</th><th class="px-3">User</th><th class="px-3">Prompt</th><th class="px-3 text-right">Duration</th><th class="px-3 text-right">In</th><th class="px-3 text-right">Out</th><th class="px-3 text-right">Cache</th><th class="px-3 text-right">Cost</th></tr></thead>
+    <table class="w-full min-w-[900px] text-[12px]">
+      <thead class="{{ $th }}"><tr><th class="py-2.5 pl-4 pr-3">Time</th><th class="px-3">Status</th><th class="px-3">Model</th><th class="px-3">Prompt</th><th class="px-3">Turn</th><th class="px-3 text-right">Duration</th><th class="px-3 text-right">In</th><th class="px-3 text-right">Out</th><th class="px-3 text-right">Cache</th><th class="px-3 text-right">Cost</th><th class="w-8"></th></tr></thead>
       <tbody data-lu-logs></tbody>
     </table>
   </div>
@@ -595,34 +622,103 @@
   <!-- prototypes cloned by assets/js/live-ui.js -->
   <div hidden aria-hidden="true">
     <table><tbody>
-      <tr data-proto="logrow" class="cursor-pointer border-t border-white/[0.06] transition-colors hover:bg-white/[0.03] data-[new=true]:bg-violet-500/10">
-        <td class="whitespace-nowrap px-3 py-2"><div data-f="ago" class="text-neutral-200"></div><div data-f="time" class="text-[10px] text-neutral-500"></div></td>
-        <td class="whitespace-nowrap px-3 py-2" data-f="status"></td>
-        <td class="whitespace-nowrap px-3 py-2"><div class="flex items-center gap-2"><img data-f="icon" alt="" class="h-4 w-4 brightness-0 invert"><div><div data-f="model" class="font-geist-mono text-[11px] text-neutral-100"></div><div data-f="prov" class="text-[10px] text-neutral-500"></div></div></div></td>
-        <td class="whitespace-nowrap px-3 py-2"><div data-f="user" class="text-neutral-200"></div><div data-f="ua" class="text-[10px] text-neutral-500"></div></td>
-        <td class="max-w-[220px] truncate px-3 py-2 text-neutral-300" data-f="prompt"></td>
-        <td class="whitespace-nowrap px-3 py-2 text-right font-geist-mono text-[11px] text-neutral-400" data-f="dur"></td>
-        <td class="px-3 py-2 text-right font-geist-mono text-[11px] text-neutral-400" data-f="in"></td>
-        <td class="px-3 py-2 text-right font-geist-mono text-[11px] text-neutral-400" data-f="out"></td>
-        <td class="px-3 py-2 text-right font-geist-mono text-[11px] text-emerald-400" data-f="cache"></td>
-        <td class="px-3 py-2 text-right font-geist-mono text-[11px] text-neutral-300" data-f="cost"></td>
+      <tr data-proto="logrow" class="group cursor-pointer border-t border-white/[0.06] transition-colors hover:bg-white/[0.025] data-[new=true]:bg-violet-500/10 data-[open=true]:bg-white/[0.03]">
+        <td class="relative whitespace-nowrap py-2.5 pl-4 pr-3"><span data-f="err" class="absolute inset-y-0 left-0 hidden w-[3px] bg-red-500"></span><div data-f="ago" class="text-[12.5px] text-neutral-100"></div><div data-f="time" class="max-w-[118px] truncate text-[11px] text-neutral-400"></div></td>
+        <td class="whitespace-nowrap px-2.5"><span class="flex items-center gap-2"><span data-f="status"></span><span data-f="shield" class="flex"></span></span></td>
+        <td class="whitespace-nowrap px-2.5"><div class="flex items-center gap-2"><img data-f="icon" alt="" class="h-4 w-4 brightness-0 invert"><div><div data-f="model" class="font-geist-mono text-[11.5px] text-neutral-100"></div><div class="flex items-center gap-1 text-[11px] text-neutral-400"><span data-f="prov"></span><span data-f="arrow" class="flex">{{ partial "live-ui/icon.html" (dict "n" "arrowr" "c" "h-3 w-3") }}</span><span data-f="upstream" class="max-w-[150px] truncate font-geist-mono"></span></div></div></div></td>
+        <td class="max-w-[150px] truncate px-2.5 text-[12.5px] text-neutral-100" data-f="prompt"></td>
+        <td class="px-3" data-f="turn"></td>
+        <td class="whitespace-nowrap px-2.5 text-right font-geist-mono text-[11px] text-neutral-300" data-f="dur"></td>
+        <td class="px-3 text-right font-geist-mono text-[11px] text-neutral-300" data-f="in"></td>
+        <td class="px-3 text-right font-geist-mono text-[11px] text-neutral-300" data-f="out"></td>
+        <td class="px-3 text-right font-geist-mono text-[11px] text-neutral-300" data-f="cache"></td>
+        <td class="px-3 text-right font-geist-mono text-[11px] text-neutral-300" data-f="cost"></td>
+        <td class="pr-3 text-neutral-400">{{ partial "live-ui/icon.html" (dict "n" "chevron" "c" "h-4 w-4 transition-transform group-data-[open=true]:rotate-180") }}</td>
       </tr>
-      <tr data-proto="logdetail"><td colspan="10" class="border-t border-white/[0.04] bg-black/30 px-4 py-4">
-        <div class="grid gap-4 lg:grid-cols-[1fr_1fr_240px]">
-          <div><div class="{{ $label }}">Request (as sent upstream)</div><pre data-f="req" class="{{ $pre }} max-h-56 whitespace-pre-wrap"></pre></div>
-          <div><div class="{{ $label }}">Response</div><pre data-f="res" class="{{ $pre }} max-h-56 whitespace-pre-wrap"></pre></div>
-          <div><div class="{{ $label }}">Attributes</div><pre data-f="meta" class="{{ $pre }} max-h-56 whitespace-pre-wrap text-neutral-400"></pre></div>
+      <tr data-proto="logdetail"><td colspan="11" class="border-t border-white/[0.06] bg-[#0c0f15] p-0"><div data-f="dwrap" class="sticky left-0 px-5 py-5">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex min-w-0 items-center gap-3">
+            <img data-f="dicon" alt="" class="h-7 w-7 brightness-0 invert">
+            <div class="min-w-0">
+              <div><span data-f="dprov" class="text-[15px] font-semibold text-white"></span> <span class="text-neutral-500">/</span> <span data-f="dmodel" class="font-geist-mono text-[13px] text-neutral-200"></span></div>
+              <div class="mt-0.5 flex items-center gap-2 font-geist-mono text-[11px] text-neutral-400"><span data-f="did" class="truncate"></span><button type="button" data-lu-copyid class="text-neutral-400 hover:text-white" aria-label="Copy request ID">{{ partial "live-ui/icon.html" (dict "n" "copy" "c" "h-3 w-3") }}</button></div>
+            </div>
+          </div>
+          <button type="button" data-lu-json class="{{ $btn2 }} shrink-0">{{ partial "live-ui/icon.html" (dict "n" "download" "c" "h-3.5 w-3.5") }}JSON</button>
         </div>
-      </td></tr>
+        <div class="mt-4 flex flex-wrap border-y border-white/[0.07] py-3">
+          {{- range slice (slice "dur" "Duration") (slice "tok" "Tokens") (slice "hit" "Cache hit") (slice "cost" "Cost") }}
+          <div class="border-r border-white/[0.08] px-5 first:pl-0 last:border-0"><div class="text-[10px] font-medium uppercase tracking-wider text-neutral-400">{{ index . 1 }}</div><div data-f="s-{{ index . 0 }}" class="mt-0.5 font-geist-mono text-[14px] text-neutral-100"></div></div>
+          {{- end }}
+        </div>
+        <div class="{{ $card }} mt-4">
+          <div class="flex items-center justify-between border-b border-white/[0.07] px-4 py-2.5"><span class="text-[13px] font-semibold text-white">Trajectory</span><span data-f="steps" class="text-[11px] text-neutral-400"></span></div>
+          <div class="grid grid-cols-[76px_1fr] items-center gap-x-3 gap-y-1.5 px-4 py-3 text-[11.5px] text-neutral-300">
+            <span>Input</span><div data-f="lane-input" class="relative h-2"></div>
+            <span>Model</span><div data-f="lane-model" class="relative h-2"></div>
+            <span>Tool call</span><div data-f="lane-call" class="relative h-2"></div>
+            <span>Tool result</span><div data-f="lane-result" class="relative h-2"></div>
+          </div>
+          <div class="border-t border-white/[0.07] px-4 py-2 text-[11px] text-neutral-400">Width shows approximate tokens</div>
+        </div>
+        <div class="mt-5 grid gap-8 lg:grid-cols-2">
+          <div>
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Request</div>
+            <ol class="ml-1 mt-2.5 space-y-2.5 border-l border-white/10 pl-5">
+              <li class="relative"><span class="absolute -left-[25.5px] top-1 h-2.5 w-2.5 rounded-full border-2 border-purple-400 bg-[#0c0f15]"></span><div class="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Client requested</div><div data-f="r-client" class="font-geist-mono text-[12px] text-neutral-100"></div></li>
+              <li class="relative"><span class="absolute -left-[25.5px] top-1 h-2.5 w-2.5 rounded-full border-2 border-purple-400 bg-[#0c0f15]"></span><div class="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Gateway sent</div><div data-f="r-gw" class="font-geist-mono text-[12px] text-neutral-100"></div></li>
+              <li class="relative"><span class="absolute -left-[25.5px] top-1 h-2.5 w-2.5 rounded-full bg-purple-400"></span><div class="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Provider returned</div><div data-f="r-prov" class="font-geist-mono text-[12px] text-neutral-100"></div></li>
+            </ol>
+            <div class="mt-4 grid grid-cols-3 gap-x-4 gap-y-3">
+              {{- range slice (slice "p-prov" "Provider") (slice "p-op" "Operation") (slice "p-status" "HTTP status") (slice "p-client" "Client") (slice "p-user" "User") (slice "p-done" "Completed") }}
+              <div class="min-w-0"><div class="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">{{ index . 1 }}</div><div data-f="{{ index . 0 }}" class="truncate text-[12.5px] text-neutral-100"></div></div>
+              {{- end }}
+            </div>
+            <div data-f="errbox" class="mt-4 hidden whitespace-pre-wrap rounded-md border border-red-500/30 bg-red-500/10 p-3 font-geist-mono text-[11px] text-red-200"></div>
+            <div class="mt-5 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Guardrails</div>
+            <div data-f="guards" class="mt-2.5 space-y-3"></div>
+            <details class="group mt-5">
+              <summary class="flex cursor-pointer list-none items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-neutral-400 [&::-webkit-details-marker]:hidden">{{ partial "live-ui/icon.html" (dict "n" "chevronr" "c" "h-3 w-3 transition-transform group-open:rotate-90") }}Conversation <span data-f="nmsg" class="normal-case tracking-normal text-neutral-300"></span></summary>
+              <div data-f="conv" class="mt-2.5 space-y-2"></div>
+            </details>
+            <details class="group mt-4">
+              <summary class="flex cursor-pointer list-none items-center gap-2 text-[12.5px] font-medium text-neutral-200 [&::-webkit-details-marker]:hidden">{{ partial "live-ui/icon.html" (dict "n" "play" "c" "h-2.5 w-2.5 transition-transform group-open:rotate-90") }}Raw log JSON</summary>
+              <pre data-f="raw" class="{{ $pre }} mt-2.5 max-h-64"></pre>
+            </details>
+          </div>
+          <div>
+            <div class="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Usage</div>
+            <div class="mt-2.5 grid grid-cols-[48px_1fr] items-center gap-x-2 gap-y-2 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+              <span>Tokens</span><div data-f="ub-tok" class="flex h-2.5 gap-[2px] overflow-hidden rounded-full bg-white/[0.06]"></div>
+              <span>Cost</span><div data-f="ub-cost" class="flex h-2.5 gap-[2px] overflow-hidden rounded-full bg-white/[0.06]"></div>
+            </div>
+            <div class="mt-4 text-[12px]">
+              <div class="grid grid-cols-[1fr_80px_90px] text-right text-[10px] font-semibold uppercase tracking-wider text-neutral-400"><span></span><span>Tokens</span><span>Cost</span></div>
+              <div class="mt-1 font-semibold text-white">Input</div>
+              <div class="grid grid-cols-[1fr_80px_90px] items-center py-0.5"><span class="flex items-center gap-2 pl-2 text-neutral-300"><i class="inline-block h-2 w-2 rounded-sm" style="background:#7c4dbd"></i>Uncached</span><span data-f="u-unc-tok" class="text-right font-geist-mono text-[11px] text-neutral-200"></span><span data-f="u-unc-cost" class="text-right font-geist-mono text-[11px] text-neutral-200"></span></div>
+              <div class="grid grid-cols-[1fr_80px_90px] items-center py-0.5"><span class="flex items-center gap-2 pl-2 text-neutral-300"><i class="inline-block h-2 w-2 rounded-sm" style="background:#4ade80"></i>Cache read</span><span data-f="u-cr-tok" class="text-right font-geist-mono text-[11px] text-neutral-200"></span><span data-f="u-cr-cost" class="text-right font-geist-mono text-[11px] text-neutral-200"></span></div>
+              <div class="mt-1 font-semibold text-white">Output</div>
+              <div class="grid grid-cols-[1fr_80px_90px] items-center py-0.5"><span class="flex items-center gap-2 pl-2 text-neutral-300"><i class="inline-block h-2 w-2 rounded-sm" style="background:#a855f7"></i>Generated</span><span data-f="u-gen-tok" class="text-right font-geist-mono text-[11px] text-neutral-200"></span><span data-f="u-gen-cost" class="text-right font-geist-mono text-[11px] text-neutral-200"></span></div>
+              <div class="mt-2 grid grid-cols-[1fr_80px_90px] items-center border-t border-white/[0.08] pt-2 font-semibold text-white"><span>Total</span><span data-f="u-tot-tok" class="text-right font-geist-mono text-[11px]"></span><span data-f="u-tot-cost" class="text-right font-geist-mono text-[11px]"></span></div>
+            </div>
+          </div>
+        </div>
+      </div></td></tr>
     </tbody></table>
-    <span data-proto="s200" class="rounded bg-emerald-500/15 px-1.5 py-0.5 font-geist-mono text-[10px] font-medium text-emerald-400">200</span>
-    <span data-proto="s403" class="rounded bg-red-500/15 px-1.5 py-0.5 font-geist-mono text-[10px] font-medium text-red-400">403</span>
-    <span data-proto="s429" class="rounded bg-amber-500/15 px-1.5 py-0.5 font-geist-mono text-[10px] font-medium text-amber-400">429</span>
-    <span data-proto="s401" class="rounded bg-red-500/15 px-1.5 py-0.5 font-geist-mono text-[10px] font-medium text-red-400">401</span>
-    <span data-proto="tmask" class="ml-1 rounded bg-amber-500/10 px-1 py-0.5 text-[9.5px] text-amber-300">masked</span>
-    <span data-proto="tfail" class="ml-1 rounded bg-sky-500/10 px-1 py-0.5 text-[9.5px] text-sky-300">failover</span>
-    <span data-proto="tblock" class="ml-1 rounded bg-red-500/10 px-1 py-0.5 text-[9.5px] text-red-300">guardrail</span>
-    <span data-proto="tbudget" class="ml-1 rounded bg-amber-500/10 px-1 py-0.5 text-[9.5px] text-amber-300">budget</span>
+    <span data-proto="s200" class="rounded-md bg-emerald-500/15 px-2 py-0.5 text-[11px] font-medium text-emerald-400">200</span>
+    <span data-proto="s403" class="rounded-md bg-red-500/15 px-2 py-0.5 text-[11px] font-medium text-red-400">403</span>
+    <span data-proto="s429" class="rounded-md bg-red-500/15 px-2 py-0.5 text-[11px] font-medium text-red-400">429</span>
+    <span data-proto="s401" class="rounded-md bg-red-500/15 px-2 py-0.5 text-[11px] font-medium text-red-400">401</span>
+    <span data-proto="gpass" class="text-neutral-400" title="Guardrail present — no action taken">{{ partial "live-ui/icon.html" (dict "n" "shield" "c" "h-[15px] w-[15px]") }}</span>
+    <span data-proto="gmask" class="text-amber-400" title="Guardrail masked content">{{ partial "live-ui/icon.html" (dict "n" "shield" "c" "h-[15px] w-[15px]") }}</span>
+    <span data-proto="gblock" class="text-red-400" title="Guardrail rejected the request">{{ partial "live-ui/icon.html" (dict "n" "shield" "c" "h-[15px] w-[15px]") }}</span>
+    <span data-proto="turnuser" class="inline-flex items-center gap-0.5 rounded-md border border-sky-500/40 bg-sky-500/10 px-1.5 py-1 text-sky-300" title="User message → model response">{{ partial "live-ui/icon.html" (dict "n" "user" "c" "h-3.5 w-3.5") }}{{ partial "live-ui/icon.html" (dict "n" "arrowr" "c" "h-3 w-3") }}{{ partial "live-ui/icon.html" (dict "n" "msg" "c" "h-3.5 w-3.5") }}</span>
+    <span data-proto="turntool" class="inline-flex items-center gap-0.5 rounded-md border border-sky-500/40 bg-sky-500/10 px-1.5 py-1 text-sky-300" title="Tool result → model response">{{ partial "live-ui/icon.html" (dict "n" "wrench" "c" "h-3.5 w-3.5") }}{{ partial "live-ui/icon.html" (dict "n" "arrowr" "c" "h-3 w-3") }}{{ partial "live-ui/icon.html" (dict "n" "msg" "c" "h-3.5 w-3.5") }}</span>
+    <span data-proto="turnnone" class="inline-flex items-center rounded-md border border-white/15 bg-white/[0.04] px-2.5 py-1 text-neutral-300" title="No model turn">{{ partial "live-ui/icon.html" (dict "n" "dots" "c" "h-3.5 w-3.5") }}</span>
+    <span data-proto="tbar" class="absolute top-0 h-2 rounded-sm"></span>
+    <span data-proto="useg" class="h-full"></span>
+    <div data-proto="gitem" class="flex gap-3"><span data-f="ic" class="mt-0.5 flex"></span><div><div class="flex flex-wrap items-center gap-2"><b data-f="name" class="text-[12.5px] font-semibold text-white"></b><span data-f="phase" class="rounded bg-sky-500/15 px-1.5 py-px text-[9.5px] font-semibold uppercase tracking-wide text-sky-300"></span><span data-f="result" class="text-[12px] text-neutral-400"></span></div><div data-f="desc" class="text-[12px] text-neutral-400"></div></div></div>
+    <div data-proto="cmsg" class="rounded-md border border-white/[0.06] bg-black/20 p-2.5"><div data-f="role" class="text-[10px] font-semibold uppercase tracking-wider text-purple-300"></div><div data-f="text" class="mt-1 whitespace-pre-wrap break-words text-[12px] text-neutral-200"></div></div>
     <div data-proto="recent" class="flex items-center gap-3 px-4 py-2 text-[12px]"><span data-f="status" class="w-10"></span><span data-f="model" class="w-32 truncate font-geist-mono text-[11px] text-neutral-100"></span><span data-f="who" class="min-w-0 flex-1 truncate text-neutral-400"></span><span data-f="cost" class="font-geist-mono text-[11px] text-neutral-300"></span><span data-f="ago" class="w-14 text-right text-[11px] text-neutral-500"></span></div>
     <div data-proto="bar" class="grid grid-cols-[110px_1fr_80px] items-center gap-3 text-[11px] sm:grid-cols-[150px_1fr_90px]"><div data-f="label" class="truncate text-right text-neutral-300"></div><div class="h-3 overflow-hidden rounded-sm bg-white/[0.04]"><div data-f="fill" class="h-3 rounded-sm transition-[width] duration-500"></div></div><div data-f="val" class="font-geist-mono text-neutral-400"></div></div>
     <span data-proto="leg" class="inline-flex items-center gap-1.5"><i data-f="sw" class="inline-block h-2.5 w-2.5 rounded-sm"></i><span data-f="label"></span></span>

@@ -91,7 +91,8 @@
     let pair = o.prompt ? [o.prompt, null] : pick(coder ? CODE : GENERAL);
     const r = Math.random();
     if (!o.prompt) { if (r < 0.025) pair = [pick(INJECT), null]; else if (r < 0.075) pair = pick(PII); }
-    const rec = { t: o.t || Date.now(), user: person.user, ua: person.ua, key: person.key, model, served: model, raw: pair[0], prompt: pair[0], response: pair[1], tags: [], status: 200, in: 0, out: 0, cached: 0, cost: 0, dur: 0, found: [] };
+    const rec = { t: o.t || Date.now(), user: person.user, ua: person.ua, key: person.key, model, served: model, raw: pair[0], prompt: pair[0], response: pair[1], tags: [], status: 200, in: 0, out: 0, cached: 0, cost: 0, dur: 0, found: [], outFound: [],
+      id: `${hex(8)}-${hex(4)}-7${hex(3)}-8${hex(3)}-${hex(12)}`, turn: coder && Math.random() < 0.5 ? 'tool' : 'user', guards: { inject: sw('inject'), pii: sw('pii'), piiOut: sw('pii-out') } };
     const k = KEY[person.key];
     if (!o.prompt && r > 0.995) { rec.status = 401; rec.key = 'unknown'; rec.response = '{"error": "invalid virtual API key"}'; rec.dur = ri(1, 4); return rec; }
     if (k && k.used >= 0.97) { rec.status = 429; rec.tags.push('tbudget'); rec.response = `{"error": "budget exceeded for key ${k.name} (${k.budget})"}`; rec.dur = ri(1, 3); return rec; }
@@ -208,21 +209,41 @@
   }
 
   // ---------- logs ----------
+  // Mirrors the agentgateway UI Logs page: summary rows plus an expandable
+  // detail panel (header, stats, trajectory, request, guardrails, usage).
   const tbody = $('[data-lu-logs]');
-  const filt = () => ({ model: $('[data-lf="model"]').value, ua: $('[data-lf="ua"]').value, status: $('[data-lf="status"]').value });
-  const passes = (rec, f) => (!f.model || rec.model === f.model || rec.served === f.model) && (!f.ua || rec.ua === f.ua) && (!f.status || (f.status === '200' ? rec.status === 200 : rec.status >= 400));
+  const DATED = { 'gpt-5.6': 'gpt-5.6-2026-05-12', 'gpt-5.4-mini': 'gpt-5.4-mini-2026-03-17', 'gpt-5.5': 'gpt-5.5-2026-04-23', 'claude-opus-5-5': 'claude-opus-5-5-20261014', 'claude-haiku-5-5': 'claude-haiku-5-5-20261014', 'gemini-3-pro': 'gemini-3-pro-preview-11-2026', 'gemini-3-flash': 'gemini-3-flash-001' };
+  const AGW = '/agw-mark-color.svg';
+  const provOf = (rec) => { const m = MODEL[rec.served]; return m ? PROV[m.provider] : null; };
+  const groupOf = (rec) => (KEY[rec.key] || {}).team || '';
+  const sent = (rec) => rec.status !== 401 && rec.status !== 429 && rec.status !== 403;
+  const fmtK = (n) => n >= 1000 ? (n / 1000).toFixed(1) + 'K' : String(n);
+  const fmtDur = (ms) => ms >= 1000 ? (ms / 1000).toFixed(2) + ' s' : ms + ' ms';
+  const usd6 = (n) => '$' + n.toFixed(6);
+  const filt = () => Object.fromEntries($$('[data-lf]').map((s) => [s.dataset.lf, s.value]));
+  const passes = (rec, f) => (!f.model || rec.model === f.model || rec.served === f.model) && (!f.user || rec.user === f.user) && (!f.group || groupOf(rec) === f.group)
+    && (!f.prov || (provOf(rec) || {}).name === f.prov) && (!f.ua || rec.ua === f.ua) && (!f.status || (f.status === '200' ? rec.status === 200 : rec.status >= 400));
+  const shieldOf = (rec) => rec.reason === 'model' ? null : rec.status === 403 ? 'gblock' : (rec.found.length || (rec.outFound || []).length) ? 'gmask' : sent(rec) ? 'gpass' : null;
   function logRow(rec) {
     const tr = proto('logrow');
     const a = F(tr, 'ago'); a.dataset.t = rec.t; a.textContent = ago(rec.t);
     F(tr, 'time').textContent = stamp(rec.t);
-    const st = F(tr, 'status'); st.appendChild(S(rec.status)); rec.tags.forEach((t) => st.appendChild(proto(t)));
-    const m = MODEL[rec.served] || MODEL[rec.model]; const p = m ? PROV[m.provider] : null;
-    if (rec.status === 200 && p) { F(tr, 'icon').src = p.icon; F(tr, 'model').textContent = rec.model; F(tr, 'prov').textContent = `${p.name} → ${m.upstream}`; }
-    else { F(tr, 'icon').remove(); F(tr, 'model').textContent = rec.status === 401 ? 'unknown model' : rec.model; F(tr, 'prov').textContent = rec.status === 401 ? 'unknown' : 'not sent upstream'; }
-    F(tr, 'user').textContent = rec.user; F(tr, 'ua').textContent = rec.ua;
+    F(tr, 'status').appendChild(S(rec.status));
+    const sh = shieldOf(rec); if (sh) F(tr, 'shield').appendChild(proto(sh));
+    if (rec.status !== 200) F(tr, 'err').classList.remove('hidden');
+    const p = provOf(rec), m = MODEL[rec.served];
+    if (sent(rec) && p) {
+      F(tr, 'icon').src = p.icon; F(tr, 'model').textContent = rec.model;
+      F(tr, 'prov').textContent = p.name; F(tr, 'upstream').textContent = DATED[rec.served] || m.upstream;
+    } else {
+      const ic = F(tr, 'icon'); ic.src = AGW; ic.classList.remove('brightness-0', 'invert');
+      F(tr, 'model').textContent = rec.status === 403 ? rec.model : 'unknown model';
+      F(tr, 'prov').textContent = rec.status === 403 ? 'not sent' : 'unknown'; F(tr, 'arrow').remove(); F(tr, 'upstream').remove();
+    }
     F(tr, 'prompt').textContent = rec.status === 429 ? 'Budget exceeded' : rec.status === 401 ? 'Invalid API key' : rec.prompt;
-    F(tr, 'dur').textContent = rec.dur >= 1000 ? (rec.dur / 1000).toFixed(2) + ' s' : rec.dur + ' ms';
-    F(tr, 'in').textContent = rec.in ? fmtTok(rec.in) : '—'; F(tr, 'out').textContent = rec.out || '—';
+    F(tr, 'turn').appendChild(proto(sent(rec) ? (rec.turn === 'tool' ? 'turntool' : 'turnuser') : 'turnnone'));
+    F(tr, 'dur').textContent = fmtDur(rec.dur);
+    F(tr, 'in').textContent = rec.in ? fmtK(rec.in) : '—'; F(tr, 'out').textContent = rec.out || '—';
     F(tr, 'cache').textContent = rec.cached ? Math.round(rec.cached / rec.in * 100) + '%' : '—';
     F(tr, 'cost').textContent = rec.status === 200 ? fmtUsd(rec.cost) : '—';
     tr._rec = rec;
@@ -238,18 +259,86 @@
     tbody.textContent = ''; pending = 0; $('[data-lu-newcount]').classList.add('hidden');
     const f = filt(); LOGS.filter((r) => passes(r, f)).slice(0, 60).forEach((r) => tbody.appendChild(logRow(r)));
   }
+  const usage = (rec) => {
+    const m = MODEL[rec.served] || { in: 0, out: 0, cacheRead: 0 };
+    const unc = rec.in - rec.cached;
+    return { unc, cr: rec.cached, gen: rec.out, uncC: unc * m.in / 1e6, crC: rec.cached * m.cacheRead / 1e6, genC: rec.out * m.out / 1e6 };
+  };
+  const guardList = (rec) => {
+    if (rec.status === 401 || rec.status === 429 || rec.reason === 'model') return [];
+    if (rec.status === 403) return [['regex', 'request', 'Rejected', 'Matched a prompt-injection pattern. The request was not sent to the provider.', 'gblock']];
+    const g = rec.guards || {}; const out = [];
+    if (g.inject) out.push(['regex', 'request', 'Allowed', 'Content passed without modification.', 'gpass']);
+    if (g.pii) out.push(rec.found.length ? ['regex', 'request', 'Masked', `Replaced ${rec.found.length} value${rec.found.length > 1 ? 's' : ''}: ${[...new Set(rec.found)].join(', ')}.`, 'gmask'] : ['regex', 'request', 'Allowed', 'Content passed without modification.', 'gpass']);
+    if (g.piiOut) out.push((rec.outFound || []).length ? ['regex', 'response', 'Masked', `Replaced ${rec.outFound.length} value${rec.outFound.length > 1 ? 's' : ''}: ${[...new Set(rec.outFound)].join(', ')}.`, 'gmask'] : ['regex', 'response', 'Allowed', 'Content passed without modification.', 'gpass']);
+    return out;
+  };
+  const convo = (rec) => {
+    const msgs = [{ role: 'system', content: `You are ${rec.ua}, an agent working for the ${groupOf(rec) || 'platform'} team at Acme.` }, { role: 'user', content: rec.prompt }];
+    if (rec.turn === 'tool') msgs.push({ role: 'assistant', content: 'tool_call: read_file({"path": "src/pool.rs"})' }, { role: 'tool', content: 'pub struct Pool { idle: Vec<Conn>, max: usize, … }' });
+    if (sent(rec)) msgs.push({ role: 'assistant', content: rec.response });
+    return msgs;
+  };
+  const rawOf = (rec) => {
+    const p = provOf(rec), m = MODEL[rec.served], u = usage(rec);
+    return { id: rec.id, timestamp: new Date(rec.t).toISOString(), route: '/v1/chat/completions', status: rec.status, user: rec.user, group: groupOf(rec) || null, apiKey: rec.key, userAgent: rec.ua,
+      llm: sent(rec) ? { requestModel: rec.model, provider: p.name, gatewayModel: m.upstream, responseModel: DATED[rec.served] || m.upstream, operation: 'chat', streaming: CODERS.has(rec.ua) } : null,
+      usage: sent(rec) ? { inputTokens: rec.in, cacheReadTokens: rec.cached, outputTokens: rec.out } : null, costUsd: rec.status === 200 ? +rec.cost.toFixed(6) : 0, durationMs: rec.dur,
+      guardrails: guardList(rec).map(([n, ph, r]) => ({ type: n, phase: ph, result: r.toLowerCase() })), error: rec.status !== 200 ? JSON.parse(rec.response) : undefined };
+  };
+  function detail(rec) {
+    const d = proto('logdetail'); d._detail = true;
+    F(d, 'dwrap').style.width = tbody.closest('.overflow-x-auto').clientWidth + 'px';
+    const p = provOf(rec), m = MODEL[rec.served], ok = sent(rec) && p, u = usage(rec);
+    const ic = F(d, 'dicon'); if (ok) ic.src = p.icon; else { ic.src = AGW; ic.classList.remove('brightness-0', 'invert'); }
+    F(d, 'dprov').textContent = ok ? p.name : 'agentgateway'; F(d, 'dmodel').textContent = ok ? rec.model : 'unknown model'; F(d, 'did').textContent = rec.id;
+    F(d, 's-dur').textContent = fmtDur(rec.dur); F(d, 's-tok').textContent = ok ? fmtInt(rec.in + rec.out) : '—';
+    F(d, 's-hit').textContent = rec.cached ? Math.round(rec.cached / rec.in * 100) + '%' : '—'; F(d, 's-cost').textContent = rec.status === 200 ? usd6(rec.cost) : '—';
+    // trajectory: bar widths are proportional to tokens
+    const bars = [];
+    const tot = Math.max(1, rec.in + rec.out), pct = (n) => n / tot * 100;
+    if (!ok) bars.push(['input', 0, 100, '#3b82f6']);
+    else if (rec.turn === 'tool') {
+      const res = Math.max(40, Math.round((rec.in - rec.cached) * 0.7)), call = Math.max(12, Math.round(rec.out * 0.15)), prior = rec.in - res - call;
+      bars.push(['input', 0, pct(prior), '#64748b'], ['call', pct(prior), pct(call), '#f59e0b'], ['result', pct(prior + call), pct(res), '#14b8a6'], ['model', pct(rec.in), pct(rec.out), '#9333ea']);
+    } else {
+      const fresh = Math.max(20, rec.in - rec.cached), prior = rec.in - fresh;
+      bars.push(['input', 0, pct(prior), '#64748b'], ['input', pct(prior), pct(fresh), '#3b82f6'], ['model', pct(rec.in), pct(rec.out), '#9333ea']);
+    }
+    bars.forEach(([lane, l, w, c]) => { const b = proto('tbar'); Object.assign(b.style, { left: l + '%', width: `max(${w}%, 4px)`, background: c }); F(d, 'lane-' + lane).appendChild(b); });
+    F(d, 'steps').textContent = `${bars.length} step${bars.length > 1 ? 's' : ''}`;
+    F(d, 'r-client').textContent = rec.model || 'unknown';
+    F(d, 'r-gw').textContent = ok ? m.upstream : '—'; F(d, 'r-prov').textContent = ok ? (DATED[rec.served] || m.upstream) : '—';
+    F(d, 'p-prov').textContent = ok ? p.name : '—'; F(d, 'p-op').textContent = 'chat'; F(d, 'p-status').textContent = rec.status;
+    F(d, 'p-client').textContent = rec.ua; F(d, 'p-user').textContent = rec.user; F(d, 'p-done').textContent = stamp(rec.t + rec.dur);
+    if (rec.status !== 200) { const e = F(d, 'errbox'); e.classList.remove('hidden'); e.textContent = rec.response; }
+    const gl = guardList(rec), gbox = F(d, 'guards');
+    if (!gl.length) gbox.textContent = 'No guardrails ran. The gateway rejected the call before policy evaluation.';
+    gl.forEach(([n, ph, r, desc, icon]) => { const g = proto('gitem'); F(g, 'ic').appendChild(proto(icon)); F(g, 'name').textContent = n; F(g, 'phase').textContent = ph; F(g, 'result').textContent = r; F(g, 'desc').textContent = desc; gbox.appendChild(g); });
+    const msgs = convo(rec); F(d, 'nmsg').textContent = `${msgs.length} messages`;
+    msgs.forEach((mm) => { const c = proto('cmsg'); F(c, 'role').textContent = mm.role; F(c, 'text').textContent = mm.content; F(d, 'conv').appendChild(c); });
+    F(d, 'raw').textContent = JSON.stringify(rawOf(rec), null, 2);
+    const seg = (box, parts) => { const s = parts.reduce((a, [v]) => a + v, 0); if (!s) return; parts.forEach(([v, c]) => { if (!v) return; const x = proto('useg'); x.style.width = (v / s * 100) + '%'; x.style.background = c; F(d, box).appendChild(x); }); };
+    if (ok) { seg('ub-tok', [[u.unc, '#7c4dbd'], [u.cr, '#4ade80'], [u.gen, '#a855f7']]); seg('ub-cost', [[u.uncC, '#7c4dbd'], [u.crC, '#4ade80'], [u.genC, '#a855f7']]); }
+    const n = (v) => ok ? fmtInt(v) : '0', c = (v) => ok ? usd6(v) : '$0.000000';
+    F(d, 'u-unc-tok').textContent = n(u.unc); F(d, 'u-unc-cost').textContent = c(u.uncC);
+    F(d, 'u-cr-tok').textContent = n(u.cr); F(d, 'u-cr-cost').textContent = c(u.crC);
+    F(d, 'u-gen-tok').textContent = n(u.gen); F(d, 'u-gen-cost').textContent = c(u.genC);
+    F(d, 'u-tot-tok').textContent = n(u.unc + u.cr + u.gen); F(d, 'u-tot-cost').textContent = c(u.uncC + u.crC + u.genC);
+    d.querySelector('[data-lu-copyid]').addEventListener('click', () => { navigator.clipboard?.writeText(rec.id).catch(() => {}); toast('Request ID copied'); });
+    d.querySelector('[data-lu-json]').addEventListener('click', () => {
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(rawOf(rec), null, 2)], { type: 'application/json' }));
+      a.download = `agentgateway-log-${rec.id}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    });
+    return d;
+  }
   tbody.addEventListener('click', (e) => {
     const tr = e.target.closest('tr'); if (!tr || !tr._rec) return;
     const next = tr.nextElementSibling;
-    if (next && next._detail) { next.remove(); return; }
-    const rec = tr._rec, d = proto('logdetail'); d._detail = true;
-    const m = MODEL[rec.served];
-    F(d, 'req').textContent = JSON.stringify({ model: m ? m.upstream : rec.model, messages: [{ role: 'system', content: `You are ${rec.ua}, working for the ${rec.key} team.` }, { role: 'user', content: rec.prompt }], stream: CODERS.has(rec.ua) }, null, 2);
-    F(d, 'res').textContent = rec.response;
-    const guards = [rec.found.length ? `masked ${rec.found.join(', ')}` : null, rec.tags.includes('tblock') ? 'rejected: prompt injection' : null].filter(Boolean).join('; ') || 'passed';
-    F(d, 'meta').textContent = [`key: ${rec.key}`, `user: ${rec.user}`, `user-agent: ${rec.ua}`, m ? `provider: ${PROV[m.provider].name}` : null, rec.tags.includes('tfail') ? `failover: ${rec.model} → ${rec.served}` : null, `guardrails: ${guards}`, rec.cached ? `cache read: ${fmtInt(rec.cached)} tokens` : null, rec.saved ? `saved by cache: ${fmtUsd(rec.saved)}` : null, `trace: ${hex(16)}`].filter(Boolean).join('\n');
-    tr.after(d);
+    if (next && next._detail) { next.remove(); delete tr.dataset.open; return; }
+    tr.dataset.open = 'true'; tr.after(detail(tr._rec));
   });
+  addEventListener('resize', () => $$('[data-lu-logs] [data-f="dwrap"]').forEach((w) => { w.style.width = tbody.closest('.overflow-x-auto').clientWidth + 'px'; }));
   $$('[data-lf]').forEach((s) => s.addEventListener('change', renderLogs));
   $('[data-lu-refresh]').addEventListener('click', renderLogs);
 
@@ -309,7 +398,7 @@
     let rec;
     if (!keyOk) {
       pushMsg('merr', `403 · Model ${model} is not allowed for key “${keyName}”.`, `allowed: ${k.models}`);
-      rec = makeRequest({ keyName, model, prompt: raw }); rec.status = 403; rec.tags = []; rec.response = '{"error": "model not allowed for this key"}'; rec.dur = 2;
+      rec = makeRequest({ keyName, model, prompt: raw }); rec.status = 403; rec.tags = []; rec.reason = 'model'; rec.response = '{"error": "model not allowed for this key"}'; rec.dur = 2;
     } else {
       rec = makeRequest({ keyName, model, prompt: raw });
       if (rec.status === 429) pushMsg('merr', `429 · Budget exceeded for “${keyName}” (${k.budget}).`, 'The gateway stopped this call before it reached the provider.');
@@ -318,7 +407,7 @@
         if (rec.found.length) pushMsg('mnote', `Request guard masked ${rec.found.length} value${rec.found.length > 1 ? 's' : ''} (${[...new Set(rec.found)].join(', ')}) before sending to ${PROV[MODEL[rec.served].provider].name}`);
         else if (INJECT_RX.test(raw)) pushMsg('mnote', 'The prompt-injection guard is off, so this reached the model. Turn it back on in Guardrails.');
         let text = reply(raw, rec.found.length > 0, rec.served);
-        if (sw('pii-out')) { const m = mask(text); if (m.found.length) { text = m.text; rec.tags.includes('tmask') || rec.tags.push('tmask'); } }
+        if (sw('pii-out')) { const m = mask(text); if (m.found.length) { text = m.text; rec.outFound = m.found; } }
         rec.response = text;
         const msg = pushMsg('ma', '', ''); const out = F(msg, 'text');
         for (let i = 0; i < text.length; i += 3) { out.textContent = text.slice(0, i + 3); chatLog.scrollTop = chatLog.scrollHeight; await wait(12); }
