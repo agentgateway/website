@@ -1,7 +1,7 @@
 ---
 title: Observability
 weight: 40
-description: Prompt logging, cost tracking, and audit trail via Axiom, Braintrust, Datadog, Langfuse, LangSmith, and more
+description: Prompt logging, cost tracking, and audit trail via Axiom, Braintrust, Datadog, Honeycomb, Langfuse, LangSmith, and more
 ---
 
 Agentgateway can send LLM telemetry to specialized observability platforms for prompt logging (request/response logging), cost tracking, audit trail, and performance monitoring.
