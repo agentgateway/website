@@ -570,6 +570,55 @@ To keep a Gateway reachable only from inside the cluster, set the service type t
 
    To reach a `ClusterIP` gateway, send requests from a pod in the cluster to `agentgateway-proxy.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local`, or use `kubectl port-forward` for local testing.
 
+{{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+#### Request a cluster-only address on the Gateway {#routability}
+
+Instead of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, you can use the Gateway API `routability` field to ask for an address that is reachable only from inside the cluster. The controller generates a `ClusterIP` service for the Gateway. This setting is portable across Gateway API implementations.
+
+> [!NOTE]
+> The `routability` field requires the experimental channel of Gateway API version 1.7 or later. For the install command, see [Experimental features in Gateway API]({{< link-hextra path="/release-notes/versions/#experimental-features" >}}).
+
+1. Create a Gateway with an address that has `Cluster` routability.
+
+   ```yaml
+   kubectl apply --server-side -f- <<'EOF'
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: Gateway
+   metadata:
+     name: internal-gateway
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
+     addresses:
+     - type: IPAddress
+       routability: Cluster
+     listeners:
+       - name: http
+         port: 80
+         protocol: HTTP
+   EOF
+   ```
+
+2. Verify that the generated service is of type `ClusterIP`.
+
+   ```sh
+   kubectl get svc internal-gateway -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+   Example output:
+
+   ```txt
+   NAME               TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
+   internal-gateway   ClusterIP   10.96.41.63   <none>        80/TCP    6s
+   ```
+
+To request a specific cluster IP address, set the `value` field of the address to an IP address in your service CIDR. Keep in mind the following rules:
+
+* The `Cluster` value is the only routability that agentgateway supports. Any other value sets the `Accepted` condition of the Gateway to `False` with the `UnsupportedAddress` reason.
+* You cannot mix `Cluster` addresses with addresses that have a different routability.
+* A Gateway can have only one address. Otherwise, the `Accepted` condition is `False` with the `InvalidParameters` reason.
+{{< /version >}}
+
 ### Static IP for LoadBalancer {#static-ip}
 
 Assign a static IP address to the LoadBalancer service.
