@@ -22,7 +22,7 @@ Review the following behavior of Decisions and SystemOne requests.
 
 ### Supported providers {#supported-providers}
 
-These providers accept Decisions and SystemOne requests. Other providers reject them.
+These providers accept Decisions and SystemOne requests. Other providers, such as `anthropic`, `bedrock`, and `vertex`, reject both formats with a `400` error.
 
 | Provider | Decisions requests (`/v1/decisions`) | SystemOne requests (`/v1/systemone`) |
 |----------|--------------------------------------|--------------------------------------|
@@ -30,11 +30,19 @@ These providers accept Decisions and SystemOne requests. Other providers reject 
 | [`typesafe`]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}) | Translated to the SystemOne format. | Sent natively. |
 | [`azure`]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the `openAI` resource type | Sent natively. | Translated to the Decisions format. |
 | [`azure`]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the `foundry` resource type | Translated to the SystemOne format. | Sent natively. |
-| [`copilot`]({{< link-hextra path="/integrations/llm/providers/copilot/" >}}) with `microsoft-decision-1` | Translated to the SystemOne format. | Sent natively. |
+| [`copilot`]({{< link-hextra path="/integrations/llm/providers/copilot/" >}}) with a non-Anthropic model, such as `microsoft-decision-1` | Translated to the SystemOne format. | Sent natively. |
+| [`gemini`]({{< link-hextra path="/integrations/llm/providers/gemini/" >}}) | Translated to the Gemini Decisions API. | Translated to the Gemini Decisions API. |
 | [`custom`]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with `decisions`, without `systemOne` | Sent natively. | Translated to the Decisions format. |
 | [`custom`]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with `systemOne`, without `decisions` | Translated to the SystemOne format. | Sent natively. |
 
 If a custom provider declares both formats, each request uses its original format.
+
+The `gemini` provider sends both formats to the Gemini Decisions API (`/v1beta/decisions`) and translates the answers back to the client's format. The translation is best effort, with the following limits:
+
+- Decisions input can contain only `user` messages. Requests with assistant or tool messages return a `400` error. Text and image content are supported.
+- SystemOne requests with image `assets` return a `400` error. The SystemOne `state` is sent to Gemini as one text input.
+- Only the predicate (`noul`), choice, and score question types are supported. Choice and score questions need at least two options.
+- The `vertex` provider does not serve Gemini decision models.
 
 ### Custom provider requirements {#custom-provider-requirements}
 
@@ -43,8 +51,6 @@ A `custom` provider must declare `decisions` or `systemOne` in `formats`. If `fo
 ```console
 failed to process LLM request: unsupported conversion: from Decisions to provider custom
 ```
-
-Version 1.6 had no Decisions or SystemOne route type. With the `llm` configuration, it passed both paths through to the provider unchanged. After upgrading, add the format your upstream server supports to `formats` to keep serving these requests.
 
 ## Map the Decisions route type
 

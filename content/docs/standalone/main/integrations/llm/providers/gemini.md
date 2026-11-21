@@ -64,3 +64,21 @@ llm:
 {{< reuse "agw-docs/snippets/gemini-reasoning-effort.md" >}}
 
 For Gemma 4 models, `none`, `minimal`, and `low` use `thinkingLevel: "minimal"`, and `medium`, `high`, `xhigh`, and `max` use `thinkingLevel: "high"`.
+
+## Decisions and SystemOne {#decisions}
+
+Gemini decision models, such as `gemini-decision-1`, can answer OpenAI Decisions (`/v1/decisions`) and TypeSafe SystemOne (`/v1/systemone`) requests. Agentgateway converts both formats to the Gemini Decisions API (`/v1beta/decisions`) and converts the answers back to the client's format. The conversion is best effort.
+
+With the `llm` configuration, agentgateway maps both paths for you. Add a model entry for the decision model.
+
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+llm:
+  models:
+  - name: gemini-decision-1
+    provider: gemini
+    params:
+      apiKey: "$GEMINI_API_KEY"
+```
+
+For example requests and the supported request content, see [Decisions]({{< link-hextra path="/documentation/llm/api-types/decisions/#supported-providers" >}}).
