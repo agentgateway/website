@@ -159,6 +159,7 @@ Use `virtualModel.weighted` to distribute requests across targets by relative we
    | Field | Value | Description |
    |-------|-------|-------------|
    | `targets[].modelRef.name` | `internal-fast` | An `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` in the same namespace. Cross-namespace references are not supported. |
+   | `targets[].modelRef.group` and `targets[].modelRef.kind` | Not set | Optional. The API group and kind of the referenced model, such as `{{< reuse "agw-docs/snippets/group.md" >}}` and `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}`. Set both or omit both. If you omit them, the reference selects a model of the same kind as the virtual model. Every `modelRef` in this guide accepts these fields. |
    | `targets[].weight` | `80` | Relative weight, not a percentage. Weights are normalized across targets. Defaults to `1`. |
 
    > [!NOTE]
