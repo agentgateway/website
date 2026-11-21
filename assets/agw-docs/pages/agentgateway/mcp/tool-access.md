@@ -13,19 +13,20 @@ sequenceDiagram
     Agentgateway->>Agentgateway: Validate JWT token
     Agentgateway->>Agentgateway: Authorize access to MCP server
     Agentgateway->>+MCP: Forward request
-    MCP->>+MCP: Authorize access to tools
-    MCP-->>Client: Show tools
+    MCP-->>-Agentgateway: Return all tools
+    Agentgateway->>Agentgateway: Filter tools
+    Agentgateway-->>-Client: Show authorized tools
 ```
 
 1. The MCP client, such as the MCP inspector tool, sends a request to the agentgateway proxy with the JWT token in the `Authorization` header. 
 2. The agentgateway proxy validates the JWT with the JWKS server that you define in the {{< reuse "agw-docs/snippets/policy.md" >}} resource. This policy is applied to the agentgateway proxy. 
 3. If the {{< reuse "agw-docs/snippets/policy.md" >}} further defines RBAC rules, such as to only grant access for JWT tokens with certain claims, agentgateway validates these claims and either grants or denies access. 
 4. If successfully validated and authorized, the agentgateway proxy forwards the request to the MCP backend. 
-5. The MCP backend verifies access to the MCP server tools. By default, all tool access is allowed. To limit tool access, you create another {{< reuse "agw-docs/snippets/policy.md" >}} with the CEL expression that must be matched to view a specific tool. Consider the following sample CEL expressions: 
+5. The agentgateway proxy authorizes access to the tools. By default, all tool access is allowed. To limit tool access, you create another {{< reuse "agw-docs/snippets/policy.md" >}} with the CEL expression that must be matched to view a specific tool. Consider the following sample CEL expressions: 
    * `'mcp.tool.name == "add_issue_comment"'`: Users can only view the `add_issue_comment` tool. All other tools are hidden.
    * `'jwt.sub == "alice"'`: Only JWT tokens with a `sub=alice` claim can access tools. Because no CEL expression is provided for the type of tool, the JWT token with this claim can see all the tools that are exposed on the MCP server.
    * `'jwt.sub == "alice" && mcp.tool.name == "add_issue_comment"'`: JWT tokens with the `sub=alice` claim can access the `add_issue_comment` tool. Access to all other tools is denied. 
-6. The MCP server returns the tools that were authorized to access. 
+6. The agentgateway proxy filters the tools in the list response and rejects calls to tools that the client is not authorized to use. The client sees only the authorized tools. 
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 > [!NOTE]
