@@ -25,6 +25,8 @@ You can configure these types of timeouts on a route.
 
 The `backendRequestTimeout` deadline also applies when agentgateway buffers a body for processing, such as CEL body inspection, non-SSE MCP responses, A2A responses, or external authorization response processing. For example, if the timeout is `5s` and the response headers arrive after `1s`, buffered body reads have only the remaining `4s`.
 
+MCP targets use `backendRequestTimeout` differently by transport. A `stdio` target has a default `backendRequestTimeout` of 10 seconds, and the deadline covers the whole call. An HTTP target bounds only the time to response headers, so a streamed tool call can run longer. For more information, see [Request timeout]({{< link-hextra path="/integrations/mcp/servers/stdio#request-timeout" >}}).
+
 For streaming responses, use `responseIdleTimeout` to limit how long agentgateway waits for the next upstream body frame. This idle timeout can end a stalled stream while allowing a stream that continues to send data to run longer than `backendRequestTimeout`.
 
 {{< tabs >}}

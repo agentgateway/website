@@ -40,6 +40,8 @@ If a client sends a session ID that the proxy cannot decode, the proxy returns `
 
 When a client closes a stateful session with `DELETE /mcp`, the proxy decodes the session ID before it sends close requests to upstream targets. Any replica with the same session key can close the upstream sessions. Deletion is best effort. Upstream close failures still return `HTTP 202`, and those upstream sessions stay open until the target's idle timeout. If the proxy cannot rebuild a target connection from the session ID, the client receives the rebuild error.
 
+A `GET /mcp` request that opens the notification stream also decodes the session ID. Any proxy that has the same session key resumes the session instead of returning `HTTP 404`. This includes a single proxy that you restart with the same key.
+
 Client `POST` requests to the MCP endpoint must list both `application/json` and `text/event-stream` in the `Accept` header. Clients can send the two media types as one comma-separated value or as separate `Accept` header lines. If either media type is missing, the request fails with HTTP 406.
 
 ### Session key {#session-key}
