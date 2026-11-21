@@ -131,8 +131,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `streaming` _[PromptGuardStreamingMode](#promptguardstreamingmode)_ | Apply prompt guards to streaming responses and realtime websocket messages.<br />Defaults to disabled to preserve streaming throughput unless explicitly enabled. |  | Optional: \{\} <br /> |
-| `request` _[PromptguardRequest](#promptguardrequest) array_ | Prompt guards to apply to requests sent by the client. |  | ExactlyOneOf: [regex webhook openAIModeration bedrockGuardrails googleModelArmor] <br />MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
-| `response` _[PromptguardResponse](#promptguardresponse) array_ | Prompt guards to apply to responses returned by the LLM provider. |  | ExactlyOneOf: [regex webhook bedrockGuardrails googleModelArmor] <br />MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `request` _[PromptguardRequest](#promptguardrequest) array_ | Prompt guards to apply to requests sent by the client. |  | ExactlyOneOf: [regex webhook openAIModeration bedrockGuardrails googleModelArmor azureContentSafety] <br />MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `response` _[PromptguardResponse](#promptguardresponse) array_ | Prompt guards to apply to responses returned by the LLM provider. |  | ExactlyOneOf: [regex webhook bedrockGuardrails googleModelArmor azureContentSafety] <br />MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
 
 #### APIKeyAuthentication
@@ -990,6 +990,7 @@ _Validation:_
 _Appears in:_
 - [BackendAuth](#backendauth)
 - [ModelBackendAuth](#modelbackendauth)
+- [PromptGuardAuth](#promptguardauth)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -1018,6 +1019,62 @@ _Appears in:_
 | `apiVersion` _[TinyString](#tinystring)_ | The version of the Azure OpenAI API to use.<br />If unset, defaults to `v1`. |  | MaxLength: 64 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `projectName` _[ShortString](#shortstring)_ | The Foundry project name, required when `resourceType` is `Foundry`.<br />Used to construct paths: /api/projects/\{projectName\}/openai/v1/... |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `model` _[ShortString](#shortstring)_ | Model name override, such as `gpt-4o-mini`.<br />If unset, the model name is taken from the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+
+
+#### AzureContentSafety
+
+
+
+
+
+
+
+_Appears in:_
+- [PromptguardRequest](#promptguardrequest)
+- [PromptguardResponse](#promptguardresponse)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `failureMode` _[FailureMode](#failuremode)_ | Behavior when the provider is unavailable or returns an error.<br />`FailOpen` allows the request to continue; `FailClosed` (default) rejects it. |  | Optional: \{\} <br /> |
+| `endpoint` _[ShortString](#shortstring)_ | Endpoint of the Azure AI Content Safety resource, for example<br />`my-resource.cognitiveservices.azure.com`. An `https://` prefix is accepted<br />and ignored. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether flagged content is rejected or only observed.<br />`Reject` (the default) rejects flagged content; `Audit` records the<br />would-be rejection without blocking. |  | Optional: \{\} <br /> |
+| `analyzeText` _[AzureContentSafetyAnalyzeText](#azurecontentsafetyanalyzetext)_ | Checks content with the Analyze Text API for harmful content categories<br />(Hate, SelfHarm, Sexual, Violence) and blocklist matches. |  | Optional: \{\} <br /> |
+| `detectJailbreak` _[AzureContentSafetyDetectJailbreak](#azurecontentsafetydetectjailbreak)_ | Checks content with the Detect Text Jailbreak API (Prompt Shields).<br />Only supported on request guards. |  | Optional: \{\} <br /> |
+
+
+#### AzureContentSafetyAnalyzeText
+
+
+
+
+
+
+
+_Appears in:_
+- [AzureContentSafety](#azurecontentsafety)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `severityThreshold` _integer_ | Severity at or above which content is flagged (0-6). Defaults to 2. |  | Maximum: 6 <br />Minimum: 0 <br />Optional: \{\} <br /> |
+| `apiVersion` _[ShortString](#shortstring)_ | Analyze Text API version. Defaults to `2024-09-01`. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `blocklistNames` _[ShortString](#shortstring) array_ | Names of custom blocklists to check. Any blocklist match flags the content. |  | MaxItems: 64 <br />MaxLength: 256 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `haltOnBlocklistHit` _boolean_ | When true, further analysis stops if a blocklist is hit. |  | Optional: \{\} <br /> |
+
+
+#### AzureContentSafetyDetectJailbreak
+
+
+
+
+
+
+
+_Appears in:_
+- [AzureContentSafety](#azurecontentsafety)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _[ShortString](#shortstring)_ | Detect Text Jailbreak API version. Defaults to `2024-02-15-preview`. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### AzureManagedIdentity
@@ -2536,6 +2593,7 @@ _Underlying type:_ _string_
 
 
 _Appears in:_
+- [AzureContentSafety](#azurecontentsafety)
 - [BedrockGuardrails](#bedrockguardrails)
 - [BufferBody](#bufferbody)
 - [ExtAuth](#extauth)
@@ -4865,9 +4923,11 @@ Which methods are supported depends on the guard:
   - `openAIModeration`: `key` or `secretRef`.
   - `bedrockGuardrails`: `key`, `secretRef`, or `aws`.
   - `googleModelArmor`: `gcp`.
+  - `azureContentSafety`: `key`, `secretRef`, or `azure`. When unset, implicit
+    Azure authentication is used.
 
 _Validation:_
-- ExactlyOneOf: [key secretRef aws gcp]
+- ExactlyOneOf: [key secretRef aws gcp azure]
 
 _Appears in:_
 - [PromptGuardPolicy](#promptguardpolicy)
@@ -4876,9 +4936,10 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `key` _string_ | Inline key. This option is the least secure; usage of a `Secret` is<br />preferred. |  | MaxLength: 2048 <br />Optional: \{\} <br /> |
 | `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Credential source for the key, defaulting to a Kubernetes `Secret`. By<br />default, the value is read from the `Authorization` key; set<br />`secretRef.key` to override it. A `Bearer ` prefix is stripped only from<br />the default `Authorization` key. |  | Optional: \{\} <br /> |
-| `location` _[AuthorizationLocation](#authorizationlocation)_ | Where keys are inserted. Defaults to the `Authorization` header with the<br />`Bearer ` prefix. Applies to `key` and `secretRef`. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
+| `location` _[AuthorizationLocation](#authorizationlocation)_ | Where keys are inserted. Defaults to the `Authorization` header with the<br />`Bearer ` prefix, or the `Ocp-Apim-Subscription-Key` header for<br />`azureContentSafety`. Applies to `key` and `secretRef`. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
 | `aws` _[AwsAuth](#awsauth)_ | AWS authentication method. Use `aws: \{\}` for default AWS SDK credential<br />discovery. |  | Optional: \{\} <br /> |
 | `gcp` _[GcpAuth](#gcpauth)_ | Google authentication method. Use `gcp: \{\}` for default Google<br />credential discovery. |  | Optional: \{\} <br /> |
+| `azure` _[AzureAuth](#azureauth)_ | Azure authentication method. Use `azure: \{\}` for implicit Azure<br />credential discovery. |  | AtMostOneOf: [secretRef managedIdentity workloadIdentity] <br />Optional: \{\} <br /> |
 
 
 #### PromptGuardPolicy
@@ -4899,7 +4960,7 @@ _Appears in:_
 | `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
 | `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
-| `auth` _[PromptGuardAuth](#promptguardauth)_ | Settings for authenticating to the prompt guard provider. |  | ExactlyOneOf: [key secretRef aws gcp] <br />Optional: \{\} <br /> |
+| `auth` _[PromptGuardAuth](#promptguardauth)_ | Settings for authenticating to the prompt guard provider. |  | ExactlyOneOf: [key secretRef aws gcp azure] <br />Optional: \{\} <br /> |
 
 
 #### PromptGuardStreamingMode
@@ -4925,7 +4986,7 @@ _Appears in:_
 Prompt guards to apply to requests sent by the client.
 
 _Validation:_
-- ExactlyOneOf: [regex webhook openAIModeration bedrockGuardrails googleModelArmor]
+- ExactlyOneOf: [regex webhook openAIModeration bedrockGuardrails googleModelArmor azureContentSafety]
 
 _Appears in:_
 - [AIPromptGuard](#aipromptguard)
@@ -4939,6 +5000,7 @@ _Appears in:_
 | `openAIModeration` _[OpenAIModeration](#openaimoderation)_ | Passes prompt data through the OpenAI Moderations<br />endpoint.<br />See https://developers.openai.com/api/reference/resources/moderations for more information. |  | Optional: \{\} <br /> |
 | `bedrockGuardrails` _[BedrockGuardrails](#bedrockguardrails)_ | AWS Bedrock Guardrails settings for prompt<br />guarding. |  | Optional: \{\} <br /> |
 | `googleModelArmor` _[GoogleModelArmor](#googlemodelarmor)_ | Google Model Armor settings for prompt guarding. |  | Optional: \{\} <br /> |
+| `azureContentSafety` _[AzureContentSafety](#azurecontentsafety)_ | Azure AI Content Safety settings for prompt guarding. |  | Optional: \{\} <br /> |
 | `policies` _[PromptGuardPolicy](#promptguardpolicy)_ | Policies for communicating with the prompt guard provider. Not supported<br />for `regex` or `webhook` guards. |  | Optional: \{\} <br /> |
 
 
@@ -4949,7 +5011,7 @@ _Appears in:_
 Prompt guards to apply to responses returned by the LLM provider.
 
 _Validation:_
-- ExactlyOneOf: [regex webhook bedrockGuardrails googleModelArmor]
+- ExactlyOneOf: [regex webhook bedrockGuardrails googleModelArmor azureContentSafety]
 
 _Appears in:_
 - [AIPromptGuard](#aipromptguard)
@@ -4962,6 +5024,7 @@ _Appears in:_
 | `webhook` _[Webhook](#webhook)_ | Webhook that receives responses for prompt guarding. |  | Optional: \{\} <br /> |
 | `bedrockGuardrails` _[BedrockGuardrails](#bedrockguardrails)_ | AWS Bedrock Guardrails settings for prompt<br />guarding. |  | Optional: \{\} <br /> |
 | `googleModelArmor` _[GoogleModelArmor](#googlemodelarmor)_ | Google Model Armor settings for prompt guarding. |  | Optional: \{\} <br /> |
+| `azureContentSafety` _[AzureContentSafety](#azurecontentsafety)_ | Azure AI Content Safety settings for response guarding. Only<br />`analyzeText` is supported for responses. |  | Optional: \{\} <br /> |
 | `policies` _[PromptGuardPolicy](#promptguardpolicy)_ | Policies for communicating with the prompt guard provider. Not supported<br />for `regex` or `webhook` guards. |  | Optional: \{\} <br /> |
 
 
@@ -5177,6 +5240,7 @@ records what it would have done without enforcing.
 
 
 _Appears in:_
+- [AzureContentSafety](#azurecontentsafety)
 - [BedrockGuardrails](#bedrockguardrails)
 - [GoogleModelArmor](#googlemodelarmor)
 - [OpenAIModeration](#openaimoderation)
