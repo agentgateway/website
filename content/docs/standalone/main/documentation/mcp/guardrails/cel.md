@@ -20,6 +20,86 @@ In this guide, you configure three CEL guardrails for the `echo` tool of a sampl
 
 ## Set up CEL guardrails
 
+You can configure CEL guardrails in the UI or in your configuration file.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+The following steps add the same three processors as the **Config file** tab. The UI saves them in the top-level `mcp.policies.mcpGuardrails` policy, which applies to all MCP traffic.
+
+1. Create a `config.yaml` file with a local stdio MCP server, but no guardrails. You add the guardrails in the UI.
+   ```yaml
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+   mcp:
+     port: 3000
+     targets:
+     - name: everything
+       stdio:
+         cmd: npx
+         args: ["@modelcontextprotocol/server-everything"]
+   ```
+
+2. Run agentgateway with the configuration file.
+   ```sh
+   agentgateway -f config.yaml
+   ```
+
+3. Open [http://localhost:15000/ui/mcp/policies](http://localhost:15000/ui/mcp/policies) (**MCP** > **Policies**), and click the **MCP guardrails** tile.
+
+4. Add the processor that rejects messages with `DO_NOT_SEND`. Add it first, so that it sees the original message before the masking processor changes it.
+   1. Click **Add processor**.
+   2. From the **Type** list, select **Expression**.
+   3. In the **Condition** editor, enter the following expression.
+      ```
+      mcp.params.name == 'echo' && has(mcp.params.arguments) && has(mcp.params.arguments.message) && mcp.params.arguments.message.contains('DO_NOT_SEND')
+      ```
+   4. Keep the **Reject** action, and in **Reject message**, enter `Messages containing DO_NOT_SEND may not be sent upstream`.
+   5. In **Method phases**, keep the `tools/call` method with the **Request** phase.
+
+5. Add the processor that masks email addresses in the request.
+   1. Click **Add processor**, and from the **Type** list, select **Expression**.
+   2. In the **Condition** editor, enter the following expression.
+      ```
+      mcp.params.name == 'echo' && has(mcp.params.arguments) && has(mcp.params.arguments.message)
+      ```
+   3. From the **Action** list, select **Transform**.
+   4. In the **Transform** editor, enter the following expression.
+      ```
+      mcp.params.with(p, p.merge({
+        'arguments': p.arguments.merge({
+          'message': p.arguments.message.regexReplaceAll(
+            '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+[.][A-Za-z]{2,}',
+            '[EMAIL]'
+          )
+        })
+      }))
+      ```
+   5. In **Method phases**, keep the `tools/call` method with the **Request** phase.
+
+6. Add the processor that masks demo secrets in the response.
+   1. Click **Add processor**, and from the **Type** list, select **Expression**.
+   2. In the **Condition** editor, enter `has(mcp.result.content)`.
+   3. From the **Action** list, select **Transform**.
+   4. In the **Transform** editor, enter the following expression.
+      ```
+      mcp.result.with(r, r.merge({
+        'content': r.content.map(item,
+          item.type == 'text'
+            ? item.merge({'text': item.text.regexReplaceAll(
+                'demo-secret-[A-Za-z0-9]+', '[SECRET]'
+              )})
+            : item
+        )
+      }))
+      ```
+   5. In **Method phases**, enter `tools/call`, select the **Response** phase, and click **Add**. The `tools/call` method now runs in the **Response** phase.
+
+7. Click **Save policy**.
+
+The processors run in the order that they are listed. To review the generated YAML before you save, click **View diff**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 1. Create a `config.yaml` file with a local stdio MCP server and three CEL processors in the route's `mcpGuardrails` policy.
    ```yaml
    # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
@@ -104,6 +184,8 @@ In this guide, you configure three CEL guardrails for the `echo` tool of a sampl
    ```sh
    agentgateway -f config.yaml
    ```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Verify the guardrails
 
