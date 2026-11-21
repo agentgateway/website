@@ -176,6 +176,7 @@ The importer currently handles the following common file-based LiteLLM settings.
 | `router_settings.max_fallbacks` | The depth limit for the failover chains that `default_fallbacks` produces. `0` turns off all fallbacks. Without `default_fallbacks`, the importer reports any other value as `manual`. |
 | `simple-shuffle` routing | Generated routing with an `approximate` finding because the semantics are not identical |
 | Public wildcard model names | Exact `*`, prefix patterns such as `gpt-*`, and suffix patterns such as `*-preview` |
+| `litellm_settings.cache` and `litellm_settings.cache_params`, plus the `router_settings` cache and Redis settings | Not converted. The importer reports a `manual` finding for each setting, such as the cache backend, connection, TTL, and namespace, that explains what to configure yourself. Router Redis settings get a separate finding, because LiteLLM also uses them to share routing state. Unknown `cache_params` keys get an `unsupported` finding. |
 
 For identity mappings such as a public `*` model that targets `openai/*`, agentgateway preserves the model requested by the client instead of sending a literal wildcard upstream.
 
