@@ -65,6 +65,8 @@ llm:
       custom:
         formats:
         - type: completions
+    params:
+      baseUrl: "https://llm.example.com/v1"
     auth:
       key:
         value: "$API_KEY"
