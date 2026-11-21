@@ -92,6 +92,11 @@ Verify that the policy server gates `tools/call` and mutates `tools/list` respon
    echo $MCP_SESSION_ID
    ```
 
+   Example output:
+   ```console
+   06a47098-e176-4874-a1e6-fcd6056fcd4a
+   ```
+
 2. Send the `notifications/initialized` notification to complete the MCP handshake. The MCP server does not answer other requests, such as `tools/list`, until initialization is complete.
    ```sh
    curl -s http://localhost:3000/mcp \
@@ -101,6 +106,8 @@ Verify that the policy server gates `tools/call` and mutates `tools/list` respon
      -H "mcp-session-id: $MCP_SESSION_ID" \
      -d '{"jsonrpc":"2.0","method":"notifications/initialized"}'
    ```
+
+   The command returns no output.
 
 3. List the available tools. Verify that each tool description ends with ` [extmcp]`, which the policy server added in the response phase.
    ```sh
@@ -113,11 +120,12 @@ Verify that the policy server gates `tools/call` and mutates `tools/list` respon
    ```
 
    Example output:
-   ```console {hl_lines=[1]}
-   data: {"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"echo","description":"Echoes back the input [extmcp]",...}]}}
+   ```console {hl_lines=[2]}
+   event: message
+   data: {"jsonrpc":"2.0","id":2,"result":{"tools":[{"name":"echo","title":"Echo Tool","description":"Echoes back the input string [extmcp]",...}]}}
    ```
 
-4. Call a tool whose name contains `forbidden`. Verify that the policy server denies the call with a JSON-RPC error.
+4. Call a tool whose name contains `forbidden`. Verify that the policy server denies the call. Agentgateway returns the denial as a tool result with `isError: true` and an HTTP `200` status code, so that MCP clients show it as a failed tool call. For more information, see [Tool-call error results]({{< link-hextra path="/documentation/mcp/spec-compatibility/#tool-call-error-results" >}}).
    ```sh
    curl -s http://localhost:3000/mcp \
      -H "Content-Type: application/json" \
@@ -129,7 +137,7 @@ Verify that the policy server gates `tools/call` and mutates `tools/list` respon
 
    Example output:
    ```console
-   {"jsonrpc":"2.0","id":3,"error":{"code":-32001,"message":"tool forbidden-tool is not allowed"}}
+   {"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"tool forbidden-tool is not allowed"}],"isError":true}}
    ```
 
 5. Call an allowed tool, such as `echo`. Verify that the call succeeds.
@@ -140,6 +148,12 @@ Verify that the policy server gates `tools/call` and mutates `tools/list` respon
      -H "MCP-Protocol-Version: 2025-03-26" \
      -H "mcp-session-id: $MCP_SESSION_ID" \
      -d '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"echo","arguments":{"message":"hello"}}}'
+   ```
+
+   Example output:
+   ```console
+   event: message
+   data: {"jsonrpc":"2.0","id":4,"result":{"content":[{"type":"text","text":"Echo: hello"}]}}
    ```
 
 ## Cleanup
