@@ -65,6 +65,78 @@ llm:
 
 The following example rejects requests that contain PII data, such as Social Security Numbers (using a custom keyword pattern) or email addresses (using the built-in `email` pattern). When a request is blocked, agentgateway returns a custom error response.
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+The UI saves the guards in `llm.policies.guardrails`, which applies to all LLM models. The **Config file** tab adds the same guards to a single model instead.
+
+1. Create a configuration file with an LLM model, but no guardrails. You add the guardrails in the UI.
+   ```yaml
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         model: gpt-4o-mini
+         apiKey: "$OPENAI_API_KEY"
+   EOF
+   ```
+
+2. Start the agentgateway.
+   ```sh
+   agentgateway -f config.yaml
+   ```
+
+3. Open [http://localhost:15000/ui/llm/guardrails](http://localhost:15000/ui/llm/guardrails) (**LLM** > **Guardrails**).
+
+4. In the **Request guards** section, click **Add guard**, and configure the guard for the SSN keywords.
+
+   The **Action** list has the following choices.
+   * **Reject request**: Block the request and return the rejection response. This choice sets `action: reject`.
+   * **Mask matched text**: Replace the matched content and continue. This choice sets `action: mask`.
+   * **Audit**: Record the match and forward the content unchanged. This choice sets `action: audit`. For more information, see [Audit mode](../overview/#audit).
+
+   1. From the **Guard type** list, select **Custom regex**.
+   2. From the **Action** list, select **Reject request**.
+   3. In **Custom regex patterns**, enter `SSN`. Click **Add pattern**, and enter `Social Security`.
+   4. In **Rejection status**, enter `400`.
+   5. In **Rejection body**, enter the following JSON.
+      ```json
+      {
+        "error": {
+          "message": "Request rejected: Content contains sensitive information",
+          "type": "invalid_request_error",
+          "code": "content_policy_violation"
+        }
+      }
+      ```
+   6. Click **Add guard**.
+
+5. In the **Request guards** section, click **Add guard** again, and configure the guard for email addresses.
+   1. From the **Guard type** list, select **Built-in detectors**.
+   2. From the **Action** list, select **Reject request**.
+   3. In **Built-in detectors**, make sure that only **Email** is selected.
+   4. In **Rejection status**, enter `400`.
+   5. In **Rejection body**, enter the following JSON.
+      ```json
+      {
+        "error": {
+          "message": "Request blocked: Contains email address",
+          "type": "invalid_request_error",
+          "code": "pii_detected"
+        }
+      }
+      ```
+   6. Click **Add guard**.
+
+6. Click **Save guardrails**.
+
+The form sets the rejection status and body, but not the rejection headers. To set a header such as `content-type`, use the **Config file** tab.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 1. Create a configuration file with regex prompt guard policies.
    ```yaml
    cat <<'EOF' > config.yaml
@@ -128,8 +200,10 @@ The following example rejects requests that contain PII data, such as Social Sec
    ```sh
    agentgateway -f config.yaml
    ```
+{{% /tab %}}
+{{< /tabs >}}
 
-3. In a new terminal, send a request to your LLM provider. Verify that the request succeeds. 
+1. In a new terminal, send a request to your LLM provider. Verify that the request succeeds. 
    ```sh
    curl http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
@@ -153,7 +227,7 @@ The following example rejects requests that contain PII data, such as Social Sec
    "system_fingerprint":"fp_a1ddba3226"}
    ```
 
-4. Send a request containing the SSN keyword. The prompt guard blocks the request and returns your custom error response.
+2. Send a request containing the SSN keyword. The prompt guard blocks the request and returns your custom error response.
    ```sh
    curl http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
@@ -174,7 +248,7 @@ The following example rejects requests that contain PII data, such as Social Sec
    }
    ```
 
-5. Send another request with an email address. The prompt guard blocks it by using the built-in `email` pattern.
+3. Send another request with an email address. The prompt guard blocks it by using the built-in `email` pattern.
    ```sh
    curl http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
@@ -202,6 +276,42 @@ You can also filter LLM responses to redact sensitive data before it reaches the
 > [!WARNING]
 > Masking applies only to a buffered response. When the client sets `"stream": true`, the LLM response is streamed, and agentgateway cannot rewrite content that is already on its way to the client. A response guard that uses `action: mask` passes the matched content through unmodified, and the client receives no error. To protect a streamed response, use `action: reject` and set `streaming: Enabled`. For more information, see [Streaming guardrails]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#streaming-guardrails" >}}).
 
+{{< tabs >}}
+{{% tab name="UI" %}}
+The UI saves the guard in `llm.policies.guardrails`, which applies to all LLM models. The **Config file** tab adds the same guard to a single model instead.
+
+1. Create a configuration file with an LLM model, but no guardrails. You add the guardrails in the UI.
+   ```yaml
+   cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         model: gpt-4o-mini
+         apiKey: "$OPENAI_API_KEY"
+   EOF
+   ```
+
+2. Start the agentgateway.
+   ```sh
+   agentgateway -f config.yaml
+   ```
+
+3. Open [http://localhost:15000/ui/llm/guardrails](http://localhost:15000/ui/llm/guardrails) (**LLM** > **Guardrails**).
+
+4. In the **Response guards** section, click **Add guard**.
+   1. From the **Guard type** list, select **Built-in detectors**.
+   2. From the **Action** list, select **Mask matched text**.
+   3. In **Built-in detectors**, select **Phone**, and clear **Email**.
+   4. Click **Add guard**.
+
+5. Click **Save guardrails**.
+
+Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
+{{% /tab %}}
+{{% tab name="Config file" %}}
 1. Create a configuration that masks phone numbers in LLM responses by using the built-in `phoneNumber` pattern.
    ```yaml
    cat <<'EOF' > config.yaml
@@ -226,8 +336,10 @@ You can also filter LLM responses to redact sensitive data before it reaches the
    ```sh
    agentgateway -f config.yaml
    ```
+{{% /tab %}}
+{{< /tabs >}}
 
-3. In a new terminal, send a request to your LLM provider with a phone number and verify that the number is masked in your response. 
+1. In a new terminal, send a request to your LLM provider with a phone number and verify that the number is masked in your response. 
    ```sh
    curl http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
