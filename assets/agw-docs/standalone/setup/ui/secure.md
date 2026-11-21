@@ -261,6 +261,10 @@ config:
 
 You can set the field to any CEL expression that returns a string. The account menu shows the user's name and email address from the `name` (or `preferred_username`) and `email` claims, so your expression changes the menu only when the token has neither. For an OIDC session, if your expression returns no value, agentgateway uses the `sub` claim instead, so the account menu and **Sign out** stay available.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}
+The user, group, and session values also appear on every stdout and OTLP access log line as `agentgateway.user`, `agentgateway.group`, and `agentgateway.session`. To keep them out of logs that you ship elsewhere, see [Keep user identity out of shipped logs]({{< link-hextra path="/documentation/observability/access-logs/view/#identity-in-logs" >}}).
+{{< /version >}}
+
 
 #### Verify the changes
 Open the `/api/runtime` endpoint in the browser where you are logged in to the UI, such as [http://localhost:4001/api/runtime](http://localhost:4001/api/runtime). The `subject` field of the `user` object shows the value that agentgateway records for your requests.

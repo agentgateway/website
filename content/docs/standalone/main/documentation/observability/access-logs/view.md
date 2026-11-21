@@ -104,7 +104,9 @@ The agentgateway UI includes a **Logs** page that you can use to review the acce
 To view access logs in the UI: 
 
 1. Open the [agentgateway UI](http://localhost:15000/ui). This address is the copy of the UI on the admin interface, which works from the host that runs the proxy. If you serve the UI on a gateway, use that gateway's port instead. 
-2. Go to **Logs** and review the access logs that agentgateway captured for your previous requests. Use the filter options to limit the number of access logs that are shown to you. For example, you can filter logs by model, providers, or users. Note that in order to filter logs by user, you must configure authentication in agentgateway. Each filter lists the values from recorded traffic. To find a value in a long list, type part of it in the search box at the top of the filter, and then select the value. Typing alone does not change the logs that are shown. 
+2. Go to **Logs** and review the access logs that agentgateway captured for your previous requests. Use the filter options to limit the number of access logs that are shown to you. For example, you can filter logs by model, providers, or users. Note that in order to filter logs by user, you must configure authentication in agentgateway. Each filter lists the values from recorded traffic. To find a value in a long list, click the filter and type part of the value in the filter field itself. The list narrows to the matches, and the **All** option stays at the top of the list. Select the value to apply it. Typing alone does not change the logs that are shown. 
+
+   <!-- TODO: recapture after Playwright antd port (Q14) -->
 
    {{< reuse-image src="img/agentgateway-ui-logs.png" srcDark="img/agentgateway-ui-logs-dark.png" >}}
 
@@ -374,3 +376,25 @@ frontendPolicies:
 ```
 {{% /tab %}}
 {{< /tabs >}}
+
+### Keep user identity out of shipped logs {#identity-in-logs}
+
+If you set [`config.standardAttributes`]({{< link-hextra path="/documentation/observability/access-logs/database/" >}}), agentgateway adds the `agentgateway.user`, `agentgateway.group`, and `agentgateway.session` fields to every access log line. This includes each line that goes to stdout and each record that you export over OTLP. To keep identity out of logs that you ship to another system, remove the fields that you do not want.
+
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+frontendPolicies:
+  accessLog:
+    remove:
+      - agentgateway.user
+      - agentgateway.group
+      - agentgateway.session
+```
+
+Example log line with the identity field, before you remove it:
+
+```
+info	request gateway=default/default listener=mcp ... protocol=mcp mcp.method.name=tools/call gen_ai.tool.name=echo duration=4ms agentgateway.user="anon"
+```
+
+After you remove the field, the line ends at `duration=4ms`.
