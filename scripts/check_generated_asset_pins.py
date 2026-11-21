@@ -11,6 +11,7 @@ link version ("main", "latest") and once under the numbered doc version ("1.6.x"
   assets/agw-docs/pages/reference/helm/1.6.x/             <- FROZEN snapshot of one release
   assets/agw-docs/snippets/metrics-control-plane-{main,latest}.md   <- MOVING
   assets/agw-docs/snippets/metrics-control-plane-1.6.x.md           <- FROZEN
+  assets/agw-docs/snippets/metrics-data-plane-{main,latest}.md      <- MOVING (same rule)
 
 The content behind "main" and "latest" changes at every release. A page under
 content/docs/<section>/main/ SHOULD reuse the "main" copy, because that page also
@@ -99,6 +100,8 @@ GENERATED_ASSETS = (
     re.compile(r"^agw-docs/pages/reference/helm/(?P<token>[^/]+)/[^/]+\.md$"),
     # agw-docs/snippets/metrics-control-plane-<token>.md
     re.compile(r"^agw-docs/snippets/metrics-control-plane-(?P<token>.+)\.md$"),
+    # agw-docs/snippets/metrics-data-plane-<token>.md
+    re.compile(r"^agw-docs/snippets/metrics-data-plane-(?P<token>.+)\.md$"),
 )
 
 

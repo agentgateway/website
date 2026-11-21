@@ -7,10 +7,14 @@ agentgateway-relevant artifacts from a checked-out agentgateway repo:
 - Helm: agentgateway, agentgateway-crds, and agentgateway-standalone charts
   -> assets/agw-docs/pages/reference/helm/{link_version}/
 - Metrics: control plane metrics -> assets/agw-docs/snippets/metrics-control-plane-{link_version}.md
+- Metrics: data plane metrics, copied from the generated schema/metrics.md
+  -> assets/agw-docs/snippets/metrics-data-plane-{link_version}.md
+  (skipped for refs that predate schema/metrics.md)
 
 Each artifact is ALSO written under the numbered DOC_VERSION, when one is supplied:
   -> assets/agw-docs/pages/reference/helm/{doc_version}/
   -> assets/agw-docs/snippets/metrics-control-plane-{doc_version}.md
+  -> assets/agw-docs/snippets/metrics-data-plane-{doc_version}.md
 
 WHY BOTH. The link-version copy is a MOVING pointer: "main" and "latest" are
 regenerated on every run, and the content behind them changes at each release.
@@ -549,6 +553,56 @@ def generate_metrics_docs(link_version: str, website_dir: str, kgateway_dir: str
     return True
 
 
+def parse_data_plane_metrics(text: str) -> str:
+    """Return the per-section tables of agentgateway's schema/metrics.md as a reuse snippet.
+
+    Drops the leading `# Metrics` title, because the consuming page owns its own title.
+    Keeps the `##` section headings and the tables, which both consuming pages reuse as is.
+    The XDS section stays. Each consuming page says in its own text, under a per-mode
+    conditional, that those metrics exist only in Kubernetes mode.
+
+    A snippet used through `reuse` must contain no blank lines, so the blank lines that
+    separate headings from tables are removed. The renderer still separates them.
+    Returns "" when the input holds no table rows.
+    """
+    lines = text.splitlines()
+    while lines and (not lines[0].strip() or re.match(r"^#\s", lines[0])):
+        lines.pop(0)
+    out = [line.rstrip() for line in lines if line.strip()]
+    if not any(line.startswith("| `") for line in out):
+        return ""
+    return "\n".join(out) + "\n"
+
+
+def generate_data_plane_metrics_docs(link_version: str, website_dir: str, agentgateway_dir: str, doc_version: str = "") -> bool:
+    """Copy the data plane metric tables into a versioned snippet (e.g. metrics-data-plane-main.md).
+
+    Returns True when the snippet was written, and False when the ref has no
+    schema/metrics.md (older tags) or the file holds no tables.
+    """
+    print(f"  → Generating data plane metrics docs for {link_version}")
+    src = os.path.join(agentgateway_dir, "schema", "metrics.md")
+    if not os.path.isfile(src):
+        print(f"    Skipping: {src} does not exist in this ref")
+        return False
+    with open(src, encoding="utf-8") as f:
+        content = parse_data_plane_metrics(f.read())
+    if not content:
+        print(f"    Warning: no metric tables found in {src}")
+        return False
+
+    snippets_dir = os.path.join(website_dir, "assets", "agw-docs", "snippets")
+    os.makedirs(snippets_dir, exist_ok=True)
+    targets = [f"metrics-data-plane-{link_version}.md"]
+    if doc_version and doc_version != link_version:
+        targets.append(f"metrics-data-plane-{doc_version}.md")
+    for name in targets:
+        with open(os.path.join(snippets_dir, name), "w", encoding="utf-8") as f:
+            f.write(content)
+        print(f"    ✓ Generated {name}")
+    return True
+
+
 def main() -> None:
     link_version = os.environ.get("LINK_VERSION", "").strip()
     if not link_version:
@@ -558,6 +612,8 @@ def main() -> None:
     doc_version = os.environ.get("DOC_VERSION", "").strip()
     website_dir = os.environ.get("WEBSITE_DIR", ".")
     kgateway_dir = os.environ.get("KGATEWAY_DIR", "agentgateway/controller")
+    # schema/metrics.md lives at the agentgateway repo root, one level above the controller.
+    agentgateway_dir = os.environ.get("AGENTGATEWAY_DIR") or os.path.dirname(os.path.abspath(kgateway_dir))
 
     if not os.path.isdir(kgateway_dir):
         print(f"Error: agentgateway controller directory not found at {kgateway_dir}")
@@ -569,8 +625,12 @@ def main() -> None:
         success += 1
     if generate_metrics_docs(link_version, website_dir, kgateway_dir, doc_version):
         success += 1
+    # Absent in refs that predate schema/metrics.md, so a skip is not a failure.
+    data_plane = generate_data_plane_metrics_docs(link_version, website_dir, agentgateway_dir, doc_version)
+    if data_plane:
+        success += 1
 
-    print(f"Done: generated {success}/2 doc types")
+    print(f"Done: generated {success}/3 doc types")
 
 
 if __name__ == "__main__":

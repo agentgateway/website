@@ -26,11 +26,13 @@ Python script that generates **Helm** and **metrics** reference docs only (API d
 - **LINK_VERSION** (required) – `latest` or `main`; determines output file names and paths.
 - **WEBSITE_DIR** (optional) – Path to the website repo root; default `"."`.
 - **KGATEWAY_DIR** (optional) – Path to the agentgateway controller directory; default `"agentgateway/controller"`.
+- **AGENTGATEWAY_DIR** (optional) – Path to the agentgateway repo root; default is the parent of `KGATEWAY_DIR`.
 
 It generates:
 
 1. **Helm** – Runs helm-docs for the `agentgateway` and `agentgateway-crds` charts and writes to `assets/agw-docs/pages/reference/helm/{link_version}/`.
 2. **Metrics** – Runs agentgateway's findmetrics tool and writes to `assets/agw-docs/snippets/metrics-control-plane-{link_version}.md`.
+3. **Data plane metrics** – Copies the tables from agentgateway's generated `schema/metrics.md` into `assets/agw-docs/snippets/metrics-data-plane-{link_version}.md` (and the frozen `{doc_version}` copy). Skipped for refs that have no `schema/metrics.md`.
 
 Requires Go (for helm-docs and findmetrics). No cloning; the workflow checks out agentgateway before running the script.
 
