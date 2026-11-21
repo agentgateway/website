@@ -78,7 +78,7 @@ Review the following table for example use cases and configuration guidance.
 | Allow burst for session initialization | Add `burst` because each session needs several requests before the first tool call runs. |
 | Hard ceiling across all gateway traffic | {{< reuse "agw-docs/snippets/policy.md" >}} on `Gateway`, `local[].requests`. |
 | Per-tool rate limits (e.g. tighter for expensive tools) | Global rate limit + CEL descriptors extracting `body.method` and `body.params.name`. |
-| Combine auth + rate limiting | Apply both `mcp.authentication` and `traffic.rateLimit` in the same {{< reuse "agw-docs/snippets/policy.md" >}} or use separate policies. |{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}
+| Combine auth + rate limiting | Apply both `traffic.jwtAuthentication` (with the `mcp` field set) and `traffic.rateLimit` in the same {{< reuse "agw-docs/snippets/policy.md" >}} or use separate policies. |{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" %}}
 | Give each caller its own limit | Add `local[].key`, such as `jwt.sub`. See [Claim-level rate limits](#claim-level). |{{% /version %}}
 
 Also, check out the rate limiting guides for other use cases:

@@ -13,8 +13,8 @@ Route to a Model Context Protocol (MCP) server through a static address. For mor
 Deploy a Model Context Protocol (MCP) server that you want {{< reuse "agw-docs/snippets/agentgateway.md" >}} to proxy traffic to. The following example sets up a simple MCP server with one tool, `fetch`, that retrieves the content of a website URL that you pass in.
 
 Notice the following details about the Service:
-* `appProtocol: agentgateway.dev/mcp` (required): Configure your service to use the MCP protocol. This way, the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy uses the MCP protocol when connecting to the service.
-* `agentgateway.dev/mcp-path` annotation (optional): The default values are `/sse` for the SSE protocol or `/mcp` for the Streamable HTTP protocol. If you need to change the path of the MCP target endpoint, set this annotation on the Service.
+* `appProtocol: agentgateway.dev/mcp`: Only label-selector targets read this setting, so a static target does not require it. For more information, see [Multiplex MCP servers]({{< link-hextra path="/documentation/mcp/virtual/" >}}).
+* `agentgateway.dev/mcp-path` annotation: Only label-selector targets read this annotation too. A static target sets the transport and path in the `static.protocol` and `static.path` fields of the {{< reuse "agw-docs/snippets/backend.md" >}} instead.
 
 ```yaml
 kubectl apply -f- <<EOF

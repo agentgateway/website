@@ -15,7 +15,7 @@ The MCP {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} policy 
 > [!NOTE]
 > {{< reuse "agw-docs/snippets/mcp-policy-note.md" >}}
 
-Instead of running against an HTTP request, MCP authorization policies run against specific MCP method invocations such as `list_tools` and `call_tools`.
+Instead of running against an HTTP request, MCP authorization policies run against specific MCP method invocations such as `tools/list` and `tools/call`.
 
 If a tool or other resource is not allowed, the gateway automatically filters it from the `list` response, so unauthorized clients never see it.
 
@@ -114,7 +114,7 @@ routes:
 
 When you combine MCP authorization with [MCP authentication]({{< link-hextra path="/documentation/configuration/security/authentication/mcp-authn" >}}), you can write rules that reference JWT claims. The following configuration restricts tools based on the authenticated user's identity and role:
 
-- The MCP authentication policy validates JWTs against a local authorization server, such as Keycloak, running on port 9000.
+- The MCP authentication policy validates JWTs against a local authorization server that runs on port 9000.
 - Any authenticated user can call the `echo` tool.
 - Only the user `test-user` can call the `add` tool.
 - Only users with the nested claim `nested.key == "value"` can call the `printEnv` tool.
@@ -268,7 +268,10 @@ When you also configure [MCP authentication]({{< link-hextra path="/documentatio
 
 ### Tool arguments are not available during authorization
 
-`mcp.tool.arguments` isn't set when `mcpAuthorization` rules run, so the rules can't reference it. Base authorization decisions on `mcp.tool.name` and `mcp.tool.target` instead. To allow or deny a call based on its arguments, use a route-level `authorization` policy, which can read `mcp.tool.arguments`.
+`mcp.tool.arguments` isn't set when `mcpAuthorization` rules run, so the rules can't reference it. Base authorization decisions on `mcp.tool.name` and `mcp.tool.target` instead. To allow or deny a call based on its arguments, use one of the following options.
+
+* **Recommended:** Use an `mcpGuardrails` processor with `kind: expression`. The condition reads `mcp.params.arguments`, and a rejection returns an MCP-native tool result with `isError: true`, so MCP clients show a tool error. For more information, see [Set up CEL guardrails]({{< link-hextra path="/documentation/mcp/guardrails/cel" >}}).
+* Use a route-level `authorization` policy, which can read `mcp.tool.arguments`. A denied call returns an HTTP `403` response instead of an MCP tool result.
 
 To inspect tool arguments, use an access log policy, which evaluates post-request:
 

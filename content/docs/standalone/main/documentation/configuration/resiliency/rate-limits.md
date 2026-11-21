@@ -302,6 +302,48 @@ Review the following behavior before you set a key.
 * **Requests without a value**: Requests whose key is empty, or whose expression cannot be evaluated, share a single bucket. An empty key does not exempt a request from the limit. To apply a limit to only some requests, use [conditional policies]({{< link-hextra path="/documentation/configuration/policies/conditional-policies/" >}}) instead.
 * **How many buckets are kept, and where they live**: {{< reuse "agw-docs/snippets/ratelimit-key-buckets.md" >}} For a quota that is shared across instances, use [remote rate limits](#remote).
 
+#### Per-client, per-tool limits for MCP {#per-key-mcp}
+
+To give each client its own allowance for each MCP tool, combine a conditional rule with a key. The following example counts only `tools/call` requests, so clients can still initialize and list tools after they reach a limit. The key combines the client from the API key metadata with the tool's target and name. Each distinct value gets its own bucket of 2 calls per minute.
+
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+mcp:
+  port: 3000
+  prefixMode: always
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: alice-key
+        metadata:
+          client: alice
+      - key: bob-key
+        metadata:
+          client: bob
+    localRateLimit:
+      conditional:
+      - condition: 'mcp.methodName == "tools/call"'
+        type: requests
+        maxTokens: 2
+        tokensPerFill: 2
+        fillInterval: 60s
+        key: 'apiKey.client + "/" + mcp.tool.target + "/" + mcp.tool.name'
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["-y", "@modelcontextprotocol/server-everything"]
+```
+
+When Alice calls `everything_echo` a third time within a minute, the gateway returns a tool result with `isError: true`. Bob's calls and Alice's calls to other tools still work. Two API keys with the same `client` metadata share one allowance.
+
+```json
+{"jsonrpc":"2.0","id":3,"result":{"content":[{"type":"text","text":"rate limit exceeded (retry after 59s; limit 2, remaining 0)"}],"isError":true}}
+```
+
+A call whose key cannot be evaluated, such as a call to an unknown tool, uses a single bucket that all clients share.
+
 ### Remote
 
 Remote rate limits are not defined directly in agentgateway.

@@ -29,6 +29,9 @@ Configure your MCP server in the `mcp.json` file in the root directory of your p
 }
 ```
 
+> [!NOTE]
+> VS Code and GitHub Copilot reject `+` in `ui://` resource URIs. If you multiplex MCP servers that return MCP Apps, change the URI delimiter. For more information, see [MCP Apps]({{< link-hextra path="/documentation/mcp/apps" >}}).
+
 ## Authentication
 
 You have two ways to handle security, depending on your setup: native MCP authentication flow or manual bearer token.
