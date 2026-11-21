@@ -9,7 +9,7 @@ Unlike other implementations of Gateway API, agentgateway is the only data plane
 Kubernetes.
 As a result, agentgateway offers some of the most comprehensive support for the Gateway API.
 
-You can review the conformance test results by version in the [Gateway API docs](https://gateway-api.sigs.k8s.io/docs/implementations/list/#conformance-levels). For example, as of the time of this writing, agentgateway is the only implementation of Gateway API that passes all conformance tests for Gateway API v1.3. 
+You can review the conformance test results by version in the [Gateway API docs](https://gateway-api.sigs.k8s.io/docs/implementations/list/#conformance-levels). For example, see the [agentgateway report for Gateway API v1.7](https://github.com/kubernetes-sigs/gateway-api/tree/main/conformance/reports/v1.7/agentgateway-agentgateway).
 
 Gateway API features can graduate from the experimental channel to the standard channel independently of agentgateway releases. The following table distinguishes agentgateway support from upstream channel status. Features marked standard still require experimental CRDs when used with Gateway API versions before their graduation.
 
@@ -19,13 +19,20 @@ Gateway API features can graduate from the experimental channel to the standard 
 | HTTP Auth                                                                 | [GEP-1494](https://gateway-api.sigs.k8s.io/geps/gep-1494) | ✅ Supported                             | Experimental |
 | Session Persistence                                                       | [GEP-1619](https://gateway-api.sigs.k8s.io/geps/gep-1619) | ❌ Unsupported                           | Experimental |
 | ListenerSets                                                              | [GEP-1713](https://gateway-api.sigs.k8s.io/geps/gep-1713/) | ✅ Supported                             | Standard since 1.5 |
-| HTTPRoute Retries                                                         | [GEP-1731](https://gateway-api.sigs.k8s.io/geps/gep-1731) | ✅ Supported                             | Experimental |
+| HTTPRoute Retries                                                         | [GEP-1731](https://gateway-api.sigs.k8s.io/geps/gep-1731) | ✅ Supported                             | Standard since 1.7 |
 | Gateway API Interaction with Multi-Cluster Services                       | [GEP-1748](https://gateway-api.sigs.k8s.io/geps/gep-1748) | ❌ Unsupported                           | Experimental |
 | CORS Filter                                                               | [GEP-1767](https://gateway-api.sigs.k8s.io/geps/gep-1767) | ✅ Supported                             | Standard since 1.5 |
 | TLS based passthrough Route / TLSRoute                                    | [GEP-2643](https://gateway-api.sigs.k8s.io/geps/gep-2643) | ✅ Supported                             | Standard since 1.5 |
 | Complete Backend mutual TLS Configuration                                 | [GEP-3155](https://gateway-api.sigs.k8s.io/geps/gep-3155) | ❌ Unsupported (supported via extension) | Standard since 1.5 |
 | Retry Budgets                                                             | [GEP-3388](https://gateway-api.sigs.k8s.io/geps/gep-3388) | ❌ Unsupported                           | Experimental |
 | Gateway TLS Updates for HTTP/2 Connection Coalescing                      | [GEP-3567](https://gateway-api.sigs.k8s.io/geps/gep-3567) | ✅ Supported                             | Standard since 1.5 |
+| Telemetry API (`XTelemetryPolicy`)                                        | [GEP-4768](https://gateway-api.sigs.k8s.io/geps/gep-4768) | ❌ Unsupported                           | Experimental |
+| Gateway Address Routability                                               | [GEP-5093](https://gateway-api.sigs.k8s.io/geps/gep-5093) | ✅ Supported (`Cluster` only)            | Experimental |
+| Pre-Routing Filters (listener `filters`)                                  | [GEP-5224](https://gateway-api.sigs.k8s.io/geps/gep-5224) | ✅ Supported (`ExternalAuth` only)       | Experimental |
+
+{{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+Address routability and listener filters require the experimental channel of Gateway API 1.7 or later. For more information, see [Internal-only ClusterIP service]({{< link-hextra path="/documentation/setup/customize/configs/#clusterip-service" >}}) and [Listener ExternalAuth filter]({{< link-hextra path="/documentation/security/extauth/byo-ext-auth-service/#listener-filter" >}}).
+{{< /version >}}
 
 ## Extensions
 

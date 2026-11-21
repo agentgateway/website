@@ -32,6 +32,24 @@
       helm template --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "agw-docs/snippets/helm-agentgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}} --output-dir ./helm
       ```
 
+      {{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+      The command writes all CRDs to a single `./helm/agentgateway-crds/templates/crds.yaml` file as compact JSON. To read the CRDs as formatted YAML, pull and unpack the chart instead. The CRDs are in the `files/crds` directory.
+
+      ```sh
+      helm pull {{< reuse "agw-docs/snippets/helm-path-crds.md" >}} --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} --untar --untardir ./helm-pull
+      ls ./helm-pull/{{< reuse "agw-docs/snippets/helm-agentgateway-crds.md" >}}/files/crds
+      ```
+
+      Example output:
+
+      ```txt
+      agentgateway.dev_agentgatewaybackends.yaml
+      agentgateway.dev_agentgatewaymodels.yaml
+      agentgateway.dev_agentgatewayparameters.yaml
+      agentgateway.dev_agentgatewaypolicies.yaml
+      ```
+      {{< /version >}}
+
    2. Deploy the {{< reuse "/agw-docs/snippets/kgateway.md" >}} CRDs by using Helm. This command creates the {{< reuse "agw-docs/snippets/namespace.md" >}} namespace and creates the {{< reuse "/agw-docs/snippets/kgateway.md" >}} CRDs in the cluster.
 
       {{< tabs >}}

@@ -1,1 +1,1 @@
-This feature is experimental in the upstream Kubernetes Gateway API and subject to change.
+HTTPRoute retries are in the standard channel of the upstream Kubernetes Gateway API in version 1.7 and later. In earlier versions, this feature is experimental and subject to change.

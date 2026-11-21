@@ -1,6 +1,6 @@
 Specify the number of times and duration for the gateway to try a connection to an unresponsive backend service. You might commonly use retries alongside [Timeouts]({{< link-hextra path="/documentation/resiliency/timeouts/">}}) to ensure that your apps are available even if they are temporarily unavailable.
 
-> [!WARNING]
+> [!NOTE]
 > {{< reuse "agw-docs/versions/warn-experimental.md" >}}
 
 ## About request retries
@@ -21,7 +21,7 @@ Set up retries to the sample app.
 > Requests with a body larger than the frontend buffer limit are not retried, because the body must be buffered so that it can be resent. The default limit is 2 MiB, or 32 MiB for LLM requests. To retry larger requests, raise the limit in the `spec.frontend.http.maxBufferSize` field of an {{< reuse "agw-docs/snippets/policy.md" >}}.
 {{< /version >}}
 
-1. Install the experimental Kubernetes Gateway API CRDs.
+1. Install the experimental Kubernetes Gateway API CRDs. {{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}If you installed the standard channel of Gateway API 1.7 or later, such as in the [Get started guide]({{< link-hextra path="/documentation/quickstart/install/" >}}), skip this step because the standard channel includes HTTPRoute retries.{{< /version >}}
 
    ```sh
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
@@ -72,7 +72,7 @@ Set up retries to the sample app.
       | `matches` | The path to match the request. In this example, you match any requests to the sample app with path prefix `/`. |
       | `path` | The path to match the request.  |
       | `backendRefs` | The backend service to which the request is sent. In this example, you select the `httpbin` service that you set up in [before you begin](#before-you-begin). |
-      | `retry.attempts` | The number of times to retry the request. In this example, you retry the request 3 times. |
+      | `retry.attempts` | The number of times to retry the request. In this example, you retry the request 3 times. In Gateway API 1.7 and later, this field defaults to `1`. |
       | `retry.backoff` | The duration to wait before retrying the request. In this example, you wait 1 second before retrying the request. |
       | `retry.codes` | The HTTP status codes for which the gateway retries the request. In this example, the request is retried if the backend returns 500 or 503. |
 

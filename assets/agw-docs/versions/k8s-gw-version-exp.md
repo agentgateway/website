@@ -1,1 +1,1 @@
-1.6.3
+{{< version exclude-if="main" >}}1.6.3{{< /version >}}{{< version include-if="main" >}}1.7.0{{< /version >}}
