@@ -18,7 +18,7 @@ Each listed model includes the OpenAI model object fields `id`, `object`, `creat
 - `capabilities`: Whether the model supports `reasoning`, `structured_outputs`, `tools`, and `temperature`.
 - `supported_parameters`: The request parameters that the model accepts, derived from its limits and capabilities.
 
-Each entry also lists `preferred_endpoints`. This field holds the client endpoint paths that the gateway parses for the model, such as `/chat/completions`, `/responses`, or `/embeddings`. A wildcard that stays unexpanded lists no endpoints. For a virtual model, the list holds only the paths that every target shares. One target without endpoint metadata empties the list. Invalid targets, unresolved targets, and nested virtual models have no endpoint metadata.
+Each entry also lists `preferred_endpoints`. This field holds the client endpoint paths that the gateway parses for the model, such as `/chat/completions`, `/responses`, or `/embeddings`. By default, the list holds the chat paths that the model's provider supports. If the model's catalog entry sets [`endpoints`]({{< link-hextra path="/documentation/llm/cost-controls/costs/#catalog-endpoints" >}}), that list replaces the default, limited to the paths that the provider can serve. For example, the built-in catalog lists only `/embeddings` for `text-embedding-3-small`. For Bedrock models, the chat paths are listed only if the catalog entry records output `modalities`. A wildcard that stays unexpanded lists no endpoints. For a virtual model, the list holds only the paths that every target shares. One target without endpoint metadata empties the list. Invalid targets, unresolved targets, and nested virtual models have no endpoint metadata.
 
 ## Route type configuration
 
@@ -48,7 +48,7 @@ For example, the `*` model in the preceding configuration lists every `openai` m
 - **Unexpanded patterns**: Agentgateway lists the pattern itself if the provider has no catalog entries, as with a typical `custom` provider. It also keeps the pattern if the model sets a fixed upstream model or uses a transformation that cannot be reversed.
 - **No matches**: If the provider has catalog entries but none match the pattern, agentgateway leaves the model out of the list.
 
-To list the configured names instead, as in version 1.5, set `llm.discovery: disabled`.
+To list the configured names instead, set `llm.discovery: disabled`.
 
 ```yaml
 # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}

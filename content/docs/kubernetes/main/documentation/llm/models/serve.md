@@ -279,7 +279,7 @@ Each entry includes the OpenAI model object fields `id`, `object`, `created`, an
 - `capabilities`: Whether the model supports `reasoning`, `structured_outputs`, `tools`, and `temperature`.
 - `supported_parameters`: The request parameters that the model accepts, derived from its limits and capabilities.
 
-Each entry also lists `preferred_endpoints`. This field holds the client endpoint paths that the gateway parses for the model, such as `/chat/completions`, `/responses`, or `/embeddings`. Agentgateway derives the list from the provider config of the model, so the list does not depend on catalog metadata. A wildcard that stays unexpanded lists no endpoints.
+Each entry also lists `preferred_endpoints`. This field holds the client endpoint paths that the gateway parses for the model, such as `/chat/completions`, `/responses`, or `/embeddings`. By default, the list holds the chat paths that the model's provider supports. If the model's catalog entry sets [`endpoints`]({{< link-hextra path="/documentation/llm/cost-controls/costs/#catalog-endpoints" >}}), that list replaces the default, limited to the paths that the provider can serve. For Bedrock models, the chat paths are listed only if the catalog entry records output `modalities`. A wildcard that stays unexpanded lists no endpoints.
 
 To return only the first listed models, add the `limit` query parameter. To look up one model by ID, send a request to `/v1/models/<model-id>` or `/models/<model-id>`.
 
@@ -292,7 +292,7 @@ Example output:
 ```json
 {
   "data": [
-    {"id": "gpt-4", "object": "model", "created": 1785166485, "owned_by": "openai"},
+    {"id": "gpt-4", "object": "model", "created": 1699228800, "owned_by": "openai", "name": "GPT-4", ..., "preferred_endpoints": ["/chat/completions", "/responses"]},
     {
       "id": "gpt-5-mini",
       "object": "model",
@@ -305,22 +305,24 @@ Example output:
       "max_tokens": 128000,
       "architecture": {"input_modalities": ["text", "image"], "output_modalities": ["text"]},
       "capabilities": {"reasoning": true, "structured_outputs": true, "tools": true, "temperature": false},
-      "supported_parameters": ["max_tokens", "reasoning", "reasoning_effort", "response_format", "structured_outputs", "tool_choice", "tools"]
+      "supported_parameters": ["max_tokens", "reasoning", "reasoning_effort", "response_format", "structured_outputs", "tool_choice", "tools"],
+      "preferred_endpoints": ["/chat/completions", "/responses"]
     },
-    {"id": "openai/gpt-4.1", "object": "model", "created": 1744588800, "owned_by": "openai", "name": "GPT-4.1", ...},
+    {"id": "openai/gpt-4.1", "object": "model", "created": 1744588800, "owned_by": "openai", "name": "GPT-4.1", ..., "preferred_endpoints": ["/chat/completions", "/responses"]},
+    {"id": "openai/text-embedding-3-small", "object": "model", "created": 1706140800, "owned_by": "openai", "name": "text-embedding-3-small", ..., "preferred_endpoints": ["/embeddings"]},
     ...
   ],
   "object": "list"
 }
 ```
 
-The built-in catalog has no metadata for `gpt-4`, so that entry has only the four OpenAI fields, and `created` is the time that the model was configured.
+If the catalog has no metadata for a model, its entry has only the four OpenAI fields and `preferred_endpoints`, and `created` is the time that the model was configured.
 
 Wildcard models expand to matching IDs from the [model catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) for their `provider`. For example, `openai/*` expands to IDs such as `openai/gpt-4o`. The catalog combines the built-in catalog with any catalogs that you configure. The discovery response uses catalog metadata for the extra fields.
 
 - **Model transformations**: Agentgateway reverses transformations that strip or add a fixed string, such as `stripPrefix("openai/")`. The list then uses the model names that clients send.
 - **Unexpanded patterns**: Agentgateway lists the pattern itself if the provider has no catalog entries. It also keeps the pattern if the model overrides the upstream model or uses a transformation that cannot be reversed.
-- **Endpoint metadata**: The `endpoints` field of a catalog entry only narrows `preferred_endpoints` to the paths that the model serves. For example, an embedding model can advertise only `/embeddings`.
+- **Endpoint metadata**: The `endpoints` field of a catalog entry replaces the default `preferred_endpoints` list with the paths that the model serves. It can narrow the chat paths or add other paths. For example, the built-in catalog lists only `/embeddings` for `text-embedding-3-small`.
 - **Custom providers**: To expand a wildcard, set `custom.providerOverride` to a catalog provider name, such as `openai`.
 - **Internal models**: Models with `visibility: Internal` do not appear in the list.
 
