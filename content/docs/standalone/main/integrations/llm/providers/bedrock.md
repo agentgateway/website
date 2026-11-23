@@ -319,6 +319,8 @@ Extended thinking and reasoning lets models reason through complex problems befo
 
 For Claude models that support adaptive thinking, the request is sent with `thinking.type` set to `adaptive` and the effort level in `output_config.effort`, instead of a token budget. The value `minimal` is sent as `low`. Which models take this form depends on the `adaptive_thinking` tag in the [model cost catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}). The built-in catalog sets this tag for these models.
 
+For `/v1/messages` requests, the Bedrock request keeps `thinking.display` with the Claude thinking fields. Use a display value that the Claude model accepts, such as `updates`.
+
 Other Claude models, such as `us.anthropic.claude-opus-4-20250514-v1:0`, receive a thinking budget.
 
 | `reasoning_effort` value | Thinking budget |
