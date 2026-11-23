@@ -652,6 +652,94 @@ A CA source does not have to store the certificate in the `ca.crt` key. Set the 
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
 
+## Client certificates from proxy files {#client-cert-files}
+
+If another component mounts the backend client certificate and key into the agentgateway proxy pod, use `mtlsCertificateRef` in an {{< reuse "agw-docs/snippets/policy.md" >}} or {{< reuse "agw-docs/snippets/backend.md" >}} resource to reference those files. The controller does not read the files. The controller sends the paths to the proxy. The proxy reads and watches the files. When the files change, backend TLS reloads them without a new xDS update.
+
+Set `config.fileAccess` in the Gateway-level {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that your Gateway references. This setting restricts the file prefixes that the proxy can read for backend TLS.
+
+1. Create the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that allows the proxy to read the mounted certificate files.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+   metadata:
+     name: backend-mtls-files
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     rawConfig:
+       config:
+         fileAccess:
+           allow:
+           - /var/run/certs
+   EOF
+   ```
+
+2. Attach the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to the Gateway with `spec.infrastructure.parametersRef`. For more information, see [Customization options]({{< link-hextra path="/documentation/setup/customize/options/" >}}).
+
+   ```sh
+   kubectl patch gateway agentgateway-proxy \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --type merge \
+     -p '{"spec":{"infrastructure":{"parametersRef":{"group":"{{< reuse "agw-docs/snippets/group.md" >}}","kind":"{{< reuse "agw-docs/snippets/gatewayparameters.md" >}}","name":"backend-mtls-files"}}}}'
+   ```
+
+3. Update the {{< reuse "agw-docs/snippets/policy.md" >}} to read the client certificate files from the proxy pod.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: nginx-backend-mtls
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: ""
+       kind: Service
+       name: nginx
+       sectionName: "8443"
+     backend:
+       tls:
+         sni: example.com
+         mtlsCertificateRef:
+         - kind: File
+           file:
+             cert: /var/run/certs/tls.crt
+             key: /var/run/certs/tls.key
+             root: /var/run/certs/ca.crt
+   EOF
+   ```
+
+4. Send another request to the NGINX server. You still receive a 200 HTTP response code, because the proxy can read the file-backed client certificate material from the allowed path.
+
+   * **Cloud Provider LoadBalancer**
+     ```sh
+     curl -vi http://$INGRESS_GW_ADDRESS:80/ -H "host: example.com:80"
+     ```
+   * **Port-forward for local testing**
+     ```sh
+     curl -vi http://localhost:8080/ -H "host: example.com:8080"
+     ```
+
+   Example output:
+
+   ```
+   < HTTP/1.1 200 OK
+   HTTP/1.1 200 OK
+   ```
+
+{{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the [API docs]({{< link-hextra path="/reference/api/#backendtls" >}}).
+
+| Setting | Description |
+|---------|-------------|
+| `spec.rawConfig.config.fileAccess.allow` | Absolute path prefixes that the proxy can read. The proxy checks both the configured path and the resolved target, so a symbolic link cannot bypass the rules. The longest matching prefix wins. If two prefixes are the same length, `deny` wins. |
+| `backend.tls.mtlsCertificateRef[0].kind` | Set to `File` to read client certificate material from files on the proxy pod. For any other kind, set `name` and omit `file`. |
+| `backend.tls.mtlsCertificateRef[0].file.cert` | The client certificate file. This field is required when `kind` is `File`. |
+| `backend.tls.mtlsCertificateRef[0].file.key` | The private key file for the client certificate. This field is required when `kind` is `File`. |
+| `backend.tls.mtlsCertificateRef[0].file.root` | Optional CA bundle file that verifies the backend certificate. Do not also set `caCertificateRefs`. The API server rejects a `File` mTLS reference that is combined with `caCertificateRefs`. |
+
 ## Invalid backend TLS settings {#invalid-tls-settings}
 
 When backend TLS settings are invalid, the gateway proxy does not fall back to sending plaintext traffic to the backend. Instead, requests to the backend fail with a 503 HTTP response code. The errors that you see depend on whether the controller or the gateway proxy finds the invalid setting.
@@ -661,6 +749,7 @@ When backend TLS settings are invalid, the gateway proxy does not fall back to s
 The controller passes some backend TLS settings to the gateway proxy without fully checking them. If the proxy cannot build a TLS configuration from these settings, it marks the entire backend TLS policy as invalid and fails every request to that backend. This rule applies to the `spec.backend.tls` section of an {{< reuse "agw-docs/snippets/policy.md" >}} and to the `spec.policies.tls` section of an {{< reuse "agw-docs/snippets/backend.md" >}}. The proxy marks the policy as invalid in the following cases:
 
 * The Secret that the `mtlsCertificateRef` setting refers to has a `tls.crt`, `tls.key`, or `ca.crt` value that is not valid PEM. If a `ca.crt` PEM block decodes but does not hold a valid certificate, the proxy skips that certificate instead of marking the policy as invalid.
+* A `kind: File` `mtlsCertificateRef` entry points to a file that `config.fileAccess` does not allow, is not a regular file, cannot be read, or does not contain valid PEM.
 * The `certificateSource` setting is `SPIFFE` and the `keyExchangeGroups` setting is also set. A SPIFFE certificate source gets the client identity and trust roots from the SPIFFE Workload API and does not support custom key exchange groups.
 * An entry in the `verifySubjectAltNames` setting is not a valid DNS name, IP address, or URI.
 * The `insecureSkipVerify` setting is `Hostname`, but no CA certificate can be loaded, such as when every `caCertificateRefs` entry is invalid.
