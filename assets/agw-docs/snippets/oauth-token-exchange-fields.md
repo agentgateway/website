@@ -14,4 +14,4 @@
 | `requestedTokenType` | Optional token type to request, limited to `AccessToken`, `Jwt`, or `IdToken`, and valid only with the `TokenExchange` grant type. The response must return the type that you request. See [Request a token type]({{< link-hextra path="/documentation/security/backend-authn/token-exchange/standard/#requested-token-type" >}}). |
 | `location` | Where to place the exchanged token in the backend request. Defaults to the `Authorization` header. |
 | `additionalParams` | Extra form parameters appended to the token request. Values are CEL expressions. |
-| `cache` | In-memory token cache. Defaults to 8192 entries. Set `inMemory.maxEntries: 0` to disable. |
+| `cache` | In-memory token cache. Defaults to 8192 entries. Set `inMemory.maxEntries: 0` to disable. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}The cache key includes the subject token, token type, optional actor token, and token request parameters. Requests with different token request parameters do not share entries.{{< /version >}} |

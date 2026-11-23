@@ -11,4 +11,4 @@ The following table describes the most common `oauthTokenExchange` fields.{{% up
 | `actorToken` | Optional RFC 8693 delegation actor token (`tokenExchange` grant only). Has no default source. |
 | `authorizationLocation` | Where to place the exchanged token in the backend request. Defaults to the `Authorization` header with a `Bearer ` prefix. |
 | `additionalParams` | Extra form parameters appended to the token request. Values are CEL expressions. |
-| `cache` | In-memory token cache. Defaults to 8192 entries with a 300-second TTL when the response omits `expires_in`. Set `maxEntries: 0` to disable. |
+| `cache` | In-memory token cache. Defaults to 8192 entries with a 300-second TTL when the response omits `expires_in`. Set `maxEntries: 0` to disable. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}The cache key includes the subject token, token type, optional actor token, and token request parameters. Requests with different token request parameters do not share entries.{{< /version >}} |
