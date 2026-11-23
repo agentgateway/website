@@ -71,6 +71,7 @@ In this guide, you route `tools/call` and `tools/list` requests through a sample
    | `host` | The address of the ExtMCP policy server. This example points to the sample server from the previous step. |
    | `failureMode: failClosed` | Deny requests if the policy server is unreachable or returns an error. To allow requests instead, set `failOpen`. |
    | `methods` | MCP methods and phases to send to the policy server. `tools/call: request` checks tool calls before forwarding them. `tools/list: response` filters or annotates tool lists after the backend responds. See [Methods and phases]({{< link-hextra path="/documentation/mcp/guardrails/processors/#methods" >}}). |
+   | Skills extension | Skills extension methods, such as `skills/list`, `skills/get`, and `resources/directory/read`, are available only when the MCP backend routes to one target. For multiplexed backends, the advertised capabilities omit the Skills extension. |
 
 3. Run agentgateway with the configuration file.
    ```sh
