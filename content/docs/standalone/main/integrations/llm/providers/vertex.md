@@ -69,6 +69,12 @@ llm:
 
 {{< reuse "agw-docs/snippets/gemini-reasoning-effort.md" >}}
 
+## Anthropic beta headers {#anthropic-beta-headers}
+
+For `/v1/messages` or `/v1/messages/count_tokens` requests to Vertex AI, only accepted `anthropic-beta` values remain on the request. By default, the allow list includes Vertex-supported beta values such as `claude-code-20250219`. When no allowed values remain, the request reaches Vertex AI without the `anthropic-beta` header.
+
+To replace the allow list, set `AGENTGATEWAY_VERTEX_ANTHROPIC_BETA_HEADERS` on the agentgateway process. Use a comma-separated list of beta values. To keep the built-in values and add your own values, include `default` in the list.
+
 ## Send file content by URI {#send-file-content-by-uri}
 
 In an OpenAI-compatible Chat Completions request, you can put a `gs://`, `http://`, or `https://` URI in a `file` content part's `file_data` or `file_id`. The request to Vertex AI uses `fileData`.
