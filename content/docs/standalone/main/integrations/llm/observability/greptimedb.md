@@ -55,7 +55,7 @@ Agentgateway exports traces and access logs directly to GreptimeDB, without an O
        policies:
          requestHeaderModifier:
            set:
-             X-Greptime-Pipeline-Name: greptime_trace_v1
+             X-Greptime-Pipeline-Name: greptime_trace_v2
              X-Greptime-Trace-Table-Name: agentgateway_traces
      accessLog:
        otlp:
@@ -89,7 +89,7 @@ Agentgateway exports traces and access logs directly to GreptimeDB, without an O
    | `frontendPolicies.tracing.protocol`, `frontendPolicies.accessLog.otlp.protocol` | Must be `http`. GreptimeDB does not accept OTLP over gRPC. |
    | `frontendPolicies.tracing.path` | The GreptimeDB OTLP traces endpoint, `/v1/otlp/v1/traces`. |
    | `frontendPolicies.accessLog.otlp.path` | The GreptimeDB OTLP logs endpoint, `/v1/otlp/v1/logs`. |
-   | `X-Greptime-Pipeline-Name` | Required for traces. The `greptime_trace_v1` pipeline stores each span attribute and resource attribute in its own column. |
+   | `X-Greptime-Pipeline-Name` | Required for traces. The `greptime_trace_v2` pipeline stores span, scope, and resource attributes in `JSON2` columns, so new attribute keys do not add table columns. |
    | `X-Greptime-Trace-Table-Name` | The table for traces. If you omit the header, GreptimeDB uses `opentelemetry_traces`. |
    | `X-Greptime-Log-Table-Name` | The table for access logs. If you omit the header, GreptimeDB uses `opentelemetry_logs`. |
 
@@ -142,17 +142,17 @@ Send an LLM request through agentgateway, and then query the traces, access logs
    }'
    ```
 
-2. Query token usage per model from the traces table. Each LLM request produces a server span and a client span for the call to the provider. The `gen_ai` attributes are on the server span.
+2. Query token usage per model from the traces table. Each LLM request produces a server span and a client span for the call to the provider. The `gen_ai` attributes are on the server span. Quote each attribute key, because the key contains dots.
 
    ```sh
    curl -s localhost:4000/v1/sql --data-urlencode 'sql=
-     SELECT "span_attributes.gen_ai.request.model" AS model,
+     SELECT span_attributes."gen_ai.request.model"::STRING AS model,
             count(*) AS requests,
-            sum("span_attributes.gen_ai.usage.input_tokens") AS input_tokens,
-            sum("span_attributes.gen_ai.usage.output_tokens") AS output_tokens
+            sum(span_attributes."gen_ai.usage.input_tokens"::BIGINT) AS input_tokens,
+            sum(span_attributes."gen_ai.usage.output_tokens"::BIGINT) AS output_tokens
      FROM agentgateway_traces
      WHERE span_kind = '"'"'SPAN_KIND_SERVER'"'"'
-       AND "span_attributes.gen_ai.operation.name" IS NOT NULL
+       AND span_attributes."gen_ai.operation.name"::STRING IS NOT NULL
      GROUP BY model'
    ```
 
