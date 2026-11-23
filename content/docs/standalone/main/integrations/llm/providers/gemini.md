@@ -64,3 +64,49 @@ llm:
 {{< reuse "agw-docs/snippets/gemini-reasoning-effort.md" >}}
 
 For Gemma 4 models, `none`, `minimal`, and `low` use `thinkingLevel: "minimal"`, and `medium`, `high`, `xhigh`, and `max` use `thinkingLevel: "high"`.
+
+## Use structured outputs {#structured-outputs}
+
+For OpenAI-compatible Chat Completions requests, set `response_format.type` to `json_schema` to request structured JSON from Gemini models. The provider request uses Gemini `responseJsonSchema`. Standard JSON Schema keywords, such as `$defs`, `$ref`, `anyOf`, and `additionalProperties`, pass through unchanged. No `propertyOrdering` field is injected.
+
+Use the following request body with the route that you configured.
+
+```json
+{
+  "model": "gemini/gemini-2.5-flash",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Return one calendar event for tomorrow."
+    }
+  ],
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "calendar_event",
+      "strict": true,
+      "schema": {
+        "$defs": {
+          "CalendarEvent": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "date": { "type": "string" }
+            },
+            "required": ["name", "date"]
+          }
+        },
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "event": { "$ref": "#/$defs/CalendarEvent" }
+        },
+        "required": ["event"]
+      }
+    }
+  }
+}
+```
+
+Tool definitions use a different schema path. Schemas in `tools[].function.parameters` are normalized for Gemini tool parameters. `$defs` and `$ref` are inlined. Unsupported fields such as `additionalProperties` are removed. A caller-provided `propertyOrdering` is preserved.
