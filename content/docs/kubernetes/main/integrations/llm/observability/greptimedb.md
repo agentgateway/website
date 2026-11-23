@@ -4,7 +4,7 @@ weight: 35
 description: Integrate agentgateway with GreptimeDB to store LLM traces, access logs, and metrics in one database and query them with SQL and PromQL
 ---
 
-[GreptimeDB](https://greptime.com/) is an open source observability database that ingests OpenTelemetry traces, logs, and metrics and serves queries in SQL and PromQL. In this guide, you send the traces, access logs, and metrics of agentgateway LLM traffic to a single GreptimeDB instance in your cluster, and then query them for token usage and cost.
+[GreptimeDB](https://github.com/GreptimeTeam/greptimedb) is an open source observability database that ingests OpenTelemetry traces, logs, and metrics and serves queries in SQL and PromQL. In this guide, you send the traces, access logs, and metrics of agentgateway LLM traffic to a single GreptimeDB instance in your cluster, and then query them for token usage and cost.
 
 ## Before you begin
 
