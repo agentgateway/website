@@ -145,7 +145,7 @@ The CLI follows the `config.storage.mode` setting of the gateway.
 
 The standalone Helm chart uses the `readonly` mode by default, which mounts a ConfigMap that the proxy cannot write. To manage resources with the CLI, use the `database` mode of the chart. For setup and ownership rules, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
-The `get all` command lists resources. It is not a full configuration backup. In file mode, the list omits singleton settings and the model catalog. In hybrid mode, the list omits the baseline file. Startup settings and legacy `binds` configuration are not CLI resources. For the merged configuration, use the `/api/config/effective` endpoint. For the runtime configuration that the proxy loaded, see [Inspect config]({{< link-hextra path="/documentation/operations/inspect-config/" >}}).
+The `get all` command lists resources. It is not a full configuration backup. In file mode, the list omits singleton settings and the model catalog.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} The `llm.settings` and `mcp.settings` kinds are an exception. For each kind, `get all` lists the fields that are set in the configuration file.{{< /version >}} In hybrid mode, the list omits the baseline file. Startup settings and legacy `binds` configuration are not CLI resources. For the merged configuration, use the `/api/config/effective` endpoint. For the runtime configuration that the proxy loaded, see [Inspect config]({{< link-hextra path="/documentation/operations/inspect-config/" >}}).
 
 ### List resources
 
