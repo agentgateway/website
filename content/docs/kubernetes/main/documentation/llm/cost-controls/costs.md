@@ -17,6 +17,8 @@ The proxy combines the built-in catalog and your catalog sources into one catalo
 - **Base catalog**: A catalog with a `metadata.generatedAt` timestamp is a complete base catalog. The built-in catalog has this timestamp, and so does every catalog that `agctl catalog import` generates. The proxy uses only the base catalog with the newest timestamp and ignores the others. A freshly imported catalog therefore replaces the built-in catalog.
 - **Overlays**: A catalog without `metadata` is an overlay. The proxy applies overlays on top of the base catalog in the order that you list them. A later overlay takes precedence at the model level.
 
+If a base catalog includes a pricing tier with a `serviceTier` value that the running proxy does not recognize, the proxy drops that tier and loads the rest of the catalog. The proxy still rejects catalog files that you load yourself when a tier uses an unrecognized `serviceTier`.
+
 > [!CAUTION]
 > The proxy ignores imported catalogs that are older than its built-in catalog, without a warning. You can remove your imported catalog if the built-in catalog has the rates that you need. To customize rates, omit `metadata` from your catalog. The proxy then applies your catalog as an overlay, regardless of its age.
 
