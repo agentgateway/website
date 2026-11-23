@@ -95,7 +95,8 @@ The route type determines the `gen_ai.operation.name` attribute. For `detect` ro
 | `ocr` | None | `/v1/ocr` |
 | `transcription` | None | `/v1/audio/transcriptions` or `/v1/audio/translations` |
 | `speech` | None | `/v1/audio/speech` |
-| `compaction` | None | `/v1/responses/compact` |
+| `compaction` | None | `/v1/responses/compact` |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+| `model_discovery` | Model discovery | `/v1/models` or `/models` |{{< /version >}}
 | `unknown` | None | Any other path |
 
 Passthrough routes omit `gen_ai.operation.name`.

@@ -6,7 +6,7 @@ aliases:
   - ../../../integrations/observability/database/
 ---
 
-By default, access logs are written to stdout. To persist LLM request logs, configure agentgateway to write records to a `request_logs` table. The database logger captures LLM traffic, rather than every HTTP or MCP access log. Agentgateway can use the configuration database or a separate request-log database.
+By default, access logs are written to stdout. To persist LLM request logs and model discovery requests, configure agentgateway to write records to a `request_logs` table. The database logger captures only LLM and model discovery traffic. You can use the configuration database or a separate request-log database.
 
 ## Set up the database
 

@@ -21,6 +21,7 @@ gen_ai.usage.input_tokens=68 gen_ai.usage.output_tokens=298 duration=2488ms
 LLM log lines include `gen_ai.*` fields. The route type determines `gen_ai.operation.name`, such as `chat` for Chat Completions or `embeddings` for Embeddings.
 
 - `detect` routes log the operation that the request path implies, such as `ocr` for `/v1/ocr`. They log `unknown` when agentgateway does not recognize the path.
+- Model discovery requests, such as `/v1/models`, log `model_discovery`.
 - `passthrough` routes omit `gen_ai.operation.name`.
 
 For all values, see [Operation names]({{< link-hextra path="/documentation/observability/traces/attribute-reference/#operation-names" >}}).
@@ -104,7 +105,7 @@ The agentgateway UI includes a **Logs** page that you can use to review the acce
 To view access logs in the UI: 
 
 1. Open the [agentgateway UI](http://localhost:15000/ui). This address is the copy of the UI on the admin interface, which works from the host that runs the proxy. If you serve the UI on a gateway, use that gateway's port instead. 
-2. Go to **Logs** and review the access logs that agentgateway captured for your previous requests. Use the filter options to limit the number of access logs that are shown to you. For example, you can filter logs by model, providers, or users. Note that in order to filter logs by user, you must configure authentication in agentgateway. Each filter lists the values from recorded traffic. To find a value in a long list, type part of it in the search box at the top of the filter, and then select the value. Typing alone does not change the logs that are shown. 
+2. Go to **Logs** and review the access logs that agentgateway captured for your previous requests. The **Logs** page shows model discovery requests as **Model discovery** entries with the request path, such as `GET /v1/models`. Use the filter options to limit the number of access logs that are shown to you. For example, you can filter logs by model, providers, or users. Note that in order to filter logs by user, you must configure authentication in agentgateway. Each filter lists the values from recorded traffic. To find a value in a long list, type part of it in the search box at the top of the filter, and then select the value. Typing alone does not change the logs that are shown.
 
    {{< reuse-image src="img/agentgateway-ui-logs.png" srcDark="img/agentgateway-ui-logs-dark.png" >}}
 
@@ -118,9 +119,9 @@ To view access logs in the UI:
 
 ## View LLM request logs with agctl {#cli}
 
-Use `agctl standalone logs` to inspect recorded LLM requests without the UI or a database client. Before you begin, [install agctl and connect it to your gateway]({{< link-hextra path="/documentation/operations/config-resources/#connect" >}}), and [configure a request-log database]({{< link-hextra path="/documentation/observability/access-logs/database/" >}}).
+Use `agctl standalone logs` to inspect recorded LLM and model discovery requests without the UI or a database client. Before you begin, [install agctl and connect it to your gateway]({{< link-hextra path="/documentation/operations/config-resources/#connect" >}}), and [configure a request-log database]({{< link-hextra path="/documentation/observability/access-logs/database/" >}}).
 
-The command reads the records in the database, not the output of the gateway process. Agentgateway records only LLM requests in the database. For startup errors, configuration reloads, and the access logs of HTTP or MCP traffic, use the logs of the gateway process or container. To change the log level of the process, use `agctl proxy log`.
+The command reads the records in the database, not the output of the gateway process. Agentgateway records LLM and model discovery requests in the database. For startup errors, configuration reloads, and the access logs of other HTTP or MCP traffic, use the logs of the gateway process or container. To change the log level of the process, use `agctl proxy log`.
 
 1. List recent requests. By default, the command shows the 20 most recent records, oldest first. Each record shows the status, duration, provider, model, tokens, cost, and request ID.
 
