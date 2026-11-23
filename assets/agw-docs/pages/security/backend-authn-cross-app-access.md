@@ -342,7 +342,7 @@ If the configured source yields no credential, the request fails with a `400` an
 
 You can also configure the location where the gateway checks for the subject token. Whichever form you choose, the gateway sends the credential to the identity provider as an ID token, with `subject_token_type` set to `urn:ietf:params:oauth:token-type:id_token`.
 
-After the exchange, the gateway removes the credential from the location that you configured, and forwards the remaining cookies and parameters unchanged. It then writes the exchanged access token to the `Authorization` header, replacing any credential that the client sent there. The backend therefore receives only the exchanged token, never the subject credential.
+After the exchange, the gateway removes the credential from a `header`, `queryParameter`, or `cookie` location, and forwards the remaining cookies and parameters unchanged. It then writes the exchanged access token to the `Authorization` header, replacing any credential that the client sent there. The backend therefore receives only the exchanged token, not the subject credential. The gateway does not remove a credential that an `expression` source reads from the request. For more information, see [Credentials that a CEL expression reads]({{< link-hextra path="/documentation/security/backend-authn/#expression-location" >}}).
 
 > [!NOTE]
 > On MCP routes, the `queryParameter` form never matches, because the request that the policy inspects carries no query string. The exchange fails even when the parameter is present on the incoming request. Use a header, a cookie, or a CEL expression instead. Plain HTTP routes are not affected.

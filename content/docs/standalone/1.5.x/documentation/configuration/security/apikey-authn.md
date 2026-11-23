@@ -313,6 +313,33 @@ EOF
 agentgateway -f config2-mcp.yaml --validate-only
 {{< /doc-test >}}
 
+## Remove a key that a CEL expression reads {#expression-location}
+
+By default, the `apiKey` policy reads the key from the `Authorization` header with a `Bearer ` prefix. To read the key from another place, set `location` to a `header`, `queryParameter`, `cookie`, or CEL `expression`. Agentgateway removes a validated key from a `header`, `queryParameter`, or `cookie` location. Agentgateway cannot tell which part of the request an `expression` reads. A key that an expression reads stays in the request, and the backend receives the key.
+
+To keep the key from the backend, read it from a `header` location if the expression reads only one header. Otherwise, remove the header with a request transformation, as in the following example. The `apiKey` policy validates the key before the transformation removes the header, so a request with a missing or invalid key still fails with a `401` response.
+
+```yaml
+policies:
+  apiKey:
+    mode: strict
+    keys:
+    - key: sk-testkey-1
+    location:
+      expression: 'request.headers["x-api-key"]'
+  transformations:
+    request:
+      remove:
+      - x-api-key
+```
+
+| Field | Description |
+| -- | -- |
+| `apiKey.location.expression` | The CEL expression that reads the API key from the request. In this example, the expression reads the `x-api-key` header. Agentgateway validates the key, but does not remove it. |
+| `transformations.request.remove` | The request headers that agentgateway removes before it forwards the request. List each header that the expression reads. |
+
+For more information about how client authentication interacts with backend authentication, see [Credentials that a CEL expression reads]({{< link-hextra path="/documentation/configuration/security/backend-authn/#expression-location" >}}).
+
 ## LLM budgets and model access
 
 An API key entry can carry two fields that apply to LLM traffic. The `budgets` field sets a per-key budget that caps what the key spends. The `allowedModels` field limits which models the key can reach. Both fields work with a `key` entry and with a `keyHash` entry.

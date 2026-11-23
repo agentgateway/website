@@ -39,7 +39,7 @@ One mechanism is additive. A `credentials` list injects extra credentials, each 
 
 The two directions interact in one way that is easy to miss: **a client authentication policy removes the credential it validates.**
 
-A JWT, API key, or basic auth policy reads the client credential from a location, validates it, and then strips it from the request so the backend never sees it. That is usually what you want. It also means the credential is gone by the time backend authentication runs, which matters for two of the methods:
+A JWT, API key, or basic auth policy reads the client credential from a location, validates it, and then strips it from the request so that the backend does not see it. A credential that the policy reads with a CEL expression is the exception, as described in [Credentials that a CEL expression reads](#expression-location). Stripping the credential is usually what you want. It also means the credential is gone by the time backend authentication runs, which matters for two of the methods:
 
 * **Passthrough puts it back.** The method exists for exactly this reason. On a route with no client authentication policy, passthrough does nothing, because nothing removed the credential in the first place.
 * **Token exchange and Cross App Access read the request.** Both take the subject token from a location on the incoming request, defaulting to the `Authorization` header with a `Bearer ` prefix. If a client authentication policy on the same route has already stripped that header, the exchange finds nothing to exchange.
@@ -58,6 +58,63 @@ A JWT, API key, or basic auth policy reads the client credential from a location
 > * **Keep the credential in place.** Set `preserveToken: true` on the client authentication policy so that it leaves the validated token where it found it, and the exchange reads it as usual. The token then stays in the request for every policy that runs later, so prefer one of the other two options when only the exchange needs it.{{< /version >}}
 
 The other methods do not read the client credential at all, so they compose with any client authentication policy without further thought.
+
+### Credentials that a CEL expression reads {#expression-location}
+
+The gateway strips a validated credential only from a `header`, `queryParameter`, or `cookie` location. When a JWT, API key, or basic auth policy reads the credential with a CEL `expression` location, the gateway cannot tell which part of the request the expression reads. The credential stays in the request, and the backend receives the credential. The same is true for an `expression` source in the `subjectToken` of a token exchange or Cross App Access, and in the `actorToken` of a token exchange.
+
+To keep the credential from the backend, read it from a `header` location if the expression reads only one header. Otherwise, remove the header with a request transformation, as in the following example. The client authentication policy validates the credential before the transformation removes the header, so a request with a missing or invalid credential still fails with a `401` response.
+
+{{% conditional-text include-if="kubernetes" %}}
+```yaml
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: apikey-auth
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: agentgateway-proxy
+  traffic:
+    apiKeyAuthentication:
+      mode: Strict
+      secretRef:
+        name: apikey
+      location:
+        expression: 'request.headers["x-api-key"]'
+    transformation:
+      request:
+        remove:
+        - x-api-key
+```
+
+| Field | Description |
+| -- | -- |
+| `traffic.apiKeyAuthentication.location.expression` | The CEL expression that reads the API key from the request. In this example, the expression reads the `x-api-key` header. The gateway validates the key, but does not remove it. |
+| `traffic.transformation.request.remove` | The request headers that the gateway removes before it forwards the request. List each header that the expression reads. |
+{{% /conditional-text %}}
+{{% conditional-text include-if="standalone" %}}
+```yaml
+policies:
+  apiKey:
+    mode: strict
+    keys:
+    - key: my-key
+    location:
+      expression: 'request.headers["x-api-key"]'
+  transformations:
+    request:
+      remove:
+      - x-api-key
+```
+
+| Field | Description |
+| -- | -- |
+| `apiKey.location.expression` | The CEL expression that reads the API key from the request. In this example, the expression reads the `x-api-key` header. The gateway validates the key, but does not remove it. |
+| `transformations.request.remove` | The request headers that the gateway removes before it forwards the request. List each header that the expression reads. |
+{{% /conditional-text %}}
 
 ## Backend authentication is not authorization
 

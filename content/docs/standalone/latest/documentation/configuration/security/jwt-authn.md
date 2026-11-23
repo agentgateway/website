@@ -30,10 +30,30 @@ Additionally, authentication can run in three different modes:
 * **Permissive**: Requests are never rejected. This is useful for usage of claims in later steps (authorization, logging, etc).  
   *Warning*: This allows requests without a JWT token!
 
-After it validates a token, agentgateway removes the token from the location that it was read from, so that the backend never receives the client's credential. Two settings change that.
+After it validates a token, agentgateway removes the token from the location that it was read from, so that the backend does not receive the client's credential. Two settings change that.
 
 * Set `preserveToken: true` on the `jwtAuth` policy to leave the validated token where it was found. Use this setting when another policy on the same route reads the token from the request, such as an [OAuth token exchange]({{< link-hextra path="/documentation/configuration/security/backend-authn/token-exchange/standard/" >}}) that takes it as the subject token. In an MCP route, this setting also lets `mcpAuthentication` validate the same token after `jwtAuth` validates the token.
 * Set the `passthrough` [backend authentication]({{< link-hextra path="/documentation/configuration/security/backend-authn/" >}}) method to forward the validated token to one backend. Prefer this form when only the backend needs the token, because it does not expose the credential to every policy that runs later.
+
+A token that the policy reads with a CEL `expression` location is the exception. Agentgateway cannot tell which part of the request the expression reads. The token stays in the request, and the backend receives the token. To keep the token from the backend, read it from a `header` location if the expression reads only one header. Otherwise, remove the header with a request transformation, as in the following example. The `jwtAuth` policy validates the token before the transformation removes the header, so a request with a missing or invalid token still fails with a `401` response. For more information, see [Credentials that a CEL expression reads]({{< link-hextra path="/documentation/configuration/security/backend-authn/#expression-location" >}}).
+
+```yaml
+policies:
+  jwtAuth:
+    mode: strict
+    issuer: agentgateway.dev
+    audiences: [test.agentgateway.dev]
+    jwks:
+      file: ./manifests/jwt/pub-key
+    # Read the token from the x-token header with a CEL expression.
+    location:
+      expression: 'request.headers["x-token"]'
+  # Remove the x-token header before the request reaches the backend.
+  transformations:
+    request:
+      remove:
+      - x-token
+```
 
 You can configure JWT authentication in the UI or in your configuration file.
 
