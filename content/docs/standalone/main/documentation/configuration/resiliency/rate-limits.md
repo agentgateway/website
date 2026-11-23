@@ -15,6 +15,8 @@ Use rate limiting to enforce budget and spend limits per key: control the rate o
 Agentgateway exposes two types of rate limits:
 
 **Local rate limits** apply in memory, and counters are not shared between replicas of agentgateway, nor across restarts.
+In `hybrid` storage mode, multiple agentgateway instances can read the same saved policy from the database.
+Each instance still enforces its own counters.
 These are very low overhead, but not appropriate for usage where exact global counts are required, or for limits with long time windows (like monthly limits).
 
 **Remote rate limits** store counters in an pluggable external data store, which enables shared state across replicas of agentgateway.
