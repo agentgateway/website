@@ -41,6 +41,7 @@ Bedrock Runtime chat requests now use native OpenAI and Anthropic endpoints wher
 
 ### Observability {#v18-observability}
 
+- **Model discovery appears in logs**: Requests to `/v1/models` are now stored in the request-log database with `gen_ai.operation.name: model_discovery`. The Logs UI shows them as **Model discovery** entries with the request path, so model-list calls are visible alongside other recorded LLM traffic. For more information, see [Operation names]({{< link-hextra path="/documentation/observability/traces/attribute-reference/#operation-names" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4500 -->
 - **OTLP access log records include a body and timestamp**: OTLP access log records now include a timestamp and a body that joins the request method, path, and response status, such as `POST /v1/messages 200`. Previously, exported records had an empty body and no timestamp. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4312 -->
 - **Outbound calls in access logs**: Access log CEL expressions can use `upstreamCalls` to record outbound primary and policy HTTP calls, including MCP target calls after backend authentication or token exchange. For more information, see [Log outbound calls from access logs]({{< link-hextra path="/reference/cel/yaml-and-examples/#log-outbound-calls-from-access-logs" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4044 -->
 - **MCP request outcome label**: MCP request metrics now include an `outcome` label with `success`, `tool_error`, `protocol_error`, `gateway_error`, or `unknown`, so that you can count tool failures that still return HTTP `200`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4182 -->
@@ -48,11 +49,28 @@ Bedrock Runtime chat requests now use native OpenAI and Anthropic endpoints wher
 
 ### Security {#v18-security}
 
+- **File-backed backend mTLS and CEL actor-chain recursion**: Backend mTLS can now load the client certificate, private key, and CA bundle from files on the proxy pod, and `config.fileAccess` restricts which file prefixes the proxy can read. CEL expressions can also use `recurse("act")` to validate every actor in a nested JWT actor chain. For more information, see [Backend TLS]({{< link-hextra path="/documentation/security/backendtls/#client-cert-files" >}}) and [CEL example expressions]({{< link-hextra path="/reference/cel/yaml-and-examples/#authorization" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/3872 -->
 - **GCP tokens in backend credential lists**: Backend authentication credential lists can now fetch a Google Cloud access token or ID token with `credentials[].gcp`. Use this field to send the generated Google token in a header such as `Proxy-Authorization` while another backend authentication method preserves the client's `Authorization` header. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4279 -->
 
 ### Traffic management {#v18-traffic-management}
 
 - **Normalize request paths before matching**: Set `frontendPolicies.http.normalize` to normalize request paths before route matching, policy evaluation, and forwarding. Normalization rules can merge repeated slashes, resolve dot segments, decode unreserved characters, and reject or unescape escaped slashes. For more information, see [Normalize paths before matching]({{< link-hextra path="/documentation/configuration/traffic-management/matching/#normalize-paths" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4253 -->
+
+### MCP {#v18-mcp}
+
+- **MCP Skills extension support**: MCP clients can use Skills extension methods, including `skills/list`, `skills/get`, and `resources/directory/read`, through a single-target MCP backend. The Skills extension is not advertised for multiplexed MCP backends. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4214 -->
+
+### LLM APIs and providers {#v18-llm-apis-and-providers}
+
+- **Gemini Decisions provider support**: Gemini Decisions models can now serve OpenAI Decisions and TypeSafe SystemOne clients. Agentgateway converts requests to Google's `/v1beta/decisions` API and converts responses and errors back to the client format. For more information, see [Gemini conversion]({{< link-hextra path="/documentation/llm/api-types/decisions/#gemini-conversion" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4402 -->
+
+### CLI and UI {#v18-cli-and-ui}
+
+- **Local rate limit forms explain per-instance counters in hybrid mode**: The Local rate limit form now explains that `hybrid` storage can share a saved policy across agentgateway instances, but each instance keeps its own local counters. Use `remoteRateLimit` when one quota must be shared across instances. For more information, see [Rate limiting]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/#rate-limit-types" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4466 -->
+
+### Traffic management and operations {#v18-traffic-management-and-operations}
+
+- **LLM response IDs and finish reasons in telemetry**: LLM spans and CEL expressions can now use `gen_ai.response.id`, `gen_ai.response.finish_reasons`, `llm.responseId`, and `llm.finishReasons` to correlate provider responses and inspect why generation stopped. For more information, see [Generative AI attributes]({{< link-hextra path="/documentation/observability/traces/attribute-reference/#generative-ai-attributes-llm" >}}) and [Variables and functions]({{< link-hextra path="/reference/cel/variables/" >}}). <!-- ref: https://github.com/agentgateway/agentgateway/pull/4483 -->
 
 <!-- Held for the 1.8 release cut, triaged as no entry. Restore or delete then:
 ### MCP {#v18-mcp}
@@ -82,8 +100,11 @@ Bedrock Runtime chat requests now use native OpenAI and Anthropic endpoints wher
 
 **LLM**
 
+- Applying an `llm.policy` config resource in `hybrid` mode now succeeds when the baseline file has no `llm` section or `llm.settings` resource. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4492 -->
+- Base catalog loading now drops pricing tiers with unrecognized `serviceTier` values and uses the rest of the catalog, while catalog files that you load yourself still reject those tiers. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4447 -->
 - Bedrock conversion now sends inline OpenAI file content and base64 Anthropic document content as Bedrock document blocks. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4199 -->
 - Bedrock Invoke streaming responses contribute input, output, cache-write, and cache-read token counts from `amazon-bedrock-invocationMetrics` to LLM usage metrics and cost calculations. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4297 -->
+- Bedrock requests now pass any Anthropic `thinking.display` value to Claude models, so values such as `updates` are no longer limited to `summarized` and `omitted`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4459 -->
 - Chat Completions responses that omit the top-level `model` field now keep the request model during parsing and format conversion. Streamed chunks that omit `model` are accepted, so usage from the final chunk is still reported. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4181 --> <!-- ref: https://github.com/agentgateway/agentgateway/pull/4265 -->
 - Chat Completions clients now receive an OpenAI-style stream error when an Anthropic stream sends an error event after partial content. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4270 -->
 - Copilot requests now include the integration ID header required by providers such as Gemini. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4499 -->
@@ -93,19 +114,28 @@ Bedrock Runtime chat requests now use native OpenAI and Anthropic endpoints wher
 - Bedrock requests now keep the Anthropic `thinking.display` setting, so Claude models receive `summarized` or `omitted` thinking display preferences. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4211 -->
 - Gemini and Vertex AI Chat Completions requests use `thinkingLevel` for Gemini 4 and Gemma 4 models, so `reasoning_effort` no longer returns Google thinking-budget errors. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4151 -->
 - Mistral reasoning responses that send `message.content` or `delta.content` as `thinking` and `text` parts pass through Chat Completions unchanged. Converted Messages and Responses replies keep only the text parts. Previously, non-streaming responses failed with `502`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/3729 -->
+- PostgreSQL budget schema setup uses migrations with an advisory lock, so multiple proxies can start against the same budget database without schema conflicts. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4368 -->
 - Streaming LLM response transformations can read request-side CEL fields such as `llm.provider`, `llm.requestModel`, and `llm.streaming`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4241 -->
+- Structured-output requests to Gemini and Vertex AI preserve standard JSON Schema keywords such as `$defs`, `$ref`, `anyOf`, and `additionalProperties` by using Gemini `responseJsonSchema`. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4261 -->
 - The model catalog now includes service-tier pricing data and removes local overrides that are available from the source catalog. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4457 -->
 - Vertex AI requests in Anthropic Messages and token-count formats now drop `anthropic-beta` values that Vertex does not accept, and `AGENTGATEWAY_VERTEX_ANTHROPIC_BETA_HEADERS` replaces the allow list. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4416 -->
 - Webhook guardrail masks that keep the same message count and roles now update text in place, so the proxy preserves tool calls, images, IDs, names, and metadata such as `cache_control`, while masks that add, drop, or change message roles still rebuild the request. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4341 -->
 
 **Operations**
 
+- Database-backed access logging now starts when a PostgreSQL role sets `statement_timeout`, and the request-log database worker no longer blocks while it waits for new records. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4398 -->
+- File-backed config resource list responses now include `llm.settings` and `mcp.settings` entries for the fields set in the configuration file. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4487 -->
 - The generated API reference now describes request log fields and budget status fields, including filters, analytics totals, and budget usage windows. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4444 -->
 
 **MCP**
 
 - Legacy Streamable HTTP `GET /mcp` event streams now resume stateful MCP sessions from the encoded session ID, so any replica with the same session key can serve the stream. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4437 -->
 - MCP authentication with a configured `clientId` now advertises the gateway registration endpoint for every provider value, including Auth0 and providers without an adapter. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4477 -->
+
+**Security**
+
+- Bcrypt htpasswd entries with cost greater than `14` are ignored when basic authentication credentials are loaded. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4405 -->
+- OAuth token exchange cache keys now include all exchange request fields, so requests that differ only by initial or chained parameter layout no longer share a cached token. <!-- ref: https://github.com/agentgateway/agentgateway/pull/4468 -->
 
 <!-- Held for the 1.8 release cut, not in the triage keep list. Restore or delete then:
 - Prompt-cache markers are preserved for GPT model names that use only a major version, such as `gpt-6-luna`. (ref: https://github.com/agentgateway/agentgateway/pull/4249)
