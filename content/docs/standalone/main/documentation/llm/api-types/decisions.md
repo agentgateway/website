@@ -31,10 +31,17 @@ These providers accept Decisions and SystemOne requests. Other providers reject 
 | [`azure`]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the `openAI` resource type | Sent natively. | Translated to the Decisions format. |
 | [`azure`]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the `foundry` resource type | Translated to the SystemOne format. | Sent natively. |
 | [`copilot`]({{< link-hextra path="/integrations/llm/providers/copilot/" >}}) with `microsoft-decision-1` | Translated to the SystemOne format. | Sent natively. |
+| [`gemini`]({{< link-hextra path="/integrations/llm/providers/gemini/" >}}) with a Gemini Decisions model | Translated to the Gemini Decisions format. | Translated to the Gemini Decisions format. |
 | [`custom`]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with `decisions`, without `systemOne` | Sent natively. | Translated to the Decisions format. |
 | [`custom`]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with `systemOne`, without `decisions` | Translated to the SystemOne format. | Sent natively. |
 
 If a custom provider declares both formats, each request uses its original format.
+
+### Gemini conversion {#gemini-conversion}
+
+The Gemini provider sends Decisions and SystemOne client requests to Google's `/v1beta/decisions` endpoint. Use a Gemini model that supports the Decisions API, such as `gemini-decision-1`. Model discovery advertises `/decisions` only for models with that endpoint. Gemini validates whether the selected model can serve the request.
+
+The Gemini conversion supports predicate or `noul`, choice, and score questions. The conversion turns Decisions user-message text, public image URLs, and inline image data into Gemini typed content. The conversion rejects non-user message history, SystemOne `assets`, unsupported media URLs, multipart request bodies, and box questions. The conversion ignores unknown request and response fields. The conversion translates Google errors back to the client format.
 
 ### Custom provider requirements {#custom-provider-requirements}
 

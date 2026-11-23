@@ -31,6 +31,7 @@ These providers accept Decisions and SystemOne requests. Other providers reject 
 | [Azure]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the `OpenAI` resource type | Sent natively. | Translated to the Decisions format. |
 | [Azure]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the `Foundry` resource type | Translated to the SystemOne format. | Sent natively. |
 | [Copilot]({{< link-hextra path="/integrations/llm/providers/copilot/" >}}) with `microsoft-decision-1` | Translated to the SystemOne format. | Sent natively. |
+| [Gemini]({{< link-hextra path="/integrations/llm/providers/gemini/" >}}) with a Gemini Decisions model | Translated to the Gemini Decisions format. | Translated to the Gemini Decisions format. |
 | [Custom]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with `Decisions`, without `SystemOne` | Sent natively. | Translated to the Decisions format. |
 | [Custom]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with `SystemOne`, without `Decisions` | Translated to the SystemOne format. | Sent natively. |
 
@@ -41,6 +42,12 @@ A custom provider must declare `Decisions` or `SystemOne`. Otherwise, it rejects
 ```console
 failed to process LLM request: unsupported conversion: from Decisions to provider custom
 ```
+
+### Gemini conversion {#gemini-conversion}
+
+The Gemini provider sends Decisions and SystemOne client requests to Google's `/v1beta/decisions` endpoint. Use a Gemini model that supports the Decisions API, such as `gemini-decision-1`. Model discovery advertises `/decisions` only for models with that endpoint. Gemini validates whether the selected model can serve the request.
+
+The Gemini conversion supports predicate or `noul`, choice, and score questions. The conversion turns Decisions user-message text, public image URLs, and inline image data into Gemini typed content. The conversion rejects non-user message history, SystemOne `assets`, unsupported media URLs, multipart request bodies, and box questions. The conversion ignores unknown request and response fields. The conversion translates Google errors back to the client format.
 
 ## Before you begin
 
