@@ -313,6 +313,10 @@ EOF
 agentgateway -f config2-mcp.yaml --validate-only
 {{< /doc-test >}}
 
+## Remove a key that a CEL expression reads {#expression-location}
+
+If the `apiKey` policy reads the key with a CEL `expression` location, agentgateway does not remove the key, and the backend receives the key. To remove the key, read it from a `header` location, or remove the header with a request transformation. For an example, see [Credentials that a CEL expression reads]({{< link-hextra path="/documentation/configuration/security/backend-authn/#expression-location" >}}).
+
 ## LLM budgets and model access
 
 An API key entry can carry two fields that apply to LLM traffic. The `budgets` field sets a per-key budget that caps what the key spends. The `allowedModels` field limits which models the key can reach. Both fields work with a `key` entry and with a `keyHash` entry.

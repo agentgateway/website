@@ -21,7 +21,7 @@ The agentgateway proxy comes with built-in API key auth support via the {{< reus
 > ConfigMaps with hashed keys (as opposed to Secrets) are the recommended way to store API keys. If you need to use Kubernetes Secrets, refer to [Store keys in a Secret](#store-keys-in-a-secret).
 {{< /version >}}
 
-The proxy matches a request to a route that is secured by the external auth policy. The request must have a valid API key in the `Authorization` header to be accepted. You can configure the name of the expected header. If the header is missing, or the API key is invalid, the proxy denies the request and returns a `401` response.
+The proxy matches a request to a route that is secured by the external auth policy. The request must have a valid API key in the `Authorization` header to be accepted. You can configure the name of the expected header. If the header is missing, or the API key is invalid, the proxy denies the request and returns a `401` response. After the proxy validates the API key, it removes the key from the request before it forwards the request to the backend.{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}} The proxy does not remove a key that it reads with a CEL `expression` location. For more information, see [Credentials that a CEL expression reads]({{< link-hextra path="/documentation/security/backend-authn/#expression-location" >}}).{{< /version >}}
 
 The following diagram illustrates the flow:
 
