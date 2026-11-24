@@ -200,7 +200,7 @@ routes:
 
 ### Method matching
 
-Optionally restrict matches to specific HTTP methods.
+Optionally restrict matches to specific HTTP methods. The method comparison is exact and case-sensitive. Write standard methods in uppercase, such as `GET` and `POST`. A route with `method: get` does not match a `GET` request.
 
 ```json
 { "method": { "method": "GET" } }
@@ -408,6 +408,21 @@ routes:
   backends:
   - host: api.example.com:8080
 ```
+
+### Route precedence {#route-precedence}
+
+When more than one route matches a request, agentgateway picks the most specific match, comparing in the following order.
+
+1. The hostname. A route with an exact hostname match comes before a route with a wildcard hostname match, such as `*.example.com`. A wildcard hostname match comes before a route without `hostnames`.
+2. The path match type. An `exact` match comes before a `pathPrefix` match, and a `pathPrefix` match comes before a `regex` match.
+3. The path length. A longer path comes before a shorter path.
+4. The method. A match with a `method` comes before a match without one.
+5. The number of header matches. More header matches come first.
+6. The number of query parameter matches. More query parameter matches come first.
+
+A method match outranks a header match. For example, one route matches the `/headers` path prefix and the `x-version: beta` header, and another route matches the `/headers` path prefix and the `GET` method. A `GET` request with the `x-version: beta` header goes to the method route, and only requests with other methods reach the header route. To let the header decide for `GET` requests, add `method: GET` to the header route as well.
+
+If two matches are equal in every step, do not rely on the order of the routes in the configuration file to pick the route. Make one of the matches more specific instead.
 
 ## TCP routes
 

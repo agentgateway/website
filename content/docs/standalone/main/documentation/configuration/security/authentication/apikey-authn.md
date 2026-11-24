@@ -163,6 +163,53 @@ routes:
 {{< /tab >}}
 {{< /tabs >}}
 
+## Store a hash of the key {#key-hash}
+
+To keep API keys out of the configuration file, list the SHA-256 digest of a key in the `keyHash` field instead of the key in the `key` field. Write the digest as `sha256:` followed by the 64 hexadecimal characters of the digest. Clients still send the key itself. Agentgateway hashes the key that the client sends and compares the two digests, so a client that sends the digest as the key is rejected.
+
+To compute the digest of a key, run the following command.
+
+```sh
+printf '%s' 'sk-testkey-1' | shasum -a 256
+```
+
+Then, replace the `key` entry with a `keyHash` entry. A `keyHash` entry takes the same `metadata` as a `key` entry.
+
+```yaml
+apiKey:
+  mode: strict
+  keys:
+  - keyHash: "sha256:ca7dd5b04082ec2bf02bd273b75030ef8318f57cf2faba1f56926c12145b3541"
+    metadata:
+      user: test
+      role: admin
+```
+
+Agentgateway rejects a `keyHash` value in another format, such as a digest without the `sha256:` prefix, when it loads the configuration. To find the error before you apply a change, run `agentgateway --validate-only -f config.yaml`.
+
+## Read the key from another location {#location}
+
+By default, agentgateway reads the API key from the `Authorization` header, and removes the `Bearer ` prefix. To read the key from another place, set the `location` field of the `apiKey` policy to exactly one of the following options.
+
+| Option | Description |
+| --- | --- |
+| `header` | Read the key from the header that `name` sets. To remove a prefix from the header value, such as `Bearer `, set `prefix`. The prefix comparison is case-insensitive. Without `prefix`, the whole header value is the key. |
+| `queryParameter` | Read the key from the query parameter that `name` sets. |
+| `cookie` | Read the key from the cookie that `name` sets. |
+| `expression` | Read the key from the result of a CEL expression. Agentgateway does not remove a key that it reads this way, as described in [Remove a key that a CEL expression reads](#expression-location). |
+
+When you set `location`, agentgateway reads the key only from that location, and ignores a key in the `Authorization` header. After it validates the key, agentgateway removes the key from that location before it forwards the request. The following example reads the key from the `x-api-key` header.
+
+```yaml
+apiKey:
+  mode: strict
+  location:
+    header:
+      name: x-api-key
+  keys:
+  - key: sk-testkey-1
+```
+
 ## Remove a key that a CEL expression reads {#expression-location}
 
 If the `apiKey` policy reads the key with a CEL `expression` location, agentgateway does not remove the key, and the backend receives the key. To remove the key, read it from a `header` location, or remove the header with a request transformation. For an example, see [Credentials that a CEL expression reads]({{< link-hextra path="/documentation/configuration/security/backend-authn/#expression-location" >}}).

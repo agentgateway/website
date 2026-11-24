@@ -4,7 +4,7 @@ weight: 50
 description: Configure Cross-Origin Resource Sharing policies to control cross-domain requests.
 ---
 
-Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/">}}
+Attaches to: {{< badge content="Listener" path="/documentation/configuration/listeners/">}} {{< badge content="Route" path="/documentation/configuration/routes/">}}
 
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
 
@@ -55,7 +55,7 @@ CORS policies are typically implemented to limit access to server resources for 
 - `allowHeaders`
 - `exposeHeaders`
 - `allowCredentials`
-- `maxAge`
+- `maxAge`: Agentgateway sends the value in seconds. For example, `maxAge: 10m` returns the `access-control-max-age: 600` header.
 
 You can configure CORS in the UI or in your configuration file.
 
@@ -175,3 +175,12 @@ routes:
 {{< /tabs >}}
 {{% /tab %}}
 {{< /tabs >}}
+
+## CORS and authentication {#authentication}
+
+A `cors` policy runs before the authentication and authorization policies at the same level, such as `jwtAuth`, `apiKey`, `basicAuth`, `extAuthz`, and `authorization`. Because of this order, the following behavior applies.
+
+* A preflight request does not need credentials. The `cors` policy answers the preflight request before authentication runs.
+* When an authentication or authorization policy rejects the actual request, the error response, such as a `401` response, still has the CORS headers. The browser can read the error response instead of reporting a CORS error.
+
+Gateway policies run before route policies. If you attach a strict authentication policy to the gateway, such as `gateways.default.jwtAuth`, and the `cors` policy to a route, the authentication policy rejects the preflight request with a `401` response that has no CORS headers. In this setup, attach the `cors` policy to the gateway too, in the `gateways.<name>.cors` field.
