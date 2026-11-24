@@ -7,6 +7,8 @@ description: Route agentgateway LLM traffic to TypeSafe Jev with the built-in pr
 
 Use TypeSafe Jev as an LLM provider in agentgateway. The `typesafe` preset uses the TypeSafe API and the SystemOne provider format for OpenAI Decisions API requests.
 
+The preset accepts only OpenAI Decisions and TypeSafe SystemOne requests. Other requests to a TypeSafe model, such as Chat Completions, Responses, and Messages requests, fail.
+
 ## Configuration
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
