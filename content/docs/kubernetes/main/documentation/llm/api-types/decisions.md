@@ -22,7 +22,7 @@ The following settings apply to both request formats.
 
 ### Supported providers {#supported-providers}
 
-These providers accept Decisions and SystemOne requests. Other providers reject them.
+These providers accept Decisions and SystemOne requests. Other providers, such as Anthropic, Bedrock, and Vertex AI, reject both formats with a `400` error.
 
 | Provider | Decisions requests (`/v1/decisions`) | SystemOne requests (`/v1/systemone`) |
 |----------|--------------------------------------|--------------------------------------|
@@ -30,11 +30,14 @@ These providers accept Decisions and SystemOne requests. Other providers reject 
 | [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}) | Translated to the SystemOne format. | Sent natively. |
 | [Azure]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the `OpenAI` resource type | Sent natively. | Translated to the Decisions format. |
 | [Azure]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the `Foundry` resource type | Translated to the SystemOne format. | Sent natively. |
-| [Copilot]({{< link-hextra path="/integrations/llm/providers/copilot/" >}}) with `microsoft-decision-1` | Translated to the SystemOne format. | Sent natively. |
+| [Copilot]({{< link-hextra path="/integrations/llm/providers/copilot/" >}}) with a non-Anthropic model that supports SystemOne, such as `microsoft-decision-1` | Translated to the SystemOne format. | Sent natively. |
+| [Gemini]({{< link-hextra path="/integrations/llm/providers/gemini/#decisions" >}}) | Translated to the Gemini Decisions API. | Translated to the Gemini Decisions API. |
 | [Custom]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with `Decisions`, without `SystemOne` | Sent natively. | Translated to the Decisions format. |
 | [Custom]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with `SystemOne`, without `Decisions` | Translated to the SystemOne format. | Sent natively. |
 
 If a custom provider declares both formats, each request uses its original format.
+
+{{< reuse "agw-docs/snippets/gemini-decisions-limits.md" >}}
 
 A custom provider must declare `Decisions` or `SystemOne`. Otherwise, it rejects both request formats with a `400` error. The error names the request format and provider:
 
@@ -55,6 +58,8 @@ Requests default to the `Completions` route type. On your OpenAI {{< reuse "agw-
 - `/v1/systemone` to `SystemOne`.
 
 If you already set up [multiple endpoints]({{< link-hextra path="/integrations/llm/providers/multiple-endpoints/" >}}), add both paths to your existing {{< reuse "agw-docs/snippets/backend.md" >}}.
+
+This guide uses OpenAI. For another provider in the [supported providers](#supported-providers) table, add the same two `routes` entries to that provider's {{< reuse "agw-docs/snippets/backend.md" >}}. For example setups, see [Azure]({{< link-hextra path="/integrations/llm/providers/azure/#use-decisions-on-azure" >}}) and [Gemini]({{< link-hextra path="/integrations/llm/providers/gemini/#decisions" >}}).
 
 1. Update the `openai` {{< reuse "agw-docs/snippets/backend.md" >}} from the OpenAI setup guide. This command replaces that {{< reuse "agw-docs/snippets/backend.md" >}}.
 

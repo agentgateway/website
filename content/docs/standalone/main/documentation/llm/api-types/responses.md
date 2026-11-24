@@ -64,6 +64,8 @@ Responses replies follow OpenAI usage conventions, even when agentgateway conver
 
 When a Gemini OpenAI-compatible response reports reasoning tokens separately from `usage.completion_tokens`, converted Responses replies include both visible output and reasoning tokens in `usage.output_tokens`.
 
+When a Gemini model returns a tool call, agentgateway puts the Gemini thought signature in the `encrypted_content` of a `reasoning` item before the `function_call` item. Keep that item in the `input` of the next request. Agentgateway sends the signature back to Gemini with the tool call. Gemini requires the signature to accept the tool result.
+
 ## Using the API
 
 Using the Responses API works exactly the same as consuming OpenAI directly, with only a change to the base URL. This allows you to continue using existing code and SDKs.

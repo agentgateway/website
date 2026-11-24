@@ -101,3 +101,77 @@ For HTTP(S) signed URLs, MIME type detection uses the extension before the query
   ]
 }
 ```
+
+## Use structured outputs {#structured-outputs}
+
+{{< reuse "agw-docs/snippets/gemini-structured-outputs.md" >}}
+
+```sh
+curl "localhost:4000/v1/chat/completions" -H content-type:application/json -d '{
+  "model": "gemini-2.5-flash",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Return one calendar event for tomorrow."
+    }
+  ],
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "calendar_event",
+      "strict": true,
+      "schema": {
+        "$defs": {
+          "CalendarEvent": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "date": { "type": "string" }
+            },
+            "required": ["name", "date"]
+          }
+        },
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "event": { "$ref": "#/$defs/CalendarEvent" }
+        },
+        "required": ["event"]
+      }
+    }
+  }
+}' | jq
+```
+
+Example output, in which `content` is a JSON string that matches the schema:
+
+```json
+{
+  "model": "gemini-2.5-flash",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\"event\":{\"name\":\"Team sync\",\"date\":\"2026-11-25\"}}"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  ...
+}
+```
+
+## Filter Anthropic beta headers {#anthropic-beta-headers}
+
+Vertex AI rejects a Claude request if the `anthropic-beta` header contains a value that Vertex AI does not support. Clients such as Claude Code send several of these values. When a `/v1/messages` or `/v1/messages/count_tokens` request reaches a Claude model on Vertex AI, agentgateway removes the `anthropic-beta` values that are not on a built-in allowlist. The allowlist has the beta values that Vertex AI accepts, such as `context-1m-2025-08-07` and `interleaved-thinking-2025-05-14`.
+
+To change the allowlist, set the `AGENTGATEWAY_VERTEX_ANTHROPIC_BETA_HEADERS` environment variable to a comma-separated list of beta values before you start agentgateway. The list replaces the built-in allowlist. Include the `default` value to keep the built-in allowlist and add to it. The following example keeps the built-in allowlist and adds one beta value.
+
+```sh
+export AGENTGATEWAY_VERTEX_ANTHROPIC_BETA_HEADERS="default,my-new-beta-2026-12-01"
+agentgateway -f config.yaml
+```
+
+With this setting, a request with `anthropic-beta: my-new-beta-2026-12-01,context-1m-2025-08-07,unsupported-beta` reaches Vertex AI with `anthropic-beta: my-new-beta-2026-12-01,context-1m-2025-08-07`.

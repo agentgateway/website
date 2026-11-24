@@ -161,6 +161,8 @@ Use `virtualModel.weighted` to distribute requests across targets by relative we
    | `targets[].modelRef.name` | `internal-fast` | An `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` in the same namespace. Cross-namespace references are not supported. |
    | `targets[].weight` | `80` | Relative weight, not a percentage. Weights are normalized across targets. Defaults to `1`. |
 
+   Every `modelRef` in this guide also accepts the optional `group` and `kind` fields, such as `{{< reuse "agw-docs/snippets/group.md" >}}` and `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}`. Set both or omit both. If you omit them, the reference selects a model of the same kind as the virtual model.
+
    > [!NOTE]
    > When `modelRef` points to a model with a wildcard `match.model`, also set `targets[].model` to the concrete name to request through it, such as `openai/gpt-5-mini`. Otherwise, the target's exact `match.model` value is used.
 

@@ -64,3 +64,104 @@ llm:
 {{< reuse "agw-docs/snippets/gemini-reasoning-effort.md" >}}
 
 For Gemma 4 models, `none`, `minimal`, and `low` use `thinkingLevel: "minimal"`, and `medium`, `high`, `xhigh`, and `max` use `thinkingLevel: "high"`.
+
+## Use Decisions and SystemOne {#decisions}
+
+Gemini decision models, such as `gemini-decision-1`, can answer OpenAI Decisions (`/v1/decisions`) and TypeSafe SystemOne (`/v1/systemone`) requests. Agentgateway converts both formats to the Gemini Decisions API (`/v1beta/decisions`) and converts the answers back to the client's format. The conversion is best effort.
+
+With the `llm` configuration, both paths are mapped automatically. Add a model entry for the decision model.
+
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+llm:
+  models:
+  - name: gemini-decision-1
+    provider: gemini
+    params:
+      apiKey: "$GEMINI_API_KEY"
+```
+
+Send a Decisions request.
+
+```sh
+curl "localhost:4000/v1/decisions" -H content-type:application/json -d '{
+  "model": "gemini-decision-1",
+  "input": [{"role": "user", "content": [{"type": "input_text", "text": "The package was left in the rain and the box is soaked through."}]}],
+  "questions": [{"type": "predicate", "name": "visible_damage", "instructions": "Does the customer report visible damage to the package?"}]
+}' | jq
+```
+
+Example output:
+
+```json
+{
+  "model": "gemini-decision-1",
+  "answers": [
+    {"type": "predicate", "name": "visible_damage", "probability": 0.64}
+  ],
+  "usage": {"input_tokens": 156, "output_tokens": 0, "total_tokens": 156, ...}
+}
+```
+
+For the supported request content, see [Decisions]({{< link-hextra path="/documentation/llm/api-types/decisions/#supported-providers" >}}).
+
+## Use structured outputs {#structured-outputs}
+
+{{< reuse "agw-docs/snippets/gemini-structured-outputs.md" >}}
+
+```sh
+curl "localhost:4000/v1/chat/completions" -H content-type:application/json -d '{
+  "model": "gemini/gemini-2.5-flash",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Return one calendar event for tomorrow."
+    }
+  ],
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "calendar_event",
+      "strict": true,
+      "schema": {
+        "$defs": {
+          "CalendarEvent": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "date": { "type": "string" }
+            },
+            "required": ["name", "date"]
+          }
+        },
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "event": { "$ref": "#/$defs/CalendarEvent" }
+        },
+        "required": ["event"]
+      }
+    }
+  }
+}' | jq
+```
+
+Example output, in which `content` is a JSON string that matches the schema:
+
+```json
+{
+  "model": "gemini-2.5-flash",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\"event\":{\"name\":\"Team sync\",\"date\":\"2026-11-25\"}}"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  ...
+}
+```

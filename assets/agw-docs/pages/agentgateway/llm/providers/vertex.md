@@ -242,8 +242,6 @@ Configure [Vertex AI](https://cloud.google.com/products/gemini-enterprise-agent-
    }
    ```
 
-{{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
-
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" %}}
 ## Send file content by URI {#send-file-content-by-uri}
 
@@ -282,5 +280,141 @@ Use the following request body with the route that you created.
 {{% /version %}}
 
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
+## Use structured outputs {#structured-outputs}
+
+{{< reuse "agw-docs/snippets/gemini-structured-outputs.md" >}}
+
+1. Save the request body to a file.
+
+   ```sh
+   cat > structured-request.json <<'EOF'
+   {
+     "model": "",
+     "messages": [
+       {
+         "role": "user",
+         "content": "Return one calendar event for tomorrow."
+       }
+     ],
+     "response_format": {
+       "type": "json_schema",
+       "json_schema": {
+         "name": "calendar_event",
+         "strict": true,
+         "schema": {
+           "$defs": {
+             "CalendarEvent": {
+               "type": "object",
+               "additionalProperties": false,
+               "properties": {
+                 "name": { "type": "string" },
+                 "date": { "type": "string" }
+               },
+               "required": ["name", "date"]
+             }
+           },
+           "type": "object",
+           "additionalProperties": false,
+           "properties": {
+             "event": { "$ref": "#/$defs/CalendarEvent" }
+           },
+           "required": ["event"]
+         }
+       }
+     }
+   }
+   EOF
+   ```
+
+2. Send the request. If you used the **Custom route** tab, change the path to `/vertex`.
+
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json -d @structured-request.json | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/v1/chat/completions" -H content-type:application/json -d @structured-request.json | jq
+   ```
+
+   Example output, in which `content` is a JSON string that matches the schema:
+
+   ```json
+   {
+     "model": "gemini-2.5-flash",
+     "choices": [
+       {
+         "index": 0,
+         "message": {
+           "role": "assistant",
+           "content": "{\"event\":{\"name\":\"Team sync\",\"date\":\"2026-11-25\"}}"
+         },
+         "finish_reason": "stop"
+       }
+     ],
+     ...
+   }
+   ```
+{{% /version %}}
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
 {{< reuse "agw-docs/snippets/gemini-reasoning-effort.md" >}}
 {{% /version %}}
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
+## Filter Anthropic beta headers {#anthropic-beta-headers}
+
+Vertex AI rejects a Claude request if the `anthropic-beta` header contains a value that Vertex AI does not support. Clients such as Claude Code send several of these values. When a `/v1/messages` or `/v1/messages/count_tokens` request reaches a Claude model on Vertex AI, {{< reuse "agw-docs/snippets/agentgateway.md" >}} removes the `anthropic-beta` values that are not on a built-in allowlist. The allowlist has the beta values that Vertex AI accepts, such as `context-1m-2025-08-07` and `interleaved-thinking-2025-05-14`.
+
+To change the allowlist, set the `AGENTGATEWAY_VERTEX_ANTHROPIC_BETA_HEADERS` environment variable on the proxy to a comma-separated list of beta values. The list replaces the built-in allowlist. Include the `default` value to keep the built-in allowlist and add to it.
+
+The following steps create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource and attach it to the gateway. If the gateway already refers to an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, add the `env` entry from step 1 to that resource instead, and skip to step 3.
+
+1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that sets the environment variable. The following example keeps the built-in allowlist and adds one beta value.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+   metadata:
+     name: vertex-anthropic-beta
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     env:
+     - name: AGENTGATEWAY_VERTEX_ANTHROPIC_BETA_HEADERS
+       value: "default,my-new-beta-2026-12-01"
+   EOF
+   ```
+
+2. Attach the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to the gateway. The proxy reads the variable when it starts, so the change takes effect when the proxy pods restart with the new setting.
+
+   ```sh
+   kubectl patch gateway agentgateway-proxy \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --type merge \
+     --patch '{"spec":{"infrastructure":{"parametersRef":{"group":"{{< reuse "agw-docs/snippets/group.md" >}}","kind":"{{< reuse "agw-docs/snippets/gatewayparameters.md" >}}","name":"vertex-anthropic-beta"}}}}'
+   ```
+
+   Example output:
+
+   ```
+   gateway.gateway.networking.k8s.io/agentgateway-proxy patched
+   ```
+
+3. Confirm that the proxy deployment sets the variable.
+
+   ```sh
+   kubectl get deployment agentgateway-proxy \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -o jsonpath='{.spec.template.spec.containers[?(@.name=="agentgateway")].env[?(@.name=="AGENTGATEWAY_VERTEX_ANTHROPIC_BETA_HEADERS")].value}'
+   ```
+
+   Example output:
+
+   ```
+   default,my-new-beta-2026-12-01
+   ```
+{{% /version %}}
+
+{{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
