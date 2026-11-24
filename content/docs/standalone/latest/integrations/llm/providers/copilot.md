@@ -65,6 +65,17 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   }'
 ```
 
+To generate embeddings, send a request to `/v1/embeddings` with a Copilot embedding model such as `text-embedding-3-small`. This release requires an array of strings for `input`. Agentgateway forwards the request to Copilot's `/embeddings` endpoint and fills missing OpenAI `object` and `model` fields in the response.
+
+```bash
+curl -X POST http://localhost:4000/v1/embeddings \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": ["Hello from GitHub Copilot!"],
+    "model": "text-embedding-3-small"
+  }'
+```
+
 ## Request formats
 
 Copilot models do not all accept the same API format. Agentgateway chooses the formats that it sends to Copilot from the model name, and it converts the client request when the client calls a different format.
