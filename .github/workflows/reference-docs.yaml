@@ -292,6 +292,17 @@ jobs:
           KGATEWAY_DIR="agentgateway/controller" \
           python3 website/scripts/generate-ref-docs.py
 
+      # Adds rows for new request span attributes to the hand-written attribute reference, with
+      # empty descriptions for the writer to fill in on this PR. Runs only for the in-development
+      # version, and skips refs that predate upstream schema/tracing.md.
+      - name: Sync trace span attributes
+        run: |
+          LINK_VERSION="${{ matrix.link_version }}" \
+          DOC_VERSION="${{ matrix.doc_version }}" \
+          WEBSITE_DIR="website" \
+          AGENTGATEWAY_DIR="agentgateway" \
+          python3 website/scripts/sync_trace_attributes.py
+
       - name: Generate agctl CLI reference
         run: |
           LINK_VERSION="${{ matrix.link_version }}" \
@@ -413,6 +424,8 @@ jobs:
 
             Source: agentgateway/agentgateway at `${{ matrix.ref }}`.
             Updates API reference (including shared types such as CEL expression) and interactive kubespec widgets, Helm (agentgateway + agentgateway-crds for Kubernetes mode, agentgateway-standalone for standalone mode), control plane metrics, and the agctl CLI reference for the ${{ matrix.link_version }} version.
+
+            If this PR changes `assets/agw-docs/pages/observability/traces/attribute-reference.md`, it adds new trace span attributes with empty descriptions. Fill in each description before you merge. The "Sync trace span attributes" step in the workflow run also lists attributes that the page documents but the request span no longer emits.
 
             This PR was created automatically by the reference-docs workflow.
 
