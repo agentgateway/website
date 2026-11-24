@@ -53,15 +53,23 @@ sequenceDiagram
 Allowed requests are as follows.
 
 - Safe methods (`GET`, `HEAD`, `OPTIONS`) from any origin
+- Requests with `Sec-Fetch-Site: same-origin` or `Sec-Fetch-Site: none`
 - Same-origin requests, where the host and port in `Origin` match `Host`, regardless of scheme
 - Requests from origins in `additionalOrigins`
-- Requests with `Sec-Fetch-Site: same-origin` or `Sec-Fetch-Site: none`
+- Requests without an `Origin` header and without a `Sec-Fetch-Site` header, such as most requests from non-browser clients like `curl`
+
+The policy checks a request with a state-changing method in the following order.
+
+1. If the request has a `Sec-Fetch-Site` header, that header decides. The `same-origin` and `none` values are allowed. Any other value, such as `cross-site` or `same-site`, is allowed only when the `Origin` header is in `additionalOrigins`. In this case, the policy does not compare `Origin` with `Host`, so a `same-site` request from another subdomain is blocked unless you add that origin to `additionalOrigins`.
+2. If the request has no `Sec-Fetch-Site` header and no `Origin` header, the request is allowed.
+3. If the host and port in `Origin` match `Host`, the request is allowed.
+4. If `Origin` is in `additionalOrigins`, the request is allowed. Otherwise, the request is blocked.
 
 ### Blocked requests
 
 Blocked requests, which receive a `403 Forbidden` response with the message "CSRF validation failed", are as follows.
 
-- Cross-site requests with `Sec-Fetch-Site: cross-site` (unless trusted)
+- Requests with a `Sec-Fetch-Site` value other than `same-origin` or `none`, such as `cross-site` or `same-site` (unless trusted)
 - Cross-site requests where `Origin` doesn't match `Host` (unless trusted)
 - Requests without `Sec-Fetch-Site` and with `Origin: null` (unless trusted)
 - Malformed `Origin` headers in cross-site contexts

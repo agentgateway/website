@@ -225,6 +225,31 @@ routes:
 {{% /tab %}}
 {{< /tabs >}}
 
+## Read the token from another location {#location}
+
+By default, agentgateway reads the token from the `Authorization` header, and removes the `Bearer ` prefix. To read the token from another place, set the `location` field of the `jwtAuth` policy to exactly one of the following options.
+
+| Option | Description |
+| --- | --- |
+| `header` | Read the token from the header that `name` sets. To remove a prefix from the header value, such as `Bearer `, set `prefix`. The prefix comparison is case-insensitive. Without `prefix`, the whole header value is the token. |
+| `queryParameter` | Read the token from the query parameter that `name` sets. |
+| `cookie` | Read the token from the cookie that `name` sets. |
+| `expression` | Read the token from the result of a CEL expression. Agentgateway does not remove a token that it reads this way, as described in [Remove a token that a CEL expression reads](#expression-location). |
+
+When you set `location`, agentgateway reads the token only from that location, and ignores a token in the `Authorization` header. In `strict` mode, a request that sends the token only in the `Authorization` header is rejected with a `401` response. The following example reads the token from the `x-jwt-token` header.
+
+```yaml
+jwtAuth:
+  mode: strict
+  issuer: agentgateway.dev
+  audiences: [test.agentgateway.dev]
+  jwks:
+    file: ./manifests/jwt/pub-key
+  location:
+    header:
+      name: x-jwt-token
+```
+
 ## Remove a token that a CEL expression reads {#expression-location}
 
 If the `jwtAuth` policy reads the token with a CEL `expression` location, agentgateway does not remove the token, and the backend receives the token. To remove the token, read it from a `header` location, or remove the header with a request transformation. For an example, see [Credentials that a CEL expression reads]({{< link-hextra path="/documentation/configuration/security/backend-authn/#expression-location" >}}).

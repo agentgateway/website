@@ -53,3 +53,23 @@ routes:
 ```
 {{< /tab >}}
 {{< /tabs >}}
+
+Each part of the redirect is optional. The redirect keeps every part of the request URL that you do not set.
+
+| Setting | Description |
+| --- | --- |
+| `scheme` | Replaces the scheme. If you set `scheme` to `http` or `https` without `authority`, the redirect drops the port of the request, so the client uses the default port of the new scheme. |
+| `authority.full` | Replaces the host and the port. |
+| `authority.host` | Replaces the host. The redirect keeps the port of the request, unless you also set `scheme`. |
+| `authority.port` | Replaces the port. If the port is the default port of the scheme, such as `443` for `https`, the `location` header leaves out the port. |
+| `path.full` | Replaces the path, and keeps the query string. |
+| `path.prefix` | Replaces the part of the path that the route's `pathPrefix` match matched, and keeps the rest of the path and the query string. |
+| `status` | Sets the status code of the redirect response. Defaults to `302`. |
+
+The following table shows the `location` header for a few redirect settings.
+
+| Request | Route match and redirect settings | `location` header |
+| --- | --- | --- |
+| `http://localhost:3000/old-host/a?x=1` | `authority.host: example.com` | `http://example.com:3000/old-host/a?x=1` |
+| `http://localhost:3000/v1/users?x=1` | `pathPrefix: /v1` match, `path.prefix: /v2` | `http://localhost:3000/v2/users?x=1` |
+| `http://localhost:3000/secure/a` | `scheme: https` | `https://localhost/secure/a` |

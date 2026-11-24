@@ -4,7 +4,7 @@ weight: 12
 description: Define allow, deny, and require rules using CEL expressions.
 ---
 
-Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/">}}
+Attaches to: {{< badge content="Route" path="/documentation/configuration/routes/">}} {{< badge content="Backend" path="/documentation/configuration/backends/">}}
 
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
 
@@ -166,6 +166,22 @@ These rules behave the same when a JWT with an audience claim is present, but th
 For mandatory conditions such as "all requests must have a valid audience claim," prefer `require`, which fails closed.
 
 Unlike `allow` rules (where any one match permits the request), all `require` rules must match for the request to proceed.
+
+## Authorize after backend selection {#backend}
+
+You can also attach an `authorization` policy to a backend, in the `policies` field of a backend in a route. The backend policy runs after agentgateway selects that backend, so the backends of one route can have different rules. A route-level `authorization` policy runs before backend selection. If you set both, a request must pass both policies.
+
+```yaml
+routes:
+- backends:
+  - host: localhost:8080
+    policies:
+      authorization:
+        rules:
+        - deny: 'request.method == "POST"'
+```
+
+In this example, a `POST` request to the route is denied with a `403 Forbidden` response, and other requests are forwarded to the backend.
 
 ## LLM authorization
 

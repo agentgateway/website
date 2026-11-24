@@ -15,12 +15,17 @@ Attaches to: {{< badge content="Listener" path="/documentation/configuration/lis
 > At a minimum, use basic authentication along with TLS encryption.
 
 The **htpasswd** field specifies the username/password pairs. See the [htpasswd](https://httpd.apache.org/docs/current/programs/htpasswd.html) documentation. If you set it to `{file: <path>}`, agentgateway watches the file and reloads the configuration when the file changes, so you can add users or rotate passwords without a restart.
-The **realm** field, optionally, specifies the [realm name](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Authentication#www-authenticate_and_proxy-authenticate_headers) returned in error responses.
+The **realm** field, optionally, specifies the [realm name](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Authentication#www-authenticate_and_proxy-authenticate_headers) returned in error responses. The realm defaults to `Restricted`. A request that fails authentication gets a `401 Unauthorized` response with a `WWW-Authenticate: Basic realm="<realm>"` header, which makes a browser prompt for credentials.
+
+The htpasswd entries can use bcrypt hashes (`htpasswd -B`, with the `$2y$`, `$2a$`, or `$2b$` prefix), Apache MD5 hashes (`htpasswd -m`, with the `$apr1$` prefix), SHA-1 hashes (`htpasswd -s`, with the `{SHA}` prefix), or crypt hashes (`htpasswd -d`). Plaintext passwords are not supported.
 
 Additionally, authentication can run in two different modes:
 * **Strict**: A valid username/password pair must be present.
 * **Optional** (default): If a username/password pair exists, validate it.  
   *Warning*: This allows requests without a username/password pair!
+
+> [!WARNING]
+> Agentgateway expands environment variables in the whole configuration file before it parses the file, including in comments. In an inline `htpasswd` value, write each `$` of a hash as `$$`, as in the following examples. A single `$` makes the configuration fail to load, with an error about an environment variable that is not found. A file that you reference with `htpasswd.file` is read as is, so do not escape the `$` characters in that file.
 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
