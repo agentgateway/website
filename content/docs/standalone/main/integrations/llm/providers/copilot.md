@@ -65,6 +65,17 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   }'
 ```
 
+To generate embeddings, send a request to `/v1/embeddings` with a Copilot embedding model such as `text-embedding-3-small`. The `input` field accepts a string or an array of strings. Agentgateway wraps a string in an array before forwarding the request to Copilot's `/embeddings` endpoint and fills missing OpenAI `object` and `model` fields in the response.
+
+```bash
+curl -X POST http://localhost:4000/v1/embeddings \
+  -H "Content-Type: application/json" \
+  -d '{
+    "input": "Hello from GitHub Copilot!",
+    "model": "text-embedding-3-small"
+  }'
+```
+
 To evaluate classification questions with `microsoft-decision-1`, send a [Decisions API]({{< link-hextra path="/documentation/llm/api-types/decisions/" >}}) request to `/v1/decisions` or a native SystemOne request to `/v1/systemone`. Agentgateway converts `/v1/decisions` requests and responses to and from Copilot's `/v1/systemone` endpoint, and forwards `/v1/systemone` requests unchanged.
 
 ```bash
@@ -109,11 +120,12 @@ Copilot models do not all accept the same API format. Agentgateway chooses the f
 | `gpt-5.4`, `gpt-5-mini` | Chat Completions and Responses. |
 | Other `gpt-*`, `grok-*`, `mai-*` | Responses. |
 | `microsoft-decision-*` | SystemOne, which is sent to `/v1/systemone`. |
+| `text-embedding-*` | Embeddings, which is sent to `/embeddings`. |
 | Any other name | Chat Completions. |
 
 Tags in the model catalog take precedence over these built-in rules.
 
-For example, a Responses request to `gpt-4.1` is converted to Chat Completions, a Decisions request to `microsoft-decision-1` is converted to SystemOne, and a Messages request to a `claude-*` model passes through. A Chat Completions request to a model that accepts only Responses, such as `gpt-5`, or to `microsoft-decision-1`, fails.
+For example, a Responses request to `gpt-4.1` is converted to Chat Completions, a Decisions request to `microsoft-decision-1` is converted to SystemOne, and a Messages request to a `claude-*` model passes through. A Chat Completions request fails for models that accept only Responses, such as `gpt-5`, and for `microsoft-decision-1` or `text-embedding-*` models.
 
 ## Troubleshoot
 

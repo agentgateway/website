@@ -383,6 +383,10 @@ config:
     targets: []
 ```
 
+{{< version exclude-if="1.5.x,1.6.x,1.7.x" >}}
+Resource writes do not all have this limitation. In `hybrid` mode, an `llm.policy` resource can create `llm.policies` in the merged configuration even when the baseline file does not have an `llm` section or `llm.settings` resource. An `mcp.target` resource can also create the `mcp` section.
+{{< /version >}}
+
 > [!NOTE]
 > This constraint comes from `hybrid` mode, not from the read-only mount, so it applies to a binary or Docker installation in `hybrid` mode as well. Only `file` mode lets the UI add a section, because only `file` mode writes to your configuration file.
 
