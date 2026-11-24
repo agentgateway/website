@@ -279,7 +279,7 @@ Each entry includes the OpenAI model object fields `id`, `object`, `created`, an
 - `capabilities`: Whether the model supports `reasoning`, `structured_outputs`, `tools`, and `temperature`.
 - `supported_parameters`: The request parameters that the model accepts, derived from its limits and capabilities.
 
-Each entry also lists `preferred_endpoints`. This field holds the client endpoint paths that the gateway parses for the model, such as `/chat/completions`, `/responses`, or `/embeddings`. By default, the list holds the chat paths that the model's provider supports. If the model's catalog entry sets [`endpoints`]({{< link-hextra path="/documentation/llm/cost-controls/costs/#catalog-endpoints" >}}), that list replaces the default, limited to the paths that the provider can serve. For Bedrock models, the chat paths are listed only if the catalog entry records output `modalities`. A wildcard that stays unexpanded lists no endpoints.
+Each entry also lists `preferred_endpoints`. This field holds the client endpoint paths that the gateway parses for the model, such as `/chat/completions`, `/responses`, or `/embeddings`. For most providers, the list holds the chat paths that the provider supports by default. For a `custom` provider, the list also includes the other paths in its `formats`. If the model's catalog entry sets [`endpoints`]({{< link-hextra path="/documentation/llm/cost-controls/costs/#catalog-endpoints" >}}), that list replaces the default, limited to the paths that the provider can serve. For Bedrock models, the chat paths are listed only if the catalog entry records output `modalities`. A wildcard that stays unexpanded lists no endpoints.
 
 To return only the first listed models, add the `limit` query parameter. To look up one model by ID, send a request to `/v1/models/<model-id>` or `/models/<model-id>`.
 
@@ -292,7 +292,7 @@ Example output:
 ```json
 {
   "data": [
-    {"id": "gpt-4", "object": "model", "created": 1699228800, "owned_by": "openai", "name": "GPT-4", ..., "preferred_endpoints": ["/chat/completions", "/responses"]},
+    {"id": "gpt-4", "object": "model", "created": 1785166485, "owned_by": "openai", "preferred_endpoints": ["/chat/completions", "/responses"]},
     {
       "id": "gpt-5-mini",
       "object": "model",
@@ -316,7 +316,7 @@ Example output:
 }
 ```
 
-If the catalog has no metadata for a model, its entry has only the four OpenAI fields and `preferred_endpoints`, and `created` is the time that the model was configured.
+The built-in catalog has no metadata for `gpt-4`, so that entry has only the four OpenAI fields and `preferred_endpoints`, and `created` is the time that the model was configured.
 
 Wildcard models expand to matching IDs from the [model catalog]({{< link-hextra path="/documentation/llm/cost-controls/costs/" >}}) for their `provider`. For example, `openai/*` expands to IDs such as `openai/gpt-4o`. The catalog combines the built-in catalog with any catalogs that you configure. The discovery response uses catalog metadata for the extra fields.
 

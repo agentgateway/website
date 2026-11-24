@@ -65,11 +65,11 @@ llm:
 
 For Gemma 4 models, `none`, `minimal`, and `low` use `thinkingLevel: "minimal"`, and `medium`, `high`, `xhigh`, and `max` use `thinkingLevel: "high"`.
 
-## Decisions and SystemOne {#decisions}
+## Use Decisions and SystemOne {#decisions}
 
 Gemini decision models, such as `gemini-decision-1`, can answer OpenAI Decisions (`/v1/decisions`) and TypeSafe SystemOne (`/v1/systemone`) requests. Agentgateway converts both formats to the Gemini Decisions API (`/v1beta/decisions`) and converts the answers back to the client's format. The conversion is best effort.
 
-With the `llm` configuration, agentgateway maps both paths for you. Add a model entry for the decision model.
+With the `llm` configuration, both paths are mapped automatically. Add a model entry for the decision model.
 
 ```yaml
 # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
@@ -81,16 +81,36 @@ llm:
       apiKey: "$GEMINI_API_KEY"
 ```
 
-For example requests and the supported request content, see [Decisions]({{< link-hextra path="/documentation/llm/api-types/decisions/#supported-providers" >}}).
+Send a Decisions request.
 
-## Use structured outputs {#structured-outputs}
+```sh
+curl "localhost:4000/v1/decisions" -H content-type:application/json -d '{
+  "model": "gemini-decision-1",
+  "input": [{"role": "user", "content": [{"type": "input_text", "text": "The package was left in the rain and the box is soaked through."}]}],
+  "questions": [{"type": "predicate", "name": "visible_damage", "instructions": "Does the customer report visible damage to the package?"}]
+}' | jq
+```
 
-For OpenAI-compatible Chat Completions requests, set `response_format.type` to `json_schema` to request structured JSON from Gemini models. The provider request uses Gemini `responseJsonSchema`. Standard JSON Schema keywords, such as `$defs`, `$ref`, `anyOf`, and `additionalProperties`, pass through unchanged. No `propertyOrdering` field is injected.
-
-Use the following request body with the route that you configured.
+Example output:
 
 ```json
 {
+  "model": "gemini-decision-1",
+  "answers": [
+    {"type": "predicate", "name": "visible_damage", "probability": 0.64}
+  ],
+  "usage": {"input_tokens": 156, "output_tokens": 0, "total_tokens": 156, ...}
+}
+```
+
+For the supported request content, see [Decisions]({{< link-hextra path="/documentation/llm/api-types/decisions/#supported-providers" >}}).
+
+## Use structured outputs {#structured-outputs}
+
+{{< reuse "agw-docs/snippets/gemini-structured-outputs.md" >}}
+
+```sh
+curl "localhost:4000/v1/chat/completions" -H content-type:application/json -d '{
   "model": "gemini/gemini-2.5-flash",
   "messages": [
     {
@@ -124,7 +144,24 @@ Use the following request body with the route that you configured.
       }
     }
   }
-}
+}' | jq
 ```
 
-Tool definitions use a different schema path. Schemas in `tools[].function.parameters` are normalized for Gemini tool parameters. `$defs` and `$ref` are inlined. Unsupported fields such as `additionalProperties` are removed. A caller-provided `propertyOrdering` is preserved.
+Example output, in which `content` is a JSON string that matches the schema:
+
+```json
+{
+  "model": "gemini-2.5-flash",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\"event\":{\"name\":\"Team sync\",\"date\":\"2026-11-25\"}}"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  ...
+}
+```

@@ -149,7 +149,7 @@ Three cases do not round-trip.
 
 Function tools keep their `strict` setting. A tool that omits `strict` is sent without it.
 
-When a Gemini model returns a tool call, agentgateway puts the Gemini thought signature in an empty `thinking` block before the `tool_use` block. Keep that block in the message history of the next request. Agentgateway sends the signature back to Gemini with the tool call, which Gemini requires to accept the tool result.
+When a Gemini model returns a tool call, agentgateway adds a `thinking` block with empty text before the `tool_use` block. The `signature` field of that block holds the Gemini thought signature. Keep that block in the message history of the next request. Agentgateway sends the signature back to Gemini with the tool call. Gemini requires the signature to accept the tool result.
 
 The `stop_sequences` field is sent to the provider as `stop`. The reply reports which stop sequence ended generation only when the engine names it. When the Chat Completions reply has `finish_reason: "stop"` and a string in the vLLM `stop_reason` field or the SGLang `matched_stop` field, the Messages reply has `stop_reason: "stop_sequence"` and that string in `stop_sequence`. A numeric stop-token ID is ignored, so a natural end of turn still returns `stop_reason: "end_turn"`. This applies to buffered and streamed replies.
 

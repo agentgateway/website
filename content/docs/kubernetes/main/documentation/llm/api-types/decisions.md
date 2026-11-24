@@ -30,19 +30,14 @@ These providers accept Decisions and SystemOne requests. Other providers, such a
 | [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}}) | Translated to the SystemOne format. | Sent natively. |
 | [Azure]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the `OpenAI` resource type | Sent natively. | Translated to the Decisions format. |
 | [Azure]({{< link-hextra path="/integrations/llm/providers/azure/" >}}) with the `Foundry` resource type | Translated to the SystemOne format. | Sent natively. |
-| [Copilot]({{< link-hextra path="/integrations/llm/providers/copilot/" >}}) with a non-Anthropic model, such as `microsoft-decision-1` | Translated to the SystemOne format. | Sent natively. |
+| [Copilot]({{< link-hextra path="/integrations/llm/providers/copilot/" >}}) with a non-Anthropic model that supports SystemOne, such as `microsoft-decision-1` | Translated to the SystemOne format. | Sent natively. |
 | [Gemini]({{< link-hextra path="/integrations/llm/providers/gemini/#decisions" >}}) | Translated to the Gemini Decisions API. | Translated to the Gemini Decisions API. |
 | [Custom]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with `Decisions`, without `SystemOne` | Sent natively. | Translated to the Decisions format. |
 | [Custom]({{< link-hextra path="/integrations/llm/providers/custom/" >}}) with `SystemOne`, without `Decisions` | Translated to the SystemOne format. | Sent natively. |
 
 If a custom provider declares both formats, each request uses its original format.
 
-The Gemini provider sends both formats to the Gemini Decisions API (`/v1beta/decisions`) and translates the answers back to the client's format. The translation is best effort, with the following limits:
-
-- Decisions input can contain only `user` messages. Requests with assistant or tool messages return a `400` error. Text and image content are supported.
-- SystemOne requests with image `assets` return a `400` error. The SystemOne `state` is sent to Gemini as one text input.
-- Only the predicate (`noul`), choice, and score question types are supported. Choice and score questions need at least two options.
-- The Vertex AI provider does not serve Gemini decision models.
+{{< reuse "agw-docs/snippets/gemini-decisions-limits.md" >}}
 
 A custom provider must declare `Decisions` or `SystemOne`. Otherwise, it rejects both request formats with a `400` error. The error names the request format and provider:
 

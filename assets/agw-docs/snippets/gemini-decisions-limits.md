@@ -1,0 +1,5 @@
+The {{< conditional-text include-if="kubernetes" >}}Gemini{{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}`gemini`{{< /conditional-text >}} provider sends both formats to the Gemini Decisions API (`/v1beta/decisions`) and translates the answers back to the client's format. The translation is best effort, with the following limits:
+- Decisions input can contain only `user` messages. Requests with assistant or tool messages return a `400` error. Text, image, and `input_json` content are supported. The `input_json` content is sent to Gemini as text.
+- SystemOne requests with image `assets` return a `400` error. The SystemOne `state` is sent to Gemini as one text input.
+- Choice questions need at least two choices, and score questions need at least two levels. Otherwise, the request returns a `400` error.
+- The response leaves out any question that Gemini does not answer or answers with a different question type. The request does not fail, so the response can have fewer answers than the request has questions.

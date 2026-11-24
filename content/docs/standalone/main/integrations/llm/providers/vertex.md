@@ -104,12 +104,10 @@ For HTTP(S) signed URLs, MIME type detection uses the extension before the query
 
 ## Use structured outputs {#structured-outputs}
 
-For OpenAI-compatible Chat Completions requests, set `response_format.type` to `json_schema` to request structured JSON from Gemini models on Vertex AI. The provider request uses Gemini `responseJsonSchema`. Standard JSON Schema keywords, such as `$defs`, `$ref`, `anyOf`, and `additionalProperties`, pass through unchanged. No `propertyOrdering` field is injected.
+{{< reuse "agw-docs/snippets/gemini-structured-outputs.md" >}}
 
-Use the following request body with the route that you configured.
-
-```json
-{
+```sh
+curl "localhost:4000/v1/chat/completions" -H content-type:application/json -d '{
   "model": "gemini-2.5-flash",
   "messages": [
     {
@@ -143,12 +141,29 @@ Use the following request body with the route that you configured.
       }
     }
   }
+}' | jq
+```
+
+Example output, in which `content` is a JSON string that matches the schema:
+
+```json
+{
+  "model": "gemini-2.5-flash",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\"event\":{\"name\":\"Team sync\",\"date\":\"2026-11-25\"}}"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  ...
 }
 ```
 
-Tool definitions use a different schema path. Schemas in `tools[].function.parameters` are normalized for Gemini tool parameters. `$defs` and `$ref` are inlined. Unsupported fields such as `additionalProperties` are removed. A caller-provided `propertyOrdering` is preserved.
-
-## Anthropic beta headers {#anthropic-beta-headers}
+## Filter Anthropic beta headers {#anthropic-beta-headers}
 
 Vertex AI rejects a Claude request if the `anthropic-beta` header contains a value that Vertex AI does not support. Clients such as Claude Code send several of these values. When a `/v1/messages` or `/v1/messages/count_tokens` request reaches a Claude model on Vertex AI, agentgateway removes the `anthropic-beta` values that are not on a built-in allowlist. The allowlist has the beta values that Vertex AI accepts, such as `context-1m-2025-08-07` and `interleaved-thinking-2025-05-14`.
 
@@ -157,12 +172,6 @@ To change the allowlist, set the `AGENTGATEWAY_VERTEX_ANTHROPIC_BETA_HEADERS` en
 ```sh
 export AGENTGATEWAY_VERTEX_ANTHROPIC_BETA_HEADERS="default,my-new-beta-2026-12-01"
 agentgateway -f config.yaml
-```
-
-Example output:
-
-```console
-info	state_manager	loaded config from File("config.yaml")
 ```
 
 With this setting, a request with `anthropic-beta: my-new-beta-2026-12-01,context-1m-2025-08-07,unsupported-beta` reaches Vertex AI with `anthropic-beta: my-new-beta-2026-12-01,context-1m-2025-08-07`.
