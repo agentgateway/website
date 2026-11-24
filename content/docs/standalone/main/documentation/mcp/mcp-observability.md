@@ -33,7 +33,7 @@ You can access the agentgateway metrics endpoint to view MCP-specific metrics, s
 
 1. {{< reuse "agw-docs/snippets/jaeger.md" >}}
 
-2. Configure your agentgateway proxy to emit traces and send them to the built-in OpenTelemetry collector agent. This example uses a frontend tracing policy. For sampling and exporter options, see [Configure tracing]({{< link-hextra path="/documentation/observability/traces/setup/" >}}).
+2. Configure your agentgateway proxy to emit traces and send them to the built-in OpenTelemetry collector agent. This example uses a frontend tracing policy. For sampling and exporter options, see [Configure tracing]({{< link-hextra path="/documentation/observability/traces/setup/" >}}). The example also sets a `cors` policy on the MCP listener. The playground runs in your browser on port 15000 and calls the MCP listener on port 3000, so the listener must allow that origin. The origin must match the address in your browser exactly. If you open `http://127.0.0.1:15000` instead of `localhost`, change `allowOrigins` to match.
    ```yaml
    cat <<EOF > config.yaml
    # yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
@@ -48,6 +48,9 @@ You can access the agentgateway metrics endpoint to view MCP-specific metrics, s
        cors:
          allowOrigins:
          - http://localhost:15000
+         allowMethods:
+         - GET
+         - POST
          allowHeaders:
          - "*"
          exposeHeaders:
@@ -65,7 +68,7 @@ You can access the agentgateway metrics endpoint to view MCP-specific metrics, s
    agentgateway -f config.yaml
    ```
 
-4. Open the [agentgateway UI](http://localhost:15000/ui/) and go to **MCP** > **Tool Playground**. The playground runs in your browser on port 15000 and calls the MCP listener on port 3000, so the `cors` policy in the previous step lets the browser reach the listener. Click **Initialize**. Then, select a tool, such as `echo`, from the **Tool** list, enter any message, and click **Call tool**. 
+4. Open the [agentgateway UI](http://localhost:15000/ui/), and go to **MCP** > **Tool Playground**. Click **Initialize**. Then, select a tool, such as `echo`, from the **Tool** list, enter any message, and click **Call tool**. 
 
 5. Open the [Jaeger UI](http://localhost:16686/search) and select the `tools/call everything_echo` operation. Then, verify that you can see traces for your MCP tool call. Operation names use the `<method> <target>_<tool>` format.
    
