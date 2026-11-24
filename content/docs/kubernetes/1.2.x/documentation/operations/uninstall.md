@@ -1,7 +1,7 @@
 ---
 title: Uninstall
 weight: 50
-description: Uninstall kgateway and related components.
+description: Uninstall agentgateway and related components.
 test:
   uninstall:
   - file: content/docs/kubernetes/latest/documentation/quickstart/install.md
