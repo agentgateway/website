@@ -7,4 +7,6 @@ aliases:
   - ../../../deployment/helm/install/
 ---
 
+{{< reuse "agw-docs/snippets/ai-assistant-quickstart.md" >}}
+
 {{< reuse "agw-docs/standalone/setup/helm.md" >}}

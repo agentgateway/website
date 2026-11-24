@@ -30,6 +30,9 @@ Google Cloud Model Armor guardrails are model-agnostic and can be applied to any
 
 Configure the `guardrails` field under `llm.models[]` in your agentgateway configuration. You can apply Model Armor to the `request` phase, the `response` phase, or both.
 
+> [!WARNING]
+> The request guard calls [`sanitizeUserPrompt`](https://docs.cloud.google.com/model-armor/sanitize-prompts-responses). Google requires `userPromptData` to be the latest user message. The request default also sends the system prompt and tool results, joined into that field, and the prompt-injection filter then treats the system prompt as a jailbreak. Set `scope` to `messages`, as in the configuration below. See [Guard scope](#scope).
+
 ```yaml
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
@@ -42,7 +45,8 @@ llm:
       apiKey: "$GEMINI_API_KEY"
     guardrails:
       request:
-      - googleModelArmor:
+      - scope: [messages]
+        googleModelArmor:
           templateId: <your-template-id>
           projectId: <your-project-id>
           location: <location>
@@ -70,14 +74,16 @@ EOF
 
 ## Guard scope {#scope}
 
-By default, a request guard sends Model Armor the system prompt, message text, and tool call results. A response guard sends only response message text.
+A request guard calls [`sanitizeUserPrompt`](https://docs.cloud.google.com/model-armor/sanitize-prompts-responses). `userPromptData` has to be the latest user message. A response guard calls [`sanitizeModelResponse`](https://docs.cloud.google.com/model-armor/sanitize-prompts-responses) with the model output, and its default scope, `messages`, already matches that.
 
-Set `scope` to change which text the guard sends. This example excludes tool call results from the request guard.
+agentgateway joins every in-scope string with newlines into the one text field on that call. The request default is `systemPrompt`, `messages`, and `toolOutput`. With that default, the system prompt is part of `userPromptData`. Instruction text in a system prompt ("ignore conflicting instructions", "never reveal your system prompt") is what the prompt-injection filter is built to block, so ordinary requests are rejected before they reach the model.
+
+Set `scope` to `messages` on the request guard. `scope` replaces the default, so this list drops the system prompt and tool results:
 
 ```yaml
 guardrails:
   request:
-  - scope: [systemPrompt, messages]
+  - scope: [messages]
     googleModelArmor:
       templateId: <your-template-id>
       projectId: <your-project-id>
@@ -87,7 +93,9 @@ guardrails:
           gcp: {}
 ```
 
-If no text is in scope, the guard skips the call to Model Armor. For supported values and restrictions, see [Guard scope]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#scope" >}}).
+`messages` is every user and assistant message on the request, still joined into one `sanitizeUserPrompt` call. The gateway has no scope value for the latest user message alone.
+
+If no text is in scope, the guard skips the call to Model Armor. For the scope values and the rules that apply to every guard, see [Guard scope]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#scope" >}}).
 
 ## Test the guardrail
 

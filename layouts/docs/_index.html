@@ -81,6 +81,7 @@
         <div class="hx:text-center hx:mb-12">
           <h1 class="hx:text-4xl hx:font-bold hx:mb-4">{{ .Title | default "Documentation" }}</h1>
         </div>
+        {{ partial "docs-llms-directive.html" . }}
         
         <div class="content">
           {{ .Content }}

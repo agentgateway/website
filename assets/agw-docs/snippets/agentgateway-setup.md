@@ -67,5 +67,6 @@
    ```sh
    kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
    ```
+   The command keeps running in the foreground. Run the rest of the commands in a separate terminal.
    {{% /tab %}}
    {{< /tabs >}}
