@@ -858,6 +858,36 @@
       "$note": "assets/agw-docs/standalone/setup/ui/launch.md (setup/ui/launch-ui.md), \"Generate LLM client settings\": Client Setup with Continue selected, showing the ~/.continue/config.yaml model entry. Captured by tests/ui-tabs-g.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-g.yaml.",
       "light": "assets/img/ui-tour-client-setup-continue.png",
       "dark": "assets/img/ui-tour-client-setup-continue-dark.png"
+    },
+    "ui-mcp-guardrails-cel-reject.png": {
+      "$note": "content/docs/standalone/main/documentation/mcp/guardrails/cel.md, \"Set up CEL guardrails\" UI tab, step 4: the MCP guardrails drawer with processor 1, an Expression processor with the DO_NOT_SEND condition, the Reject action, and the reject message. Never saved. Captured by tests/ui-tabs-h.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-h.yaml, docs 1.8 and later.",
+      "light": "assets/img/ui-mcp-guardrails-cel-reject.png",
+      "dark": "assets/img/ui-mcp-guardrails-cel-reject-dark.png"
+    },
+    "ui-mcp-guardrails-cel-response.png": {
+      "$note": "content/docs/standalone/main/documentation/mcp/guardrails/cel.md, \"Set up CEL guardrails\" UI tab, step 6: the MCP guardrails drawer with three Expression processors, scrolled to processor 3, the Transform that masks demo secrets in the tools/call Response phase. Never saved. Captured by tests/ui-tabs-h.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-h.yaml, docs 1.8 and later.",
+      "light": "assets/img/ui-mcp-guardrails-cel-response.png",
+      "dark": "assets/img/ui-mcp-guardrails-cel-response-dark.png"
+    },
+    "ui-llm-guardrails-action.png": {
+      "$note": "content/docs/standalone/main/documentation/llm/prompt-guards/regex.md, \"PII detection\" UI tab, step 4: the Add request guard drawer for a Custom regex guard with the Action list open (Reject request, Mask matched text, Audit). Never saved. Captured by tests/ui-tabs-h.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-h.yaml, docs 1.8 and later.",
+      "light": "assets/img/ui-llm-guardrails-action.png",
+      "dark": "assets/img/ui-llm-guardrails-action-dark.png"
+    },
+    "ui-llm-guardrails-regex-ssn.png": {
+      "$note": "content/docs/standalone/main/documentation/llm/prompt-guards/regex.md, \"PII detection\" UI tab, step 4: the Add request guard drawer with the SSN and Social Security patterns, Reject request, status 400, and the rejection body. Never saved. Captured by tests/ui-tabs-h.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-h.yaml, docs 1.8 and later.",
+      "light": "assets/img/ui-llm-guardrails-regex-ssn.png",
+      "dark": "assets/img/ui-llm-guardrails-regex-ssn-dark.png"
+    },
+    "ui-llm-guardrails-request.png": {
+      "$note": "content/docs/standalone/main/documentation/llm/prompt-guards/regex.md, \"PII detection\" UI tab, step 5: LLM > Guardrails with the two request guards added, before Save guardrails. Never saved. Captured by tests/ui-tabs-h.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-h.yaml, docs 1.8 and later.",
+      "light": "assets/img/ui-llm-guardrails-request.png",
+      "dark": "assets/img/ui-llm-guardrails-request-dark.png"
+    },
+    "ui-llm-guardrails-mask-phone.png": {
+      "$note": "content/docs/standalone/main/documentation/llm/prompt-guards/regex.md, \"Mask PII in responses\" UI tab, step 4: the Add response guard drawer with Built-in detectors, Mask matched text, and only Phone selected. Never saved. Captured by tests/ui-tabs-h.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-h.yaml, docs 1.8 and later.",
+      "light": "assets/img/ui-llm-guardrails-mask-phone.png",
+      "dark": "assets/img/ui-llm-guardrails-mask-phone-dark.png"
     }
   }
 }

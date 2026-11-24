@@ -1,4 +1,4 @@
-Use guardrail processors (`mcpGuardrails`) to inspect, rewrite, or reject Model Context Protocol (MCP) requests and responses. Write processors as Common Expression Language (CEL) expressions that run inside agentgateway, or use an external gRPC server that implements ExtMCP.
+Use guardrail processors ({{< conditional-text include-if="kubernetes" >}}`backend.mcp.guardrails`{{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}`mcpGuardrails`{{< /conditional-text >}}) to inspect, rewrite, or reject Model Context Protocol (MCP) requests and responses. Write processors as Common Expression Language (CEL) expressions that run inside agentgateway, or use an external gRPC server that implements ExtMCP.
 
 Guardrail processors are one of three ways to filter MCP traffic. To compare them with target conditions and MCP authorization, see [About MCP guardrails]({{< link-hextra path="/documentation/mcp/guardrails/about" >}}).
 

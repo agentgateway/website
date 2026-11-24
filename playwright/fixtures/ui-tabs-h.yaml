@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Config for tests/ui-tabs-h.spec.ts: the "UI" tabs of the standalone guardrail guides
+# mcp/guardrails/cel.md (MCP > Policies > MCP guardrails) and llm/prompt-guards/regex.md
+# (LLM > Guardrails). Each capture fills in the guide's values and NEVER saves, so this file is
+# never rewritten and no LLM provider or MCP server has to exist.
+#
+# - llm.models: the "*" model that the regex guide starts from, with no guardrails.
+# - gateways.default + mcp.targets: the cel.md starting config. The MCP routes attach to the
+#   `default` gateway (no deprecated mcp.port). The UI image is distroless and cannot exec the
+#   guide's stdio server, so the target is a placeholder HTTP endpoint that is never contacted.
+gateways:
+  default:
+    port: 3000
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      model: gpt-4o-mini
+      apiKey: "sk-placeholder-not-a-real-key"
+mcp:
+  targets:
+  - name: everything
+    mcp:
+      host: http://everything.example.com:3001/mcp

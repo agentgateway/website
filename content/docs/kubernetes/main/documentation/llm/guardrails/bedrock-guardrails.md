@@ -81,27 +81,27 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
            request:
            - bedrockGuardrails:
                identifier: <guardrail-ID>
-               version: "<version>" 
+               version: "<version>"
                region: <region>
-               policies:
-                 auth:
-                   aws: 
-                     secretRef:
-                       name: aws-secret
+             policies:
+               auth:
+                 aws:
+                   secretRef:
+                     name: aws-secret
            response:
            - bedrockGuardrails:
                identifier: <guardrail-ID>
-               version: "<version>" 
+               version: "<version>"
                region: <region>
-               policies:
-                 auth:
-                   aws: 
-                     secretRef:
-                       name: aws-secret
+             policies:
+               auth:
+                 aws:
+                   secretRef:
+                     name: aws-secret
    EOF
    ```
 
-   The `aws: {}` configuration uses the default [AWS credential chain](https://docs.aws.amazon.com/sdk-for-go/api/aws/session/) (IAM role, environment variables, or instance profile). The `policies` field supports more than the `aws` credential source shown here. You can choose a different authentication method or tune the connection that agentgateway opens to Bedrock, such as setting a request timeout or custom TLS. For all the options, see [Backend connection and authentication policies](#backend-connection-and-authentication-policies).
+   This example reads the AWS credentials from the `aws-secret` secret that you created earlier. To use the default [AWS credential chain](https://docs.aws.amazon.com/sdk-for-go/api/aws/session/) (IAM role, environment variables, or instance profile) instead, set `aws: {}`. The `policies` field on the prompt guard entry supports more than the `aws` credential source shown here. You can choose a different authentication method or tune the connection that agentgateway opens to Bedrock, such as setting a request timeout or custom TLS. For all the options, see [Backend connection and authentication policies](#backend-connection-and-authentication-policies).
 
 6. Test the guardrail. The following commands assume that you set up your guardrail to block requests that contain email information. 
    {{< tabs >}}
@@ -170,7 +170,10 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
 
 ## Backend connection and authentication policies
 
-The `policies` field configures how agentgateway connects and authenticates to the AWS Bedrock Guardrails service when it evaluates a request or response.
+The `policies` field on the prompt guard entry configures how agentgateway connects and authenticates to the AWS Bedrock Guardrails service when it evaluates a request or response. Set `policies` next to `bedrockGuardrails`, not inside it.
+
+> [!NOTE]
+> The `bedrockGuardrails.policies` field is deprecated in favor of the `policies` field on the prompt guard entry. The API server rejects a guard that sets both fields.
 
 ### Authentication
 
@@ -179,7 +182,7 @@ Under `policies.auth`, set one credential source (`aws`, `secretRef`, or `key`).
 | Method | Description |
 | -- | -- |
 | `aws` | Authenticate with AWS credentials. Set `aws: {}` to use the default AWS credential chain (IAM role, environment variables, or instance profile), or set `aws.secretRef` to read credentials from a Kubernetes secret. |
-| `secretRef` | Read the API key from a Kubernetes secret. By default, the key that matches the credential location is used, such as `Authorization` for the default header location. To use a different key, set `secretRef.key`. |
+| `secretRef` | Read the API key from a Kubernetes secret. By default, the value is read from the `Authorization` key of the secret. To use a different key, set `secretRef.key`. |
 | `key` | Send an inline API key in the `Authorization` header. This option is the least secure. Use a secret instead when possible. |
 | `location` | Where to place the credential. Defaults to the `Authorization` header with a `Bearer` prefix. To change it, set a `header`, `queryParameter`, or `cookie`. |
 
@@ -201,13 +204,13 @@ For example, the following prompt guard authenticates with a secret and sets a r
     identifier: <guardrail-ID>
     version: "<version>"
     region: <region>
-    policies:
-      auth:
-        aws:
-          secretRef:
-            name: aws-secret
-      http:
-        requestTimeout: 5s
+  policies:
+    auth:
+      aws:
+        secretRef:
+          name: aws-secret
+    http:
+      requestTimeout: 5s
 ```
 
 For the full set of fields, see the [API reference]({{< link-hextra path="/reference/api/" >}}).

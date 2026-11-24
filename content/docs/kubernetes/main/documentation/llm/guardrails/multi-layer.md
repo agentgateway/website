@@ -35,11 +35,11 @@ spec:
             message: "Request contains PII and cannot be processed"
         # Layer 2: OpenAI moderation for harmful content
         - openAIModeration:
-            policies:
-              auth:
-                secretRef:
-                  name: openai-secret
             model: omni-moderation-latest
+          policies:
+            auth:
+              secretRef:
+                name: openai-secret
           response:
             message: "Content blocked by moderation policy"
         # Layer 3: Custom webhook for domain-specific checks
@@ -62,3 +62,8 @@ spec:
               port: 8000
 EOF
 ```
+
+The moderation guard sets `policies` on the prompt guard entry, next to `openAIModeration`. For the connection and authentication options, see [OpenAI moderation]({{< link-hextra path="/documentation/llm/guardrails/moderation/#backend-connection-and-authentication-policies" >}}).
+
+> [!NOTE]
+> The `openAIModeration.policies` field is deprecated in favor of the `policies` field on the prompt guard entry. The API server rejects a guard that sets both fields.

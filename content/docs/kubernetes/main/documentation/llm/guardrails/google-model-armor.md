@@ -190,23 +190,23 @@ In your GKE cluster, set up workload identity.
                templateId: <template-ID>
                projectId: <project-ID>
                location: <location>
-               policies:
-                 auth:
-                   gcp: 
-                     type: AccessToken
+             policies:
+               auth:
+                 gcp:
+                   type: AccessToken
            response:
            - googleModelArmor:
                templateId: <template-ID>
                projectId: <project-ID>
                location: <location>
-               policies:
-                 auth:
-                   gcp: 
-                     type: AccessToken
+             policies:
+               auth:
+                 gcp:
+                   type: AccessToken
    EOF
    ```
 
-   The `policies` field supports more than the `gcp` authentication shown here. You can also tune the connection that agentgateway opens to Model Armor, such as setting a request timeout or custom TLS. For all the options, see [Backend connection and authentication policies](#backend-connection-and-authentication-policies).
+   The `policies` field on the prompt guard entry supports more than the `gcp` authentication shown here. You can also tune the connection that agentgateway opens to Model Armor, such as setting a request timeout or custom TLS. For all the options, see [Backend connection and authentication policies](#backend-connection-and-authentication-policies).
 
 2. Send a request to the Gemini provider that triggers the guardrail. 
    {{< tabs >}}
@@ -297,10 +297,10 @@ promptGuard:
       templateId: <template-ID>
       projectId: <project-ID>
       location: <location>
-      policies:
-        auth:
-          gcp:
-            type: AccessToken
+    policies:
+      auth:
+        gcp:
+          type: AccessToken
 ```
 
 `Messages` is every user and assistant message on the request, still joined into one `sanitizeUserPrompt` call. The gateway has no scope value for the latest user message alone.
@@ -309,7 +309,10 @@ If no text is in scope, the guard skips the call to Model Armor. For the scope v
 
 ## Backend connection and authentication policies
 
-The `policies` field configures how agentgateway connects and authenticates to Google Model Armor when it evaluates a request or response.
+The `policies` field on the prompt guard entry configures how agentgateway connects and authenticates to Google Model Armor when it evaluates a request or response. Set `policies` next to `googleModelArmor`, not inside it.
+
+> [!NOTE]
+> The `googleModelArmor.policies` field is deprecated in favor of the `policies` field on the prompt guard entry. The API server rejects a guard that sets both fields.
 
 ### Authentication
 
@@ -337,12 +340,12 @@ For example, the following prompt guard sets a request timeout for the calls to 
     templateId: <template-ID>
     projectId: <project-ID>
     location: <location>
-    policies:
-      auth:
-        gcp:
-          type: AccessToken
-      http:
-        requestTimeout: 5s
+  policies:
+    auth:
+      gcp:
+        type: AccessToken
+    http:
+      requestTimeout: 5s
 ```
 
 For the full set of fields, see the [API reference]({{< link-hextra path="/reference/api/" >}}).
