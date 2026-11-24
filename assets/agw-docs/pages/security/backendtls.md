@@ -44,7 +44,8 @@ In this guide, you learn how to originate one-way TLS connections for the follow
 * [**In-cluster service**](#in-cluster-service): An NGINX server that is configured with a self-signed TLS certificate and deployed to the same cluster as the Gateway. You use a BackendTLSPolicy to originate TLS connections to NGINX. 
 * [**External service**](#external-service): The `httpbin.org` hostname, which represents an external service that you want to originate a TLS connection to. You use a BackendTLSPolicy resource to originate TLS connections to that hostname. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}
 * [**CA certificate in a ClusterTrustBundle**](#clustertrustbundle-ca): The same NGINX server, but with the CA certificate stored in a ClusterTrustBundle instead of a ConfigMap. You use a BackendTLSPolicy to originate TLS connections to NGINX.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
-* [**CA certificate in a Secret**](#secret-ca): The same NGINX server, but with the CA certificate stored in a Kubernetes Secret instead of a ConfigMap. You use an {{< reuse "agw-docs/snippets/policy.md" >}} to originate TLS connections to NGINX.{{< /version >}}
+* [**CA certificate in a Secret**](#secret-ca): The same NGINX server, but with the CA certificate stored in a Kubernetes Secret instead of a ConfigMap. You use an {{< reuse "agw-docs/snippets/policy.md" >}} to originate TLS connections to NGINX.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}}
+* [**Client certificate from files**](#client-cert-files): A second NGINX server that requires a client certificate. You mount the client certificate and key into the gateway proxy pod, and use an {{< reuse "agw-docs/snippets/policy.md" >}} to originate mutual TLS connections to NGINX with files that rotate without a restart.{{< /version >}}
 
 ## Before you begin
 
@@ -650,6 +651,432 @@ A CA source does not have to store the certificate in the `ca.crt` key. Set the 
 
 {{< /version >}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}}
+
+## Client certificate from files {#client-cert-files}
+
+To originate mutual TLS (mTLS) to a backend, the gateway proxy needs a client certificate. Usually, you store the certificate in a Kubernetes Secret and reference it in the `mtlsCertificateRef` field of an {{< reuse "agw-docs/snippets/policy.md" >}}. Instead, you can point `mtlsCertificateRef` at files in the proxy pod. Use files when another component delivers and renews the certificate on disk, such as in the following cases.
+
+* A Container Storage Interface (CSI) driver mounts short-lived certificates into the pod.
+* A sidecar or helper, such as one that fetches SPIFFE identities, writes the certificate and key to a shared volume.
+
+The controller does not read the files. The controller passes the paths to the proxy, and the proxy reads the files and watches them. When a file changes, the proxy reloads the client certificate without a policy update and without a restart.
+
+To use files, you mount the files into the proxy pod with an overlay in an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, and then set `kind: File` in the `mtlsCertificateRef` field.
+
+This section reuses the `example_certs` directory, the `nginx-server-cert` Secret, and the `agentgateway-proxy` Gateway from the [In-cluster service](#in-cluster-service) section. The section deploys a second NGINX server that rejects connections without a valid client certificate.
+
+1. From the `example_certs` directory, create a client certificate that the CA signs.
+
+   ```sh
+   # Create client private key
+   openssl genrsa -out client-key.pem 2048
+
+   # Create client certificate signing request
+   openssl req -new -key client-key.pem -out client.csr \
+     -subj "/CN=agentgateway-client/O=Test Org"
+
+   # Create client certificate signed by CA (valid for 1 year)
+   openssl x509 -req -days 365 -in client.csr -CA ca-cert.pem -CAkey ca-key.pem \
+     -CAcreateserial -out client-cert.pem \
+     -extensions v3_req -extfile <(echo "[v3_req]"; \
+       echo "basicConstraints=CA:FALSE"; \
+       echo "keyUsage=digitalSignature,keyEncipherment"; \
+       echo "extendedKeyUsage=clientAuth")
+   ```
+
+2. Store the CA certificate in a Secret. NGINX uses the CA certificate to verify client certificates, and the gateway proxy uses it to verify the server certificate.
+
+   ```sh
+   kubectl create secret generic nginx-mtls-ca \
+     --from-file=ca.crt=ca-cert.pem \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+3. Deploy an NGINX server that requires a client certificate. The server presents the same server certificate as before. In its response, the server echoes the subject of the client certificate so that you can see which certificate the gateway proxy presented.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: nginx-mtls-conf
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       app: nginx-mtls
+   data:
+     nginx.conf: |
+       events {}
+       http {
+         server {
+             listen                 443 ssl;
+             server_name            example.com;
+             ssl_certificate        /etc/nginx/certs/tls.crt;
+             ssl_certificate_key    /etc/nginx/certs/tls.key;
+             ssl_client_certificate /etc/nginx/client-ca/ca.crt;
+             ssl_verify_client      on;
+             location / {
+               return 200 "hello from nginx, client certificate: \$ssl_client_s_dn\n";
+             }
+         }
+       }
+   ---
+   apiVersion: apps/v1
+   kind: Deployment
+   metadata:
+     name: nginx-mtls
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       app: nginx-mtls
+   spec:
+     replicas: 1
+     selector:
+       matchLabels:
+         app.kubernetes.io/name: nginx-mtls
+     template:
+       metadata:
+         labels:
+           app.kubernetes.io/name: nginx-mtls
+       spec:
+         containers:
+         - name: nginx
+           image: nginx:stable
+           ports:
+           - containerPort: 443
+             name: https-web-svc
+           volumeMounts:
+           - name: nginx-conf
+             mountPath: /etc/nginx/nginx.conf
+             subPath: nginx.conf
+           - name: server-cert
+             mountPath: /etc/nginx/certs
+             readOnly: true
+           - name: client-ca
+             mountPath: /etc/nginx/client-ca
+             readOnly: true
+         volumes:
+         - name: nginx-conf
+           configMap:
+             name: nginx-mtls-conf
+         - name: server-cert
+           secret:
+             secretName: nginx-server-cert
+         - name: client-ca
+           secret:
+             secretName: nginx-mtls-ca
+   ---
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: nginx-mtls
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       app: nginx-mtls
+   spec:
+     selector:
+       app.kubernetes.io/name: nginx-mtls
+     ports:
+     - protocol: TCP
+       port: 8443
+       targetPort: https-web-svc
+       name: https
+   ---
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: nginx-mtls-route
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       app: nginx-mtls
+   spec:
+     parentRefs:
+     - name: agentgateway-proxy
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     hostnames:
+     - "mtls.example.com"
+     rules:
+     - backendRefs:
+       - name: nginx-mtls
+         port: 8443
+   EOF
+   ```
+
+4. Wait for the NGINX server to start.
+
+   ```sh
+   kubectl rollout status deployment/nginx-mtls -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+   Example output:
+
+   ```
+   deployment "nginx-mtls" successfully rolled out
+   ```
+
+5. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that originates TLS to the NGINX server and verifies the server certificate, but does not send a client certificate yet.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: nginx-mtls-tls
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       app: nginx-mtls
+   spec:
+     targetRefs:
+     - group: ""
+       kind: Service
+       name: nginx-mtls
+       sectionName: "8443"
+     backend:
+       tls:
+         caCertificateRefs:
+         - name: nginx-mtls-ca
+           kind: Secret
+         sni: example.com
+         verifySubjectAltNames:
+         - example.com
+   EOF
+   ```
+
+6. Send a request to the NGINX server. The request fails because the gateway proxy does not present a client certificate.
+
+   * **Cloud Provider LoadBalancer**
+     ```sh
+     curl -i http://$INGRESS_GW_ADDRESS:80/ -H "host: mtls.example.com:80"
+     ```
+   * **Port-forward for local testing**
+     ```sh
+     curl -i http://localhost:8080/ -H "host: mtls.example.com:8080"
+     ```
+
+   Example output:
+
+   ```
+   HTTP/1.1 400 Bad Request
+   Server: nginx/1.30.8
+   Content-Type: text/html
+   ...
+   <html>
+   <head><title>400 No required SSL certificate was sent</title></head>
+   ```
+
+7. Store the client certificate, the client key, and the CA certificate in a Secret. The next step mounts this Secret into the proxy pod. The Secret is a stand-in for the volume that your CSI driver or helper provides. The proxy sees only the files, so the source of the volume does not matter.
+
+   ```sh
+   kubectl create secret generic backend-client-cert \
+     --from-file=tls.crt=client-cert.pem \
+     --from-file=tls.key=client-key.pem \
+     --from-file=ca.crt=ca-cert.pem \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+8. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that mounts the files into the `agentgateway` container of the proxy pod. For more information about overlays, see [Overlays]({{< link-hextra path="/documentation/setup/customize/configs/#overlays" >}}).
+
+   ```yaml
+   kubectl apply --server-side -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+   metadata:
+     name: backend-mtls-files
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     deployment:
+       spec:
+         template:
+           spec:
+             volumes:
+             - name: backend-mtls
+               secret:
+                 secretName: backend-client-cert
+             containers:
+             - name: agentgateway
+               volumeMounts:
+               - name: backend-mtls
+                 mountPath: /etc/backend-mtls
+                 readOnly: true
+   EOF
+   ```
+
+9. Attach the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to the Gateway. This command replaces any `parametersRef` that the Gateway already has, so merge the settings into one resource if you use one already. The proxy pod restarts to pick up the mount.
+
+   ```sh
+   kubectl patch gateway agentgateway-proxy \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --type merge \
+     -p '{"spec":{"infrastructure":{"parametersRef":{"group":"{{< reuse "agw-docs/snippets/group.md" >}}","kind":"{{< reuse "agw-docs/snippets/gatewayparameters.md" >}}","name":"backend-mtls-files"}}}}'
+   kubectl rollout status deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+   Example output:
+
+   ```
+   gateway.gateway.networking.k8s.io/agentgateway-proxy patched
+   deployment "agentgateway-proxy" successfully rolled out
+   ```
+
+   If you use a port-forward, stop it and start it again, because it is bound to the pod that restarted.
+
+10. Verify that the proxy container mounts the files. The proxy image has no shell, so you cannot list the files with `kubectl exec`.
+
+    ```sh
+    kubectl get deployment agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+      -o jsonpath='{.spec.template.spec.containers[0].volumeMounts[?(@.name=="backend-mtls")]}'
+    ```
+
+    Example output:
+
+    ```
+    {"mountPath":"/etc/backend-mtls","name":"backend-mtls","readOnly":true}
+    ```
+
+11. Update the {{< reuse "agw-docs/snippets/policy.md" >}} to read the client certificate from the mounted files. With `kind: File`, set the `root` file in place of the `caCertificateRefs` field.
+
+    ```yaml
+    kubectl apply -f- <<EOF
+    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+    metadata:
+      name: nginx-mtls-tls
+      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+      labels:
+        app: nginx-mtls
+    spec:
+      targetRefs:
+      - group: ""
+        kind: Service
+        name: nginx-mtls
+        sectionName: "8443"
+      backend:
+        tls:
+          sni: example.com
+          verifySubjectAltNames:
+          - example.com
+          mtlsCertificateRef:
+          - kind: File
+            file:
+              cert: /etc/backend-mtls/tls.crt
+              key: /etc/backend-mtls/tls.key
+              root: /etc/backend-mtls/ca.crt
+    EOF
+    ```
+
+    {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the [API docs]({{< link-hextra path="/reference/api/#backendtls" >}}).
+
+    | Setting | Description |
+    |---------|-------------|
+    | `backend.tls.mtlsCertificateRef[0].kind` | Set to `File` to read the client certificate from files on the proxy pod. For any other kind, set `name` and omit `file`. |
+    | `backend.tls.mtlsCertificateRef[0].file.cert` | The path to the client certificate file in the proxy container. Required. |
+    | `backend.tls.mtlsCertificateRef[0].file.key` | The path to the private key file of the client certificate. Required. |
+    | `backend.tls.mtlsCertificateRef[0].file.root` | The path to the CA bundle that verifies the backend server certificate. Optional. If unset, the proxy uses the system CA certificates. Do not set `caCertificateRefs` together with a `File` reference, because the API server rejects the combination. |
+
+12. Send another request to the NGINX server. This time, the request succeeds, and the response shows the subject of the client certificate that the gateway proxy presented.
+
+    * **Cloud Provider LoadBalancer**
+      ```sh
+      curl -i http://$INGRESS_GW_ADDRESS:80/ -H "host: mtls.example.com:80"
+      ```
+    * **Port-forward for local testing**
+      ```sh
+      curl -i http://localhost:8080/ -H "host: mtls.example.com:8080"
+      ```
+
+    Example output:
+
+    ```
+    HTTP/1.1 200 OK
+    Server: nginx/1.30.8
+    Content-Type: text/plain
+    ...
+    hello from nginx, client certificate: O=Test Org,CN=agentgateway-client
+    ```
+
+### Rotate the client certificate {#client-cert-rotation}
+
+Replace the files to rotate the certificate. You do not need to update the policy or restart the proxy.
+
+1. Create a new client certificate with a different subject.
+
+   ```sh
+   openssl genrsa -out client2-key.pem 2048
+   openssl req -new -key client2-key.pem -out client2.csr \
+     -subj "/CN=agentgateway-client-rotated/O=Test Org"
+   openssl x509 -req -days 365 -in client2.csr -CA ca-cert.pem -CAkey ca-key.pem \
+     -CAcreateserial -out client2-cert.pem \
+     -extensions v3_req -extfile <(echo "[v3_req]"; \
+       echo "basicConstraints=CA:FALSE"; \
+       echo "keyUsage=digitalSignature,keyEncipherment"; \
+       echo "extendedKeyUsage=clientAuth")
+   ```
+
+2. Update the Secret that backs the mounted files.
+
+   ```sh
+   kubectl create secret generic backend-client-cert \
+     --from-file=tls.crt=client2-cert.pem \
+     --from-file=tls.key=client2-key.pem \
+     --from-file=ca.crt=ca-cert.pem \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --dry-run=client -o yaml | kubectl replace -f -
+   ```
+
+3. Check the proxy logs for the reload message. The kubelet refreshes the files in a mounted Secret on its own schedule, so the message can take a minute or more to appear. The proxy reloads the certificate as soon as the files change.
+
+   ```sh
+   kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} | grep "backend TLS"
+   ```
+
+   Example output:
+
+   ```
+   ... info http::backendtls reloaded backend TLS config after cert/key/root file change
+   ```
+
+4. Send another request. The response now shows the subject of the rotated certificate.
+
+   * **Cloud Provider LoadBalancer**
+     ```sh
+     curl -i http://$INGRESS_GW_ADDRESS:80/ -H "host: mtls.example.com:80"
+     ```
+   * **Port-forward for local testing**
+     ```sh
+     curl -i http://localhost:8080/ -H "host: mtls.example.com:8080"
+     ```
+
+   Example output:
+
+   ```
+   hello from nginx, client certificate: O=Test Org,CN=agentgateway-client-rotated
+   ```
+
+If the new files are not valid, such as when the certificate is not PEM or does not match the key, the proxy logs a warning and keeps using the previous certificate. Requests continue to succeed until you fix the files.
+
+```
+... warn http::backendtls failed to reload backend TLS cert/key/root files, keeping previous config: no certificate
+```
+
+### Restrict the files that the proxy can read {#file-access}
+
+By default, the proxy can read any regular file for a `File` reference, except files under `/dev`, `/proc`, and `/sys`. You do not need to change this setting to use `kind: File`. To limit the files further, set `config.fileAccess` in the `rawConfig` field of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. The proxy restarts to pick up the setting.
+
+```sh
+kubectl patch {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} backend-mtls-files \
+  -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+  --type merge \
+  -p '{"spec":{"rawConfig":{"config":{"fileAccess":{"allow":["/etc/backend-mtls"]}}}}}'
+```
+
+| Setting | Description |
+|---------|-------------|
+| `config.fileAccess.allow` | Absolute path prefixes that the proxy can read. If the list is empty, the proxy can read any path that the deny rules do not block. |
+| `config.fileAccess.deny` | Absolute path prefixes that the proxy cannot read, in addition to `/dev`, `/proc`, and `/sys`. |
+
+The longest matching prefix wins, and if two prefixes are the same length, `deny` wins. The proxy checks both the path in the policy and the file that the path resolves to, so a symbolic link cannot bypass the rules. If a `File` reference points outside the allowed paths, requests to the backend fail with a 503 HTTP response code. For more information, see [Invalid backend TLS settings](#invalid-tls-settings).
+
+{{< /version >}}
+
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
 
 ## Invalid backend TLS settings {#invalid-tls-settings}
@@ -661,6 +1088,7 @@ When backend TLS settings are invalid, the gateway proxy does not fall back to s
 The controller passes some backend TLS settings to the gateway proxy without fully checking them. If the proxy cannot build a TLS configuration from these settings, it marks the entire backend TLS policy as invalid and fails every request to that backend. This rule applies to the `spec.backend.tls` section of an {{< reuse "agw-docs/snippets/policy.md" >}} and to the `spec.policies.tls` section of an {{< reuse "agw-docs/snippets/backend.md" >}}. The proxy marks the policy as invalid in the following cases:
 
 * The Secret that the `mtlsCertificateRef` setting refers to has a `tls.crt`, `tls.key`, or `ca.crt` value that is not valid PEM. If a `ca.crt` PEM block decodes but does not hold a valid certificate, the proxy skips that certificate instead of marking the policy as invalid.
+* An `mtlsCertificateRef` entry of kind `File` points to a file that does not exist, cannot be read, is not a regular file, does not contain valid PEM, or is blocked by `config.fileAccess`. The controller does not read the files, so the policy status still reports `Accepted`. Check the proxy logs for the cause.
 * The `certificateSource` setting is `SPIFFE` and the `keyExchangeGroups` setting is also set. A SPIFFE certificate source gets the client identity and trust roots from the SPIFFE Workload API and does not support custom key exchange groups.
 * An entry in the `verifySubjectAltNames` setting is not a valid DNS name, IP address, or URI.
 * The `insecureSkipVerify` setting is `Hostname`, but no CA certificate can be loaded, such as when every `caCertificateRefs` entry is invalid.
@@ -740,3 +1168,22 @@ kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} nginx-backend-tls -n 
 kubectl delete secret nginx-ca nginx-ca-custom-key -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 ```
 {{< /version >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}}
+### Client certificate from files
+
+```sh
+kubectl delete deployment,service,configmap,httproute -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=nginx-mtls
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} nginx-mtls-tls -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete secret nginx-mtls-ca backend-client-cert -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+```
+
+Detach the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource from the Gateway, and then delete it. The proxy pod restarts. If the Gateway referenced a parameters resource before you started this section, restore that reference instead.
+
+```sh
+kubectl patch gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+  --type json -p '[{"op":"remove","path":"/spec/infrastructure/parametersRef"}]'
+kubectl delete {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} backend-mtls-files -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+```
+{{< /version >}}
+
