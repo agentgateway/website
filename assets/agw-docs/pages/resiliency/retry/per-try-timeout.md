@@ -1,7 +1,9 @@
 Set separate timeouts for retries. 
 
-> [!NOTE]
+{{< version include-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+> [!WARNING]
 > {{< reuse "agw-docs/versions/warn-experimental.md" >}}
+{{< /version >}}
 
 ## About per-try timeouts
 
@@ -18,13 +20,15 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
 
 ## Set up per-try timeouts
 
-1. Install the experimental Kubernetes Gateway API CRDs. {{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}If you installed the standard channel of Gateway API 1.7 or later, such as in the [Get started guide]({{< link-hextra path="/documentation/quickstart/install/" >}}), skip this step because the standard channel includes HTTPRoute retries.{{< /version >}}
-   
-   ```sh
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
-   ```
+{{< version include-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+Install the experimental Kubernetes Gateway API CRDs.
 
-2. Configure the per-try timeout. You can apply the timeout to an HTTPRoute by using a Kubernetes Gateway API-native approach. To apply it to an HTTPRoute rule or Gateway listener, use an {{< reuse "agw-docs/snippets/policy.md" >}} resource. 
+```sh
+kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
+```
+{{< /version >}}
+
+1. Configure the per-try timeout. You can apply the timeout to an HTTPRoute by using a Kubernetes Gateway API-native approach. To apply it to an HTTPRoute rule or Gateway listener, use an {{< reuse "agw-docs/snippets/policy.md" >}} resource. 
    {{< tabs >}}
    {{% tab name="HTTPRoute (Kubernetes GW API)" %}}
    Use the `timeouts.backendRequest` field to configure the per-try timeout. Note that you must set a retry policy also to configure a per-try timeout. 
@@ -59,7 +63,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
    EOF
    ```
 
-3. Verify that the gateway proxy is configured with the per-try timeout.
+2. Verify that the gateway proxy is configured with the per-try timeout.
 
    1. Port-forward the gateway proxy on port 15000.
 
@@ -182,7 +186,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       EOF
       ```
 
-3. Verify that the gateway proxy is configured with the per-try timeout.
+2. Verify that the gateway proxy is configured with the per-try timeout.
 
    1. Port-forward the gateway proxy on port 15000.
 
@@ -303,7 +307,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       EOF
       ```
 
-3. Verify that the gateway proxy is configured with the per-try timeout.
+2. Verify that the gateway proxy is configured with the per-try timeout.
 
    1. Port-forward the gateway proxy on port 15000.
 

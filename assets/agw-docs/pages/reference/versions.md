@@ -4,7 +4,7 @@ Review the following information about supported release versions for the [agent
 
 | agentgateway | Release date | Kubernetes | Gateway API`*` | MCP spec`†` | Helm | Istio`‡` |
 |--------------|--------------|------------|----------------|----------|------|----------|
-| 1.8.x | TBD | 1.32 - 1.37 | 1.5 - 1.7`§` | 2026-07-28 | >= 3.12 | 1.23 - 1.31 |
+| 1.8.x | TBD | 1.32 - 1.37 | 1.5 - 1.7 | 2026-07-28 | >= 3.12 | 1.23 - 1.31 |
 | 1.7.x | 27 Oct 2026 | 1.32 - 1.37 | 1.4 - 1.6 | 2026-07-28 | >= 3.12 | 1.23 - 1.31 |
 | 1.6.x | 02 Oct 2026 | 1.32 - 1.37 | 1.4 - 1.6 | 2026-07-28 | >= 3.12 | 1.23 - 1.31 |
 | 1.5.x | 27 Aug 2026 | 1.32 - 1.37 | 1.4 - 1.6 | 2026-07-28 | >= 3.12 | 1.23 - 1.30 |
@@ -20,8 +20,6 @@ Review the following information about supported release versions for the [agent
 `†` Agentgateway supports the MCP spec at the listed version. {{< version include-if="1.3.x,1.2.x,1.1.x" >}}Earlier versions might also work, but are not guaranteed. Make sure that your MCP clients are not running at a more recent version than your MCP servers.{{< /version >}}{{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}For more information, see [MCP spec compatibility]({{< link-hextra path="/documentation/mcp/spec-compatibility/" >}}).{{< /version >}}
 
 `‡` Istio versions: Istio must run on a compatible version of Kubernetes. For example, Istio 1.29 is tested, but not supported, on Kubernetes 1.30. For more information, see the [Istio docs](https://istio.io/latest/docs/releases/supported-releases/).
-
-`§` Gateway API 1.7 is the tested version for agentgateway 1.8.x. Features that are new in Gateway API 1.7, such as address routability and listener filters, require the Gateway API 1.7 experimental CRDs.
 
 ## Release development {#release}
 
