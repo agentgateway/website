@@ -15,7 +15,7 @@ Complete an MCP guide, such as the [stdio]({{< link-hextra path="/integrations/m
 You can access the agentgateway metrics endpoint to view MCP-specific metrics, such as the number of tool calls that were performed. 
 
 1. Open the agentgateway [metrics endpoint](http://localhost:15020/metrics). 
-2. Look for the `mcp_requests_total` metric. This metric counts the MCP requests that agentgateway processed and includes labels that describe each request, such as:
+2. Look for the `agentgateway_mcp_requests_total` metric. This metric counts the MCP requests that agentgateway processed and includes labels that describe each request, such as:
    * `server`: The MCP server that was used for the request.
    * `method`: The MCP method that was invoked, such as `tools/call` or `tools/list`.
    * `resource`: The name of the tool or resource that was accessed.
@@ -33,7 +33,7 @@ You can access the agentgateway metrics endpoint to view MCP-specific metrics, s
 
 1. {{< reuse "agw-docs/snippets/jaeger.md" >}}
 
-2. Configure your agentgateway proxy to emit traces and send them to the built-in OpenTelemetry collector agent. This example uses a frontend tracing policy. For sampling and exporter options, see [Configure tracing]({{< link-hextra path="/documentation/observability/traces/setup/" >}}).
+2. Configure your agentgateway proxy to emit traces and send them to the built-in OpenTelemetry collector agent. This example uses a frontend tracing policy. For sampling and exporter options, see [Configure tracing]({{< link-hextra path="/documentation/observability/traces/setup/" >}}). The example also sets a `cors` policy on the MCP listener. The playground runs in your browser on port 15000 and calls the MCP listener on port 3000, so the listener must allow that origin. The origin must match the address in your browser exactly. If you open `http://127.0.0.1:15000` instead of `localhost`, change `allowOrigins` to match.
    ```yaml
    cat <<EOF > config.yaml
    # yaml-language-server: \$schema={{< reuse "agw-docs/snippets/schema.md" >}}
@@ -44,6 +44,17 @@ You can access the agentgateway metrics endpoint to view MCP-specific metrics, s
        randomSampling: true
    mcp:
      port: 3000
+     policies:
+       cors:
+         allowOrigins:
+         - http://localhost:15000
+         allowMethods:
+         - GET
+         - POST
+         allowHeaders:
+         - "*"
+         exposeHeaders:
+         - Mcp-Session-Id
      targets:
      - name: everything
        stdio:
@@ -57,7 +68,7 @@ You can access the agentgateway metrics endpoint to view MCP-specific metrics, s
    agentgateway -f config.yaml
    ```
 
-4. Open the [agentgateway playground](http://localhost:15000/ui/mcp/playground/) and click **Connect**. Then, select a tool, such as `echo`, enter any message, and click **Run Tool**. 
+4. Open the [agentgateway UI](http://localhost:15000/ui/), and go to **MCP** > **Tool Playground**. Click **Initialize**. Then, select a tool, such as `echo`, from the **Tool** list, enter any message, and click **Call tool**. 
 
 5. Open the [Jaeger UI](http://localhost:16686/search) and select the `tools/call everything_echo` operation. Then, verify that you can see traces for your MCP tool call. Operation names use the `<method> <target>_<tool>` format.
    

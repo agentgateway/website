@@ -4,9 +4,9 @@ Configure stateful or stateless session routing to MCP backends.
 
 An MCP session is a set of related interactions between a client and an MCP server that starts with the client-server initialization phase. According to the [MCP specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#session-management), a session for the Streamable HTTP transport is established if the server sends back an `Mcp-Session-Id` header during the initialization phase. Clients include this header in subsequent requests to keep the stateful session. 
 
-If you run multiple agentgateway proxy instances without stateful sessions, the first request might be forwarded to one instance and a session is created for that instance. However, later requests might be forwarded to a different proxy instance that does not know about the session. 
+If you run multiple MCP server replicas without stateful sessions, the first request might be forwarded to one replica and a session is created on that replica. However, later requests might be forwarded to a different replica that does not know about the session. 
 
-To ensure that subsequent requests are routed to the same agentgateway proxy instance, the proxy exposes streamable HTTP endpoints as stateful endpoints by default and sends back the session ID in the `Mcp-Session-Id` header. You can disable this setting and instead use stateless MCP servers by using the `sessionRouting: Stateless` setting in the {{< reuse "agw-docs/snippets/backend.md" >}} resource. 
+To ensure that subsequent requests are routed to the same MCP server replica, the proxy exposes streamable HTTP endpoints as stateful endpoints by default and sends back the session ID in the `Mcp-Session-Id` header. The session ID is encrypted with a key that all proxy replicas share, so any proxy replica can decode the session ID. You can disable this setting and instead use stateless MCP servers by using the `sessionRouting: Stateless` setting in the {{< reuse "agw-docs/snippets/backend.md" >}} resource. 
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 If a client sends a session ID that the proxy cannot decode, the proxy returns `HTTP 404`, and the [MCP specification](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports#session-management) requires the client to start a new session. A session ID cannot be decoded after the session key changes. If an encrypted session ID belongs to a different MCP backend from the current request's backend, the proxy also returns `HTTP 404`. The client starts a new session on the current backend.
@@ -14,7 +14,13 @@ If a client sends a session ID that the proxy cannot decode, the proxy returns `
 The proxy encrypts each session ID with a session key. The controller stores the key in a Secret named `<gateway-name>-session-key` in the namespace of the Gateway. The controller creates the Secret only if it does not exist, and never changes the key in it. The Gateway owns the Secret, so deleting the Gateway deletes the key. To use your own key, set the `SESSION_KEY` environment variable in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. The controller then does not manage a Secret. If the controller cannot create the Secret, or another resource controls it, the Gateway reports `Programmed: False` with the reason `DeploymentFailed`.
 
 When a client closes a stateful session with an HTTP `DELETE` request, the proxy decodes the session ID before it sends close requests to the upstream targets. Because all replicas of the Gateway share the session key, any replica can close the upstream sessions. If you set `SESSION_KEY` yourself, use the same value for every replica. Deletion is best effort. Upstream close failures still return `HTTP 202`, and those upstream sessions stay open until the target's idle timeout. If the proxy cannot rebuild a target connection from the session ID, the client receives an error response instead of `HTTP 202`.
+{{< /version >}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}
+A `GET` request that opens the notification stream of a stateful session also decodes the session ID. Any replica that shares the session key resumes the session instead of returning `HTTP 404`.
+{{< /version >}}
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 A client can reuse a session ID on a different route to the same MCP backend. The request then uses the MCP authorization and MCP guardrail policies of the route that it arrives on, not the route that created the session.
 {{< /version >}}
 
@@ -28,7 +34,7 @@ apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   namespace: default
-  name: mcp-static-no-protocol
+  name: mcp-static-stateless
 spec:
   mcp:
     targets:
@@ -36,16 +42,16 @@ spec:
       static:
         host: mcp-website-fetcher.default.svc.cluster.local
         port: 80
-        protocol: SSE   
+        protocol: StreamableHTTP
     sessionRouting: Stateless
 ```
 
 ## Stateful (default)
 
-The following configuration enables stateful session routing for a streamable HTTP endpoint. During the client-server handshake, the agentgateway proxy instance that handles the request sends back the `mcp-session-id` header with the session ID that was assigned. The client includes this header in subsequent requests to keep the session alive.
+The following configuration enables stateful session routing for a streamable HTTP endpoint. During the client-server handshake, the agentgateway proxy that handles the request sends back the `mcp-session-id` header with the session ID that was assigned. The client includes this header in subsequent requests to keep the session alive.
 
 > [!IMPORTANT]
-> Stateful session routing and session affinity require the use of non-static, `selector`-based targets. If you use a `static` target with `sessionRouting: Stateful`, requests are not guaranteed to be routed to the same proxy instance.
+> Stateful session routing and session affinity require the use of non-static, `selector`-based targets. If you use a `static` target with `sessionRouting: Stateful`, requests are not guaranteed to be routed to the same MCP server replica.
 
 ```yaml
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}

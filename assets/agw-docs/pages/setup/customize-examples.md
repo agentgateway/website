@@ -679,7 +679,7 @@ spec:
         spec:
           initContainers:
             - name: wait-for-config
-              image: busybox:1.36
+              image: busybox:1.38.0
               command: ['sh', '-c', 'until [ -f /config/ready ]; do sleep 1; done']
               volumeMounts:
                 - name: config-volume

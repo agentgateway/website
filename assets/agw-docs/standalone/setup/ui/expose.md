@@ -226,6 +226,8 @@ To save the configuration changes that you make in the UI, see [Configuration st
 
 If a reverse proxy or cloud load balancer serves the UI under a path prefix and removes that prefix before forwarding, set `ui.basePath` to the public prefix. The gateway listener still receives and serves `/ui` and `/api`. The browser receives the `ui.basePath` value in links, bundled assets, API calls, and login redirects.
 
+The `ui.basePath` value applies to the UI that a gateway serves. The copy of the UI on the admin port, such as `http://localhost:15000/ui/`, stays at `/ui/`.
+
 For example, if users open `https://agentgateway.example.com/team/agentgateway/ui/` and the proxy forwards the request to the UI gateway as `/ui/`, set `ui.basePath` to `/team/agentgateway`.
 
 ```yaml

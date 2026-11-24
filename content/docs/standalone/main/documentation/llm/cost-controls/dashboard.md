@@ -67,10 +67,11 @@ Review the dashboard in the **LLM > Analytics** page. Open [http://localhost:150
 
 Use **Export** to pull the underlying numbers out for reporting.
 
-To narrow the dashboard to certain models, users, groups, providers, or user agents, use the filter dropdowns. Each filter lists the values from recorded traffic. To find a value in a long list, type part of it in the search box at the top of the filter, and then select the value. Typing alone does not change the dashboard.
+To narrow the dashboard to certain models, users, groups, providers, or user agents, use the filter dropdowns. Each filter lists the values from recorded traffic. To find a value in a long list, click the filter and type part of the value in the filter field itself. The list narrows to the matches, and the **All** option stays at the top of the list. Select the value to apply it. Typing alone does not change the dashboard.
 
-{{< reuse-image-light src="img/ui-cost-dashboard-filter-search.png" alt="Analytics filters with the Models dropdown open and claude typed in its search box, which narrows the list to two Claude models" >}}
-{{< reuse-image-dark srcDark="img/ui-cost-dashboard-filter-search-dark.png" alt="Analytics filters with the Models dropdown open and claude typed in its search box, which narrows the list to two Claude models" >}}
+<!-- TODO: recapture after Playwright antd port (Q14) -->
+{{< reuse-image-light src="img/ui-cost-dashboard-filter-search.png" alt="Analytics filters with the Models dropdown open and claude typed to narrow the list to two Claude models" >}}
+{{< reuse-image-dark srcDark="img/ui-cost-dashboard-filter-search-dark.png" alt="Analytics filters with the Models dropdown open and claude typed to narrow the list to two Claude models" >}}
 
 ## Send traffic and watch it get priced
 

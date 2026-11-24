@@ -63,7 +63,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
 
    | Field | Description |
    | ----- | ----- |
-   | `issuer` | The principal that issued the JWT, usually a URL or an email address. If specified, the `iss` field in the JWT of the incoming request must match this field, or else the request is denied. If omitted, the `iss` field in the JWT is not checked. |
+   | `issuer` | The principal that issued the JWT, usually a URL or an email address. This field is required. The `iss` field in the JWT of the incoming request must match this field, or else the request is denied. |
    | `jwks` | The JSON Web Key Set (JWKS) to use to verify the JWT. In this example, a local JWKS is provided inline. To use JWTs with {{< reuse "agw-docs/snippets/agentgateway.md" >}}, make sure that the JWTs return Key ID (`kid`) and expiration date (`exp`) values in the JWT header.|
 
 2. Save the JWT tokens for the users Alice and Bob. You can optionally create other JWT tokens by using the [JWT generator tool](https://github.com/kgateway-dev/kgateway/blob/main/hack/utils/jwt/jwt-generator.go). Note that to use JWTs with agentgateway proxies, make sure that the JWTs return Key ID (`kid`) and expiration date (`exp`) values in the JWT header.

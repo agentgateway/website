@@ -7,6 +7,9 @@ The `ui.policies` section takes the same policies that a route takes, so you can
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 The `oidc` policy in `ui.policies` also accepts bearer ID tokens, so CLI clients can call the UI's API without a browser session. The client sends an ID token from the same identity provider and client in the `Authorization: Bearer <token>` header. This default is `credentials: sessionOrBearer`. To accept only browser sessions, set `credentials: session`. For more information, see {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Bearer tokens for API clients]({{< link-hextra path="/documentation/configuration/security/authentication/oidc/#bearer-id-tokens" >}}){{< /version >}}{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}[Bearer tokens for API clients]({{< link-hextra path="/documentation/configuration/security/oidc/#bearer-id-tokens" >}}){{< /version >}}.
 {{< /version >}}
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+Bearer access tokens are also accepted when the issuer signs the token and its `aud` claim includes the client ID. To accept fewer tokens, add authorization rules that check specific claims such as `jwt.azp`.
+{{< /version >}}
 
 > [!NOTE]
 > A policy in `ui.policies` applies only to the gateways that the `ui` section lists. It does not apply to the copy of the UI on the admin interface, which stays unauthenticated. That is safe by default, because the admin address is loopback-only, but it is a reason not to move it. For more information, see [The UI and the admin interface are not the same thing]({{< link-hextra path="/documentation/setup/ui/#admin-interface" >}}).
@@ -229,11 +232,29 @@ The example uses the following rules.
 
 Agentgateway identifies the user of each request with the `agentgateway.user` attribute. Request logs, analytics, and [virtual key owners]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/#key-owners" >}}) record this value. By default, the value comes from the first of the following sources that has a value:
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}
+1. The `email` claim, then the `sub` claim, of a JWT or an OIDC session
+2. The metadata of a virtual key, in this order: `agentgateway.dev/owner`, `user`, then `owner`
+3. The username of a basic authentication request
+4. The client identity of a mutual TLS (mTLS) connection, such as the workload identity or the common name of the client certificate
+{{< /version >}}
+{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}
 1. The metadata of a virtual key, in this order: `agentgateway.dev/owner`, `user`, `name`, then `owner`
 2. The `sub` claim, then the `email` claim, of a JWT or an OIDC session
 3. The username of a basic authentication request
 4. The client identity of a mutual TLS (mTLS) connection, such as the workload identity or the common name of the client certificate
+{{< /version >}}
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}
+You choose which value identifies your users. The default records the `email` claim, which is easy to read in logs and analytics. Many IdPs set the `sub` claim to a stable ID, such as the UUID `1ed4bac1-9a81-4867-a81f-04cfc58bf0b2` in Keycloak. To record that ID instead, set the user attribute to the following CEL expression.
+
+Your expression replaces the whole default order, not only the JWT part. For example, if you set the attribute to `jwt.sub` alone, requests that use a virtual key no longer record a user. Key owners then stop appearing in request logs. The following expression keeps the default order and checks the `sub` claim before the `email` claim.
+
+```txt
+coalesce(jwt.sub, jwt.email, apiKey["agentgateway.dev/owner"], apiKey.user, apiKey.owner, basicAuth.username, source.identity.namespace + "/" + source.identity.serviceAccount, source.subjectCn, null)
+```
+{{< /version >}}
+{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}
 You choose which value identifies your users. Many IdPs set the `sub` claim to a stable ID, such as the UUID `1ed4bac1-9a81-4867-a81f-04cfc58bf0b2` in Keycloak. To record email addresses instead, set the user attribute to the following CEL expression.
 
 Your expression replaces the whole default order, not only the JWT part. For example, if you set the attribute to `jwt.email` alone, requests that use a virtual key no longer record a user. Key owners then stop appearing in request logs. The following expression keeps the default order and checks the `email` claim before the `sub` claim.
@@ -241,6 +262,7 @@ Your expression replaces the whole default order, not only the JWT part. For exa
 ```txt
 coalesce(apiKey["agentgateway.dev/owner"], apiKey.user, apiKey.name, apiKey.owner, jwt.email, jwt.sub, basicAuth.username, source.identity.namespace + "/" + source.identity.serviceAccount, source.subjectCn, null)
 ```
+{{< /version >}}
 
 {{< tabs >}}
 {{% tab name="UI" %}}
@@ -251,15 +273,28 @@ coalesce(apiKey["agentgateway.dev/owner"], apiKey.user, apiKey.name, apiKey.owne
 {{% tab name="Config file" %}}
 Set the `standardAttributes.user` field in the `config` section of your configuration file to the expression. In a Helm installation, the field is `config.config.standardAttributes.user` in your values file, because the `config` value holds the whole configuration file.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}
+```yaml
+config:
+  standardAttributes:
+    user: 'coalesce(jwt.sub, jwt.email, apiKey["agentgateway.dev/owner"], apiKey.user, apiKey.owner, basicAuth.username, source.identity.namespace + "/" + source.identity.serviceAccount, source.subjectCn, null)'
+```
+{{< /version >}}
+{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}
 ```yaml
 config:
   standardAttributes:
     user: 'coalesce(apiKey["agentgateway.dev/owner"], apiKey.user, apiKey.name, apiKey.owner, jwt.email, jwt.sub, basicAuth.username, source.identity.namespace + "/" + source.identity.serviceAccount, source.subjectCn, null)'
 ```
+{{< /version >}}
 {{% /tab %}}
 {{< /tabs >}}
 
 You can set the field to any CEL expression that returns a string. The account menu shows the user's name and email address from the `name` (or `preferred_username`) and `email` claims, so your expression changes the menu only when the token has neither. For an OIDC session, if your expression returns no value, agentgateway uses the `sub` claim instead, so the account menu and **Sign out** stay available.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}
+The user, group, and session values also appear on stdout and OTLP access log lines, and on trace spans, as `agentgateway.user`, `agentgateway.group`, and `agentgateway.session`. To keep them out of the logs that you ship elsewhere, see [Keep user identity out of shipped logs]({{< link-hextra path="/documentation/observability/access-logs/view/#identity-in-logs" >}}).
+{{< /version >}}
 
 
 #### Verify the changes

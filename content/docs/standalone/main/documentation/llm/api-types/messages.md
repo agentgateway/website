@@ -71,7 +71,7 @@ Agentgateway uses the first of these formats that the provider supports.
 
 The first three rows are values that a `custom` provider declares in its `formats` list. Built-in providers support a fixed set of formats. The `openAI`, `ollama`, `groq`, `huggingface`, and `xai` providers support both `responses` and `completions`. The `azure` provider also supports both formats for models other than Claude.
 
-Bedrock Converse is not a `formats` value. A [`bedrock` provider]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) handles Messages requests based on the Bedrock endpoint. On Mantle, Claude models receive the native Anthropic Messages format. On Runtime, agentgateway converts Messages requests to Bedrock Converse.
+Bedrock Converse is not a `formats` value. A [`bedrock` provider]({{< link-hextra path="/integrations/llm/providers/bedrock/" >}}) handles Messages requests based on the Bedrock endpoint. On Mantle, Claude models receive the native Anthropic Messages format. On Runtime, Claude models receive the native Anthropic Messages format when native support is available. Requests fall back to Bedrock Converse when native support is not available.
 
 When a provider supports both `responses` and `completions`, agentgateway always converts Messages requests to Responses. This rule is fixed, regardless of the `formats` list order.
 
