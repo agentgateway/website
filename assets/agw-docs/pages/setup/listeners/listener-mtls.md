@@ -35,6 +35,46 @@ tls:
 
 Agentgateway uses the `certificates.k8s.io/v1` version of the ClusterTrustBundle API, which Kubernetes serves by default in version 1.37 and later. If the cluster does not serve the API, the listener's `ResolvedRefs` condition is `False` with the `InvalidCACertificateKind` reason. If every CA certificate reference is a ClusterTrustBundle, the listener is also not programmed. If other references resolve, the listener validates client certificates against only those CA certificates. For the steps to create a ClusterTrustBundle, see [CA certificate in a ClusterTrustBundle]({{< link-hextra path="/documentation/security/backendtls/#clustertrustbundle-ca" >}}).
 {{< /version >}}
+{{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+
+You can also store the CA certificates in a ConfigMap in a different namespace than the Gateway. A ConfigMap in another namespace is a cross-namespace reference, so you must allow it with a ReferenceGrant. Create the ReferenceGrant in the namespace of the ConfigMap. It must allow the Gateway to reference the ConfigMap.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: allow-gateway-to-ca-cert
+  namespace: ca-certs
+spec:
+  from:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  to:
+  - group: ""
+    kind: ConfigMap
+    name: ca-cert
+EOF
+```
+
+Then, set the `namespace` field in the `caCertificateRefs` entry of the Gateway.
+
+```yaml
+tls:
+  frontend:
+    default:
+      validation:
+        mode: AllowValidOnly
+        caCertificateRefs:
+          - name: ca-cert
+            namespace: ca-certs
+            kind: ConfigMap
+            group: ""
+```
+
+Without the ReferenceGrant, the `ResolvedRefs` condition of the listener is `False` with the `RefNotPermitted` reason, and the listener is not programmed.
+{{< /version >}}
 
 ## About this guide
 

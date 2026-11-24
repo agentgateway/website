@@ -1,7 +1,9 @@
 Specify the number of times and duration for the gateway to try a connection to an unresponsive backend service. You might commonly use retries alongside [Timeouts]({{< link-hextra path="/documentation/resiliency/timeouts/">}}) to ensure that your apps are available even if they are temporarily unavailable.
 
+{{< version include-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 > [!WARNING]
 > {{< reuse "agw-docs/versions/warn-experimental.md" >}}
+{{< /version >}}
 
 ## About request retries
 
@@ -21,13 +23,15 @@ Set up retries to the sample app.
 > Requests with a body larger than the frontend buffer limit are not retried, because the body must be buffered so that it can be resent. The default limit is 2 MiB, or 32 MiB for LLM requests. To retry larger requests, raise the limit in the `spec.frontend.http.maxBufferSize` field of an {{< reuse "agw-docs/snippets/policy.md" >}}.
 {{< /version >}}
 
-1. Install the experimental Kubernetes Gateway API CRDs.
+{{< version include-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+Install the experimental Kubernetes Gateway API CRDs.
 
-   ```sh
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
-   ```
+```sh
+kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
+```
+{{< /version >}}
 
-2. Create your retry rules. You can choose to apply a retry on an HTTPRoute by using the Kubernetes Gateway API-native approach, or to add a retry to a specific HTTPRoute rule or Gateway listener by using an {{< reuse "agw-docs/snippets/backend.md" >}} resource.
+1. Create your retry rules. You can choose to apply a retry on an HTTPRoute by using the Kubernetes Gateway API-native approach, or to add a retry to a specific HTTPRoute rule or Gateway listener by using an {{< reuse "agw-docs/snippets/backend.md" >}} resource.
 
    {{< tabs >}}
    {{% tab name="HTTPRoute (Kubernetes GW API)" %}}
@@ -72,7 +76,7 @@ Set up retries to the sample app.
       | `matches` | The path to match the request. In this example, you match any requests to the sample app with path prefix `/`. |
       | `path` | The path to match the request.  |
       | `backendRefs` | The backend service to which the request is sent. In this example, you select the `httpbin` service that you set up in [before you begin](#before-you-begin). |
-      | `retry.attempts` | The number of times to retry the request. In this example, you retry the request 3 times. |
+      | `retry.attempts` | The number of times to retry the request. In this example, you retry the request 3 times. {{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}This field defaults to `1`.{{< /version >}} |
       | `retry.backoff` | The duration to wait before retrying the request. In this example, you wait 1 second before retrying the request. |
       | `retry.codes` | The HTTP status codes for which the gateway retries the request. In this example, the request is retried if the backend returns 500 or 503. |
 
@@ -355,7 +359,7 @@ Set up retries to the sample app.
    {{< /tabs >}}
 
 
-4. Send a request to the sample app. Verify that the request succeeds.
+2. Send a request to the sample app. Verify that the request succeeds.
 
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
@@ -378,7 +382,7 @@ Set up retries to the sample app.
    ...
    ```
 
-5. Verify that the request was not retried.
+3. Verify that the request was not retried.
 
    ```sh
    kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} \

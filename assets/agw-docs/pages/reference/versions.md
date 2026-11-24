@@ -4,6 +4,7 @@ Review the following information about supported release versions for the [agent
 
 | agentgateway | Release date | Kubernetes | Gateway API`*` | MCP spec`†` | Helm | Istio`‡` |
 |--------------|--------------|------------|----------------|----------|------|----------|
+| 1.8.x | TBD | 1.32 - 1.37 | 1.5 - 1.7 | 2026-07-28 | >= 3.12 | 1.23 - 1.31 |
 | 1.7.x | 27 Oct 2026 | 1.32 - 1.37 | 1.4 - 1.6 | 2026-07-28 | >= 3.12 | 1.23 - 1.31 |
 | 1.6.x | 02 Oct 2026 | 1.32 - 1.37 | 1.4 - 1.6 | 2026-07-28 | >= 3.12 | 1.23 - 1.31 |
 | 1.5.x | 27 Aug 2026 | 1.32 - 1.37 | 1.4 - 1.6 | 2026-07-28 | >= 3.12 | 1.23 - 1.30 |
@@ -14,7 +15,7 @@ Review the following information about supported release versions for the [agent
 | 1.0.x | 16 Mar 2026 | 1.31 - 1.35 | 1.3 - 1.5 | 2025-06-18 | >= 3.12 | 1.23 - 1.29 |
 | 2.2.x | 09 Feb 2026 | 1.31 - 1.35 | 1.2 - 1.4 | 2025-06-18 | >= 3.12 | 1.23 - 1.27 |
 
-`*` Gateway API versions: The agentgateway project is conformant to the Kubernetes Gateway API specification. For more details, see the [Gateway API docs](https://gateway-api.sigs.k8s.io/docs/implementations/list/#agentgateway) and agentgateway conformance report per version, such as Gateway API [v1.5.0](https://github.com/kubernetes-sigs/gateway-api/tree/main/conformance/reports/v1.5.0/agentgateway-agentgateway).
+`*` Gateway API versions: The agentgateway project is conformant to the Kubernetes Gateway API specification. For more details, see the [Gateway API docs](https://gateway-api.sigs.k8s.io/docs/implementations/list/#agentgateway) and agentgateway conformance report per version, such as Gateway API [v1.7](https://github.com/kubernetes-sigs/gateway-api/tree/main/conformance/reports/v1.7/agentgateway-agentgateway).
 
 `†` Agentgateway supports the MCP spec at the listed version. {{< version include-if="1.3.x,1.2.x,1.1.x" >}}Earlier versions might also work, but are not guaranteed. Make sure that your MCP clients are not running at a more recent version than your MCP servers.{{< /version >}}{{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}For more information, see [MCP spec compatibility]({{< link-hextra path="/documentation/mcp/spec-compatibility/" >}}).{{< /version >}}
 

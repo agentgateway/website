@@ -513,8 +513,7 @@ jobs:
       # of the Gateway API release these docs install. The experimental channel
       # is a superset of standard, so a standard-channel page cannot fail on it;
       # the trade is that an experimental-only field on a standard-channel page
-      # passes. Both version trees install the same release today, so one file
-      # serves both.
+      # passes. The check uses the release that main installs, the newest one.
       #
       # Core kinds (Service, Deployment, ...) go through kubeconform, against the
       # newest Kubernetes version these docs support.
@@ -523,7 +522,9 @@ jobs:
           KUBECONFORM_VERSION: v0.8.0
         run: |
           set -o pipefail
-          GWAPI=$(tr -d '[:space:]' < assets/agw-docs/versions/k8s-gw-version-exp.md)
+          # The file holds one version gate per release line. The newest release, on main, is last.
+          GWAPI=$(grep -oE '[0-9]+\.[0-9]+\.[0-9]+' assets/agw-docs/versions/k8s-gw-version-exp.md | tail -n 1)
+          test -n "$GWAPI"
           mkdir -p "$RUNNER_TEMP/gateway-api"
           curl -sSfL -o "$RUNNER_TEMP/gateway-api/experimental-install.yaml" \
             "https://github.com/kubernetes-sigs/gateway-api/releases/download/v${GWAPI}/experimental-install.yaml"

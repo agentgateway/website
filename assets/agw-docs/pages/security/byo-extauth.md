@@ -102,6 +102,10 @@ You can attach an external authorization policy to a Gateway, HTTPRoute, or back
 
 Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authorization runs before the proxy selects a backend. Backend targets use the `backend.extAuth` section so that authorization runs after backend selection, which is useful when the authorization service shapes the outgoing request, for example by inserting a token, or when a route load-balances or fails over across multiple backends.
 
+{{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+To check every request on a listener before route selection, you can also use a [listener ExternalAuth filter](#listener-filter).
+{{< /version >}}
+
 {{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 For gRPC external authorization, agentgateway waits 2 seconds for the authorization service to respond by default. To use a different timeout, apply a second {{< reuse "agw-docs/snippets/policy.md" >}} whose `targetRefs` names the authorization service, either as a Kubernetes Service or as an {{< reuse "agw-docs/snippets/backend.md" >}}, and set `backend.http.requestTimeout` on it.
 {{< /version >}}
@@ -347,6 +351,127 @@ For gRPC external authorization, agentgateway waits 2 seconds for the authorizat
    ```
    {{% /tab %}}
    {{< /tabs >}}
+
+{{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+## Listener ExternalAuth filter {#listener-filter}
+
+Instead of a policy, you can add an external authorization filter to a Gateway listener. The Gateway API calls this a pre-routing filter. The proxy sends every request that the listener accepts to your authorization service before it selects a route. The proxy denies an unauthorized request even if no route matches it.
+
+> [!NOTE]
+> Listener filters require the experimental channel of Gateway API version 1.7 or later. For the install command, see [Experimental features in Gateway API]({{< link-hextra path="/release-notes/versions/#experimental-features" >}}).
+
+1. Add the `ExternalAuth` filter to the `filters.requests` field of a listener. The following example uses the `ext-authz` service that you deployed earlier.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: Gateway
+   metadata:
+     name: agentgateway-proxy
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
+     listeners:
+     - name: http
+       port: 80
+       protocol: HTTP
+       allowedRoutes:
+         namespaces:
+           from: All
+       filters:
+         requests:
+         - type: ExternalAuth
+           externalAuth:
+             protocol: GRPC
+             grpc: {}
+             backendRef:
+               name: ext-authz
+               port: 4444
+   EOF
+   ```
+
+   {{< reuse "agw-docs/snippets/review-table.md" >}}
+
+   | Field | Description |
+   |-------|-------------|
+   | `filters.requests[].type` | The type of the filter. Agentgateway supports only `ExternalAuth`. |
+   | `externalAuth.protocol` | The protocol that the authorization service speaks, either `GRPC` or `HTTP`. For `GRPC`, set `grpc`. For `HTTP`, set `http`. |
+   | `externalAuth.backendRef` | The Service of the authorization service. If the Service is in another namespace, create a [ReferenceGrant](https://gateway-api.sigs.k8s.io/api-types/referencegrant/) from the Gateway to the Service. |
+
+2. Verify that the controller accepted the listener and resolved the filter.
+
+   ```sh
+   kubectl get gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -o jsonpath='{range .status.listeners[*].conditions[*]}{.type}={.status} {.reason}{"\n"}{end}'
+   ```
+
+   Example output:
+
+   ```txt
+   Accepted=True Accepted
+   Conflicted=False NoConflicts
+   Programmed=True Programmed
+   ResolvedRefs=True ResolvedRefs
+   ```
+
+3. Send a request to a path that no route matches, without the `x-ext-authz` header. Because the filter runs before route selection, the proxy returns a `403` response from the authorization service instead of a `404` response.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -i "${INGRESS_GW_ADDRESS}/no-such-route"
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -i "localhost:8080/no-such-route"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+
+   ```txt
+   HTTP/1.1 403 Forbidden
+   x-ext-authz-check-result: denied
+   ...
+
+   denied by ext_authz for not found header `x-ext-authz: allow` in the request
+   ```
+
+4. Repeat the request with the `x-ext-authz: allow` header. The authorization service allows the request, and the proxy then finds no matching route.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -i "${INGRESS_GW_ADDRESS}/no-such-route" -H "x-ext-authz: allow"
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -i "localhost:8080/no-such-route" -H "x-ext-authz: allow"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+
+   ```txt
+   HTTP/1.1 404 Not Found
+   content-type: text/plain
+   ...
+
+   route not found
+   ```
+
+A listener supports the following filters:
+
+* **One filter only**: A listener can have only one `ExternalAuth` filter. If you add a second one, the `Accepted` condition of the listener is `False` with the `InvalidListenerFilter` reason.
+* **Type**: Other filter types, such as `ExtensionRef`, are not supported. The `Accepted` condition of the listener is `False` with the `UnsupportedValue` reason.
+* **References**: If the `backendRef` cannot be resolved, the `ResolvedRefs` condition is `False` with the `InvalidListenerFilterRef` reason. If the Service is in another namespace and no ReferenceGrant allows the Gateway to reference it, the reason is `RefNotPermitted`.
+
+Listener filters work the same way on listeners of a ListenerSet.
+{{< /version >}}
 
 ## Cleanup
 
