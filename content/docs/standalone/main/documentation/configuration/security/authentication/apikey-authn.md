@@ -15,7 +15,7 @@ Attaches to: {{< badge content="Listener" path="/documentation/configuration/lis
 > [!TIP]
 > This policy is about authenticating incoming requests. For attaching API keys to outgoing requests, see [Backend authentication]({{< link-hextra path="/documentation/configuration/security/backend-authn/" >}}).
 >
-> Agentgateway removes validated API keys before forwarding requests. For LLM traffic, give clients virtual keys and keep provider keys on the gateway. See [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
+> Agentgateway removes a validated API key before it forwards the request, unless the policy reads the key with a [CEL expression](#expression-location). For LLM traffic, give clients virtual keys and keep provider keys on the gateway. See [Virtual keys]({{< link-hextra path="/documentation/llm/cost-controls/virtual-keys/" >}}).
 
 ## Configure API key authentication
 
@@ -162,6 +162,10 @@ routes:
 ```
 {{< /tab >}}
 {{< /tabs >}}
+
+## Remove a key that a CEL expression reads {#expression-location}
+
+If the `apiKey` policy reads the key with a CEL `expression` location, agentgateway does not remove the key, and the backend receives the key. To remove the key, read it from a `header` location, or remove the header with a request transformation. For an example, see [Credentials that a CEL expression reads]({{< link-hextra path="/documentation/configuration/security/backend-authn/#expression-location" >}}).
 
 ## LLM budgets and model access
 
