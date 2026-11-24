@@ -42,7 +42,7 @@ To add the model in the [UI]({{< link-hextra path="/documentation/setup/ui/launc
    * **Managed**: Uses a managed identity. Optionally, enter the client ID of a user-assigned identity.
    * **API key**: Select **Env var**, and enter `AZURE_API_KEY`.
 7. Enter the **Azure resource name**, such as `your-resource-name`.
-8. For the **Azure resource type**, select **Foundry** or **OpenAI**. For **Foundry**, also enter the **Azure project name**, such as `your-project-name`.
+8. For the **Azure resource type**, select **Foundry** or **OpenAI**. For **Foundry**, you can also enter the **Azure project name**, such as `your-project-name`. If you leave it empty, agentgateway uses the resource name.
 9. Optional: Enter an **Azure API version**. Leave the field empty to use the default.
 
    {{< reuse-image src="img/ui-llm-add-model-azure-foundry.png" srcDark="img/ui-llm-add-model-azure-foundry-dark.png" alt="Add model drawer with Azure selected as the provider, Default as the Azure credentials, your-resource-name as the Azure resource name, Foundry as the Azure resource type, and your-project-name as the Azure project name" >}}
@@ -118,7 +118,7 @@ llm:
 | `provider` | The LLM provider, set to `azure` for Azure AI models. |
 | `params.azureResourceName` | The Azure resource name used to construct the endpoint hostname. |
 | `params.azureResourceType` | The endpoint type: `foundry` for Azure AI Foundry, or `openAI` for Azure OpenAI Service. |
-| `params.azureProjectName` | The Foundry project name. Required for `foundry` type. If omitted, defaults to `azureResourceName`. |
+| `params.azureProjectName` | The Foundry project name. Optional. If omitted, defaults to `azureResourceName`. |
 | `params.azureApiVersion` | Optional API version override. Defaults to `v1`. For legacy deployments, use a dated version like `2024-04-01-preview`. |
 | `params.model` | The specific Azure model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.apiKey` | The Azure API key for authentication. If unset, implicit Entra ID authentication is used. You can reference environment variables using the `$VAR_NAME` syntax. |
@@ -408,12 +408,12 @@ routes:
 
 | Setting | Description |
 |---------|-------------|
-| `name` | The exact Claude model name to match in incoming requests, such as `claude-3-5-haiku-20241022`. Use `*` to match any model name. |
-| `provider` | Set to `azure` for Azure AI Foundry. |
-| `backendAuth.key.value` | The Azure AI Foundry API key. You can reference environment variables using the `$VAR_NAME` syntax. The key is automatically sent in the `Authorization` header. Other auth method can be applied [Backend authentication]({{< link-hextra path="/documentation/configuration/security/backend-authn/" >}})|
-| `params.azureResourceName` | The Azure AI Foundry resource name used to construct the endpoint hostname. |
-| `params.azureResourceType` | Set to `foundry` to use Azure AI Foundry endpoints. |
-| `params.azureProjectName` | The Foundry project name.|
+| `ai.name` | A name for the AI backend. |
+| `ai.provider.azure.resourceName` | The Azure AI Foundry resource name used to construct the endpoint hostname. |
+| `ai.provider.azure.projectName` | The Foundry project name. Optional. If omitted, defaults to `resourceName`. |
+| `ai.provider.azure.resourceType` | Set to `foundry` to use Azure AI Foundry endpoints. |
+| `ai.provider.azure.model` | The Claude model deployment to send requests to, such as `claude-sonnet-4-6`. |
+| `policies.backendAuth.key.value` | The Azure AI Foundry API key. You can reference environment variables using the `$VAR_NAME` syntax. The key is automatically sent in the `Authorization` header. For other authentication methods, see [Backend authentication]({{< link-hextra path="/documentation/configuration/security/backend-authn/" >}}). |
 
 After running agentgateway with this configuration, send a request to verify:
 
