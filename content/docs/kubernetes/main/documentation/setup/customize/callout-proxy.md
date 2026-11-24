@@ -11,7 +11,7 @@ In networks where outbound traffic must leave through a corporate HTTP proxy, yo
 A callout is any request that the agentgateway proxy sends for itself rather than for a client. Callouts include the following requests.
 
 * External authorization, external processing, and remote rate limit requests.
-* Guardrail requests, such as webhooks, OpenAI moderation, AWS Bedrock Guardrails, and Google Model Armor.
+* Guardrail requests, such as webhooks, OpenAI moderation, AWS Bedrock Guardrails, Google Model Armor, and Azure AI Content Safety.
 * OpenID Connect (OIDC) requests from the agentgateway proxy.
 * Virtual model callout routing requests.
 * Credential fetches from cloud providers, such as AWS, Azure, and Google Cloud Platform (GCP).

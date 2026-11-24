@@ -316,7 +316,7 @@ The following table describes the properties of each result in the `guardrails` 
 | Result property | Description |
 | ------- | ----------- |
 | `guardrails[].phase` | The phase that the guardrail evaluated, either `request` or `response`. |
-| `guardrails[].guard` | The guard kind that was evaluated, such as `regex`, `webhook`, `openAIModeration`, `bedrockGuardrails`, or `googleModelArmor`. |
+| `guardrails[].guard` | The guard kind that was evaluated, such as `regex`, `webhook`, `openAIModeration`, `bedrockGuardrails`, {{< version include-if="1.7.x" >}}or `googleModelArmor`{{< /version >}}{{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}`googleModelArmor`, or `azureContentSafety`{{< /version >}}. |
 | `guardrails[].action` | The action that the guardrail took, one of `allow`, `mask`, `reject`, `audit`, or `failOpen`. |
 | `guardrails[].guardrailId` | The configured guardrail identifier. |
 | `guardrails[].guardrailVersion` | The configured guardrail version. |
