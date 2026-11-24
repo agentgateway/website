@@ -12,7 +12,7 @@ Configure Amazon Bedrock as an LLM provider in agentgateway.
 
 > [!NOTE]
 > Agentgateway accepts requests in one of the supported [API formats]({{< link-hextra path="/documentation/llm/api-types/" >}}) (such as the `/v1/chat/completions` request body shape) and returns responses in that format.
-> Agentgateway translates between these formats and Bedrock formats internally using Bedrock's [Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-call.html).
+> The proxy translates between these formats and Bedrock formats internally by using the Runtime and Mantle endpoints.
 > Directly sending `Converse` or `Invoke` request shapes are not directly supported; see [passthrough](#passthrough) for more information if you need these APIs.
 
 Bedrock conversion turns the prompt-cache markers in `/v1/messages` and `/v1/chat/completions` requests into Bedrock cache points, including markers on content that the conversion does not send. In `/v1/messages` requests, the Anthropic `cache_control.ttl` value becomes the TTL of the cache point. For where a marker on dropped content goes, see [Converting to the Bedrock Converse format]({{< link-hextra path="/documentation/llm/api-types/messages/#converting-to-the-bedrock-converse-format" >}}). In `/v1/chat/completions` requests, a text part that contains only whitespace is not sent, and the marker on that text part moves to the end of the content before the text part in the same message.
@@ -242,7 +242,7 @@ The preference applies to four route types: chat completions, messages, response
 - Embeddings, realtime, Gemini token counting, detection, passthrough, and content generation always use Runtime.
 - Reranking uses a separate Bedrock agent-runtime host rather than the Runtime or Mantle endpoint.
 
-Whether the preference changes the request format that a model accepts depends on the endpoint that it selects. A model that resolves to Runtime accepts the Bedrock Converse format only, and its chat format tags do not apply. A model that resolves to Mantle accepts the formats in its tags, except for `anthropic.claude*` models, which always take the Anthropic Messages format. For more information, see [Chat format tags]({{< link-hextra path="/documentation/llm/cost-controls/costs/#chat-format-tags" >}}).
+Whether the preference changes the request format that a model accepts depends on the endpoint that it selects. A model that resolves to Runtime uses native OpenAI or Anthropic request formats when native support is available. Runtime requests fall back to Bedrock Converse when native support is not available. Set `AGENTGATEWAY_BEDROCK_RUNTIME_CONVERSE=true` before you start the proxy to force all Runtime chat requests through Converse. A model that resolves to Mantle accepts the formats in its tags, except for `anthropic.claude*` models, which always take the Anthropic Messages format. For more information, see [Chat format tags]({{< link-hextra path="/documentation/llm/cost-controls/costs/#chat-format-tags" >}}).
 
 When a `/v1/messages` or `/v1/messages/count_tokens` request reaches Bedrock Mantle in the Anthropic Messages format, the request keeps the client `anthropic-version` header. If the client sends no version header, the request uses the default `2023-06-01` version. Agentgateway also removes `oauth-*` values from the `anthropic-beta` header, because Bedrock rejects them.
 

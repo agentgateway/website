@@ -6,18 +6,6 @@ description: Run a local MCP server as a subprocess and expose it through agentg
 
 An MCP backend allows exposing MCP servers through the agentgateway using {{< gloss "STDIO (Standard Input/Output)" >}}STDIO{{< /gloss >}}.
 
-By default, agentgateway waits up to 10 seconds for a `stdio` target to answer each request. If the subprocess does not answer in time, the client receives a `504` response. To change this limit, set `mcp.policies.timeout.backendRequestTimeout`. In a routing-based configuration, set `routes[].policies.timeout.backendRequestTimeout` instead.
-
-```yaml
-mcp:
-  port: 3000
-  policies:
-    timeout:
-      backendRequestTimeout: 30s
-```
-
-The route `requestTimeout` setting can shorten the limit but cannot extend it past `backendRequestTimeout`. The backend `policies.http.requestTimeout` setting does not apply to `stdio` targets. For more information, see [Route timeouts]({{< link-hextra path="/documentation/configuration/resiliency/timeouts#route-timeouts" >}}).
-
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
@@ -98,3 +86,17 @@ Whether the UI can save depends on your storage mode. For more information, see 
 
       {{< reuse-image-light src="img/ui-playground-tool-echo.png" >}}
       {{< reuse-image-dark srcDark="img/ui-playground-tool-echo-dark.png" >}}
+
+## Request timeout {#request-timeout}
+
+By default, agentgateway waits up to 10 seconds for a `stdio` target to answer each request. If the subprocess does not answer in time, the client receives a `504` response. To change this limit, set `mcp.policies.timeout.backendRequestTimeout`. In a routing-based configuration, set `routes[].policies.timeout.backendRequestTimeout` instead.
+
+```yaml
+mcp:
+  port: 3000
+  policies:
+    timeout:
+      backendRequestTimeout: 30s
+```
+
+The route `requestTimeout` setting can shorten the limit but cannot extend it past `backendRequestTimeout`. The backend `policies.http.requestTimeout` setting does not apply to `stdio` targets. For more information, see [Route timeouts]({{< link-hextra path="/documentation/configuration/resiliency/timeouts#route-timeouts" >}}).

@@ -1,6 +1,6 @@
 ## About
 
-The `azure` backend authentication method gets a Microsoft Entra ID token and writes it to the `Authorization` header of every request that the gateway forwards to the backend. The gateway requests the token for the Azure Cognitive Services scope, or for the Azure AI scope when the backend is an Azure AI Foundry endpoint, and it caches the credential after the first successful use.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} To authenticate to Microsoft Graph or another Microsoft Entra-protected backend, configure the token scopes.{{< /version >}}
+The `azure` backend authentication method gets a Microsoft Entra ID token and writes it to the `Authorization` header of every request that the gateway forwards to the backend. The gateway requests the token for the Azure Cognitive Services scope, or for the Azure AI scope when the backend is an Azure AI Foundry endpoint, and it caches the credential after the first successful use.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}} Decisions and SystemOne requests to an Azure AI Foundry resource go to `{resourceName}.cognitiveservices.azure.com`. When you do not set `scopes`, the gateway requests the Azure Cognitive Services scope, `https://cognitiveservices.azure.com/.default`, for them.{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,2.2.x" >}} To authenticate to Microsoft Graph or another Microsoft Entra-protected backend, configure the token scopes.{{< /version >}}
 
 The method has two forms.
 
@@ -8,6 +8,10 @@ The method has two forms.
 * **Explicit.** You name one credential source: a Secret that holds service principal credentials, a managed identity, or a workload identity. Use an explicit source when the gateway must use an identity other than the one that the environment would give it.
 
 At most one credential source may be set. The API server rejects a policy that sets two.
+
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
+When you configure a [callout proxy]({{< link-hextra path="/documentation/setup/customize/callout-proxy/" >}}), the gateway sends its Microsoft Entra ID token requests, such as for a client secret or workload identity, through the forward proxy. Token requests to loopback and link-local endpoints, such as the instance metadata endpoint at `169.254.169.254`, [bypass the proxy]({{< link-hextra path="/documentation/setup/customize/callout-proxy/#destinations-that-bypass-the-forward-proxy" >}}).
+{{< /version >}}
 
 ## Before you begin
 
@@ -48,6 +52,7 @@ auth:
 ```
 {{% /tab %}}
 {{% tab name="Managed identity" %}}
+{{< version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 Name a user-assigned managed identity. Read the note that follows this section before you use this form.
 
 ```yaml
@@ -58,21 +63,43 @@ auth:
       objectId: "<object-id>"
       resourceId: "<resource-id>"
 ```
+{{< /version >}}
+{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+Use the managed identity of the Azure host. Leave `managedIdentity` empty to use the system-assigned identity.
+
+```yaml
+auth:
+  azure:
+    managedIdentity: {}
+```
+
+To use a user-assigned identity, set exactly one of `clientId`, `objectId`, or `resourceId`.
+
+```yaml
+auth:
+  azure:
+    managedIdentity:
+      clientId: "<client-id>"
+```
+{{< /version >}}
 {{% /tab %}}
 {{< /tabs >}}
 
 | Field | Description |
 | -- | -- |
-| `azure` | Set to `{}` to detect the credential from the environment. Set exactly one child field to name a credential source instead. |{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+| `azure` | Set to `{}` to detect the credential from the environment. Set exactly one child field to name a credential source instead. |{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 | `azure.scopes` | Scopes to request for the access token. When omitted, the gateway infers the scope from the backend hostname. Set 1–64 scopes. With `managedIdentity`, set exactly one scope. |{{< /version >}}
 | `azure.secretRef` | Secret in the policy namespace that holds service principal credentials under the `clientID`, `tenantID`, and `clientSecret` keys. |
-| `azure.workloadIdentity` | Set to `{}` to use the federated token and the Azure environment variables that are projected into the gateway pod. |
-| `azure.managedIdentity` | Names a user-assigned managed identity. |
+| `azure.workloadIdentity` | Set to `{}` to use the federated token and the Azure environment variables that are projected into the gateway pod. |{{< version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+| `azure.managedIdentity` | Names a user-assigned managed identity. |{{< /version >}}{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+| `azure.managedIdentity` | Set to `{}` to use the system-assigned managed identity. To use a user-assigned identity, set exactly one of `clientId`, `objectId`, or `resourceId`. The API server rejects a policy that sets more than one. |{{< /version >}}
 
+{{< version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 > [!WARNING]
 > The `managedIdentity` field requires all three of `clientId`, `objectId`, and `resourceId`, but the gateway uses only the first one that is not empty, in that order. A policy that names one identifier is rejected with `objectId: Required value`. To use a user-assigned managed identity, set `clientId` to the identifier that you want the gateway to use, and set the other two fields to a placeholder. Prefer `workloadIdentity` or the implicit form where you can, because neither has this restriction.
+{{< /version >}}
 
-{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
+{{< version exclude-if="1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ## Configure token scopes
 
 Set `scopes` when the backend requires a token for a resource other than Azure Cognitive Services or Azure AI Foundry. For example, the following configuration uses workload identity to request a token for Microsoft Graph.
@@ -181,8 +208,9 @@ The proxy logs record the cause, such as `the credential provider was not enable
 {{< /version >}}
 
 | Symptom | Cause |
-| -- | -- |
-| The API server rejects the policy with `objectId: Required value`. | The `managedIdentity` field names one identifier. All three fields are required. See the warning earlier on this page. |
+| -- | -- |{{< version include-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+| The API server rejects the policy with `objectId: Required value`. | The `managedIdentity` field names one identifier. All three fields are required. See the warning earlier on this page. |{{< /version >}}{{< version exclude-if="1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+| The API server rejects the policy with `at most one of the fields in [clientId objectId resourceId] may be set`. | The `managedIdentity` field names more than one identifier. Set one, or set `managedIdentity: {}` to use the system-assigned identity. |{{< /version >}}
 | The API server rejects the policy with `at most one of the fields in [secretRef managedIdentity workloadIdentity] may be set`. | The policy names two credential sources. Name one, or set `azure: {}` to detect the source. |
 | The API server rejects the policy with `unknown field "spec.backend.auth.azure.explicitConfig"`. | The configuration was copied from the standalone binary, which nests the credential source under `explicitConfig`. In Kubernetes, set the source directly on `azure`. |
 | Every request returns a `500`, and the gateway logs show that each credential source failed to construct. | The gateway has no identity. Confirm that workload identity is enabled on the cluster and that the service account of the gateway is annotated for it, or supply a Secret with `secretRef`. |

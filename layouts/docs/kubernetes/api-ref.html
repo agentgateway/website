@@ -22,8 +22,10 @@
   {{ partial "docs-tabs.html" . }}
   {{ $docTabs := .Store.Get "docTabs" }}
   <div class='hx:mx-auto hx:flex {{ partial "utils/page-width" . }}' style="padding-top: {{ if and $docTabs $docTabs.enabled }}0.75rem{{ else }}2.5rem{{ end }};">
-    {{ partial "sidebar.html" (dict "context" .) }}
-    {{ partial "toc.html" . }}
+    {{- /* <article> before the sidebar and TOC in the HTML: the content-first
+           source order of docs-theme-extras' docs/single.html (see its SOURCE
+           ORDER note). Needs the extras release that adds the
+           `.hextra-sidebar-container { order: -1 }` rule. */}}
     <article class="hx:w-full hx:break-words hx:flex hx:min-h-[calc(100vh-var(--navbar-height))] hx:min-w-0 hx:justify-center hx:pb-8 hx:pr-[calc(env(safe-area-inset-right)-1.5rem)]">
       <main id="content" class="hx:w-full hx:min-w-0 hx:max-w-6xl hx:px-6 hx:pt-2 hx:md:px-12">
         {{ partial "breadcrumb.html" . }}
@@ -48,11 +50,13 @@
           {{- if gt (len $parts) 1 }}{{ index $parts 1 | safeHTML }}{{ end }}
         </div>
         {{ partial "components/last-updated.html" . }}
-        {{ partial "components/pager.html" . }}
+        <div data-markdown-ignore>{{ partial "components/pager.html" . }}</div>
         {{ partial "components/page-feedback.html" . }}
         {{ partial "components/comments.html" . }}
       </main>
     </article>
+    {{ partial "sidebar.html" (dict "context" .) }}
+    {{ partial "toc.html" . }}
   </div>
   {{ partial "chatbot.html" . }}
 {{ end }}

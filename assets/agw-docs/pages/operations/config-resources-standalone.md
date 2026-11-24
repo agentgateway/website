@@ -72,6 +72,10 @@ Agentgateway supports the following resource kinds. No other kind is accepted.
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 Each kind maps to a top-level config section. For example, the `mcp.target` kind manages the entries in `mcp.targets`. An MCP target that you define inline in `routes[].backends` belongs to its `traffic.route` resource instead. Likewise, inline model and route policies belong to the resource that contains them.
 
+{{< version exclude-if="1.5.x,1.6.x,1.7.x" >}}
+In `hybrid` mode, an `llm.policy` resource can create `llm.policies` in the merged configuration even when the baseline file does not have an `llm` section or `llm.settings` resource.
+{{< /version >}}
+
 The `llm.settings` and `mcp.settings` kinds each hold one resource, with the ID `default`, that sets the top-level fields of its section. Each kind accepts the following fields:
 
 * `llm.settings`: `gateways`, `port`, and `tls`.
@@ -145,7 +149,7 @@ The CLI follows the `config.storage.mode` setting of the gateway.
 
 The standalone Helm chart uses the `readonly` mode by default, which mounts a ConfigMap that the proxy cannot write. To manage resources with the CLI, use the `database` mode of the chart. For setup and ownership rules, see [Configuration storage]({{< link-hextra path="/documentation/setup/storage/" >}}).
 
-The `get all` command lists resources. It is not a full configuration backup. In file mode, the list omits singleton settings and the model catalog. In hybrid mode, the list omits the baseline file. Startup settings and legacy `binds` configuration are not CLI resources. For the merged configuration, use the `/api/config/effective` endpoint. For the runtime configuration that the proxy loaded, see [Inspect config]({{< link-hextra path="/documentation/operations/inspect-config/" >}}).
+The `get all` command lists resources. It is not a full configuration backup. In file mode, the list omits singleton settings and the model catalog.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}} The `llm.settings` and `mcp.settings` kinds are an exception. For each kind, `get all` lists the fields that are set in the configuration file.{{< /version >}} In hybrid mode, the list omits the baseline file. Startup settings and legacy `binds` configuration are not CLI resources. For the merged configuration, use the `/api/config/effective` endpoint. For the runtime configuration that the proxy loaded, see [Inspect config]({{< link-hextra path="/documentation/operations/inspect-config/" >}}).
 
 ### List resources
 

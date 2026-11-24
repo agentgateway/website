@@ -110,6 +110,16 @@ mcpAuthorization:
   - 'mcp.methodName == "tools/call" && jwt.sub == "test-user"'
 ```
 
+Use `recurse("act")` to evaluate every actor in a nested {{< gloss "JWT (JSON Web Token)" >}}JWT{{< /gloss >}} actor chain. The function returns the receiver map first. The function then returns each nested map reached by following the named field. The following rule requires every delegated actor to be either `agent-a` or `agent-b`.
+
+```yaml
+mcpAuthorization:
+  rules:
+  - require: 'has(jwt.act) && jwt.act.recurse("act").all(a, a.sub in ["agent-a", "agent-b"])'
+```
+
+If the named field is absent, `recurse("act")` stops. If the chain includes `null`, a list, or another non-map value, the expression fails.
+
 ### Rate limiting {#rate-limiting}
 
 ```yaml
