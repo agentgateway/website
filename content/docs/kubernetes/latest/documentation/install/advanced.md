@@ -134,7 +134,7 @@ The controller image has no shell, so you cannot run commands in the controller 
    controller:
      extraInitContainers:
      - name: debug-shell
-       image: busybox:1.36
+       image: busybox:1.38.0
        restartPolicy: Always
        command: ["sh", "-c", "sleep infinity"]
    EOF
@@ -158,7 +158,7 @@ The controller image has no shell, so you cannot run commands in the controller 
              - sh
              - -c
              - sleep infinity
-             image: busybox:1.36
+             image: busybox:1.38.0
              name: debug-shell
              restartPolicy: Always
          containers:

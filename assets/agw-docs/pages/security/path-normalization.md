@@ -173,7 +173,7 @@ Configure a route with an authorization rule that denies a path, and send a requ
 1. Start the httpbin sample app in Docker. The app listens on port 8000 on your machine.
 
    ```sh
-   docker run -d --name httpbin -p 8000:8080 mccutchen/go-httpbin:v2.15.0
+   docker run -d --name httpbin -p 8000:8080 mccutchen/go-httpbin:v2.17.0
    ```
 
 2. Create a configuration file with a route to the httpbin app. The route has an authorization rule that denies requests to the `/headers` path.
