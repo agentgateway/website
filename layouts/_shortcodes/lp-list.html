@@ -1,7 +1,7 @@
 {{- /*
   Shortcode: lp-list
   Renders a list of child pages as styled article cards showing the date, author, title, summary, and a "Read full article" link.
-  A page that sets `image` in its front matter (a path under assets/, such as img/blog/my-post/cover.png) gets that image at the top of its card.
+  Every card has a cover. A page that sets `image` in its front matter (a path under assets/, such as img/blog/my-post/cover.png) uses that image; other pages get a generated cover (see the blog-cover partial).
   Includes click-to-filter category pills above the grid.
 
   Parameters:
@@ -65,16 +65,8 @@
         data-category="{{ $cat }}"
       >
 
-        <!-- Cover image (optional): set `image` in front matter to a path under assets/ -->
-        {{ $href := .RelPermalink }}
-        {{ with .Params.image }}
-          {{ with resources.Get . }}
-            {{ $cover := .Resize "800x webp" }}
-        <a href="{{ $href }}" class="block mb-5 overflow-hidden rounded-xl" tabindex="-1" aria-hidden="true">
-          <img src="{{ $cover.RelPermalink }}" width="{{ $cover.Width }}" height="{{ $cover.Height }}" alt="" loading="lazy" class="w-full h-auto">
-        </a>
-          {{ end }}
-        {{ end }}
+        <!-- Cover: the post's `image` if set, otherwise a generated one -->
+        {{ partial "blog-cover.html" . }}
 
         <!-- Category badge -->
         {{ with .Params.category }}
@@ -105,7 +97,8 @@
 
         <!-- Excerpt/Description -->
         <div class="text-gray-600 dark:text-gray-400 text-base leading-relaxed mb-6 line-clamp-3">
-          {{ .Summary }}
+          {{- /* Plain text only: the cover is the card's image, so drop images embedded in the summary. */ -}}
+          {{ .Summary | plainify | htmlUnescape }}
         </div>
 
         <!-- Read more indicator -->

@@ -1,0 +1,48 @@
+{{- /*
+  Partial: blog-cover
+  Renders the cover for a blog post card at a fixed 40:21 ratio (the 2400x1260 size the cover art uses).
+
+  A page that sets `image` in its front matter (a path under assets/, such as img/blog/my-post/cover.png) gets that image.
+  Any other page gets a generated cover: the post title on a dark grid, tinted by category.
+  Sizes inside the generated cover use container query units (cqw) so the cover scales with the card.
+
+  Context: the blog post page.
+*/ -}}
+{{- /* Category glow color map. Class strings are literal so Tailwind compiles them. */ -}}
+{{- $glow := dict
+    "Announcement" "bg-purple-500/60"
+    "Feature"      "bg-blue-500/60"
+    "Tutorial"     "bg-green-500/50"
+    "Community"    "bg-amber-500/50"
+    "Deep Dive"    "bg-rose-500/50"
+    "Release"      "bg-cyan-500/50"
+    "Integration"  "bg-indigo-500/60" -}}
+{{- $cover := false -}}
+{{- with .Params.image -}}
+  {{- with resources.Get . -}}
+    {{- $cover = .Fill "800x420 webp" -}}
+  {{- end -}}
+{{- end -}}
+<a href="{{ .RelPermalink }}" class="block mb-5 overflow-hidden rounded-xl aspect-[40/21]" tabindex="-1" aria-hidden="true">
+  {{- if $cover }}
+  <img src="{{ $cover.RelPermalink }}" width="{{ $cover.Width }}" height="{{ $cover.Height }}" alt="" loading="lazy" class="w-full h-full object-cover">
+  {{- else }}
+  <div class="relative w-full h-full overflow-hidden bg-[#140c2b] [container-type:inline-size]">
+    <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[length:7cqw_7cqw]"></div>
+    <div class="absolute -top-1/3 -right-1/4 w-2/3 aspect-square rounded-full blur-3xl {{ index $glow (.Params.category | default "") | default "bg-purple-500/60" }}"></div>
+    <div class="absolute -bottom-1/2 -left-1/4 w-1/2 aspect-square rounded-full blur-3xl bg-indigo-500/30"></div>
+    <div class="relative flex flex-col h-full p-[6cqw]">
+      <div class="flex items-center justify-between gap-[3cqw]">
+        <div class="flex items-center gap-[1.8cqw] text-white font-semibold text-[3.6cqw] leading-none">
+          <img src="{{ "agw-mark-light.svg" | relURL }}" alt="" class="w-[4.6cqw] h-[4.6cqw]" loading="lazy">
+          <span>agentgateway</span>
+        </div>
+        {{- with .Params.category }}
+        <span class="shrink-0 rounded-full border border-white/20 bg-white/10 px-[2.6cqw] py-[1.2cqw] text-[2.4cqw] leading-none font-semibold uppercase tracking-widest text-white/80">{{ . }}</span>
+        {{- end }}
+      </div>
+      <p class="mt-auto text-white font-bold text-[6.4cqw] leading-[1.12] tracking-tight line-clamp-3">{{ .LinkTitle }}</p>
+    </div>
+  </div>
+  {{- end }}
+</a>

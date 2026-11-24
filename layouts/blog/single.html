@@ -28,6 +28,13 @@
                 <a href="{{ "/blog/" | relURL }}" class="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 mb-8">
                     <span aria-hidden="true">←</span> Back to blog
                 </a>
+                {{- /* Cover image (optional): set `image` in front matter to a path under assets/ */ -}}
+                {{ with .Params.image }}
+                  {{ with resources.Get . }}
+                    {{ $cover := .Resize "1600x webp" }}
+                <img src="{{ $cover.RelPermalink }}" width="{{ $cover.Width }}" height="{{ $cover.Height }}" alt="" class="w-full h-auto rounded-xl mb-10">
+                  {{ end }}
+                {{ end }}
                 <div class="prose prose-gray dark:prose-invert prose-lg max-w-none
                         prose-headings:text-gray-900 dark:prose-headings:text-gray-100
                         prose-p:text-gray-700 dark:prose-p:text-gray-300
