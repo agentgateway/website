@@ -27,7 +27,7 @@ To authenticate with Microsoft Entra Workload ID, prepare the AKS cluster and th
 
 1. [Enable workload identity on the AKS cluster](https://learn.microsoft.com/azure/aks/workload-identity-deploy-cluster).
 
-2. Create a user-assigned managed identity. Then, grant that identity the least-privilege role that the Azure AI resource requires. For example, the `Foundry User` role grants access to Azure AI Foundry. This role was previously named `Azure AI User`. For more information, see [Role-based access control for Microsoft Foundry](https://learn.microsoft.com/azure/foundry/concepts/rbac-foundry).
+2. Create a user-assigned managed identity. Then, grant that identity the least-privilege role that the Azure AI resource requires. For Azure AI Foundry, you can use a custom role that allows only the inference requests that the gateway sends. For more information, see [Use a least-privilege role for Azure AI Foundry](#foundry-least-privilege-role).
 
 3. Create a federated credential that trusts the service account that the proxy uses. By default, the deployer names this service account after the Gateway. For the default gateway from the quickstart, use the following subject. The subject must match the namespace and the service account name exactly.
 
@@ -92,7 +92,7 @@ Before you begin, install `jq` and the Azure CLI, and set your `kubectl` context
    curl -s "$ISSUER/.well-known/openid-configuration" | jq -r .issuer
    ```
 
-3. Create a user-assigned managed identity. Then, grant that identity the least-privilege role that the Azure AI resource requires, such as `Foundry User`. Record the client ID of the identity and the ID of your Microsoft Entra tenant for a later step.
+3. Create a user-assigned managed identity. Then, grant that identity the least-privilege role that the Azure AI resource requires. For Azure AI Foundry, see [Use a least-privilege role for Azure AI Foundry](#foundry-least-privilege-role). Record the client ID of the identity and the ID of your Microsoft Entra tenant for a later step.
 
 4. Create a federated credential on the managed identity that trusts the service account of the proxy. The deployer names this service account after the Gateway. The following example uses the default gateway from the quickstart.
 
@@ -182,6 +182,10 @@ Before you begin, install `jq` and the Azure CLI, and set your `kubectl` context
    api://AzureADTokenExchange
    ```
 {{< /version >}}
+
+### Use a least-privilege role for Azure AI Foundry {#foundry-least-privilege-role}
+
+{{< reuse "agw-docs/snippets/azure-foundry-least-privilege-role.md" >}}
 
 ## Set up access to Azure
 
