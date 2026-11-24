@@ -39,7 +39,7 @@ Install authentik in your cluster to act as the authorization server. The follow
    ```sh
    helm upgrade --install authentik authentik/authentik \
      --namespace authentik --create-namespace \
-     --version 2026.5.6 \
+     --version 2026.8.6 \
      --timeout 15m \
      --set authentik.secret_key="${AUTHENTIK_SECRET_KEY}" \
      --set authentik.bootstrap_password="${AUTHENTIK_BOOTSTRAP_PASSWORD}" \
