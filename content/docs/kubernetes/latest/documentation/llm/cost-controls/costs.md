@@ -279,6 +279,8 @@ Cost calculations match this value to catalog tiers with a `serviceTier` field. 
 
 Unlisted providers or tiers leave `llm.serviceTier` unset.
 
+Responses from Claude models on Azure AI Foundry follow the Azure row, not the Anthropic row. Because `standard` is not an Azure tier name, a Claude response that reports `standard` leaves `llm.serviceTier` unset. The request still uses `standard` rates.
+
 For Bedrock tier requests and the response header used to detect the tier, see [Service tier]({{< link-hextra path="/integrations/llm/providers/bedrock/#service-tier" >}}).
 
 To record the tier in the access log, follow these steps.

@@ -187,7 +187,7 @@ Before you begin, install `jq` and the Azure CLI, and set your `kubectl` context
 
 1. Retrieve the resource name and, if applicable, the project name from the [Azure AI Foundry portal](https://ai.azure.com/) or the [Azure portal](https://portal.azure.com/). For example:
    * For an Azure OpenAI endpoint like `https://{my-resource}.openai.azure.com`, the resource name is `my-resource`.
-   * For an Azure AI Foundry endpoint like `https://{my-resource}.services.ai.azure.com` and path `/api/projects/{my-project}`, the resource name is `my-resource` and the project name is `my-project`. If the resource name and the project name are the same, you can leave the `projectName` field empty.
+   * For an Azure AI Foundry endpoint like `https://{my-resource}.services.ai.azure.com` and path `/api/projects/{my-project}`, the resource name is `my-resource` and the project name is `my-project`.
 
 2. Store the API key to access your model deployment in an environment variable. If you are using implicit Entra ID authentication (such as managed identity or workload identity), you can skip this step.
    ```sh
@@ -307,6 +307,10 @@ Before you begin, install `jq` and the Azure CLI, and set your `kubectl` context
    ```
    {{% /tab %}}
    {{% tab name="System-assigned managed identity" %}}
+   {{< version include-if="1.4.x" >}}
+   In this version, `managedIdentity` requires `clientId`, `objectId`, and `resourceId`, so it cannot select the system-assigned identity. To use the system-assigned identity, omit `policies.auth` and use implicit authentication instead. You can also use the user-assigned form.
+   {{< /version >}}
+   {{< version exclude-if="1.4.x" >}}
    To use the identity of the Azure resource that runs the proxy, leave `managedIdentity` empty.
 
    ```yaml
@@ -329,8 +333,37 @@ Before you begin, install `jq` and the Azure CLI, and set your `kubectl` context
            managedIdentity: {}
    EOF
    ```
+   {{< /version >}}
    {{% /tab %}}
    {{% tab name="User-assigned managed identity" %}}
+   {{< version include-if="1.4.x" >}}
+   To use an identity that you manage separately from the Azure resource, set its client ID, object ID, and resource ID. In this version, all three fields are required, and the gateway uses the first one that is not empty.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: azure
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         azure:
+           resourceName: my-resource
+           resourceType: OpenAI
+           model: gpt-4.1-mini
+     policies:
+       auth:
+         azure:
+           managedIdentity:
+             clientId: <managed-identity-client-id>
+             objectId: <managed-identity-object-id>
+             resourceId: <managed-identity-resource-id>
+   EOF
+   ```
+   {{< /version >}}
+   {{< version exclude-if="1.4.x" >}}
    To use an identity that you manage separately from the Azure resource, set the client ID of that identity. You can set the object ID or the resource ID instead.
 
    ```yaml
@@ -354,6 +387,7 @@ Before you begin, install `jq` and the Azure CLI, and set your `kubectl` context
              clientId: <managed-identity-client-id>
    EOF
    ```
+   {{< /version >}}
    {{% /tab %}}
    {{< /tabs >}}
    {{< /version >}}
@@ -369,7 +403,7 @@ Before you begin, install `jq` and the Azure CLI, and set your `kubectl` context
    | `azure.projectName` | The Foundry project name. Required when `resourceType` is `Foundry`. |
    | `azure.apiVersion` | Optional API version override. Defaults to `v1`. For legacy deployments, use a dated version like `2025-01-01-preview`. |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,2.1.x,2.2.x,2.3.x" >}}
    | `policies.auth.azure.workloadIdentity` | Use Azure workload identity. Leave the object empty. The proxy uses the federated token and the Azure environment variables in the proxy pod. On AKS, the Azure workload identity webhook adds them. On other clusters, the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource adds them. |
-   | `policies.auth.azure.managedIdentity` | Use an Azure managed identity. Leave the object empty to use the system-assigned identity. To use a user-assigned identity, set one of `clientId`, `objectId`, or `resourceId`. |{{< /version >}}
+   | `policies.auth.azure.managedIdentity` | Use an Azure managed identity.{{< version include-if="1.4.x" >}} Set `clientId`, `objectId`, and `resourceId` of a user-assigned identity. All three are required in this version.{{< /version >}}{{< version exclude-if="1.4.x" >}} Leave the object empty to use the system-assigned identity. To use a user-assigned identity, set exactly one of `clientId`, `objectId`, or `resourceId`.{{< /version >}} |{{< /version >}}
 
 5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
 
