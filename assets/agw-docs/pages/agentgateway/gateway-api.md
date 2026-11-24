@@ -31,7 +31,7 @@ Gateway API features can graduate from the experimental channel to the standard 
 | Pre-Routing Filters (listener `filters`)                                  | [GEP-5224](https://gateway-api.sigs.k8s.io/geps/gep-5224) | ✅ Supported (`ExternalAuth` only)       | Experimental |
 
 {{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-Address routability and listener filters require the experimental channel of Gateway API 1.7 or later. For more information, see [Internal-only ClusterIP service]({{< link-hextra path="/documentation/setup/customize/configs/#clusterip-service" >}}) and [Listener ExternalAuth filter]({{< link-hextra path="/documentation/security/extauth/byo-ext-auth-service/#listener-filter" >}}).
+Address routability and listener filters require the experimental channel of Gateway API 1.7 or later. For more information, see [Request a cluster-only address on the Gateway]({{< link-hextra path="/documentation/setup/customize/configs/#routability" >}}) and [Listener ExternalAuth filter]({{< link-hextra path="/documentation/security/extauth/byo-ext-auth-service/#listener-filter" >}}).
 {{< /version >}}
 
 ## Extensions

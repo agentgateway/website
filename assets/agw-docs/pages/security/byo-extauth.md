@@ -360,7 +360,7 @@ Instead of a policy, you can add an external authorization filter to a Gateway l
 > [!NOTE]
 > Listener filters require the experimental channel of Gateway API version 1.7 or later. For the install command, see [Experimental features in Gateway API]({{< link-hextra path="/release-notes/versions/#experimental-features" >}}).
 
-1. Add the `ExternalAuth` filter to the `filters.requests` field of a listener. The following example uses the `ext-authz` service that you deployed earlier.
+1. Add the `ExternalAuth` filter to the `filters.requests` field of a listener. The following example uses the `ext-authz` service that you deployed earlier. This command replaces the `agentgateway-proxy` Gateway. If you changed that Gateway, add the `filters` field to its listener instead of applying this manifest.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -464,7 +464,7 @@ Instead of a policy, you can add an external authorization filter to a Gateway l
    route not found
    ```
 
-A listener supports the following filters:
+Review the following limits for listener filters.
 
 * **One filter only**: A listener can have only one `ExternalAuth` filter. If you add a second one, the `Accepted` condition of the listener is `False` with the `InvalidListenerFilter` reason.
 * **Type**: Other filter types, such as `ExtensionRef`, are not supported. The `Accepted` condition of the listener is `False` with the `UnsupportedValue` reason.
@@ -476,6 +476,21 @@ Listener filters work the same way on listeners of a ListenerSet.
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
+
+{{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+If you added the listener filter, remove it from the Gateway before you delete the `ext-authz` Service. Otherwise, the filter's `backendRef` no longer resolves, the listener is no longer programmed, and the Gateway stops serving traffic.
+
+```sh
+kubectl patch gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type=json \
+  -p='[{"op":"remove","path":"/spec/listeners/0/filters"}]'
+```
+
+Example output:
+
+```txt
+gateway.gateway.networking.k8s.io/agentgateway-proxy patched
+```
+{{< /version >}}
 
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} gateway-ext-auth-policy route-ext-auth-policy backend-ext-auth-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found

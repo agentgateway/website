@@ -513,7 +513,8 @@ jobs:
       # of the Gateway API release these docs install. The experimental channel
       # is a superset of standard, so a standard-channel page cannot fail on it;
       # the trade is that an experimental-only field on a standard-channel page
-      # passes. The check uses the release that main installs, the newest one.
+      # passes. The check uses the release that main installs, so a latest page
+      # that uses a field from a newer release also passes.
       #
       # Core kinds (Service, Deployment, ...) go through kubeconform, against the
       # newest Kubernetes version these docs support.
@@ -522,9 +523,13 @@ jobs:
           KUBECONFORM_VERSION: v0.8.0
         run: |
           set -o pipefail
-          # The file holds one version gate per release line. The newest release, on main, is last.
-          GWAPI=$(grep -oE '[0-9]+\.[0-9]+\.[0-9]+' assets/agw-docs/versions/k8s-gw-version-exp.md | tail -n 1)
-          test -n "$GWAPI"
+          # The file holds one version gate per release line. The release for main is
+          # in the gate that uses exclude-if, so a reordered gate does not change it.
+          GWAPI=$(grep -oE '\{\{< version exclude-if="[^"]*" >\}\}[0-9]+\.[0-9]+\.[0-9]+' assets/agw-docs/versions/k8s-gw-version-exp.md | grep -oE '[0-9]+\.[0-9]+\.[0-9]+$')
+          if [ "$(printf '%s\n' "$GWAPI" | wc -l)" -ne 1 ] || [ -z "$GWAPI" ]; then
+            echo "Expected one exclude-if gate with a version in k8s-gw-version-exp.md, got: '$GWAPI'" >&2
+            exit 1
+          fi
           mkdir -p "$RUNNER_TEMP/gateway-api"
           curl -sSfL -o "$RUNNER_TEMP/gateway-api/experimental-install.yaml" \
             "https://github.com/kubernetes-sigs/gateway-api/releases/download/v${GWAPI}/experimental-install.yaml"

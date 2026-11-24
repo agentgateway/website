@@ -1,9 +1,7 @@
 Set separate timeouts for retries. 
 
-{{< version include-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-> [!WARNING]
-> {{< reuse "agw-docs/versions/warn-experimental.md" >}}
-{{< /version >}}
+> [!NOTE]
+> HTTPRoute retries are in the standard channel of Gateway API version 1.7 and later. In earlier versions, retries are experimental and subject to change.
 
 ## About per-try timeouts
 
@@ -20,15 +18,13 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
 
 ## Set up per-try timeouts
 
-{{< version include-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-Install the experimental Kubernetes Gateway API CRDs.
+1. If you use Gateway API version 1.6 or earlier, install the experimental Kubernetes Gateway API CRDs. In version 1.7 and later, the standard channel includes retries, so you can skip this step.
+   
+   ```sh
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
+   ```
 
-```sh
-kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
-```
-{{< /version >}}
-
-1. Configure the per-try timeout. You can apply the timeout to an HTTPRoute by using a Kubernetes Gateway API-native approach. To apply it to an HTTPRoute rule or Gateway listener, use an {{< reuse "agw-docs/snippets/policy.md" >}} resource. 
+2. Configure the per-try timeout. You can apply the timeout to an HTTPRoute by using a Kubernetes Gateway API-native approach. To apply it to an HTTPRoute rule or Gateway listener, use an {{< reuse "agw-docs/snippets/policy.md" >}} resource. 
    {{< tabs >}}
    {{% tab name="HTTPRoute (Kubernetes GW API)" %}}
    Use the `timeouts.backendRequest` field to configure the per-try timeout. Note that you must set a retry policy also to configure a per-try timeout. 
@@ -63,7 +59,7 @@ kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/re
    EOF
    ```
 
-2. Verify that the gateway proxy is configured with the per-try timeout.
+3. Verify that the gateway proxy is configured with the per-try timeout.
 
    1. Port-forward the gateway proxy on port 15000.
 
@@ -186,7 +182,7 @@ kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/re
       EOF
       ```
 
-2. Verify that the gateway proxy is configured with the per-try timeout.
+3. Verify that the gateway proxy is configured with the per-try timeout.
 
    1. Port-forward the gateway proxy on port 15000.
 
@@ -307,7 +303,7 @@ kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/re
       EOF
       ```
 
-2. Verify that the gateway proxy is configured with the per-try timeout.
+3. Verify that the gateway proxy is configured with the per-try timeout.
 
    1. Port-forward the gateway proxy on port 15000.
 

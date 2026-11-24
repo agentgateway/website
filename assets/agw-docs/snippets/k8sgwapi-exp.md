@@ -23,7 +23,7 @@ To use a feature that is still experimental in your Gateway API version, install
 kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
 ```
 
-{{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+{{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 If the standard channel CRDs are already in your cluster, the install command fails because the Gateway API `safe-upgrades` admission policy blocks experimental CRDs on top of standard CRDs. To switch channels, delete the policy and its binding first, and then run the install command again.
 
 ```sh
@@ -38,5 +38,5 @@ validatingadmissionpolicybinding.admissionregistration.k8s.io "safe-upgrades.gat
 validatingadmissionpolicy.admissionregistration.k8s.io "safe-upgrades.gateway.networking.k8s.io" deleted
 ```
 
-The experimental install re-creates the policy.
+The experimental install re-creates the policy. Until then, the cluster no longer blocks you from installing CRDs of an older Gateway API version.
 {{< /version >}}

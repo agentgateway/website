@@ -573,7 +573,7 @@ To keep a Gateway reachable only from inside the cluster, set the service type t
 {{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 #### Request a cluster-only address on the Gateway {#routability}
 
-Instead of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, you can use the Gateway API `routability` field to ask for an address that is reachable only from inside the cluster. The controller generates a `ClusterIP` service for the Gateway. This setting is portable across Gateway API implementations.
+Instead of the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, you can use the Gateway API `routability` field to ask for an address that is reachable only from inside the cluster. The controller generates a `ClusterIP` service for the Gateway. Because `routability` is part of the Gateway API instead of an agentgateway resource, the same Gateway can work with other implementations that support this extended feature.
 
 > [!NOTE]
 > The `routability` field requires the experimental channel of Gateway API version 1.7 or later. For the install command, see [Experimental features in Gateway API]({{< link-hextra path="/release-notes/versions/#experimental-features" >}}).
@@ -617,6 +617,18 @@ To request a specific cluster IP address, set the `value` field of the address t
 * The `Cluster` value is the only routability that agentgateway supports. Any other value sets the `Accepted` condition of the Gateway to `False` with the `UnsupportedAddress` reason.
 * You cannot mix `Cluster` addresses with addresses that have a different routability.
 * A Gateway can have only one address. Otherwise, the `Accepted` condition is `False` with the `InvalidParameters` reason.
+
+To remove the example Gateway, delete it. The controller also deletes the generated service.
+
+```sh
+kubectl delete gateway internal-gateway -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+```
+
+Example output:
+
+```txt
+gateway.gateway.networking.k8s.io "internal-gateway" deleted
+```
 {{< /version >}}
 
 ### Static IP for LoadBalancer {#static-ip}

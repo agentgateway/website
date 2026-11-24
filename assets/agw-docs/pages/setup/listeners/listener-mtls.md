@@ -37,41 +37,67 @@ Agentgateway uses the `certificates.k8s.io/v1` version of the ClusterTrustBundle
 {{< /version >}}
 {{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 
-You can also store the CA certificates in a ConfigMap in a different namespace than the Gateway. A ConfigMap in another namespace is a cross-namespace reference, so you must allow it with a ReferenceGrant. Create the ReferenceGrant in the namespace of the ConfigMap. It must allow the Gateway to reference the ConfigMap.
+### CA certificate in another namespace {#cross-namespace-ca}
 
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: gateway.networking.k8s.io/v1beta1
-kind: ReferenceGrant
-metadata:
-  name: allow-gateway-to-ca-cert
-  namespace: ca-certs
-spec:
-  from:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-  to:
-  - group: ""
-    kind: ConfigMap
-    name: ca-cert
-EOF
-```
+This guide stores the CA certificates in a ConfigMap in the namespace of the Gateway. You can also store them in a ConfigMap in a different namespace. A ConfigMap in another namespace is a cross-namespace reference, so you must allow it with a ReferenceGrant. This feature is not experimental. After you create the CA certificate in [Create TLS certificates](#create-tls-certificates), try the following steps.
 
-Then, set the `namespace` field in the `caCertificateRefs` entry of the Gateway.
+1. Create the namespace and store the CA certificate in a ConfigMap in that namespace.
 
-```yaml
-tls:
-  frontend:
-    default:
-      validation:
-        mode: AllowValidOnly
-        caCertificateRefs:
-          - name: ca-cert
-            namespace: ca-certs
-            kind: ConfigMap
-            group: ""
-```
+   ```sh
+   kubectl create namespace ca-certs
+   kubectl create configmap ca-cert \
+     --from-file=ca.crt=ca-cert.pem \
+     -n ca-certs
+   ```
+
+   Example output:
+
+   ```txt
+   namespace/ca-certs created
+   configmap/ca-cert created
+   ```
+
+2. Create a ReferenceGrant in the namespace of the ConfigMap. The ReferenceGrant must allow the Gateway to reference the ConfigMap.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1beta1
+   kind: ReferenceGrant
+   metadata:
+     name: allow-gateway-to-ca-cert
+     namespace: ca-certs
+   spec:
+     from:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     to:
+     - group: ""
+       kind: ConfigMap
+       name: ca-cert
+   EOF
+   ```
+
+   Example output:
+
+   ```txt
+   referencegrant.gateway.networking.k8s.io/allow-gateway-to-ca-cert created
+   ```
+
+3. In the Gateway, set the `namespace` field in the `caCertificateRefs` entry.
+
+   ```yaml
+   tls:
+     frontend:
+       default:
+         validation:
+           mode: AllowValidOnly
+           caCertificateRefs:
+             - name: ca-cert
+               namespace: ca-certs
+               kind: ConfigMap
+               group: ""
+   ```
 
 Without the ReferenceGrant, the `ResolvedRefs` condition of the listener is `False` with the `RefNotPermitted` reason, and the listener is not programmed.
 {{< /version >}}
