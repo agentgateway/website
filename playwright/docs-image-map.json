@@ -880,7 +880,7 @@
       "dark": "assets/img/ui-llm-guardrails-regex-ssn-dark.png"
     },
     "ui-llm-guardrails-request.png": {
-      "$note": "content/docs/standalone/main/documentation/llm/prompt-guards/regex.md, \"PII detection\" UI tab, step 6: LLM > Guardrails with the two request guards added, before Save guardrails. Never saved. Captured by tests/ui-tabs-h.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-h.yaml, docs 1.8 and later.",
+      "$note": "content/docs/standalone/main/documentation/llm/prompt-guards/regex.md, \"PII detection\" UI tab, step 5: LLM > Guardrails with the two request guards added, before Save guardrails. Never saved. Captured by tests/ui-tabs-h.spec.ts under CAPTURE_MODE=fixture FIXTURE=ui-tabs-h.yaml, docs 1.8 and later.",
       "light": "assets/img/ui-llm-guardrails-request.png",
       "dark": "assets/img/ui-llm-guardrails-request-dark.png"
     },

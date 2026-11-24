@@ -303,7 +303,8 @@ If no text is in scope, the guard skips the call to Model Armor. For supported v
 
 The `policies` field on the prompt guard entry configures how agentgateway connects and authenticates to Google Model Armor when it evaluates a request or response. Set `policies` next to `googleModelArmor`, not inside it.
 
-The `googleModelArmor.policies` field is deprecated in favor of the `policies` field on the prompt guard entry. You cannot set both fields on the same guard.
+> [!NOTE]
+> The `googleModelArmor.policies` field is deprecated in favor of the `policies` field on the prompt guard entry. The API server rejects a guard that sets both fields.
 
 ### Authentication
 

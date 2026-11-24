@@ -29,8 +29,10 @@ The following steps add the same three processors as the **Config file** tab. Th
 1. Create a `config.yaml` file with a local stdio MCP server, but no guardrails. You add the guardrails in the UI.
    ```yaml
    # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+   gateways:
+     default:
+       port: 3000
    mcp:
-     port: 3000
      targets:
      - name: everything
        stdio:
@@ -99,9 +101,9 @@ The following steps add the same three processors as the **Config file** tab. Th
    {{< reuse-image-light src="img/ui-mcp-guardrails-cel-response.png" alt="Processor 3 in the MCP guardrails drawer with the Transform action, the expression that masks demo secrets, and the tools/call method in the Response phase" >}}
    {{< reuse-image-dark srcDark="img/ui-mcp-guardrails-cel-response-dark.png" alt="Processor 3 in the MCP guardrails drawer with the Transform action, the expression that masks demo secrets, and the tools/call method in the Response phase" >}}
 
-7. Click **Save policy**.
+7. Optional: To review the generated YAML before you save, click **View diff**.
 
-The processors run in the order that they are listed. To review the generated YAML before you save, click **View diff**.
+8. Click **Save policy**.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 {{% /tab %}}

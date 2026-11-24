@@ -63,4 +63,7 @@ spec:
 EOF
 ```
 
-The moderation guard sets `policies` on the prompt guard entry, next to `openAIModeration`. The `openAIModeration.policies` field is deprecated in favor of this guard-level field. For the connection and authentication options, see [OpenAI moderation]({{< link-hextra path="/documentation/llm/guardrails/moderation/#backend-connection-and-authentication-policies" >}}).
+The moderation guard sets `policies` on the prompt guard entry, next to `openAIModeration`. For the connection and authentication options, see [OpenAI moderation]({{< link-hextra path="/documentation/llm/guardrails/moderation/#backend-connection-and-authentication-policies" >}}).
+
+> [!NOTE]
+> The `openAIModeration.policies` field is deprecated in favor of the `policies` field on the prompt guard entry. The API server rejects a guard that sets both fields.

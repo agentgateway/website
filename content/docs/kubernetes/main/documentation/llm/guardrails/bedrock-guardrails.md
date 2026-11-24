@@ -172,7 +172,8 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
 
 The `policies` field on the prompt guard entry configures how agentgateway connects and authenticates to the AWS Bedrock Guardrails service when it evaluates a request or response. Set `policies` next to `bedrockGuardrails`, not inside it.
 
-The `bedrockGuardrails.policies` field is deprecated in favor of the `policies` field on the prompt guard entry. You cannot set both fields on the same guard.
+> [!NOTE]
+> The `bedrockGuardrails.policies` field is deprecated in favor of the `policies` field on the prompt guard entry. The API server rejects a guard that sets both fields.
 
 ### Authentication
 

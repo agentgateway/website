@@ -270,7 +270,8 @@ Inline moderation applies only where agentgateway builds the request that it sen
 
 The `policies` field on the prompt guard entry configures how agentgateway connects and authenticates to the OpenAI Moderation API when it evaluates a request. Set `policies` next to `openAIModeration`, not inside it. These settings apply to the moderation prompt guard. Inline moderation reuses the connection to the OpenAI provider, so it needs no separate connection settings.
 
-The `openAIModeration.policies` field is deprecated in favor of the `policies` field on the prompt guard entry. You cannot set both fields on the same guard.
+> [!NOTE]
+> The `openAIModeration.policies` field is deprecated in favor of the `policies` field on the prompt guard entry. The API server rejects a guard that sets both fields.
 
 ### Authentication
 

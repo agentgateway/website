@@ -244,7 +244,7 @@ test.describe('UI tabs: guardrails', () => {
     await expect(page).toHaveScreenshot('ui-llm-guardrails-regex-ssn.png');
   });
 
-  // regex.md, "PII detection" step 6: both request guards added, before Save guardrails.
+  // regex.md, "PII detection" step 5: both request guards added, before Save guardrails.
   test('llm request guards', async ({ page }) => {
     await openGuardrails(page);
     const ssn = await fillSsnGuard(page);

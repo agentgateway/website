@@ -67,7 +67,7 @@ The following example rejects requests that contain PII data, such as Social Sec
 
 {{< tabs >}}
 {{% tab name="UI" %}}
-The UI saves the guards in `llm.policies.guardrails`, which applies to all LLM models. The **Config file** tab adds the same guards to a single model instead.
+The UI saves the guards in `llm.policies.guardrails`, which applies to all LLM models. The **Config file** tab adds the same guards to a single model instead. The UI form sets the rejection status and body, but not the rejection headers. To set a header such as `content-type`, use the **Config file** tab.
 
 1. Create a configuration file with an LLM model, but no guardrails. You add the guardrails in the UI.
    ```yaml
@@ -91,17 +91,15 @@ The UI saves the guards in `llm.policies.guardrails`, which applies to all LLM m
 3. Open [http://localhost:15000/ui/llm/guardrails](http://localhost:15000/ui/llm/guardrails) (**LLM** > **Guardrails**).
 
 4. In the **Request guards** section, click **Add guard**, and configure the guard for the SSN keywords.
-
-   The **Action** list has the following choices.
-   * **Reject request**: Block the request and return the rejection response. This choice sets `action: reject`.
-   * **Mask matched text**: Replace the matched content and continue. This choice sets `action: mask`.
-   * **Audit**: Record the match and forward the content unchanged. This choice sets `action: audit`. For more information, see [Audit mode](../overview/#audit).
-
-   {{< reuse-image-light src="img/ui-llm-guardrails-action.png" alt="Add request guard drawer for a Custom regex guard with the Action list open, showing Reject request, Mask matched text, and Audit" >}}
-   {{< reuse-image-dark srcDark="img/ui-llm-guardrails-action-dark.png" alt="Add request guard drawer for a Custom regex guard with the Action list open, showing Reject request, Mask matched text, and Audit" >}}
-
    1. From the **Guard type** list, select **Custom regex**.
-   2. From the **Action** list, select **Reject request**.
+   2. From the **Action** list, select **Reject request**. The **Action** list has the following choices.
+      * **Reject request**: Block the request and return the rejection response. This choice sets `action: reject`.
+      * **Mask matched text**: Replace the matched content and continue. This choice sets `action: mask`.
+      * **Audit**: Record the match and forward the content unchanged. This choice sets `action: audit`. For more information, see [Audit mode](../overview/#audit).
+
+      {{< reuse-image-light src="img/ui-llm-guardrails-action.png" alt="Add request guard drawer for a Custom regex guard with the Action list open, showing Reject request, Mask matched text, and Audit" >}}
+      {{< reuse-image-dark srcDark="img/ui-llm-guardrails-action-dark.png" alt="Add request guard drawer for a Custom regex guard with the Action list open, showing Reject request, Mask matched text, and Audit" >}}
+
    3. In **Custom regex patterns**, enter `SSN`. Click **Add pattern**, and enter `Social Security`.
    4. In **Rejection status**, enter `400`.
    5. In **Rejection body**, enter the following JSON.
@@ -143,8 +141,6 @@ The UI saves the guards in `llm.policies.guardrails`, which applies to all LLM m
    {{< reuse-image-dark srcDark="img/ui-llm-guardrails-request-dark.png" alt="LLM Guardrails page with a Custom regex guard and a Built-in detectors guard in the Request guards section, both rejecting with 400" >}}
 
 6. Click **Save guardrails**.
-
-The form sets the rejection status and body, but not the rejection headers. To set a header such as `content-type`, use the **Config file** tab.
 
 Whether the UI can save depends on your storage mode. For more information, see [Save changes from the UI]({{< link-hextra path="/documentation/setup/ui/launch-ui/#save-changes" >}}).
 {{% /tab %}}
@@ -215,7 +211,11 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{% /tab %}}
 {{< /tabs >}}
 
-1. In a new terminal, send a request to your LLM provider. Verify that the request succeeds. 
+### Verify the PII guards
+
+Send requests to your LLM provider to verify that the guards block PII.
+
+1. In a new terminal, send a request to your LLM provider. Verify that the request succeeds.
    ```sh
    curl http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
@@ -283,7 +283,7 @@ Whether the UI can save depends on your storage mode. For more information, see 
 
 ## Mask PII in responses
 
-You can also filter LLM responses to redact sensitive data before it reaches the client. When a match is found, agentgateway replaces built-in pattern matches with `<ENTITY_TYPE>` (for example, `<CREDIT_CARD>`) and custom pattern matches with `<masked>`. The following example masks credit card numbers in responses.
+You can also filter LLM responses to redact sensitive data before it reaches the client. When a match is found, agentgateway replaces built-in pattern matches with `<ENTITY_TYPE>` (for example, `<CREDIT_CARD>`) and custom pattern matches with `<masked>`. The following example masks phone numbers in responses.
 
 > [!WARNING]
 > Masking applies only to a buffered response. When the client sets `"stream": true`, the LLM response is streamed, and agentgateway cannot rewrite content that is already on its way to the client. A response guard that uses `action: mask` passes the matched content through unmodified, and the client receives no error. To protect a streamed response, use `action: reject` and set `streaming: Enabled`. For more information, see [Streaming guardrails]({{< link-hextra path="/documentation/llm/prompt-guards/overview/#streaming-guardrails" >}}).
@@ -355,7 +355,11 @@ Whether the UI can save depends on your storage mode. For more information, see 
 {{% /tab %}}
 {{< /tabs >}}
 
-1. In a new terminal, send a request to your LLM provider with a phone number and verify that the number is masked in your response. 
+### Verify the phone number masking
+
+Send a request to your LLM provider to verify that the guard masks phone numbers in the response.
+
+1. In a new terminal, send a request to your LLM provider with a phone number and verify that the number is masked in your response.
    ```sh
    curl http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
