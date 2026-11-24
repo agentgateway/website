@@ -55,6 +55,9 @@ The following steps add the same three processors as the **Config file** tab. Th
    4. Keep the **Reject** action, and in **Reject message**, enter `Messages containing DO_NOT_SEND may not be sent upstream`.
    5. In **Method phases**, keep the `tools/call` method with the **Request** phase.
 
+   {{< reuse-image-light src="img/ui-mcp-guardrails-cel-reject.png" alt="MCP guardrails drawer with processor 1, an Expression processor with the DO_NOT_SEND condition, the Reject action, and the reject message" >}}
+   {{< reuse-image-dark srcDark="img/ui-mcp-guardrails-cel-reject-dark.png" alt="MCP guardrails drawer with processor 1, an Expression processor with the DO_NOT_SEND condition, the Reject action, and the reject message" >}}
+
 5. Add the processor that masks email addresses in the request.
    1. Click **Add processor**, and from the **Type** list, select **Expression**.
    2. In the **Condition** editor, enter the following expression.
@@ -92,6 +95,9 @@ The following steps add the same three processors as the **Config file** tab. Th
       }))
       ```
    5. In **Method phases**, enter `tools/call`, select the **Response** phase, and click **Add**. The `tools/call` method now runs in the **Response** phase.
+
+   {{< reuse-image-light src="img/ui-mcp-guardrails-cel-response.png" alt="Processor 3 in the MCP guardrails drawer with the Transform action, the expression that masks demo secrets, and the tools/call method in the Response phase" >}}
+   {{< reuse-image-dark srcDark="img/ui-mcp-guardrails-cel-response-dark.png" alt="Processor 3 in the MCP guardrails drawer with the Transform action, the expression that masks demo secrets, and the tools/call method in the Response phase" >}}
 
 7. Click **Save policy**.
 

@@ -97,6 +97,9 @@ The UI saves the guards in `llm.policies.guardrails`, which applies to all LLM m
    * **Mask matched text**: Replace the matched content and continue. This choice sets `action: mask`.
    * **Audit**: Record the match and forward the content unchanged. This choice sets `action: audit`. For more information, see [Audit mode](../overview/#audit).
 
+   {{< reuse-image-light src="img/ui-llm-guardrails-action.png" alt="Add request guard drawer for a Custom regex guard with the Action list open, showing Reject request, Mask matched text, and Audit" >}}
+   {{< reuse-image-dark srcDark="img/ui-llm-guardrails-action-dark.png" alt="Add request guard drawer for a Custom regex guard with the Action list open, showing Reject request, Mask matched text, and Audit" >}}
+
    1. From the **Guard type** list, select **Custom regex**.
    2. From the **Action** list, select **Reject request**.
    3. In **Custom regex patterns**, enter `SSN`. Click **Add pattern**, and enter `Social Security`.
@@ -111,6 +114,10 @@ The UI saves the guards in `llm.policies.guardrails`, which applies to all LLM m
         }
       }
       ```
+
+      {{< reuse-image-light src="img/ui-llm-guardrails-regex-ssn.png" alt="Add request guard drawer with the SSN and Social Security patterns, the Reject request action, the 400 rejection status, and the rejection body" >}}
+      {{< reuse-image-dark srcDark="img/ui-llm-guardrails-regex-ssn-dark.png" alt="Add request guard drawer with the SSN and Social Security patterns, the Reject request action, the 400 rejection status, and the rejection body" >}}
+
    6. Click **Add guard**.
 
 5. In the **Request guards** section, click **Add guard** again, and configure the guard for email addresses.
@@ -129,6 +136,11 @@ The UI saves the guards in `llm.policies.guardrails`, which applies to all LLM m
       }
       ```
    6. Click **Add guard**.
+
+   The **Request guards** section lists the two guards.
+
+   {{< reuse-image-light src="img/ui-llm-guardrails-request.png" alt="LLM Guardrails page with a Custom regex guard and a Built-in detectors guard in the Request guards section, both rejecting with 400" >}}
+   {{< reuse-image-dark srcDark="img/ui-llm-guardrails-request-dark.png" alt="LLM Guardrails page with a Custom regex guard and a Built-in detectors guard in the Request guards section, both rejecting with 400" >}}
 
 6. Click **Save guardrails**.
 
@@ -305,6 +317,10 @@ The UI saves the guard in `llm.policies.guardrails`, which applies to all LLM mo
    1. From the **Guard type** list, select **Built-in detectors**.
    2. From the **Action** list, select **Mask matched text**.
    3. In **Built-in detectors**, select **Phone**, and clear **Email**.
+
+      {{< reuse-image-light src="img/ui-llm-guardrails-mask-phone.png" alt="Add response guard drawer with Built-in detectors, the Mask matched text action, and only the Phone detector selected" >}}
+      {{< reuse-image-dark srcDark="img/ui-llm-guardrails-mask-phone-dark.png" alt="Add response guard drawer with Built-in detectors, the Mask matched text action, and only the Phone detector selected" >}}
+
    4. Click **Add guard**.
 
 5. Click **Save guardrails**.
