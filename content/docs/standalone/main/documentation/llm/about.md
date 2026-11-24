@@ -37,6 +37,7 @@ Many providers now have dedicated integrations with preconfigured base URLs and 
 - [Meta]({{< link-hextra path="/integrations/llm/providers/meta/" >}})
 - [Perplexity]({{< link-hextra path="/integrations/llm/providers/perplexity/" >}})
 - [Nebius Token Factory]({{< link-hextra path="/integrations/llm/providers/nebius/" >}})
+- [CoreWeave Serverless Inference]({{< link-hextra path="/integrations/llm/providers/coreweave/" >}})
 - [TypeSafe]({{< link-hextra path="/integrations/llm/providers/typesafe/" >}})
 
 ### Self-hosted solutions
