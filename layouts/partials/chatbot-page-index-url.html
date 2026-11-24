@@ -1,0 +1,20 @@
+{{- /*
+  Builds the chatbot's @-mention page index ONCE per build and returns the URL
+  of the published JSON file. Call it with partialCached and the site as the
+  context, so the loop below runs one time, not once per page.
+
+  The index used to be inlined in every page: about 395 KB of JSON listing
+  every docs page in every version, so roughly two thirds of each page's HTML
+  and about 2.7 GB of a full build's output. Building it per page also made
+  the build quadratic in the page count.
+*/ -}}
+{{- $pages := slice -}}
+{{- range where .RegularPages "Section" "docs" -}}
+  {{- $parentTitle := "" -}}
+  {{- with .Parent -}}
+    {{- $parentTitle = .Title -}}
+  {{- end -}}
+  {{- $pages = $pages | append (dict "title" .Title "url" .RelPermalink "section" $parentTitle) -}}
+{{- end -}}
+{{- $index := resources.FromString "js/chatbot-page-index.json" ($pages | jsonify) | fingerprint -}}
+{{- return $index.RelPermalink -}}
