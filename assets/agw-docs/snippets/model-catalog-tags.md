@@ -46,8 +46,9 @@ The tags apply as follows.
 On Bedrock, the tags are narrower than the rules above, because they are read only after the request picks an endpoint.
 
 | Bedrock request | Accepted formats |
-|-----------------|------------------|
-| Resolves to the Runtime endpoint | Bedrock Converse only. The chat format tags do not apply. |
+|-----------------|------------------|{{< version include-if="1.6.x,1.7.x" >}}
+| Resolves to the Runtime endpoint | Bedrock Converse only. The chat format tags do not apply. |{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+| Resolves to the Runtime endpoint | Native OpenAI or Anthropic formats when native support is available. Requests fall back to Bedrock Converse when native support is not available. The chat format tags do not apply. |{{< /version >}}
 | Resolves to the Mantle endpoint, `anthropic.claude*` model | Anthropic Messages only. The chat format tags do not apply. |
 | Resolves to the Mantle endpoint, any other model | The formats in the model's tags, limited to `openai_completions`, `openai_responses`, and `anthropic_messages`. An untagged model falls back to a built-in list. |
 

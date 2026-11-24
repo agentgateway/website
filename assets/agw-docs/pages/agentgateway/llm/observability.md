@@ -57,7 +57,7 @@ The `gen_ai.usage.input_tokens` log and span field and the `input` series of the
 The `gen_ai.usage.output_tokens` log and span field and the `output` series of the `agentgateway_gen_ai_client_token_usage` metric report the normalized output count.
 {{< /version >}}
 
-Anthropic and Amazon Bedrock exclude cached tokens from the input count that they report. OpenAI, Azure OpenAI, and Google Gemini include them. For the providers that exclude them, `llm.inputTokens` is therefore larger than `llm.providerInputTokens` whenever prompt caching is active. To report exactly what the provider billed, read `llm.providerInputTokens` or `llm.providerTotalTokens` instead.
+Anthropic and Amazon Bedrock exclude cached tokens from the input count that they report. So do Claude models on Google Vertex AI{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}, GitHub Copilot, and Azure AI Foundry{{< /version >}}. OpenAI, Azure OpenAI, and Google Gemini include them. For the providers that exclude them, `llm.inputTokens` is therefore larger than `llm.providerInputTokens` whenever prompt caching is active. To report exactly what the provider billed, read `llm.providerInputTokens` or `llm.providerTotalTokens` instead.
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 Google Gemini can report reasoning tokens separately from completion tokens. For Gemini responses, `llm.outputTokens` includes visible output and reasoning tokens. As a result, the output count matches the output side of the provider's total token count.

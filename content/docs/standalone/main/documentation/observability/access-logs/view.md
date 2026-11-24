@@ -27,6 +27,8 @@ For all values, see [Operation names]({{< link-hextra path="/documentation/obser
 
 MCP log lines include `mcp.*` fields.
 
+Every log line also carries the `agentgateway.user`, `agentgateway.group`, and `agentgateway.session` fields when they have a value. For example, a request that a signed-in user sends ends with `agentgateway.user=alice@example.com`. To choose how agentgateway identifies users, see [Choose how users are identified]({{< link-hextra path="/documentation/setup/ui/secure-ui/#signed-in-user" >}}). To remove the fields, see [Keep user identity out of shipped logs](#identity-in-logs).
+
 For requests that the `llm.models` configuration or a virtual model serves, `agw.ai.original_model` records the model name that the client sent, and `gen_ai.request.model` records the model that reaches the provider after routing, such as the target that a virtual model selected.
 
 You can change the default log format to JSON by setting the `config.logging.format` field. 
@@ -104,7 +106,9 @@ The agentgateway UI includes a **Logs** page that you can use to review the acce
 To view access logs in the UI: 
 
 1. Open the [agentgateway UI](http://localhost:15000/ui). This address is the copy of the UI on the admin interface, which works from the host that runs the proxy. If you serve the UI on a gateway, use that gateway's port instead. 
-2. Go to **Logs** and review the access logs that agentgateway captured for your previous requests. Use the filter options to limit the number of access logs that are shown to you. For example, you can filter logs by model, providers, or users. Note that in order to filter logs by user, you must configure authentication in agentgateway. Each filter lists the values from recorded traffic. To find a value in a long list, type part of it in the search box at the top of the filter, and then select the value. Typing alone does not change the logs that are shown. 
+2. Go to **Logs** and review the access logs that agentgateway captured for your previous requests. Model discovery requests appear as **Model discovery** entries with the request path, such as `GET /v1/models`. Use the filter options to limit the number of access logs that are shown to you. For example, you can filter logs by model, providers, or users. Note that in order to filter logs by user, you must configure authentication in agentgateway. Each filter lists the values from recorded traffic. To find a value in a long list, click the filter and type part of the value in the filter field itself. The list narrows to the matches, and the **All** option stays at the top of the list. Select the value to apply it. Typing alone does not change the logs that are shown. 
+
+   <!-- TODO: recapture after Playwright antd port (Q14) -->
 
    {{< reuse-image src="img/agentgateway-ui-logs.png" srcDark="img/agentgateway-ui-logs-dark.png" >}}
 
@@ -253,15 +257,7 @@ For the full list of available fields, see the [CEL variables reference]({{< lin
 
 ### Log the agent session {#agent-session}
 
-Add `request.agent.session` to correlate requests from the same agent session. This example records an empty string when no session is available.
-
-```yaml
-# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
-frontendPolicies:
-  accessLog:
-    add:
-      agent_session: 'has(request.agent.session) ? request.agent.session : ""'
-```
+Agentgateway logs the agent session of each request in the `agentgateway.session` field, so you can correlate requests from the same session. The field has the value of `request.agent.session` and is left out when a request has no session.
 
 Agentgateway detects sessions from recognized agent headers. To override detection, use `config.standardAttributes.session`. For details, see [Agent sessions]({{< link-hextra path="/reference/cel/variables/#agent-sessions" >}}).
 
@@ -374,3 +370,43 @@ frontendPolicies:
 ```
 {{% /tab %}}
 {{< /tabs >}}
+
+### Keep user identity out of shipped logs {#identity-in-logs}
+
+Agentgateway adds the `agentgateway.user`, `agentgateway.group`, and `agentgateway.session` fields to every access log line, even if you do not set [`config.standardAttributes`]({{< link-hextra path="/documentation/setup/ui/secure-ui/#signed-in-user" >}}). The fields appear on each line that goes to stdout and on each log record that you export over OTLP. The same values also go on trace spans. A field is left out of a line when its expression returns no value. To keep identity out of logs and traces that you ship to another system, remove the fields that you do not want.
+
+{{< tabs >}}
+{{% tab name="UI" %}}
+1. Open the **Settings** > **Observability** page, and click the **Tracing** card.
+2. In the **Attributes** section, add `agentgateway.user`, `agentgateway.group`, and `agentgateway.session` to **Remove attributes**.
+3. Click **Save policy**.
+
+The UI has no editor for the OTLP log field set. To remove the fields from OTLP log records, use the **Config file** tab.
+{{% /tab %}}
+{{% tab name="Config file" %}}
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+frontendPolicies:
+  accessLog:
+    otlp:
+      fields:
+        remove:
+          - agentgateway.user
+          - agentgateway.group
+          - agentgateway.session
+  tracing:
+    remove:
+      - agentgateway.user
+      - agentgateway.group
+      - agentgateway.session
+```
+{{% /tab %}}
+{{< /tabs >}}
+
+| Field | Description |
+|-------|-------------|
+| `accessLog.otlp.fields.remove` | Names of fields to drop from OTLP log records only. Stdout lines and the UI log database keep the fields. |
+| `tracing.remove` | Names of attributes to drop from trace spans. |
+
+> [!WARNING]
+> Do not remove these fields with the top-level `frontendPolicies.accessLog.remove` list if you use the **Logs** page in the UI. When you store logs in the database, agentgateway copies the fields after it applies `remove`. New requests then have no user or group, and the **Logs** user and group filters and the per-user analytics stop working for them. Use the top-level `remove` list only when you want the fields gone from stdout and you accept this trade-off. Also, the top-level `remove` list does not apply to OTLP records when you set `accessLog.otlp.fields`.
