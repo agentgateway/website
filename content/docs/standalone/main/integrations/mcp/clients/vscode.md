@@ -29,6 +29,9 @@ Configure your MCP server in the `mcp.json` file in the root directory of your p
 }
 ```
 
+> [!NOTE]
+> If your MCP host, such as GitHub Copilot, rejects `+` in `ui://` resource URIs, and you multiplex MCP servers that return MCP Apps, set the `AGENTGATEWAY_MCP_UI_URI_DELIMITER` environment variable to `_`, `-`, `.`, or `~`. For more information, see [MCP Apps]({{< link-hextra path="/documentation/mcp/apps" >}}).
+
 ## Authentication
 
 You have two ways to handle security, depending on your setup: native MCP authentication flow or manual bearer token.

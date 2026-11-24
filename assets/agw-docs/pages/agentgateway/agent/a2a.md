@@ -338,7 +338,64 @@ Because the backend's `a2a` type signals the A2A protocol, the Service does not 
    {{% /tab %}}
    {{< /tabs >}}
 
-2. As a user, send a request to the A2A server. As an assistant, the agent echoes back the message that you sent.
+2. Get the agent card through agentgateway. Agentgateway rewrites the `url` field in the card so that clients send requests to the gateway instead of the agent.
+
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl http://$INGRESS_GW_ADDRESS/myagent/.well-known/agent.json | jq
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl http://localhost:8080/myagent/.well-known/agent.json | jq
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output: The `url` field points to the `/myagent` path on the gateway, not to the agent's own address. The host in `url` matches the address that you sent the request to, such as the load balancer address. Agentgateway also rewrites the agent card that the agent serves at `/.well-known/agent-card.json`, if your agent uses A2A v0.3.0 or later.
+
+   ```json
+   {
+     "name": "Echo Agent",
+     "description": "This agent echos the input given",
+     "url": "http://localhost:8080/myagent",
+     "version": "0.1.0",
+     "capabilities": {
+       "streaming": true,
+       "pushNotifications": false,
+       "stateTransitionHistory": false
+     },
+     "defaultInputModes": [
+       "text"
+     ],
+     "defaultOutputModes": [
+       "text"
+     ],
+     "skills": [
+       {
+         "id": "my-project-echo-skill",
+         "name": "Echo Tool",
+         "description": "Echos the input given",
+         "tags": [
+           "echo",
+           "repeater"
+         ],
+         "examples": [
+           "I will see this echoed back to me"
+         ],
+         "inputModes": [
+           "text"
+         ],
+         "outputModes": [
+           "text"
+         ]
+       }
+     ]
+   }
+   ```
+
+3. As a user, send a request to the A2A server. As an assistant, the agent echoes back the message that you sent.
 
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
