@@ -226,6 +226,13 @@ mcp:
       args: ["@modelcontextprotocol/server-everything"]
 ```
 
+The example uses the following fields.
+
+| Field | Description |
+|-------|-------------|
+| `authorizationLocation.header.name` | The request header that carries the token. |
+| `authorizationLocation.header.prefix` | The text that agentgateway removes from the header value before it validates the token. Include any trailing space. |
+
 To read the token from a query parameter, a cookie, or a CEL expression, use one of the following forms instead of `header`.
 
 ```yaml
@@ -244,6 +251,12 @@ authorizationLocation:
 authorizationLocation:
   expression: 'request.headers["x-mcp-token"]'
 ```
+
+| Field | Description |
+|-------|-------------|
+| `authorizationLocation.queryParameter.name` | The query parameter that carries the token. |
+| `authorizationLocation.cookie.name` | The cookie that carries the token. |
+| `authorizationLocation.expression` | A CEL expression that returns the token. Use this form for any other location. |
 
 ### Adding an IdP
 

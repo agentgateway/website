@@ -353,7 +353,7 @@ Because the backend's `a2a` type signals the A2A protocol, the Service does not 
    {{% /tab %}}
    {{< /tabs >}}
 
-   Example output: The `url` field points to the `/myagent` path on the gateway, not to the agent's own address.
+   Example output: The `url` field points to the `/myagent` path on the gateway, not to the agent's own address. The host in `url` matches the address that you sent the request to, such as the load balancer address. Agentgateway also rewrites the agent card that the agent serves at `/.well-known/agent-card.json`, if your agent uses A2A v0.3.0 or later.
 
    ```json
    {

@@ -3,7 +3,7 @@ To federate multiple MCP servers on the same gateway, you can use a label select
 This approach, also referred to as multiplexing, makes it easier for you to add more MCP servers by adding labels. It also lets your clients access tools from multiple MCP servers through a single endpoint and MCP connection.
 
 > [!NOTE]
-> Label selectors use streamable HTTP by default. For an MCP server that uses SSE, set `appProtocol: agentgateway.dev/mcp-sse` on the Service instead of `agentgateway.dev/mcp`. You can also use a [static MCP Backend]({{< link-hextra path="/documentation/mcp/static-mcp/">}}).
+> Label selectors select only Service ports that set `appProtocol: agentgateway.dev/mcp` for streamable HTTP or `appProtocol: agentgateway.dev/mcp-sse` for SSE. Ports without one of these values are ignored. You can also use a [static MCP Backend]({{< link-hextra path="/documentation/mcp/static-mcp/">}}).
 
 ## Before you begin
 

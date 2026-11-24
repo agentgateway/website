@@ -17,7 +17,7 @@ Policies are merged from the backend group level down to the target level, with 
 
 - **Use backend-level policies for common settings**: Apply shared policies at the backend level to reduce duplication.
 - **Use target-level policies for exceptions**: Override specific targets that need different behavior.
-- **Be explicit about authorization**: Always configure `mcpAuthorization` on the route or in `mcp.policies`, even if permissive.
+- **Be explicit about authorization**: Always configure `mcpAuthorization` on the route, in `mcp.policies`, or in the backend policies, even if permissive.
 - **Test policy inheritance**: Verify that policies merge correctly by checking logs and testing access.
 
 ### Supported policy types
@@ -105,6 +105,11 @@ mcp:
       tcp:
         connectTimeout: 5s
 ```
+
+| Field | Description |
+|-------|-------------|
+| `policies.http.requestTimeout` | The maximum time to wait for a response from this target. |
+| `policies.tcp.connectTimeout` | The maximum time to wait to establish the TCP connection to this target. |
 
 ## Learn more
 

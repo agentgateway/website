@@ -344,6 +344,19 @@ When Alice calls `everything_echo` a third time within a minute, the gateway ret
 
 A call whose key cannot be evaluated, such as a call to an unknown tool, uses a single bucket that all clients share.
 
+| Field | Description |
+|-------|-------------|
+| `prefixMode` | How to namespace tool names when you federate targets. With `always`, agentgateway adds the target name to every tool name, such as `everything_echo`, even with a single target. |
+| `apiKey.mode` | How agentgateway handles requests without a valid API key. With `strict`, it rejects them. |
+| `apiKey.keys[].key` | The API key that the client sends as a bearer token. |
+| `apiKey.keys[].metadata` | Values that agentgateway attaches to requests that use the key. CEL expressions read each value as `apiKey.<name>`, such as `apiKey.client`. |
+| `localRateLimit.conditional[].condition` | A CEL expression that selects the requests that the rule counts. Here, only `tools/call` requests count. |
+| `localRateLimit.conditional[].type` | What the bucket counts. Use `requests` for MCP calls. |
+| `localRateLimit.conditional[].maxTokens` | The size of the bucket, which is the number of calls that a client can make in a burst. |
+| `localRateLimit.conditional[].tokensPerFill` | The number of calls that the bucket gains each `fillInterval`. |
+| `localRateLimit.conditional[].fillInterval` | How often the bucket refills. |
+| `localRateLimit.conditional[].key` | A CEL expression. Each distinct value gets its own bucket. Here, the key is the client, the tool's target, and the tool name. |
+
 ### Remote
 
 Remote rate limits are not defined directly in agentgateway.

@@ -268,7 +268,7 @@ When you also configure [MCP authentication]({{< link-hextra path="/documentatio
 
 ### Tool arguments are not available during authorization
 
-`mcp.tool.arguments` isn't set when `mcpAuthorization` rules run, so the rules can't reference it. Base authorization decisions on `mcp.tool.name` and `mcp.tool.target` instead. To allow or deny a call based on its arguments, use one of the following options.
+`mcp.tool.arguments` is not set when `mcpAuthorization` rules run, so the rules cannot reference it. Base authorization decisions on `mcp.tool.name` and `mcp.tool.target` instead. To allow or deny a call based on its arguments, use one of the following options.
 
 * **Recommended:** Use an `mcpGuardrails` processor with `kind: expression`. The condition reads `mcp.params.arguments`, and a rejection returns an MCP-native tool result with `isError: true`, so MCP clients show a tool error. For more information, see [Set up CEL guardrails]({{< link-hextra path="/documentation/mcp/guardrails/cel" >}}).
 * Use a route-level `authorization` policy, which can read `mcp.tool.arguments`. A denied call returns an HTTP `403` response instead of an MCP tool result.

@@ -57,20 +57,22 @@ To send a token to a gateway that requires authentication, see [Authentication](
 
 ### Option 2: Gateway on public HTTPS {#custom-connector}
 
-If your gateway is reachable on a public HTTPS URL, add it as a custom connector instead.
+If your gateway is reachable on a public HTTPS URL, add it as a custom connector instead. Claude connects to custom connectors from Anthropic's cloud, not from your device. Therefore, the following requirements apply.
+
+* The URL must be reachable on the public internet over HTTPS on port 443. A `localhost` URL and a URL with another port do not work.
+* Sending a custom request header, such as an `Authorization` token, is not available to every organization. For the current status and the steps, see [Add custom connectors](https://claude.com/docs/connectors/custom/add-unlisted) and [Getting started with custom connectors](https://support.claude.com/en/articles/11175166-getting-started-with-custom-connectors-using-remote-mcp) in the Claude docs.
 
 1. In Claude Desktop, go to **Settings** > **Connectors**, and click **Add custom connector**.
 2. Enter your MCP URL, such as `https://mcp.example.com/mcp`.
 3. If the gateway uses MCP authentication, complete the OAuth sign-in. Otherwise, select **No sign in**.
 
-Claude connects to custom connectors from Anthropic's cloud, not from your device. Therefore, the URL must be reachable on the public internet over HTTPS on port 443. A `localhost` URL and a URL with another port do not work. Sending a custom request header, such as an `Authorization` token, is a beta feature that is available to a limited set of organizations. For the steps, see [Add custom connectors](https://claude.com/docs/connectors/custom/add-unlisted) and [Getting started with custom connectors](https://support.claude.com/en/articles/11175166-getting-started-with-custom-connectors-using-remote-mcp) in the Claude docs.
 
 ## Claude Code CLI
 
 Configure Claude Code to connect to agentgateway.
 
 ```bash
-claude mcp add agentgateway --transport http http://localhost:3000/mcp
+claude mcp add --transport http agentgateway http://localhost:3000/mcp
 ```
 
 Or, add to your project's `.mcp.json`.
