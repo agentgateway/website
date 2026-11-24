@@ -21,7 +21,7 @@ Unlike a [per-key budget]({{< link-hextra path="/documentation/llm/cost-controls
 
 To give every user a separate budget, use `remoteRateLimit` with a descriptor that keys on the API key identity. The rate limit server then holds the per-user counters. To deploy the server, see [Deploy a rate limit server]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/#deploy-a-rate-limit-server" >}}). The following examples assume that the server is reachable at `localhost:8081`.
 
-1. Configure agentgateway to send a per-user descriptor to the rate limit server. The `apiKey.user` value comes from the API key `metadata`, so agentgateway counts each user independently. To count LLM tokens rather than requests, set `type: tokens`.
+1. Configure agentgateway to send a per-user descriptor to the rate limit server. The `apiKey.user` value comes from the API key `metadata`, so agentgateway counts each user independently. To count LLM tokens rather than requests, set `type: tokens`. A key without a `user` in its `metadata` would otherwise send no descriptor, and so would have no budget at all. The `has()` check counts all such keys against one shared `unassigned` budget.
 
    ```yaml
    # yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
@@ -42,7 +42,8 @@ To give every user a separate budget, use `remoteRateLimit` with a descriptor th
          descriptors:
          - entries:
            - key: user_id
-             value: apiKey.user
+             # A key without a user in its metadata counts against one shared "unassigned" budget.
+             value: 'has(apiKey.user) ? apiKey.user : "unassigned"'
            type: tokens
      models:
      - name: "*"
@@ -62,6 +63,38 @@ To give every user a separate budget, use `remoteRateLimit` with a descriptor th
          unit: day
          requests_per_unit: 100000  # 100,000 tokens per user per day
    ```
+
+By default, each request is charged its total token count, input plus output. To charge something else, set `cost` on the descriptor to a CEL expression. For example, `cost: llm.outputTokens` budgets only the tokens that the model generates.
+
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+llm:
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-alice-abc123def456
+        metadata:
+          user: alice
+      - key: sk-bob-xyz789uvw012
+        metadata:
+          user: bob
+    remoteRateLimit:
+      host: localhost:8081
+      domain: token-budgets
+      descriptors:
+      - entries:
+        - key: user_id
+          value: 'has(apiKey.user) ? apiKey.user : "unassigned"'
+        type: tokens
+        # Charge each request only the tokens that the model generated.
+        cost: llm.outputTokens
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```
 
 When a user reaches their daily budget, agentgateway rejects further requests with a `429` until the bucket refills.
 

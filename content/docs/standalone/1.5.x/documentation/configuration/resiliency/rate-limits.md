@@ -473,7 +473,7 @@ mcp:
           value: 'request.headers["x-organization"]'
         - key: authenticated
           value: 'has(jwt.sub)'
-        type: tokens # or 'requests'
+        type: requests
   targets:
   - name: everything
     stdio:
@@ -503,7 +503,7 @@ routes:
           value: 'request.headers["x-organization"]'
         - key: authenticated
           value: 'has(jwt.sub)'
-        type: tokens # or 'requests'
+        type: requests
   backends:
   - host: localhost:8080
 ```
@@ -541,7 +541,7 @@ routes:
           value: 'request.headers["x-organization"]'
         - key: authenticated
           value: 'has(jwt.sub)'
-        type: tokens # or 'requests'
+        type: requests
   backends:
   - host: localhost:8080
 EOF
@@ -593,7 +593,7 @@ mcp:
           value: 'request.headers["x-organization"]'
         - key: authenticated
           value: 'has(jwt.sub)'
-        type: tokens # or 'requests'
+        type: requests
   targets:
   - name: everything
     stdio:
@@ -604,6 +604,8 @@ agentgateway -f config3-mcp.yaml --validate-only
 {{< /doc-test >}}
 
 Each descriptor value is a [CEL expression]({{< link-hextra path="/documentation/configuration/traffic-management/transformations" >}}).
+
+A `tokens` descriptor counts LLM tokens, so it applies only to routes whose backend is an LLM provider. On other routes, such as a route to an HTTP or MCP backend, a `tokens` descriptor is never sent to the rate limit server. As a result, the route is not limited. Use `type: requests` for those routes.
 
 For a complete runnable setup, including the Envoy rate limit service configuration and the Docker commands to run it with Redis, see the [`traffic-ratelimiting-global` example](https://github.com/agentgateway/agentgateway/tree/v1.5.0/examples/traffic-ratelimiting-global) in the agentgateway repository.
 
@@ -670,7 +672,7 @@ remoteRateLimit:
 | `policies.backendAuth` | Credentials to authenticate to the rate limit service. Supports `key` (API key from file or inline), `gcp`, `aws`, and `azure` auth. |
 | `policies.backendTLS` | TLS settings for the connection to the rate limit service. Use `root` to specify a CA cert, `insecure: true` to skip certificate verification (not recommended for production). |
 | `policies.tcp.connectTimeout` | Connection timeout as a duration string, such as `3s`. |
-| `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). Use for HTTP-based rate limit service connections. |
+| `policies.http.requestTimeout` | Timeout for each call to the rate limit service, as a duration string such as `"1s"`. If unset, a call to a rate limit service that accepts the connection but does not answer has no deadline, and the route's own `timeout.requestTimeout` does not limit that wait. |
 
 ## Conditional execution
 

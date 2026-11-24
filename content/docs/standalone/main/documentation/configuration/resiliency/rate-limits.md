@@ -252,6 +252,10 @@ routes:
 {{< /tab >}}
 {{< /tabs >}}
 
+When `localRateLimit` lists more than one entry, a request must fit in every entry. The first entry that is empty refuses the request with a `429`, and the order of the entries does not matter. A `requests` entry takes its token when the request arrives. Unless `tokenize` is enabled, a `tokens` entry checks only that its bucket is not empty when the request arrives. The entry is then charged the tokens that the model reports when the response completes. A refused request does not use up the entries that admitted it, so each entry is charged only for the requests that every entry admitted.
+
+A `tokens` entry counts LLM tokens, so it limits only routes whose backend is an LLM provider. On other routes, such as a route to an HTTP or MCP backend, a `tokens` entry admits every request. Use `type: requests` for those routes.
+
 > [!NOTE]
 > The term "tokens" is used for two distinct meanings. In `maxTokens` and `tokensPerFill`, it indicates the "token" in the token bucket counter. Each token can allow either 1 LLM token, or 1 HTTP request, based on the `type`.
 
@@ -509,7 +513,7 @@ mcp:
           value: 'request.headers["x-organization"]'
         - key: authenticated
           value: 'has(jwt.sub)'
-        type: tokens # or 'requests'
+        type: requests
   targets:
   - name: everything
     stdio:
@@ -539,7 +543,7 @@ routes:
           value: 'request.headers["x-organization"]'
         - key: authenticated
           value: 'has(jwt.sub)'
-        type: tokens # or 'requests'
+        type: requests
   backends:
   - host: localhost:8080
 ```
@@ -550,6 +554,33 @@ routes:
 
 Each descriptor value is a [CEL expression]({{< link-hextra path="/documentation/configuration/traffic-management/transformations" >}}).
 
+A `tokens` descriptor counts LLM tokens, so it applies only to routes whose backend is an LLM provider. On other routes, such as a route to an HTTP or MCP backend, a `tokens` descriptor is never sent to the rate limit server. As a result, the route is not limited. Use `type: requests` for those routes.
+
+> [!WARNING]
+> Agentgateway sends a descriptor only when every one of its entries can be evaluated. If an entry reads a header, claim, or metadata field that the request does not have, the whole descriptor is skipped. When no descriptor is left, agentgateway does not call the rate limit server at all, so no limit applies to that request. This behavior differs from a local rate limit `key`, which counts such requests against one shared bucket.
+
+To make sure that every request is counted, give each entry a fallback value for requests that do not have the field. In the following example, requests without an `x-organization` header count against one shared `unknown` organization.
+
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    remoteRateLimit:
+      host: localhost:8081
+      domain: example.com
+      descriptors:
+      - entries:
+        - key: organization
+          # Requests without the header count against one shared "unknown" organization.
+          value: '"x-organization" in request.headers ? request.headers["x-organization"] : "unknown"'
+        type: requests
+  backends:
+  - host: localhost:8080
+```
+
 For a complete runnable setup, including the Envoy rate limit service configuration and the Docker commands to run it with Redis, see the [`traffic-ratelimiting-global` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-ratelimiting-global) in the agentgateway repository.
 
 {{% details title="Configuration from the traffic-ratelimiting-global example" closed="true" %}}
@@ -559,6 +590,86 @@ The example also defines the limits on the rate limit server side:
 
 {{% github-yaml url="https://agentgateway.dev/examples/traffic-ratelimiting-global/ratelimit-config.yaml" %}}
 {{% /details %}}
+
+#### Compute a limit per request {#limit-override}
+
+By default, the rate limit server holds the limit for each descriptor in the `rate_limit` block of its own configuration. To let the request carry its own limit instead, set `limitOverride` on the descriptor. Agentgateway evaluates the CEL expression for each request and sends the result with the descriptor. The rate limit server then applies that limit in place of its own `rate_limit` value for the descriptor. Use this field when the limit belongs to the caller rather than to the route, such as a plan that arrives in a header or a JWT claim.
+
+The expression must return an object with a `unit` and a `requestsPerUnit` field. In the following example, organizations on the gold plan get 3 requests per minute, and every other organization gets 1. The rate limit server's own limit for `organization` does not apply.
+
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    remoteRateLimit:
+      host: localhost:8081
+      domain: example.com
+      descriptors:
+      - entries:
+        - key: organization
+          value: '"x-organization" in request.headers ? request.headers["x-organization"] : "unknown"'
+        # Organizations on the gold plan get 3 requests per minute, every other organization 1.
+        limitOverride: '"x-plan" in request.headers && request.headers["x-plan"] == "gold" ? {"unit": "minute", "requestsPerUnit": 3} : {"unit": "minute", "requestsPerUnit": 1}'
+        type: requests
+  backends:
+  - host: localhost:8080
+```
+
+| Field | Description |
+|-------|-------------|
+| `descriptors[].limitOverride` | Optional CEL expression that returns the limit for this descriptor, as an object with `unit` and `requestsPerUnit`, such as `{"unit": "minute", "requestsPerUnit": 5}`. Valid `unit` values are `second`, `minute`, `hour`, `day`, `month`, and `year`. The rate limit server applies this limit in place of its own limit for the descriptor. The field sets the limit, not the cost of a request. To set the cost, use `cost`. |
+
+> [!WARNING]
+> If the `limitOverride` expression fails for a request, such as when the expression reads a header that the request does not have, the whole descriptor is skipped. No limit applies to that request for this descriptor, not even the rate limit server's own rule. Guard any value that might be absent, as the example does with `in`. An expression that is not valid CEL is rejected when the configuration loads. However, a valid expression that returns an unusable limit, such as a misspelled `unit`, is not caught at load time. In that case, the descriptor is skipped for every request.
+
+#### Limit MCP tool calls {#mcp-tools}
+
+Every MCP message, such as `initialize`, `tools/list`, or `tools/call`, is a separate HTTP request, so a rate limit on an MCP route counts each of these messages. To limit only tool calls, and each tool separately, send the tool name as a descriptor entry. On an MCP route, a descriptor can read the parsed MCP request through the `mcp` variable.
+
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    remoteRateLimit:
+      host: localhost:8081
+      domain: mcp-tools
+      descriptors:
+      - entries:
+        # The tool name for a tools/call request, and "none" for every other MCP request.
+        - key: tool_name
+          value: 'mcp.methodName == "tools/call" ? mcp.tool.name : "none"'
+        type: requests
+  backends:
+  - mcp:
+      targets:
+      - name: everything
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+```
+
+On the rate limit server, define a limit for each tool that you want to limit. The following configuration allows one `echo` call per minute. Other tools, and every request that is sent with the `none` value, match no rule and are not limited.
+
+```yaml
+# ratelimit-config/mcp-tools.yaml
+domain: mcp-tools
+descriptors:
+  - key: tool_name
+    value: echo
+    rate_limit:
+      unit: minute
+      requests_per_unit: 1
+```
+
+When a client calls the `echo` tool a second time within the minute, the call returns a tool result with `isError: true`, as described in [Responses when a request is limited](#limited-responses).
+
+For a local alternative that gives each client its own allowance per tool, see [Per-client, per-tool limits for MCP](#per-key-mcp).
 
 #### Failure behavior
 
@@ -592,6 +703,8 @@ You can configure connection policies on the `remoteRateLimit` field to secure o
 
 By default, agentgateway waits 10 seconds for the rate limit service to respond. When the wait runs out, the call fails and the `failureMode` setting decides what happens to the request. To use a different timeout, set `policies.http.requestTimeout`.
 
+The route's own `timeout.requestTimeout` does not limit how long agentgateway waits for the rate limit service. A rate limit service that accepts the connection but does not answer therefore delays each request for the full wait before `failureMode` applies. To bound that delay, set `policies.http.requestTimeout` to a value that is lower than the route's request timeout.
+
 ```yaml
 remoteRateLimit:
   host: ratelimit-service:8081
@@ -618,6 +731,27 @@ remoteRateLimit:
 | `policies.backendTLS` | TLS settings for the connection to the rate limit service. Use `root` to specify a CA cert, `insecure: true` to skip certificate verification (not recommended for production). |
 | `policies.tcp.connectTimeout` | Connection timeout as a duration string, such as `3s`. |
 | `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). If unset, calls to the rate limit service time out after 10 seconds. |
+
+## Responses when a request is limited {#limited-responses}
+
+When a rate limit refuses a request, agentgateway returns a `429 Too Many Requests` response. Responses also carry headers that describe the limit that applied, so that a client can slow down before the client is refused.
+
+| Header | Description |
+|--------|-------------|
+| `x-ratelimit-limit` | The limit of the bucket or descriptor that applied. When more than one limit applies, the headers describe the limit with the fewest requests remaining. |
+| `x-ratelimit-remaining` | How much of that limit is left. |
+| `x-ratelimit-reset` | The number of seconds until the limit resets. |
+| `retry-after` | On a `429` response only. The number of seconds until the client can retry. |
+
+A local rate limit returns the body `rate limit exceeded`. A remote rate limit returns the body that the rate limit server sends, which is empty for the Envoy reference `ratelimit` server.
+
+For MCP requests, the refusal takes the form that MCP clients expect.
+
+* A refused `tools/call` request gets a tool result with `isError: true` and a text such as `rate limit exceeded (retry after 12s; limit 1, remaining 0)`.
+* Other requests that carry a JSON-RPC `id`, such as `initialize`, get an HTTP `200` response with a JSON-RPC error with code `-32003`.
+* A notification, which has no `id`, gets a plain `429` response.
+
+For more information, see [Tool-call error results]({{< link-hextra path="/documentation/mcp/spec-compatibility/#tool-call-error-results" >}}).
 
 ## Conditional execution
 
