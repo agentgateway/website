@@ -68,7 +68,9 @@ These attributes follow the [OTel semantic conventions for generative AI spans](
 | `gen_ai.operation.name` | Operation type, such as `chat` or `embeddings` |
 | `gen_ai.provider.name` | LLM provider (for example, `openai`) |
 | `gen_ai.request.model` | Requested model |
-| `gen_ai.response.model` | Model that served the response |
+| `gen_ai.response.model` | Model that served the response |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
+| `gen_ai.response.id` | Provider response ID |
+| `gen_ai.response.finish_reasons` | Provider finish reasons, one per returned choice |{{< /version >}}
 | `gen_ai.usage.input_tokens` | Input token count |
 | `gen_ai.usage.output_tokens` | Output token count |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,2.2.x" >}}
 | `gen_ai.usage.audio_seconds` | Audio duration in seconds for transcription and translation requests |{{< /version >}}

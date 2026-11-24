@@ -38,7 +38,7 @@ sequenceDiagram
     end
 ```
 
-The agentgateway proxy requires the password that the user uses to authenticate to be hashed and [salted](https://en.wikipedia.org/wiki/Salt_(cryptography)) by using the [APR1](https://httpd.apache.org/docs/2.4/misc/password_encryptions.html) format. Passwords in this format follow the following pattern: `$apr1$SALT$HASHED_PASSWORD`. You can use tools, such as `htpasswd` to generate a salt and hashed password. 
+The agentgateway proxy requires the password that the user uses to authenticate to be hashed and [salted](https://en.wikipedia.org/wiki/Salt_(cryptography)) by using the [APR1](https://httpd.apache.org/docs/2.4/misc/password_encryptions.html) format. Passwords in this format follow the following pattern: `$apr1$SALT$HASHED_PASSWORD`. You can use tools, such as `htpasswd` to generate a salt and hashed password. {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}For bcrypt hashes, use cost `14` or lower. The htpasswd parser ignores hashes with a higher cost.{{< /version >}}
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 

@@ -110,6 +110,8 @@ At startup, agentgateway migrates the request log database that `config.logging.
 
 Applied changes are recorded in `_agentgateway_request_log_migrations` and run only once.
 
+For PostgreSQL, request-log migrations set their session `statement_timeout` to `0`. A timeout on the database role does not stop a long migration. The migration session still uses a `10s` `lock_timeout` while waiting for schema locks.
+
 Upgrading from an earlier version, such as 1.6, adds the [token and latency columns](#token-latency-columns). Existing LLM rows are backfilled from `attributes_json`, so analytics include requests logged before the upgrade.
 
 This backfill can delay the first startup on large tables. Back up the request log database before you upgrade.

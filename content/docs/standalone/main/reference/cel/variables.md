@@ -21,6 +21,8 @@ When a policy can run against both directly addressed and Service backends, chec
 > [!NOTE]
 > The `llm` object carries both normalized and provider-reported token counts. `llm.inputTokens` and `llm.totalTokens` include the tokens read from or written to the prompt cache, so they mean the same thing for every provider. `llm.providerInputTokens` and `llm.providerTotalTokens` report what the provider sent. For guidance on which one to read, see [Token usage fields]({{< link-hextra path="/documentation/llm/observability/#token-usage-fields" >}}).
 
+Use `llm.responseId` for the provider response ID and `llm.finishReasons` for the finish reasons, one per returned choice. The fields become available only after agentgateway parses provider response metadata, such as in logging, tracing, and metrics. On streamed LLM responses, response transformations can still run before response-derived LLM fields become available. The OpenAI Responses API does not send a finish reason. For that API, `completed` becomes `stop`, `failed` becomes `error`, and `incomplete` uses `incomplete_details.reason` when present.
+
 ### Agent sessions {#agent-sessions}
 
 CEL expressions read the detected session ID as `request.agent.session`. Detection runs before all policies, making the ID available to every request policy.

@@ -173,7 +173,7 @@ agentgateway -f config-azure-openai.yaml --validate-only
 | `provider` | The LLM provider, set to `azure` for Azure AI models. |
 | `params.azureResourceName` | The Azure resource name used to construct the endpoint hostname. |
 | `params.azureResourceType` | The endpoint type: `foundry` for Azure AI Foundry, or `openAI` for Azure OpenAI Service. |
-| `params.azureProjectName` | The Foundry project name. Required for `foundry` type. If omitted, defaults to `azureResourceName`. |
+| `params.azureProjectName` | The Foundry project name. Optional. If omitted, defaults to `azureResourceName`. |
 | `params.azureApiVersion` | Optional API version override. Defaults to `v1`. For legacy deployments, use a dated version like `2024-04-01-preview`. |
 | `params.model` | The specific Azure model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.apiKey` | The Azure API key for authentication. If unset, implicit Entra ID authentication is used. You can reference environment variables using the `$VAR_NAME` syntax. |
@@ -648,12 +648,12 @@ agentgateway -f config-claude-foundry.yaml --validate-only
 
 | Setting | Description |
 |---------|-------------|
-| `name` | The exact Claude model name to match in incoming requests, such as `claude-3-5-haiku-20241022`. Use `*` to match any model name. |
-| `provider` | Set to `azure` for Azure AI Foundry. |
-| `backendAuth.key.value` | The Azure AI Foundry API key. You can reference environment variables using the `$VAR_NAME` syntax. The key is automatically sent in the `Authorization` header. Other auth method can be applied [Backend authentication]({{< link-hextra path="/documentation/configuration/security/backend-authn/" >}})|
-| `params.azureResourceName` | The Azure AI Foundry resource name used to construct the endpoint hostname. |
-| `params.azureResourceType` | Set to `foundry` to use Azure AI Foundry endpoints. |
-| `params.azureProjectName` | The Foundry project name.|
+| `ai.name` | A name for the AI backend. |
+| `ai.provider.azure.resourceName` | The Azure AI Foundry resource name used to construct the endpoint hostname. |
+| `ai.provider.azure.projectName` | The Foundry project name. Optional. If omitted, defaults to `resourceName`. |
+| `ai.provider.azure.resourceType` | Set to `foundry` to use Azure AI Foundry endpoints. |
+| `ai.provider.azure.model` | The Claude model deployment to send requests to, such as `claude-sonnet-4-6`. |
+| `policies.backendAuth.key.value` | The Azure AI Foundry API key. You can reference environment variables using the `$VAR_NAME` syntax. The key is automatically sent in the `Authorization` header. For other authentication methods, see [Backend authentication]({{< link-hextra path="/documentation/configuration/security/backend-authn/" >}}). |
 
 After running agentgateway with this configuration, send a request to verify:
 
