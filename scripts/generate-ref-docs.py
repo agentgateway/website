@@ -557,18 +557,31 @@ def parse_data_plane_metrics(text: str) -> str:
     """Return the per-section tables of agentgateway's schema/metrics.md as a reuse snippet.
 
     Drops the leading `# Metrics` title, because the consuming page owns its own title.
-    Keeps the `##` section headings and the tables, which both consuming pages reuse as is.
-    The XDS section stays. Each consuming page says in its own text, under a per-mode
-    conditional, that those metrics exist only in Kubernetes mode.
+    Keeps the section headings, demoted one level to `###`, and the tables. Each consuming
+    page supplies its own `##` wrapper heading.
+    The XDS section stays. Each consuming page states in its own text that those metrics
+    exist only in Kubernetes mode.
 
     A snippet used through `reuse` must contain no blank lines, so the blank lines that
     separate headings from tables are removed. The renderer still separates them.
+    Only heading and table lines are kept. Any other line (prose, footnotes) is dropped
+    with a warning, because gluing it above a table header would break the table.
     Returns "" when the input holds no table rows.
     """
     lines = text.splitlines()
     while lines and (not lines[0].strip() or re.match(r"^#\s", lines[0])):
         lines.pop(0)
-    out = [line.rstrip() for line in lines if line.strip()]
+    out = []
+    for line in lines:
+        line = line.rstrip()
+        if not line.strip():
+            continue
+        if re.match(r"^#{2,}\s", line):
+            out.append("#" + line)
+        elif line.startswith("|"):
+            out.append(line)
+        else:
+            print(f"    Warning: dropped non-table line from schema/metrics.md: {line[:80]}")
     if not any(line.startswith("| `") for line in out):
         return ""
     return "\n".join(out) + "\n"

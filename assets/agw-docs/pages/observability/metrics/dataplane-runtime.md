@@ -1,3 +1,13 @@
+### Async runtime
+
+These metrics reflect the async runtime of the agentgateway process. They appear on every startup, regardless of traffic.
+
+| Metric | Type | Unit | Description |
+| --- | --- | --- | --- |
+| `agentgateway_tokio_num_workers` | Gauge | — | The number of worker threads the async runtime uses. |
+| `agentgateway_tokio_num_alive_tasks` | Gauge | — | The number of tasks currently alive in the async runtime. |
+| `agentgateway_tokio_global_queue_depth` | Gauge | — | The number of tasks currently scheduled in the async runtime's global queue. |
+
 ### Cgroup memory
 
 These metrics track Linux cgroup v2 memory statistics for the agentgateway process. They are available whenever agentgateway runs in a Linux environment, including standalone deployments, and are not specific to Kubernetes mode.

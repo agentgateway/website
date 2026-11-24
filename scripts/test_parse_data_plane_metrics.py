@@ -40,11 +40,20 @@ class ParseTest(unittest.TestCase):
     def test_drops_title_and_blank_lines_keeps_sections(self):
         out = gen.parse_data_plane_metrics(SCHEMA)
         self.assertFalse(out.startswith("# Metrics"))
-        self.assertTrue(out.startswith("## XDS\n"))
-        self.assertIn("## HTTP\n", out)
+        self.assertTrue(out.startswith("### XDS\n"))
+        self.assertIn("### HTTP\n", out)
         self.assertEqual(out.count("| Metric | Type | Unit | Description |"), 2)
         self.assertNotIn("\n\n", out)
         self.assertTrue(out.endswith("\n"))
+
+    def test_drops_prose_with_a_warning(self):
+        text = SCHEMA.replace("## HTTP\n", "## HTTP\n\nSome intro paragraph.\n")
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            out = gen.parse_data_plane_metrics(text)
+        self.assertNotIn("Some intro paragraph", out)
+        self.assertIn("Warning: dropped non-table line", buf.getvalue())
+        self.assertIn("Some intro paragraph", buf.getvalue())
 
     def test_empty_when_no_rows(self):
         self.assertEqual(gen.parse_data_plane_metrics("# Metrics\n\nnothing\n"), "")

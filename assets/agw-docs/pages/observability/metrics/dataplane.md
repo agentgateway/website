@@ -48,13 +48,7 @@ These metrics track communication with the agentgateway control plane over XDS. 
 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" >}}
 
-The `outcome` label of the `agentgateway_mcp_requests_total` metric has one of the following values. Agentgateway checks the conditions in order and uses the first value that matches. For example, a response with a 5xx HTTP status that also carries a JSON-RPC error is counted as `gateway_error`, not `protocol_error`.
-
-1. `gateway_error`: Agentgateway returned an error for the request, or the response has a 4xx or 5xx HTTP status.
-2. `protocol_error`: The response is a JSON-RPC error.
-3. `tool_error`: The request is a `tools/call` request, and the tool result sets `isError: true`.
-4. `success`: The request is a `tools/call` request with a tool result that does not set `isError: true`, or the request uses any other method and the response has a 2xx HTTP status.
-5. `unknown`: The request does not match any of the previous conditions. For example, a `tools/call` request that has no tool result is counted as `unknown`, even if the response has a 2xx HTTP status.
+{{< reuse "agw-docs/pages/observability/metrics/dataplane-mcp-outcome.md" >}}
 
 {{< /version >}}
 
@@ -85,8 +79,5 @@ The following metrics reflect the health of the agentgateway process and appear 
 | `agentgateway_build_info` | Info | — | Agentgateway build information. |
 | `agentgateway_config_synchronized` | Gauge | — | Whether the last configuration load or reload was successful. |
 | `agentgateway_upstream_call_duration_seconds` | Histogram | seconds | Duration of outbound calls made by agentgateway. |
-| `agentgateway_tokio_num_workers` | Gauge | — | The number of worker threads the async runtime uses. |
-| `agentgateway_tokio_num_alive_tasks` | Gauge | — | The number of tasks currently alive in the async runtime. |
-| `agentgateway_tokio_global_queue_depth` | Gauge | — | The number of tasks currently scheduled in the async runtime's global queue. |
 
 {{< reuse "agw-docs/pages/observability/metrics/dataplane-queries.md" >}}
