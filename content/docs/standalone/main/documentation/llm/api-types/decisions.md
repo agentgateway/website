@@ -18,7 +18,7 @@ Review the following behavior of Decisions and SystemOne requests.
 | -- | -- |
 | Model | The request must name a model, unless the provider sets a default model. |
 | Telemetry | Both formats use the telemetry operation name `decisions`. When a response includes usage fields, telemetry records the model and token usage. |
-| Policies | Request and response guardrails and the `prompts` policy do not apply to Decisions or SystemOne requests. |
+| Policies | Request and response guardrails and the `prompts` policy do not apply to Decisions or SystemOne requests. Token-based rate limits apply, and count the token usage that the provider reports. |
 
 ### Supported providers {#supported-providers}
 
@@ -162,6 +162,38 @@ Example output:
   "usage": {"input_tokens": 156, "output_tokens": 0}
 }
 ```
+
+## Format conversion {#format-conversion}
+
+When the request format differs from the provider format, {{< reuse "agw-docs/snippets/agentgateway.md" >}} translates the request, and then translates the reply back to the request format. Some fields have no match in the other format. Review the following tables to see how each field is translated.
+
+### Decisions requests to a SystemOne provider {#decisions-to-systemone}
+
+| Decisions request field | How the field is sent in SystemOne |
+|---|---|
+| `input` as a string | Sent as `state`, unchanged. |
+| `input` as a list of messages | Sent as `state`, with one entry for each message and its `role`. If a message has a list of text parts, the parts are joined with newlines. |
+| An image in `input` | Not supported. The request is rejected with a `400` error that contains `unsupported content`. |
+| `questions` | Sent as an object keyed by question `name`. A question without a `name` is keyed by its position in the list, starting at `0`. If another question already uses that key, an underscore is appended, such as `1_`. Two questions with the same `name` are rejected with a `400` error. |
+| `predicate` question | Sent as a `noul` question. |
+| `choice` question | Sent as a `choice` question. Each value in `choices` becomes a key in `criteria`, with its `description` or `null`. Two choices with the same value are rejected with a `400` error. The boolean values `true` and `false` come back as booleans in the answer. |
+| `score` question | Sent as a `score` question. Each level becomes an entry in `criteria`, either the label alone or an object with the label and its description. The `probabilities` in the answer include the labels from the request. |
+| Other fields, such as `safety_identifier` | Dropped. |
+
+The reply lists the answers in the order that the provider returns them, which might differ from the order of `questions`. The answer to a question without a `name` has no `name`. To match each answer to its question, give every question a `name`. The `usage` field reports the input and output tokens from the provider, and their sum as `total_tokens`.
+
+### SystemOne requests to a Decisions provider {#systemone-to-decisions}
+
+| SystemOne request field | How the field is sent in Decisions |
+|---|---|
+| `state` as a string | Sent as `input`, unchanged. |
+| `state` as another value, such as a list of messages | Sent as `input` text that contains the value as JSON. |
+| `questions` | Sent as a list. Each key becomes the `name` of its question. |
+| `noul` question | Sent as a `predicate` question. If the question has `criteria`, the `true` and `false` descriptions are appended to `instructions`. |
+| `choice` question | Sent as a `choice` question. Each key in `criteria` becomes a choice value with its description. |
+| `score` question | Sent as a `score` question. Each entry in `criteria` becomes a level. A string entry becomes the label. An object entry uses its `label` and `description` fields. Any other fields of the object are added to the description as JSON. |
+
+The reply keys each answer by question name. Score answers include a `legend` that is built from the `criteria` in the request. The `usage` field reports the input and output tokens from the provider. If the provider refuses to answer a question, the request fails, because SystemOne has no refusal answer.
 
 ## Verify token tracking
 
