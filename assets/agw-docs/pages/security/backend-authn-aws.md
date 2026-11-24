@@ -176,6 +176,11 @@ EOF
 > [!NOTE]
 > A session tag reaches the Cost and Usage Report as `resourceTags/user:<TagKey>`, but only after you activate the tag key as a cost allocation tag in the AWS Billing console. Until you do, the tag is attached to the session and does not appear in any report.
 
+{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x" >}}
+> [!WARNING]
+> A session tag key or value can contain only letters, numbers, spaces, and the characters `_.:/=+-@`, because STS rejects any other character. The API server does not check the characters in a static `key` or `value`, so it accepts a policy with a tag such as `value: "R&D"`. Every request that uses that policy then fails with a `500` response and the body `backend authentication failed`. To recover, remove the other characters from the tag.
+{{< /version >}}
+
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
 If the trust policy of the role requires `sts:ExternalId`, set `assumeRole.externalId` to the external ID that the trust policy expects.
 
@@ -195,7 +200,9 @@ assumeRole:
 | The API server rejects the policy with `exactly one of value or expression must be set`. | A session tag sets both `value` and `expression`, or neither. |
 | The API server rejects the policy with `at most one of the fields in [sessionName sessionNameExpression] may be set`. | The policy sets both session name fields. Choose the static field or the expression field. |
 | The backend returns a signature mismatch. | The signing region or service name does not match the service that the gateway called. Set `region` and `serviceName` explicitly. A signature also breaks when a policy changes the request after it is signed, so check for a transformation policy on the same route. |
-| Requests fail with no region. | Nothing supplied a region: the backend is not a typed AWS backend, `region` is unset, and the environment has no ambient region. Set `region`. |
+| Requests fail with no region. | Nothing supplied a region: the backend is not a typed AWS backend, `region` is unset, and the environment has no ambient region. Set `region`. |{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x" >}}
+| Requests fail with a `502` response and a body that starts with `backend authentication failed`, and the proxy logs a `STS refused to grant assume role` warning. | STS refused the `AssumeRole` call. For example, the trust policy of the role does not trust the ambient identity of the gateway. Or, the trust policy requires an external ID that does not match `assumeRole.externalId`. The gateway does not forward the request. The warning in the proxy logs includes the error that STS returned. Fix the trust policy or the `assumeRole` fields. |
+| Requests fail with a `502` response after about five seconds, and the proxy logs `AWS credential fetch timed out after 5s`. | STS did not answer within five seconds, so the gateway stopped waiting for the credentials and did not forward the request. Check the network path from the gateway to the STS endpoint. |{{< /version >}}
 
 ## Cleanup
 
