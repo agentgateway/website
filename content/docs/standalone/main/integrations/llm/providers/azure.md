@@ -14,6 +14,10 @@ Before you can use Azure as an LLM provider, you must authenticate by using one 
 > [!IMPORTANT]
 > Azure CLI authentication requires `az` or `azd` to be installed and signed in. Agentgateway calls the CLI when it needs a token. It does not open an interactive flow or run `az login` or `azd auth login` for you. Agentgateway does not bundle either command. Mounting a credential directory such as `~/.azure` makes cached login state available inside the container, but it does not install the CLI. Use Azure CLI authentication only when running agentgateway directly on your local machine. If agentgateway runs in a container, use an API key, client secret, managed identity, or workload identity.
 
+### Use a least-privilege role for Azure AI Foundry {#foundry-least-privilege-role}
+
+{{< reuse "agw-docs/snippets/azure-foundry-least-privilege-role.md" >}}
+
 ## Configuration
 
 Azure supports two endpoint types:
@@ -318,7 +322,7 @@ On AKS, complete the following steps to prepare the cluster.
 
 1. [Enable Microsoft Entra Workload ID on the cluster](https://learn.microsoft.com/azure/aks/workload-identity-deploy-cluster).
 
-2. Create a user-assigned managed identity. Then, grant that identity the least-privilege role that the Azure AI resource requires. For example, the `Foundry User` role grants access to Azure AI Foundry. This role was previously named `Azure AI User`. For more information, see [Role-based access control for Microsoft Foundry](https://learn.microsoft.com/azure/foundry/concepts/rbac-foundry).
+2. Create a user-assigned managed identity. Then, grant that identity the least-privilege role that the Azure AI resource requires. For Azure AI Foundry, you can use a custom role that allows only the inference requests that the gateway sends. For more information, see [Use a least-privilege role for Azure AI Foundry](#foundry-least-privilege-role).
 
 3. Create a federated credential that trusts the service account that agentgateway uses. By default, the standalone Helm chart names the service account after the Helm release. For a release named `agentgateway` in the `agentgateway` namespace, use the following subject. The subject must match the namespace and the service account name exactly.
 
