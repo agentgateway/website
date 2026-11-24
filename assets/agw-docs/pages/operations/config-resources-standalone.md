@@ -72,6 +72,10 @@ Agentgateway supports the following resource kinds. No other kind is accepted.
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}
 Each kind maps to a top-level config section. For example, the `mcp.target` kind manages the entries in `mcp.targets`. An MCP target that you define inline in `routes[].backends` belongs to its `traffic.route` resource instead. Likewise, inline model and route policies belong to the resource that contains them.
 
+{{< version exclude-if="1.5.x,1.6.x,1.7.x" >}}
+In `hybrid` mode, an `llm.policy` resource can create `llm.policies` in the merged configuration even when the baseline file does not have an `llm` section or `llm.settings` resource.
+{{< /version >}}
+
 The `llm.settings` and `mcp.settings` kinds each hold one resource, with the ID `default`, that sets the top-level fields of its section. Each kind accepts the following fields:
 
 * `llm.settings`: `gateways`, `port`, and `tls`.
