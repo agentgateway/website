@@ -148,7 +148,7 @@ Set a request limit and a connection limit in turn, and send more traffic than e
 1. Start the httpbin sample app in Docker. The app listens on port 8000 on your machine.
 
    ```sh
-   docker run -d --name httpbin -p 8000:8080 mccutchen/go-httpbin:v2.15.0
+   docker run -d --name httpbin -p 8000:8080 mccutchen/go-httpbin:v2.17.0
    ```
 
 2. Create a configuration file that allows 2 in-flight requests.

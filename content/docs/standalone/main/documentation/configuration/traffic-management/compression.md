@@ -49,7 +49,7 @@ The following steps start a sample httpbin app as the backend, configure a route
 1. Start the httpbin sample app in Docker. The app listens on port 8000 on your machine.
 
    ```sh
-   docker run -d --name httpbin -p 8000:8080 mccutchen/go-httpbin:v2.15.0
+   docker run -d --name httpbin -p 8000:8080 mccutchen/go-httpbin:v2.17.0
    ```
 
 2. Create a configuration file with a compression policy. The policy compresses responses with `gzip`, `brotli`, or `zstd`, and decodes request bodies that are encoded with `gzip`.
