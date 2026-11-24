@@ -621,18 +621,9 @@
   })();
 </script>
 
-<!-- Page index for @ mention autocomplete (built by Hugo at compile time) -->
-<script id="chatbot-page-index" type="application/json">
-{{- $pages := slice -}}
-{{- range where .Site.RegularPages "Section" "docs" -}}
-  {{- $parentTitle := "" -}}
-  {{- with .Parent -}}
-    {{- $parentTitle = .Title -}}
-  {{- end -}}
-  {{- $pages = $pages | append (dict "title" .Title "url" .RelPermalink "section" $parentTitle) -}}
-{{- end -}}
-{{ $pages | jsonify | safeJS }}
-</script>
+<!-- Page index for @ mention autocomplete: one JSON file per build, fetched by the chatbot -->
+{{- $pageIndexURL := partialCached "chatbot-page-index-url.html" .Site "chatbot-page-index" }}
+<script id="chatbot-page-index" type="application/json" data-src="{{ $pageIndexURL }}"></script>
 
 <!-- Bundle chatbot with Hugo Pipes (must load before Alpine) -->
 {{- $opts := dict "targetPath" "js/chatbot.bundle.js" "minify" hugo.IsProduction "target" "es2015" "format" "iife" -}}
