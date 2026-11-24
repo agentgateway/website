@@ -599,11 +599,18 @@
               {{- /* Fixed-URL entries from params.relatedDocs (the "Previous
                      releases" PDF archive link). The mobile version chips come
                      from the docs-theme-extras sidebar, which already reads
-                     relatedDocs; this keeps the desktop dropdown in step. */ -}}
+                     relatedDocs; this keeps the desktop dropdown in step.
+                     Off-site URLs open in a new tab, like the other external
+                     links in this nav. */ -}}
               {{- range site.Params.relatedDocs -}}
                 {{- range .versions -}}
                   {{- if and .url (ne (trim (.label | default "") " ") "") -}}
-                <a href="{{ .url }}" class="px-4 py-3 block text-left border-t border-gray-200 dark:border-gray-700">{{ .label }}</a>
+                    {{- $external := strings.HasPrefix .url "http" -}}
+                <a href="{{ .url }}" class="px-4 py-3 block text-left border-t border-gray-200 dark:border-gray-700"{{ if $external }} target="_blank" rel="noopener"{{ end }}>{{ .label }}
+                    {{- if $external -}}
+                  <svg aria-hidden="true" class="inline-block w-3 h-3 ml-1 opacity-70 align-baseline" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3h6v6M17 3l-8 8M15 12v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h4"/></svg><span class="sr-only"> (opens in a new tab)</span>
+                    {{- end -}}
+                </a>
                   {{- end -}}
                 {{- end -}}
               {{- end -}}
