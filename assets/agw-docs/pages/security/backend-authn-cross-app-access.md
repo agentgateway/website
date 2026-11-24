@@ -345,7 +345,7 @@ You can also configure the location where the gateway checks for the subject tok
 After the exchange, the gateway removes the credential from a `header`, `queryParameter`, or `cookie` location, and forwards the remaining cookies and parameters unchanged. It then writes the exchanged access token to the `Authorization` header, replacing any credential that the client sent there. The backend therefore receives only the exchanged token, not the subject credential. The gateway does not remove a credential that an `expression` source reads from the request. For more information, see [Credentials that a CEL expression reads]({{< link-hextra path="/documentation/security/backend-authn/#expression-location" >}}).
 
 > [!NOTE]
-> On MCP routes, the `queryParameter` form never matches, because the request that the policy inspects carries no query string. The exchange fails even when the parameter is present on the incoming request. Use a header, a cookie, or a CEL expression instead. Plain HTTP routes are not affected.
+> On MCP routes, the `queryParameter` form never matches, because the request that the policy inspects carries no query string. The exchange fails even when the parameter is present on the incoming request. Use a header, a cookie, or a CEL expression instead. The gateway does not remove a credential that a CEL expression reads, as described in [Credentials that a CEL expression reads]({{< link-hextra path="/documentation/security/backend-authn/#expression-location" >}}). Plain HTTP routes are not affected.
 
 <!--TODO 
 For more information, see [agentgateway#2799](https://github.com/agentgateway/agentgateway/issues/2799).

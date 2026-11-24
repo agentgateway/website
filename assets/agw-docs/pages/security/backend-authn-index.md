@@ -61,11 +61,13 @@ The other methods do not read the client credential at all, so they compose with
 
 ### Credentials that a CEL expression reads {#expression-location}
 
-The gateway strips a validated credential only from a `header`, `queryParameter`, or `cookie` location. When a JWT, API key, or basic auth policy reads the credential with a CEL `expression` location, the gateway cannot tell which part of the request the expression reads. The credential stays in the request, and the backend receives the credential. The same is true for an `expression` source in the `subjectToken` of a token exchange or Cross App Access, and in the `actorToken` of a token exchange.
+The gateway strips a validated credential only from a `header`, `queryParameter`, or `cookie` location. When a JWT, API key, or basic auth policy reads the credential with a CEL `expression` location, an expression can read any part of the request, so the location to remove is not known. The credential stays in the request, and the backend receives the credential. The same is true for an `expression` source in the `subjectToken` of a token exchange or Cross App Access, and in the `actorToken` of a token exchange.
 
-To keep the credential from the backend, read it from a `header` location if the expression reads only one header. Otherwise, remove the header with a request transformation, as in the following example. The client authentication policy validates the credential before the transformation removes the header, so a request with a missing or invalid credential still fails with a `401` response.
+To keep a client authentication credential from the backend, read it from a `header` location if the expression reads only one header. Otherwise, remove the header with a request transformation, as in the following example. The client authentication policy validates the credential before the transformation removes the header, so a request with a missing or invalid credential still fails with a `401` response.
 
 {{% conditional-text include-if="kubernetes" %}}
+The following example updates the `apikey-auth` policy from the API key authentication guide, so that the policy reads the key with a CEL expression and removes the header.
+
 ```yaml
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -80,8 +82,9 @@ spec:
   traffic:
     apiKeyAuthentication:
       mode: Strict
-      secretRef:
-        name: apikey
+      configMapSelector:
+        matchLabels:
+          app: httpbin
       location:
         expression: 'request.headers["x-api-key"]'
     transformation:
@@ -115,6 +118,8 @@ policies:
 | `apiKey.location.expression` | The CEL expression that reads the API key from the request. In this example, the expression reads the `x-api-key` header. The gateway validates the key, but does not remove it. |
 | `transformations.request.remove` | The request headers that the gateway removes before it forwards the request. List each header that the expression reads. |
 {{% /conditional-text %}}
+
+For a token exchange or Cross App Access, do not remove the header with a route or gateway transformation. Those transformations run before the exchange, so the exchange finds no token and the request fails with a `400` response. Instead, read the token from a `header` source, or remove the header with a backend transformation, which runs after the exchange. {{% conditional-text include-if="kubernetes" %}}To add a backend transformation, set `backend.transformation.request.remove` in an {{< reuse "agw-docs/snippets/policy.md" >}} that targets the backend.{{% /conditional-text %}}{{% conditional-text include-if="standalone" %}}To add a backend transformation, set `transformations.request.remove` in the `policies` of the backend.{{% /conditional-text %}}
 
 ## Backend authentication is not authorization
 
