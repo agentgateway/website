@@ -29,13 +29,24 @@ const NEW_CHAT_TOOLTIP_AT = 10;    // show new-chat note after this many user me
 const DOCS_PATH_RE = /^\/docs\/(standalone|kubernetes)\/(latest|main)(\/|$)/;
 
 /**
- * Load the page index embedded by Hugo at build time.
- * Returns an array of { title, url, section } objects.
+ * Load the page index Hugo builds once per site.
+ * Resolves to an array of { title, url, section } objects, or [] on failure.
+ *
+ * The page carries only the index file's URL (`data-src`), because inlining
+ * the whole index made every page about 395 KB heavier. Older builds inlined
+ * the JSON in the element itself, which is still read if present.
  */
-function loadPageIndex() {
+async function loadPageIndex() {
   try {
     const el = document.getElementById('chatbot-page-index');
-    if (el) return JSON.parse(el.textContent);
+    if (!el) return [];
+    const src = el.dataset.src;
+    if (src) {
+      const res = await fetch(src, { credentials: 'same-origin' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    }
+    if (el.textContent.trim()) return JSON.parse(el.textContent);
   } catch (e) {
     console.warn('Chatbot: could not load page index', e);
   }
@@ -97,8 +108,14 @@ document.addEventListener('alpine:init', () => {
       this.thinkingAnimator = new ThinkingAnimator();
       this.markdownRenderer = new MarkdownRenderer(parseMarkdown);
 
-      // Hugo-generated page index for @ mentions
-      this.pageIndex = loadPageIndex();
+      // Hugo-generated page index for @ mentions. Fetched, so it arrives after
+      // init; until then lookups fall back to URL breadcrumbs.
+      loadPageIndex().then((pages) => {
+        this.pageIndex = pages;
+        if (this.showMentionMenu) {
+          this.filteredMentionPages = this.computeFilteredPages(this.mentionFilter);
+        }
+      });
 
       // Clear persisted state on hard refresh (F5 / Ctrl+R / refresh button)
       const navEntry = performance.getEntriesByType('navigation')[0];
