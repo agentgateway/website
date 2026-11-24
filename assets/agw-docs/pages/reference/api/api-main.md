@@ -131,8 +131,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `streaming` _[PromptGuardStreamingMode](#promptguardstreamingmode)_ | Apply prompt guards to streaming responses and realtime websocket messages.<br />Defaults to disabled to preserve streaming throughput unless explicitly enabled. |  | Optional: \{\} <br /> |
-| `request` _[PromptguardRequest](#promptguardrequest) array_ | Prompt guards to apply to requests sent by the client. |  | ExactlyOneOf: [regex webhook openAIModeration bedrockGuardrails googleModelArmor] <br />MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
-| `response` _[PromptguardResponse](#promptguardresponse) array_ | Prompt guards to apply to responses returned by the LLM provider. |  | ExactlyOneOf: [regex webhook bedrockGuardrails googleModelArmor] <br />MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `request` _[PromptguardRequest](#promptguardrequest) array_ | Prompt guards to apply to requests sent by the client. |  | ExactlyOneOf: [regex webhook openAIModeration bedrockGuardrails googleModelArmor azureContentSafety] <br />MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `response` _[PromptguardResponse](#promptguardresponse) array_ | Prompt guards to apply to responses returned by the LLM provider. |  | ExactlyOneOf: [regex webhook bedrockGuardrails googleModelArmor azureContentSafety] <br />MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
 
 #### APIKeyAuthentication
@@ -798,6 +798,7 @@ _Appears in:_
 - [ModelBackendAuth](#modelbackendauth)
 - [OAuthTokenExchange](#oauthtokenexchange)
 - [OpenAIModerationAuth](#openaimoderationauth)
+- [PromptGuardAuth](#promptguardauth)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -928,6 +929,7 @@ _Appears in:_
 - [BackendAuth](#backendauth)
 - [BedrockGuardrailsAuth](#bedrockguardrailsauth)
 - [ModelBackendAuth](#modelbackendauth)
+- [PromptGuardAuth](#promptguardauth)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -988,6 +990,7 @@ _Validation:_
 _Appears in:_
 - [BackendAuth](#backendauth)
 - [ModelBackendAuth](#modelbackendauth)
+- [PromptGuardAuth](#promptguardauth)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -1016,6 +1019,62 @@ _Appears in:_
 | `apiVersion` _[TinyString](#tinystring)_ | The version of the Azure OpenAI API to use.<br />If unset, defaults to `v1`. |  | MaxLength: 64 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `projectName` _[ShortString](#shortstring)_ | The Foundry project name, required when `resourceType` is `Foundry`.<br />Used to construct paths: /api/projects/\{projectName\}/openai/v1/... |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `model` _[ShortString](#shortstring)_ | Model name override, such as `gpt-4o-mini`.<br />If unset, the model name is taken from the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+
+
+#### AzureContentSafety
+
+
+
+
+
+
+
+_Appears in:_
+- [PromptguardRequest](#promptguardrequest)
+- [PromptguardResponse](#promptguardresponse)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `failureMode` _[FailureMode](#failuremode)_ | Behavior when the provider is unavailable or returns an error.<br />`FailOpen` allows the request to continue; `FailClosed` (default) rejects it. |  | Optional: \{\} <br /> |
+| `endpoint` _[ShortString](#shortstring)_ | Endpoint of the Azure AI Content Safety resource, for example<br />`my-resource.cognitiveservices.azure.com`. An `https://` prefix is accepted<br />and ignored. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether flagged content is rejected or only observed.<br />`Reject` (the default) rejects flagged content; `Audit` records the<br />would-be rejection without blocking. |  | Optional: \{\} <br /> |
+| `analyzeText` _[AzureContentSafetyAnalyzeText](#azurecontentsafetyanalyzetext)_ | Checks content with the Analyze Text API for harmful content categories<br />(Hate, SelfHarm, Sexual, Violence) and blocklist matches. |  | Optional: \{\} <br /> |
+| `detectJailbreak` _[AzureContentSafetyDetectJailbreak](#azurecontentsafetydetectjailbreak)_ | Checks content with the Detect Text Jailbreak API (Prompt Shields).<br />Only supported on request guards. |  | Optional: \{\} <br /> |
+
+
+#### AzureContentSafetyAnalyzeText
+
+
+
+
+
+
+
+_Appears in:_
+- [AzureContentSafety](#azurecontentsafety)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `severityThreshold` _integer_ | Severity at or above which content is flagged (0-6). Defaults to 2. |  | Maximum: 6 <br />Minimum: 0 <br />Optional: \{\} <br /> |
+| `apiVersion` _[ShortString](#shortstring)_ | Analyze Text API version. Defaults to `2024-09-01`. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `blocklistNames` _[ShortString](#shortstring) array_ | Names of custom blocklists to check. Any blocklist match flags the content. |  | MaxItems: 64 <br />MaxLength: 256 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `haltOnBlocklistHit` _boolean_ | When true, further analysis stops if a blocklist is hit. |  | Optional: \{\} <br /> |
+
+
+#### AzureContentSafetyDetectJailbreak
+
+
+
+
+
+
+
+_Appears in:_
+- [AzureContentSafety](#azurecontentsafety)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _[ShortString](#shortstring)_ | Detect Text Jailbreak API version. Defaults to `2024-02-15-preview`. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### AzureManagedIdentity
@@ -1210,6 +1269,7 @@ _Appears in:_
 - [BedrockGuardrailsPolicy](#bedrockguardrailspolicy)
 - [GoogleModelArmorPolicy](#googlemodelarmorpolicy)
 - [OpenAIModerationPolicy](#openaimoderationpolicy)
+- [PromptGuardPolicy](#promptguardpolicy)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -1282,6 +1342,7 @@ _Appears in:_
 - [BedrockGuardrailsPolicy](#bedrockguardrailspolicy)
 - [GoogleModelArmorPolicy](#googlemodelarmorpolicy)
 - [OpenAIModerationPolicy](#openaimoderationpolicy)
+- [PromptGuardPolicy](#promptguardpolicy)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -1345,6 +1406,7 @@ _Appears in:_
 - [BedrockGuardrailsPolicy](#bedrockguardrailspolicy)
 - [GoogleModelArmorPolicy](#googlemodelarmorpolicy)
 - [OpenAIModerationPolicy](#openaimoderationpolicy)
+- [PromptGuardPolicy](#promptguardpolicy)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -1370,17 +1432,38 @@ _Appears in:_
 - [GoogleModelArmorPolicy](#googlemodelarmorpolicy)
 - [ModelPolicies](#modelpolicies)
 - [OpenAIModerationPolicy](#openaimoderationpolicy)
+- [PromptGuardPolicy](#promptguardpolicy)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `certificateSource` _[BackendTLSCertificateSource](#backendtlscertificatesource)_ | Source for the gateway's client identity and trust roots (`Inline` default, or `SPIFFE`). |  | Optional: \{\} <br /> |
-| `mtlsCertificateRef` _[LocalSecretObjectRef](#localsecretobjectref) array_ | Enables mutual TLS to the backend using `tls.key` and `tls.crt` from the<br />referenced credential source (defaulting to a Kubernetes `Secret`). An<br />optional `ca.cert`, if present, verifies the server certificate, but<br />`caCertificateRefs` takes priority. If unspecified, no client certificate<br />is used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
+| `mtlsCertificateRef` _[BackendTLSCertificateRef](#backendtlscertificateref) array_ | Enables mutual TLS to the backend using `tls.key` and `tls.crt` from the<br />referenced credential source (defaulting to a Kubernetes `Secret`), or from<br />files on the agentgateway pod (kind `File`). An optional `ca.cert`, if<br />present, verifies the server certificate, but `caCertificateRefs` takes<br />priority. If unspecified, no client certificate is used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
 | `caCertificateRefs` _[LocalCACertificateRef](#localcacertificateref) array_ | CA certificate source to use to verify the server certificate. Omitted kind<br />and `ConfigMap` select a ConfigMap; `Secret` selects a Secret. The bundle is<br />read from the `ca.crt` key unless `key` names a different one. If unset, the<br />system's trusted certificates are used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
 | `insecureSkipVerify` _[InsecureTLSMode](#insecuretlsmode)_ | Originates TLS but skips verification of the backend's certificate<br />WARNING: insecure; only use if the risks are understood<br />Modes:<br />* `All` disables all TLS verification<br />* `Hostname` trusts the CA certificate but ignores hostname/SAN mismatches.<br />  Still insecure; prefer `verifySubjectAltNames` where possible. |  | Optional: \{\} <br /> |
 | `sni` _[SNI](#sni)_ | Server Name Indicator (`SNI`) to use in the TLS<br />handshake. If unset, the `SNI` is automatically set based on the<br />destination hostname. |  | MaxLength: 253 <br />MinLength: 1 <br />Pattern: `^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Optional: \{\} <br /> |
 | `verifySubjectAltNames` _[ShortString](#shortstring) array_ | Subject Alternative Names (`SAN`)<br />to verify in the server certificate.<br />If not present, the destination hostname is automatically used. |  | MaxItems: 16 <br />MaxLength: 256 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `alpnProtocols` _[TinyString](#tinystring)_ | Application-Layer Protocol Negotiation (`ALPN`)<br />value to use in the TLS handshake.<br />If not present, defaults to `["h2", "http/1.1"]`. |  | MaxItems: 16 <br />MaxLength: 64 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `keyExchangeGroups` _[KeyExchangeGroup](#keyexchangegroup) array_ | Ordered list of key exchange groups for a TLS connection.<br />For example: `X25519_MLKEM768,X25519`. |  | Optional: \{\} <br /> |
+
+
+#### BackendTLSCertificateRef
+
+
+
+References the backend mTLS client credential: a same-namespace `Secret` (or custom
+credential via `group`/`kind`), or with kind `File`, files on the agentgateway pod.
+
+
+
+_Appears in:_
+- [BackendTLS](#backendtls)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | Name of the referenced credential. Required unless `kind` is `File`. |  | Optional: \{\} <br /> |
+| `group` _string_ | API group of the referenced credential; empty selects the core API group. |  | Optional: \{\} <br /> |
+| `kind` _string_ | Kind of the referenced credential; empty defaults to `Secret`. `File` reads from `file`. |  | Optional: \{\} <br /> |
+| `file` _[BackendTLSFile](#backendtlsfile)_ | Paths on the agentgateway pod's local filesystem, which must be allowed by the gateway's<br />`fileAccess` config. Required when `kind` is `File`. |  | Optional: \{\} <br /> |
 
 
 #### BackendTLSCertificateSource
@@ -1401,6 +1484,25 @@ _Appears in:_
 | `SPIFFE` | BackendTLSCertificateSourceSPIFFE sources the gateway's X.509-SVID and trust bundle from<br />the SPIFFE Workload API (mutual TLS).<br /> |
 
 
+#### BackendTLSFile
+
+
+
+BackendTLSFile references client certificate, key and CA bundle files on the agentgateway
+pod's local filesystem. The controller does not read them; it forwards the paths to the gateway.
+
+
+
+_Appears in:_
+- [BackendTLSCertificateRef](#backendtlscertificateref)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `cert` _[LongString](#longstring)_ | Path to the client certificate file. |  | MaxLength: 1024 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `key` _[LongString](#longstring)_ | Path to the client certificate's private key file. |  | MaxLength: 1024 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `root` _[LongString](#longstring)_ | Path to a CA bundle file used to verify the backend's certificate.<br />If unset, the system's trusted certificates are used. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+
+
 #### BackendTunnel
 
 
@@ -1419,6 +1521,7 @@ _Appears in:_
 - [GoogleModelArmorPolicy](#googlemodelarmorpolicy)
 - [ModelPolicies](#modelpolicies)
 - [OpenAIModerationPolicy](#openaimoderationpolicy)
+- [PromptGuardPolicy](#promptguardpolicy)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -1565,7 +1668,7 @@ _Appears in:_
 | `version` _[ShortString](#shortstring)_ | Version of the Guardrail policy to use for the backend. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `region` _[ShortString](#shortstring)_ | AWS region where the guardrail is deployed, for example<br />`us-west-2`). |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether the guardrail's verdict is enforced or only<br />observed. `Reject` (the default) enforces the guardrail: a blocked<br />assessment rejects the request/response and an anonymized assessment masks<br />the matched content. `Audit` runs the guardrail in observe mode: it is<br />invoked and its assessment recorded (metrics + structured log), but the<br />request/response is never blocked or masked. |  | Optional: \{\} <br /> |
-| `policies` _[BedrockGuardrailsPolicy](#bedrockguardrailspolicy)_ | Policies for communicating with AWS Bedrock Guardrails. |  | Optional: \{\} <br /> |
+| `policies` _[BedrockGuardrailsPolicy](#bedrockguardrailspolicy)_ | Policies for communicating with the provider.<br />This field is deprecated; prefer `policies` on the prompt guard entry.<br />It may not be set together with the guard-level `policies`. |  | Optional: \{\} <br /> |
 
 
 #### BedrockGuardrailsAuth
@@ -2490,6 +2593,7 @@ _Underlying type:_ _string_
 
 
 _Appears in:_
+- [AzureContentSafety](#azurecontentsafety)
 - [BedrockGuardrails](#bedrockguardrails)
 - [BufferBody](#bufferbody)
 - [ExtAuth](#extauth)
@@ -2751,6 +2855,7 @@ _Appears in:_
 - [BackendAuthCredential](#backendauthcredential)
 - [GoogleModelArmorAuth](#googlemodelarmorauth)
 - [ModelBackendAuth](#modelbackendauth)
+- [PromptGuardAuth](#promptguardauth)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -2834,7 +2939,7 @@ _Appears in:_
 | `projectId` _[ShortString](#shortstring)_ | Google Cloud project ID. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `location` _[ShortString](#shortstring)_ | Google Cloud location, for example `us-central1`.<br />Defaults to `us-central1` if not specified. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether flagged content is rejected or only observed.<br />`Reject` (the default) rejects flagged content; `Audit` records the<br />would-be rejection without blocking. |  | Optional: \{\} <br /> |
-| `policies` _[GoogleModelArmorPolicy](#googlemodelarmorpolicy)_ | Policies for communicating with Google Model Armor. |  | Optional: \{\} <br /> |
+| `policies` _[GoogleModelArmorPolicy](#googlemodelarmorpolicy)_ | Policies for communicating with the provider.<br />This field is deprecated; prefer `policies` on the prompt guard entry.<br />It may not be set together with the guard-level `policies`. |  | Optional: \{\} <br /> |
 
 
 #### GoogleModelArmorAuth
@@ -3576,6 +3681,7 @@ _Appears in:_
 - [OAuthClientAuth](#oauthclientauth)
 - [OAuthPrivateKeyJWT](#oauthprivatekeyjwt)
 - [OpenAIModerationAuth](#openaimoderationauth)
+- [PromptGuardAuth](#promptguardauth)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -3598,7 +3704,6 @@ _Appears in:_
 - [APIKeyAuthentication](#apikeyauthentication)
 - [AwsAuth](#awsauth)
 - [AzureAuth](#azureauth)
-- [BackendTLS](#backendtls)
 - [JwtSignAuth](#jwtsignauth)
 
 | Field | Description | Default | Validation |
@@ -4548,7 +4653,7 @@ _Appears in:_
 | `failureMode` _[FailureMode](#failuremode)_ | Behavior when the provider is unavailable or returns an error.<br />`FailOpen` allows the request to continue; `FailClosed` (default) rejects it. |  | Optional: \{\} <br /> |
 | `model` _string_ | Moderation model to use. For example,<br />`omni-moderation`. |  | Optional: \{\} <br /> |
 | `action` _[RejectAuditAction](#rejectauditaction)_ | Action controls whether flagged content is rejected or only observed.<br />`Reject` (the default) rejects flagged content; `Audit` records the<br />would-be rejection without blocking. |  | Optional: \{\} <br /> |
-| `policies` _[OpenAIModerationPolicy](#openaimoderationpolicy)_ | Policies for communicating with OpenAI. |  | Optional: \{\} <br /> |
+| `policies` _[OpenAIModerationPolicy](#openaimoderationpolicy)_ | Policies for communicating with the provider.<br />This field is deprecated; prefer `policies` on the prompt guard entry.<br />It may not be set together with the guard-level `policies`. |  | Optional: \{\} <br /> |
 
 
 #### OpenAIModerationAuth
@@ -4809,6 +4914,55 @@ _Appears in:_
 | `cacheMessageOffset` _integer_ | Shifts the message cache point further back in the<br />conversation. 0 (default) places it at the second-to-last message.<br />Higher values move it N additional messages towards the start, clamped<br />to bounds. |  | Minimum: 0 <br />Optional: \{\} <br /> |
 
 
+#### PromptGuardAuth
+
+
+
+PromptGuardAuth configures credentials for prompt guard provider requests.
+Which methods are supported depends on the guard:
+  - `openAIModeration`: `key` or `secretRef`.
+  - `bedrockGuardrails`: `key`, `secretRef`, or `aws`.
+  - `googleModelArmor`: `gcp`.
+  - `azureContentSafety`: `key`, `secretRef`, or `azure`. When unset, implicit
+    Azure authentication is used.
+
+_Validation:_
+- ExactlyOneOf: [key secretRef aws gcp azure]
+
+_Appears in:_
+- [PromptGuardPolicy](#promptguardpolicy)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `key` _string_ | Inline key. This option is the least secure; usage of a `Secret` is<br />preferred. |  | MaxLength: 2048 <br />Optional: \{\} <br /> |
+| `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Credential source for the key, defaulting to a Kubernetes `Secret`. By<br />default, the value is read from the `Authorization` key; set<br />`secretRef.key` to override it. A `Bearer ` prefix is stripped only from<br />the default `Authorization` key. |  | Optional: \{\} <br /> |
+| `location` _[AuthorizationLocation](#authorizationlocation)_ | Where keys are inserted. Defaults to the `Authorization` header with the<br />`Bearer ` prefix, or the `Ocp-Apim-Subscription-Key` header for<br />`azureContentSafety`. Applies to `key` and `secretRef`. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
+| `aws` _[AwsAuth](#awsauth)_ | AWS authentication method. Use `aws: \{\}` for default AWS SDK credential<br />discovery. |  | Optional: \{\} <br /> |
+| `gcp` _[GcpAuth](#gcpauth)_ | Google authentication method. Use `gcp: \{\}` for default Google<br />credential discovery. |  | Optional: \{\} <br /> |
+| `azure` _[AzureAuth](#azureauth)_ | Azure authentication method. Use `azure: \{\}` for implicit Azure<br />credential discovery. |  | AtMostOneOf: [secretRef managedIdentity workloadIdentity] <br />Optional: \{\} <br /> |
+
+
+#### PromptGuardPolicy
+
+
+
+PromptGuardPolicy configures calls to a prompt guard provider.
+
+
+
+_Appears in:_
+- [PromptguardRequest](#promptguardrequest)
+- [PromptguardResponse](#promptguardresponse)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend |  | Optional: \{\} <br /> |
+| `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
+| `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
+| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | ExactlyOneOf: [backendRef url] <br />Optional: \{\} <br /> |
+| `auth` _[PromptGuardAuth](#promptguardauth)_ | Settings for authenticating to the prompt guard provider. |  | ExactlyOneOf: [key secretRef aws gcp azure] <br />Optional: \{\} <br /> |
+
+
 #### PromptGuardStreamingMode
 
 _Underlying type:_ _string_
@@ -4832,7 +4986,7 @@ _Appears in:_
 Prompt guards to apply to requests sent by the client.
 
 _Validation:_
-- ExactlyOneOf: [regex webhook openAIModeration bedrockGuardrails googleModelArmor]
+- ExactlyOneOf: [regex webhook openAIModeration bedrockGuardrails googleModelArmor azureContentSafety]
 
 _Appears in:_
 - [AIPromptGuard](#aipromptguard)
@@ -4846,6 +5000,8 @@ _Appears in:_
 | `openAIModeration` _[OpenAIModeration](#openaimoderation)_ | Passes prompt data through the OpenAI Moderations<br />endpoint.<br />See https://developers.openai.com/api/reference/resources/moderations for more information. |  | Optional: \{\} <br /> |
 | `bedrockGuardrails` _[BedrockGuardrails](#bedrockguardrails)_ | AWS Bedrock Guardrails settings for prompt<br />guarding. |  | Optional: \{\} <br /> |
 | `googleModelArmor` _[GoogleModelArmor](#googlemodelarmor)_ | Google Model Armor settings for prompt guarding. |  | Optional: \{\} <br /> |
+| `azureContentSafety` _[AzureContentSafety](#azurecontentsafety)_ | Azure AI Content Safety settings for prompt guarding. |  | Optional: \{\} <br /> |
+| `policies` _[PromptGuardPolicy](#promptguardpolicy)_ | Policies for communicating with the prompt guard provider. Not supported<br />for `regex` or `webhook` guards. |  | Optional: \{\} <br /> |
 
 
 #### PromptguardResponse
@@ -4855,7 +5011,7 @@ _Appears in:_
 Prompt guards to apply to responses returned by the LLM provider.
 
 _Validation:_
-- ExactlyOneOf: [regex webhook bedrockGuardrails googleModelArmor]
+- ExactlyOneOf: [regex webhook bedrockGuardrails googleModelArmor azureContentSafety]
 
 _Appears in:_
 - [AIPromptGuard](#aipromptguard)
@@ -4868,6 +5024,8 @@ _Appears in:_
 | `webhook` _[Webhook](#webhook)_ | Webhook that receives responses for prompt guarding. |  | Optional: \{\} <br /> |
 | `bedrockGuardrails` _[BedrockGuardrails](#bedrockguardrails)_ | AWS Bedrock Guardrails settings for prompt<br />guarding. |  | Optional: \{\} <br /> |
 | `googleModelArmor` _[GoogleModelArmor](#googlemodelarmor)_ | Google Model Armor settings for prompt guarding. |  | Optional: \{\} <br /> |
+| `azureContentSafety` _[AzureContentSafety](#azurecontentsafety)_ | Azure AI Content Safety settings for response guarding. Only<br />`analyzeText` is supported for responses. |  | Optional: \{\} <br /> |
+| `policies` _[PromptGuardPolicy](#promptguardpolicy)_ | Policies for communicating with the prompt guard provider. Not supported<br />for `regex` or `webhook` guards. |  | Optional: \{\} <br /> |
 
 
 #### ProviderFormat
@@ -5082,6 +5240,7 @@ records what it would have done without enforcing.
 
 
 _Appears in:_
+- [AzureContentSafety](#azurecontentsafety)
 - [BedrockGuardrails](#bedrockguardrails)
 - [GoogleModelArmor](#googlemodelarmor)
 - [OpenAIModeration](#openaimoderation)

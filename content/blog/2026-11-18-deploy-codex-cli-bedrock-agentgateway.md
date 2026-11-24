@@ -1,9 +1,10 @@
 ---
-title: "Deploy Codex CLI with Bedrock Through agentgateway"
+title: "Deploy Codex CLI with Bedrock Through agentgateway (Part 1)"
 category: "Tutorial"
 toc: true
 publishDate: 2026-11-18
 author: "Sebastian Maniak"
+image: "img/blog/codex-bedrock-agentgateway/cover.png"
 description: "Run OpenAI's Codex CLI against an OpenAI model hosted on Amazon Bedrock, with open source agentgateway on a kind cluster in the middle. The gateway holds the Bedrock key, publishes one model name, logs every call with tokens and cost to Postgres, and fronts an MCP server. Includes every manifest, the Codex profile, and the things that did not work the first time."
 ---
 
@@ -16,7 +17,7 @@ All of it runs on open source [agentgateway](https://agentgateway.dev) v1.7.0 in
 What you end up with:
 
 - **Codex with no credentials.** The Bedrock API key lives in a Kubernetes Secret. Codex sends none.
-- **One published model.** Codex asks for `gpt-oss-120b`. The gateway rewrites that to Bedrock's `openai.gpt-oss-120b-1:0`. Any other model name gets a 404.
+- **Published model names.** Codex asks for `gpt-oss-120b`. The gateway rewrites that to Bedrock's `openai.gpt-oss-120b-1:0`. A name that is not published gets a 404.
 - **A log of every call.** Model, tokens in and out, latency, cost and client, stored in Postgres and shown in the agentgateway UI.
 - **An MCP server behind the same gateway.** Codex reaches the Solo.io docs search tools through `/mcp`.
 
@@ -171,7 +172,15 @@ spec:
     config:
       database:
         url: "postgres://agentgateway:${PG_PASSWORD}@agentgateway-db.agentgateway-system.svc.cluster.local:5432/agentgateway"
+    # Store prompt and completion text with each request log ("full").
+    # Use "metadata" to keep only model, tokens, timing and cost.
+    frontendPolicies:
+      accessLog:
+        database:
+          llm: full
 ```
+
+The `frontendPolicies` block turns on prompt logging, so the Logs page shows what was asked and answered. On Kubernetes the checkbox for it in the UI is read-only, so the setting has to go here. Leave the block out, or set `metadata`, if you do not want prompts stored.
 
 `${PG_PASSWORD}` is a placeholder so the password stays out of git. Substitute it when you apply:
 
@@ -357,6 +366,13 @@ spec:
     - path:
         type: PathPrefix
         value: /mcp
+    # Only needed for the Entra ID sign-in follow-up: OAuth discovery endpoints
+    - path:
+        type: PathPrefix
+        value: /.well-known/oauth-protected-resource
+    - path:
+        type: PathPrefix
+        value: /.well-known/oauth-authorization-server
     backendRefs:
     - name: solo-search-mcp
       group: agentgateway.dev
@@ -411,14 +427,78 @@ kubectl --context $CTX -n agentgateway-system exec agentgateway-db-0 -- \
   'select started_at, gen_ai_request_model, total_tokens, cost, user_agent_name from request_logs order by started_at desc limit 5'
 ```
 
+## 10. More models (optional)
+
+One model is enough to prove the path, but adding more is one small resource each. I published two more from Bedrock with the same key and region:
+
+```yaml
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayModel
+metadata:
+  name: claude-haiku-4-5
+  namespace: agentgateway-system
+spec:
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: agentgateway-proxy
+    sectionName: http
+  provider: Bedrock
+  bedrock:
+    region: us-east-2
+  policies:
+    auth:
+      secretRef:
+        name: bedrock-secret
+    transformations:
+    - field: model
+      expression: '"us.anthropic.claude-haiku-4-5-20251001-v1:0"'
+```
+
+The second one is the same with `name: gpt-oss-20b` and `"openai.gpt-oss-20b-1:0"`. Both are in [`k8s/07-more-bedrock-models.yaml`](https://github.com/sebbycorp/agentgateway-oss-k8s/blob/main/k8s/07-more-bedrock-models.yaml). Pick one per run:
+
+```bash
+codex --profile agentgateway -m claude-haiku-4-5
+```
+
+| Name in Codex | Bedrock model | Result with Codex |
+|---|---|---|
+| `gpt-oss-120b` | `openai.gpt-oss-120b-1:0` | works: chat, shell commands, MCP tools |
+| `gpt-oss-20b` | `openai.gpt-oss-20b-1:0` | works. Sometimes prints its reasoning in front of the answer |
+| `claude-haiku-4-5` | `us.anthropic.claude-haiku-4-5-20251001-v1:0` | works after the change below |
+
+Haiku did not work at first. Codex failed with:
+
+```
+HTTP 400: tools.12.custom.input_schema: input_schema does not support oneOf, allOf, or anyOf at the top level
+```
+
+I captured the request Codex sends to find tool 12. It was `cua_repl`, a JavaScript REPL tool that the ChatGPT desktop app adds to Codex through its `unified-computer-use` plugin. A second one, `node_repl`, has the same kind of schema. Both use a top-level `oneOf`, and Claude on Bedrock rejects the whole request when it sees one. The OpenAI models accept it, which is why only Haiku broke.
+
+The fix is to turn those two tools off for the gateway profile only:
+
+```bash
+cat >> ~/.codex/agentgateway.config.toml <<'EOF'
+
+# Claude on Bedrock rejects the schema of these two desktop-app tools.
+[plugins."unified-computer-use@openai-bundled"]
+enabled = false
+
+[mcp_servers.node_repl]
+enabled = false
+EOF
+```
+
+Add each block only if `codex mcp list` shows that server. If you do not have the desktop app, you do not have these tools and Haiku works as is. Any other MCP tool with a top-level `oneOf`, `anyOf` or `allOf` in its schema will cause the same error with Claude models.
+
 ## What to know before you rely on this
 
-- **Prompts are not stored by default.** The log holds metadata only: model, tokens, cost, latency, status and client. Storing prompt and completion text is a separate access-log setting.
+- **Prompts are stored in plain text.** With `llm: full` every prompt and answer lands in Postgres. Set it to `metadata` to keep only model, tokens, cost, latency, status and client.
 - **MCP calls are not in the database.** Only LLM calls are. MCP traffic is in the proxy's stdout log, and there is no MCP section in the Kubernetes UI.
-- **The gateway in this lab has no client authentication.** Anyone who can reach the port can spend your Bedrock key, and `--enable-lb-port-mapping` publishes it on `0.0.0.0`. For anything beyond a laptop, add API key or JWT auth on the listener and set `env_key` in the Codex profile.
+- **The gateway in this lab has no client authentication.** Anyone who can reach the port can spend your Bedrock key, and `--enable-lb-port-mapping` publishes it on `0.0.0.0`. The follow-up post adds a sign-in: [Add Entra ID sign-in to Codex CLI through agentgateway](/blog/2026-11-19-codex-cli-entra-id-sign-in-agentgateway/).
 - **The localhost port is random.** It changes when cloud-provider-kind or Docker restarts, and the Codex profile has it written in. A `kubectl port-forward` to port 80 of the proxy gives you a fixed one.
 - **There is no log retention setting that I found.** The `request_logs` table grows until you prune it.
-- **Not every Bedrock model works with Codex.** Claude Haiku 4.5 on Bedrock answered plain requests through the same gateway, but Codex failed against it with a 400: Bedrock rejected one of Codex's tool schemas (`input_schema does not support oneOf, allOf, or anyOf at the top level`). `openai.gpt-oss-120b-1:0` was the one I tested end to end.
+- **Claude models need a Codex-side change.** See the next section.
 
 ## Cleanup
 
@@ -432,7 +512,9 @@ Deleting the cluster deletes the Postgres volume and the logs with it.
 
 ## Where to go next
 
-The repo has the same build as a 13-step README with all five manifests and a Playwright script that regenerates the screenshots: [sebbycorp/agentgateway-oss-k8s](https://github.com/sebbycorp/agentgateway-oss-k8s).
+The repo has the same build as a 13-step README with all the manifests and a Playwright script that regenerates the screenshots: [sebbycorp/agentgateway-oss-k8s](https://github.com/sebbycorp/agentgateway-oss-k8s).
+
+Next, in Part 2: [Add Entra ID sign-in to Codex CLI through agentgateway](/blog/2026-11-19-codex-cli-entra-id-sign-in-agentgateway/), so the gateway only serves people in one Entra group.
 
 Related posts:
 

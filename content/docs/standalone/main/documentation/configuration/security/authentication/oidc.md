@@ -302,12 +302,12 @@ By default, an OIDC policy accepts only the browser session that its login flow 
 | Value | Behavior |
 |-------|----------|
 | `session` | Default, except for `ui.policies.oidc`. The policy accepts only browser sessions. An `Authorization` header is ignored. |
-| `sessionOrBearer` | Default for `ui.policies.oidc`. The policy also accepts an ID token from its own identity provider in the `Authorization: Bearer <token>` header. An invalid bearer token is rejected with `401 Unauthorized`. |
+| `sessionOrBearer` | Default for `ui.policies.oidc`. The policy also accepts a bearer JWT from its own identity provider in the `Authorization: Bearer <token>` header. An invalid bearer token is rejected with `401 Unauthorized`. |
 | `permissive` | Like `sessionOrBearer`, but requests that the OIDC policy cannot authenticate continue to the next policies, unless they are browser navigations. Use this value when API clients authenticate with another policy, such as `jwtAuth` or `mcpAuthentication`. |
 
-### Accept ID tokens from the OIDC provider {#accept-id-tokens}
+### Accept bearer JWTs from the OIDC provider {#accept-id-tokens}
 
-Use `sessionOrBearer` when your API clients can get an ID token from the same identity provider and client as your browser users.
+Use `sessionOrBearer` when your API clients can get a JWT from the same identity provider and client as your browser users. The policy accepts an issuer-signed token whose `aud` claim includes the `clientId`. The JWT can be an ID token or an access token.
 
 1. Add `credentials: sessionOrBearer` to the `oidc` policy.
 
@@ -321,10 +321,25 @@ Use `sessionOrBearer` when your API clients can get an ID token from the same id
        credentials: sessionOrBearer
    ```
 
-2. Get an ID token for the `clientId` from your identity provider, and send the token in the `Authorization` header. The policy checks the token signature against its JWKS, and checks that the token is not expired. The `iss` claim must match `issuer` and the `aud` claim must include `clientId`. Access tokens usually have a different audience, so send the ID token, not an access token.
+2. Send a JWT from your identity provider in the `Authorization` header. The policy checks the token signature against its JWKS and checks that the token is not expired. The `iss` claim must match `issuer`, and the `aud` claim must include `clientId`.
 
    ```sh
-   curl -i http://localhost:3000/ -H "Authorization: Bearer $ID_TOKEN"
+   curl -i http://localhost:3000/ -H "Authorization: Bearer $TOKEN"
+   ```
+
+3. Optional: Add an `authorization` rule to require a claim that narrows which bearer tokens the policy accepts. For example, require the `azp` claim to match the OIDC client, or let the request through when the claim is absent.
+
+   ```yaml
+   policies:
+     oidc:
+       issuer: http://localhost:7080/realms/agentgateway
+       clientId: agentgateway-browser
+       clientSecret: agentgateway-secret
+       redirectURI: http://localhost:3000/oauth/callback
+       credentials: sessionOrBearer
+     authorization:
+       rules:
+       - allow: '!has(jwt.azp) || jwt.azp == "agentgateway-browser"'
    ```
 
 The policy handles each request according to its `Authorization` header.
@@ -340,7 +355,7 @@ The policy handles each request according to its `Authorization` header.
 
 Use `permissive` when browsers log in with OIDC, but API clients use other credentials. Examples are tokens from another issuer, API keys, and MCP authentication. In `permissive` mode, the OIDC policy handles requests as follows.
 
-- A browser session or a valid ID token authenticates the request, as with `sessionOrBearer`.
+- A browser session or a valid bearer JWT authenticates the request, as with `sessionOrBearer`.
 - An invalid or unrecognized bearer token is not rejected. The policy leaves the `Authorization` header in place for a later policy to validate.
 - A browser navigation without a session starts the login flow, as with the other values. A request is a navigation when its `Sec-Fetch-Mode` header is `navigate`. If the request has no `Sec-Fetch-Mode` header, the `Accept` header decides: a request that accepts `text/html` is a navigation.
 - Any other request without a session continues to the next policies unauthenticated. The OIDC policy does not send a `401` response, so `curl` requests without an `Accept: text/html` header are not redirected to log in.

@@ -10,7 +10,7 @@ To manage models and providers on a running gateway from the command line, see [
 
 ## First-class providers
 
-Use the dedicated provider pages when agentgateway already knows the upstream base URL and request format. This list includes Anthropic, OpenAI, and many more!
+Use the dedicated [provider guides](#provider-guides) when agentgateway already knows the upstream base URL and request format. This list includes Anthropic, OpenAI, and many more!
 
 ## Custom providers
 
@@ -174,3 +174,7 @@ llm:
 | `llm.models[].params.model` | The model name that agentgateway sends upstream. A model that references a provider can set only this parameter. |
 
 For all TLS settings, see [Backend TLS]({{< link-hextra path="/documentation/configuration/security/backend-tls/" >}}).
+
+## Provider guides {#provider-guides}
+
+The following guides show how to configure each provider, as well as how to combine several providers.

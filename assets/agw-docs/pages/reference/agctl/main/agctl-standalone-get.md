@@ -8,8 +8,9 @@ agctl standalone get KIND [NAME] [flags]
 
 ```
   -h, --help            help for get
-  -n, --no-metadata     Omit server-managed fields for use with apply
+  -n, --no-metadata     Omit server-managed fields for use with apply. In hybrid mode, also use --source database when exporting for apply.
   -o, --output string   Output format: table, yaml, or json (default "table")
+      --source string   Filter by resource source: file or database (default: all)
 ```
 
 ### Options inherited from parent commands
