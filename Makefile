@@ -139,17 +139,26 @@ PR_TRACKER_PREVIEW ?= $(if $(PREVIEW),$(filter pr-tracker-%,$(CF_PAGES_BRANCH)))
 # main, the preview shows no highlights instead of failing. Other builds delete
 # static/_extras/ so that a leftover file from `make serve` never ships.
 # NO_CHANGES=1 turns highlights off everywhere.
+#
+# The diff covers the whole working tree, so it must run before anything that
+# edits content. `test-status` writes `test_status` front matter into ~800
+# pages, which would otherwise all show as changed. The combined targets below
+# list `changes` before `test-status`; make runs each target once, so `build`
+# reuses that result instead of diffing again.
 CHANGES_SCRIPT = $(eval CHANGES_SCRIPT := $(if $(NO_CHANGES),,$(shell go mod download -json github.com/solo-io/docs-theme-extras 2>/dev/null | python3 -c "import json,os,sys; p=os.path.join(json.load(sys.stdin)['Dir'],'scripts','changes_manifest.py'); print(p if os.path.exists(p) else '')" 2>/dev/null)))$(CHANGES_SCRIPT)
 CHANGES_OUT = static/_extras/changes.json
 CHANGES_ENV = $(if $(and $(PREVIEW),$(CHANGES_SCRIPT)),HUGO_PARAMS_THEMEEXTRAS_CHANGEHIGHLIGHTS=true )
 
-.PHONY: build
-build: check-node-deps
-	$(if $(PREVIEW),pip3 install -q pyyaml || true)
-	$(if $(PREVIEW),python3 scripts/local-version-config.py --preview-base origin/main $(if $(PR_TRACKER_PREVIEW),--only-changed))
+.PHONY: changes
+changes:
 	$(if $(CHANGES_ENV),git rev-parse --verify -q origin/main > /dev/null || git fetch --depth=1 --no-tags origin main:refs/remotes/origin/main || true)
 	$(if $(CHANGES_ENV),python3 $(CHANGES_SCRIPT) --base origin/main --out $(CHANGES_OUT) || python3 $(CHANGES_SCRIPT) --base origin/main --exact-base --out $(CHANGES_OUT) || true)
 	$(if $(CHANGES_ENV),,rm -rf $(dir $(CHANGES_OUT)))
+
+.PHONY: build
+build: check-node-deps changes
+	$(if $(PREVIEW),pip3 install -q pyyaml || true)
+	$(if $(PREVIEW),python3 scripts/local-version-config.py --preview-base origin/main $(if $(PR_TRACKER_PREVIEW),--only-changed))
 	$(CHANGES_ENV)$(if $(PR_TRACKER_PREVIEW),HUGO_PARAMS_SEARCH_ENABLE=false )hugo --gc --minify $(if $(PREVIEW),--config hugo.yaml$(COMMA)hugo-local-versions.yaml)
 
 # The local servers build only the versions listed in hugo.yaml's
@@ -170,18 +179,22 @@ local-version-config:
 	@$(if $(FULL),:,python3 scripts/local-version-config.py $(if $(VERSION),--version $(VERSION)))
 
 # The local servers run a watcher that updates the change highlights as you edit.
-CHANGES_WATCH = $(if $(CHANGES_SCRIPT),python3 $(CHANGES_SCRIPT) --out $(CHANGES_OUT) --watch & changes_pid=$$!;,:;)
-CHANGES_STOP = if [ -n "$$changes_pid" ]; then kill $$changes_pid 2>/dev/null; fi
+# `with_watcher` starts it beside the server command and stops both together on
+# Ctrl+C, on a TERM sent to make (an IDE stop button), or when the server exits.
+# The server runs in the background with `wait` because a shell defers its trap
+# until a foreground command finishes, so a TERM would otherwise hang make and
+# leave both processes running.
+with_watcher = $(if $(CHANGES_SCRIPT),python3 $(CHANGES_SCRIPT) --out $(CHANGES_OUT) --watch & changes_pid=$$!;) $(1) & server_pid=$$!; trap 'kill $$changes_pid $$server_pid 2>/dev/null; wait' EXIT INT TERM; wait $$server_pid
 
 # Start local dev server (drafts and future-dated content shown)
 .PHONY: serve
 serve: check-node-deps local-version-config
-	$(CHANGES_WATCH) $(NO_SEARCH_ENV)hugo server --buildDrafts --buildFuture $(LOCAL_VERSIONS_CONFIG); $(CHANGES_STOP)
+	$(call with_watcher,$(NO_SEARCH_ENV)hugo server --buildDrafts --buildFuture $(LOCAL_VERSIONS_CONFIG))
 
 # Start local server with production-like build (GC, minify, no drafts)
 .PHONY: serve-prod
 serve-prod: check-node-deps local-version-config
-	$(CHANGES_WATCH) $(NO_SEARCH_ENV)hugo server --gc --minify $(LOCAL_VERSIONS_CONFIG); $(CHANGES_STOP)
+	$(call with_watcher,$(NO_SEARCH_ENV)hugo server --gc --minify $(LOCAL_VERSIONS_CONFIG))
 
 # Alias for serve (drafts and future-dated content shown)
 .PHONY: server
@@ -364,11 +377,11 @@ playwright-update-images: playwright-install
 
 # Fetch CI test results, inject status, build site for production
 .PHONY: fetch-test-artifacts-build
-fetch-test-artifacts-build: test-artifacts-fetch test-status build
+fetch-test-artifacts-build: changes test-artifacts-fetch test-status build
 
 # Run doc tests, inject status, build site
 .PHONY: test-run-build
-test-run-build: test-run test-status build
+test-run-build: changes test-run test-status build
 
 # Fetch CI test results, inject status, serve site locally
 .PHONY: fetch-test-artifacts-serve
