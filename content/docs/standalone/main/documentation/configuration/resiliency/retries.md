@@ -12,7 +12,7 @@ When a backend request fails, agentgateway can be configured to *{{< gloss "Retr
 
 ## Configure retries {#configure}
 
-Add a `retry` policy to an MCP listener or a route. If you omit `attempts`, a failed request is retried once. To disable retries, set `attempts` to `0`.
+Add a `retry` policy to an MCP listener, an LLM gateway, or a route. If you omit `attempts`, a failed request is retried once. To disable retries, set `attempts` to `0`.
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
@@ -35,6 +35,23 @@ mcp:
     stdio:
       cmd: npx
       args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Simplified (LLM)" >}}
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+llm:
+  port: 3000
+  policies:
+    retry:
+      # Retry rate-limited and unavailable provider responses up to 2 times.
+      attempts: 2
+      # Wait 5 seconds between attempts, to give the provider's rate limit time to reset.
+      backoff: 5s
+      codes: [429, 503]
+  models:
+  - name: gpt-4o-mini
+    provider: openai
 ```
 {{< /tab >}}
 {{< tab name="Routing-based" >}}

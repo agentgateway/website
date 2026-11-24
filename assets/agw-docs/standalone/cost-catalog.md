@@ -184,7 +184,7 @@ When a request matches an entry in the catalog, agentgateway populates these CEL
 
 {{< version exclude-if="1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x" >}}When an Anthropic Messages response reports `usage.iterations`, the request cost uses a separate calculation for each iteration. If an iteration names a `model` with an exact catalog match, the tokens for that iteration use that model's catalog entry. Otherwise, the iteration uses the response model. The request cost is the sum of those iteration costs.{{< /version >}}
 
-{{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}When a response reports a model, cost lookup uses the response model first. If the catalog has no matching entry, lookup uses the request model, then `llm.originalModel`. The lookup order helps a catalog price traffic whose model was rewritten by virtual models, aliases, provider overrides, or request body transformations.{{< /version >}}
+{{< version exclude-if="1.7.x,1.6.x,1.5.x,1.4.x,1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}When a response reports a model, cost lookup uses the response model first. If an Azure response reports a model in the `x-ms-served-model` header, cost lookup can use that header value. Cost lookup lowercases Azure model names and also tries each name without a trailing `-YYYY-MM-DD` or `-YYYYMMDD` version date. If the catalog has no matching entry, lookup uses the request model, then `llm.originalModel`. The lookup order helps a catalog price traffic whose model was rewritten by virtual models, aliases, provider overrides, request body transformations, or Azure responses that report dated model versions.{{< /version >}}
 
 {{< version exclude-if="1.5.x" >}}For page-billed document models, `llm.cost.pages` reports the page-cost component, and `llm.costRates.perPage` reports the USD-per-page rate that was applied.{{< /version >}}
 
@@ -298,6 +298,8 @@ Cost calculations match this value to catalog tiers with a `serviceTier` field. 
 {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x" >}}OpenAI and Azure `fast` request values map to `priority`. An Anthropic fast-mode response maps to `fast`. The two are different tiers.{{< /version >}}
 
 Unlisted providers or tiers leave `llm.serviceTier` unset.
+
+Responses from Claude models on Azure AI Foundry follow the Azure row, not the Anthropic row. Because `standard` is not an Azure tier name, a Claude response that reports `standard` leaves `llm.serviceTier` unset. The request still uses `standard` rates.
 
 For Bedrock tier requests and the response header used to detect the tier, see [Service tier]({{< link-hextra path="/integrations/llm/providers/bedrock/#service-tier" >}}).
 
