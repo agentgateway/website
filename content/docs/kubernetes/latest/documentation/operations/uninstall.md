@@ -1,7 +1,7 @@
 ---
 title: Uninstall
 weight: 50
-description: Uninstall kgateway and related components.
+description: Uninstall agentgateway and related components.
 ---
 
 {{< reuse "agw-docs/pages/operations/uninstall.md" >}}

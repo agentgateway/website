@@ -149,7 +149,7 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    | `authorization.policy.matchExpressions` | CEL rules that authorize the claims in the verified JWT. This example requires the `read:tools` permission that you defined on your Auth0 API. Requests that present a valid token without that permission are denied with a 403 HTTP response code. |
 
    > [!NOTE]
-   > Setting `clientId` is recommended for Auth0. Auth0 supports Dynamic Client Registration, but only when you enable **Dynamic Application Registration** in your tenant settings. Because agentgateway passes through Auth0's own registration endpoint rather than proxying it, MCP clients register directly with Auth0. Pre-registering a client with `clientId` avoids that dependency.
+   > Setting `clientId` is recommended for Auth0. Auth0 supports Dynamic Client Registration, but only when you enable **Dynamic Application Registration** in your tenant settings. Because agentgateway passes through Auth0's own registration endpoint rather than proxying it, MCP clients register directly with Auth0. Pre-registering a client with `clientId` avoids that dependency.{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}} When you set `clientId`, agentgateway advertises its own registration endpoint instead of Auth0's and answers registration requests with the pre-registered client.{{< /version >}}
 
 2. Verify that the policy was accepted.
    ```sh
@@ -276,6 +276,7 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
      "registration_endpoint": "https://your-tenant.us.auth0.com/oidc/register"
    }
    ```
+   {{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x,2026.7.1,2.3.x" >}}Because this guide sets `clientId`, `registration_endpoint` points to the gateway instead, such as `http://localhost:8080/.well-known/oauth-authorization-server/mcp/client-registration`. MCP clients that register at that endpoint receive the pre-registered client ID.{{< /version >}}
 
 ## Connect an MCP client
 
