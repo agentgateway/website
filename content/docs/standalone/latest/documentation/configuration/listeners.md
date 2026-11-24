@@ -144,6 +144,52 @@ routes: []
 
 To attach a route to one of these listeners instead of the whole gateway, reference it as `web/discrete` or `web/wildcard` in the route's `gateways` field.
 
+### Require client certificates {#mtls}
+
+To require clients to present a certificate, which is also called mutual TLS (mTLS), set the `root` field in the listener's `tls` section. The `root` file holds the certificate authority (CA) that signs your client certificates. A client that does not present a certificate from that CA fails the TLS handshake and gets no HTTP response.
+
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+gateways:
+  https:
+    port: 3443
+    tls:
+      cert: ./certs/server.pem
+      key: ./certs/server.key
+      root: ./certs/ca.pem
+routes: []
+```
+
+To send a request with a client certificate, pass the certificate and its key to your client, such as with the `--cert` and `--key` options of `curl`.
+
+### Restrict TLS versions and cipher suites {#tls-versions}
+
+By default, an HTTPS listener accepts TLS 1.2 and TLS 1.3 connections with any of the default cipher suites. To narrow these settings for one listener, set the following fields in the listener's `tls` section. Agentgateway supports only TLS 1.2 and TLS 1.3, so a listener that sets `TLS_V1_0` or `TLS_V1_1` fails validation with the `unsupported TLS version` error.
+
+| Field | Values | Description |
+| --- | --- | --- |
+| `minTLSVersion` | `TLS_V1_2` or `TLS_V1_3` | The lowest TLS version that the listener accepts. |
+| `maxTLSVersion` | `TLS_V1_2` or `TLS_V1_3` | The highest TLS version that the listener accepts. |
+| `cipherSuites` | A list of cipher suite names, such as `TLS_AES_256_GCM_SHA384` or `TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384` | The only cipher suites that the listener accepts. |
+
+The following example accepts only TLS 1.3 connections that use the `TLS_AES_256_GCM_SHA384` cipher suite.
+
+```yaml
+# yaml-language-server: $schema={{< reuse "agw-docs/snippets/schema.md" >}}
+gateways:
+  https:
+    port: 3443
+    tls:
+      cert: ./certs/server.pem
+      key: ./certs/server.key
+      minTLSVersion: TLS_V1_3
+      cipherSuites:
+      - TLS_AES_256_GCM_SHA384
+routes: []
+```
+
+A client that cannot meet these restrictions fails the TLS handshake. For example, a TLS 1.2 client gets a `protocol version` alert, and a TLS 1.3 client that offers only `TLS_AES_128_GCM_SHA256` gets a `handshake failure` alert.
+
 ### Redirect HTTP to HTTPS
 
 Listeners under one gateway share a port, so they cannot mix encrypted and plaintext traffic. To serve both HTTP and HTTPS, define a separate gateway for each, and attach a route with a `requestRedirect` policy to the HTTP gateway. The following example listens for plaintext HTTP on port 80 and redirects it to HTTPS, while serving encrypted traffic on port 443.

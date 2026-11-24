@@ -10,6 +10,8 @@ Attaches to: {{< badge content="Route" path="/documentation/configuration/routes
 
 Use rate limiting to enforce budget and spend limits per key: control the rate of requests and token usage on a route. Token-based limits let you cap usage per user, per API key, or per time window. Combined with API key authentication and observability, this gives you virtual key management.
 
+Rate limits count requests or tokens over a period of time. To cap how many requests and connections are in flight at the same time instead, see [Connection limits]({{< link-hextra path="/documentation/configuration/resiliency/connection-limits/" >}}).
+
 ## Rate limit types
 
 Agentgateway exposes two types of rate limits:

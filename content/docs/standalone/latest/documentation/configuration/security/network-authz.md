@@ -51,6 +51,8 @@ Evaluation order:
 
 Some CEL variables are unset for some connections. A rule that references an unset variable never matches. A `require` rule then rejects the connection, and a `deny` rule lets the connection through. For when each variable is set, see [CEL context](#cel-context).
 
+A rule that fails to evaluate, such as because of a type error, also never matches. A `deny` rule with an error therefore denies nothing. Configuration validation does not catch these errors, because a rule is evaluated only when a connection arrives. Test a new rule against real traffic before you rely on it.
+
 ## CEL context
 
 The following CEL variables are available in network authorization rules. For every variable that agentgateway exposes, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
@@ -58,17 +60,20 @@ The following CEL variables are available in network authorization rules. For ev
 | Variable | Type | Description |
 |----------|------|-------------|
 | `source.address` | `string` | IP address of the downstream connection. |
-| `source.port` | `int` | Port of the downstream connection. |
+| `source.port` | `uint` | Port of the downstream connection. |
 | `source.spiffeId` | `string` | SPIFFE ID of the client certificate, which is the certificate's first `spiffe://` URI Subject Alternative Name (SAN). Set only when the gateway verifies client certificates. |
 | `source.identity` | `object` | Istio-format identity of the client certificate, with the `trustDomain`, `namespace`, and `serviceAccount` fields. Set only when the SPIFFE ID has the `spiffe://<trust-domain>/ns/<namespace>/sa/<service-account>` format. Compare its fields, not the whole object, with a string. |
 | `source.subjectAltNames` | `list(string)` | Subject Alternative Names from the client certificate. |
 | `source.subject`, `source.subjectCn`, `source.issuer` | `string` | Subject, subject common name (CN), and issuer of the client certificate. |
 | `destination.address` | `string` | IP address on agentgateway that the downstream connection was made to. This is the local address of the listener, not the address of the backend that the connection is routed to. |
-| `destination.port` | `int` | Port on agentgateway that the downstream connection was made to. |
+| `destination.port` | `uint` | Port on agentgateway that the downstream connection was made to. |
 | `destination.hostname` | `string` | Server Name Indication (SNI) hostname that agentgateway read from the TLS handshake. Set only on listeners with the `TLS` protocol. Unset on HTTP and HTTPS listeners, even when the client sends SNI, and when the client sends no SNI. See the warning that follows. |
 
 > [!WARNING]
 > `destination.hostname` is set only on listeners with the `TLS` protocol. It is unset on HTTP and HTTPS listeners, even when the client sends SNI, and for clients that send no SNI. A `require` rule that references an unset variable never matches, so the rule denies every such connection. Verify it against the traffic you expect before you rely on it.
+
+> [!WARNING]
+> `source.port` and `destination.port` are unsigned integers. Comparisons with a plain integer, such as `source.port > 1024`, work. Arithmetic with a plain integer, such as `source.port % 2 == 0`, fails to evaluate, so the rule never matches. Convert the port with `int(source.port)`, or write the number as an unsigned integer, such as `2u`.
 
 ## Examples
 

@@ -32,6 +32,27 @@ At any point, you can check a configuration file for errors without starting the
 agentgateway --validate-only -f config.yaml
 ```
 
+### If a change has an error {#invalid-change}
+
+If the new file does not load, such as because of a syntax error or an unknown field, the whole change is rejected. Agentgateway keeps serving the previous configuration and logs the reason in a `Failed to reload config` error.
+
+```txt
+ERROR state_manager  Failed to reload config: ...
+```
+
+To check whether the running configuration matches the file, read the `agentgateway_config_synchronized` metric on the metrics port, which is `15020` by default. The metric is `0` after a rejected reload, and `1` again after the next successful reload.
+
+```sh
+curl -s http://localhost:15020/metrics | grep ^agentgateway_config_synchronized
+```
+
+Fix the error, and save the file again.
+
+A gateway port that another process already uses is handled differently.
+
+* **At startup**, agentgateway exits with a `failed to start bind listener(s)` error that names the port. Free the port, or change the gateway's port, and start agentgateway again.
+* **During a reload**, a change that adds a gateway on a port in use is reported as failed with the same error, and the metric is `0`. However, the rest of the change is applied. After you free the port, restart agentgateway to open it. Saving the file again does not open the port.
+
 ## Binary {#binary}
 
 Edit the file that you passed to `agentgateway -f`, or the generated file in your user config directory if you started agentgateway with no arguments.
@@ -57,7 +78,7 @@ Edit the file that you passed to `agentgateway -f`, or the generated file in you
      - host: httpbin.org:80
    ```
 
-3. Save the file. Agentgateway reloads it, and logs the reload.
+3. Save the file. Agentgateway reloads it, and logs the reload. If the file has an error, the log shows a `Failed to reload config` error instead, and the previous configuration stays in place. For more information, see [If a change has an error](#invalid-change).
 
    ```txt
    INFO state_manager  loaded config from File("/home/example/.config/agentgateway/config.yaml")

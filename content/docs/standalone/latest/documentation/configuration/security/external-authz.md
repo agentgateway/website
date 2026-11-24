@@ -245,6 +245,30 @@ extAuthz:
 | `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). If unset, external authorization calls time out after 2 seconds for both the gRPC and HTTP protocols. |
 | `policies.tcp.connectTimeout` | Connection timeout as a duration string, such as `3s`. |
 
+## Failure mode {#failure-mode}
+
+If the authorization service does not return a decision, the request is denied by default with a `403` response. For example, the service might be unreachable, or the call might time out. To change this behavior, set the `failureMode` field. The field applies to both the gRPC and the HTTP protocols.
+
+| `failureMode` | What happens to a request when no decision arrives |
+| --- | --- |
+| `deny` | The request is denied with a `403` response. This value is the default. |
+| `allow` | The request is sent on to the backend as if the authorization service allowed it. |
+| `denyWithStatus: <code>` | The request is denied with the HTTP status code that you set, such as `503`. |
+
+```yaml
+extAuthz:
+  host: localhost:9000
+  failureMode:
+    denyWithStatus: 503
+  protocol:
+    http:
+      path: '"/authorize"'
+```
+
+The failure mode covers only the cases where no decision arrives. Any response from the authorization service is a decision. For example, with the HTTP protocol, a `500` response from the authorization service denies the request, even when `failureMode` is set to `allow`. The client gets the `500` response, and the request does not reach the backend.
+
+An authorization service that accepts the connection but does not respond is handled as a failure after the call times out. The default timeout is 2 seconds. To change the timeout, set `policies.http.requestTimeout` on the `extAuthz` policy, as described in [Backend connection policies](#backend-connection-policies).
+
 ## Backend-level external authorization
 
 You can also attach an `extAuthz` policy directly to a backend. Backend-level external authorization runs after agentgateway selects the backend, so the policy applies even when a route load-balances or fails over across multiple backends. Attach at the backend level when the authorization service shapes the outgoing request, for example by inserting a token, rather than only deciding whether the incoming request is allowed.
