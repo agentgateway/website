@@ -1,12 +1,16 @@
 ## About
 
-The `azure` backend authentication method gets a Microsoft Entra ID token and writes it to the `Authorization` header of every request that agentgateway forwards to the backend. Agentgateway requests the token for the Azure Cognitive Services scope, or for the Azure AI scope when the backend is an Azure AI Foundry endpoint, and it caches the credential after the first successful use.{{< version exclude-if="1.5.x" >}} To authenticate to Microsoft Graph or another Microsoft Entra-protected backend, configure the token scopes.{{< /version >}}
+The `azure` backend authentication method gets a Microsoft Entra ID token and writes it to the `Authorization` header of every request that agentgateway forwards to the backend. Agentgateway requests the token for the Azure Cognitive Services scope, or for the Azure AI scope when the backend is an Azure AI Foundry endpoint, and it caches the credential after the first successful use.{{< version exclude-if="1.5.x,1.6.x" >}} Decisions and SystemOne requests to an Azure AI Foundry resource go to `{resourceName}.cognitiveservices.azure.com`. When you do not set `scopes`, agentgateway requests the Azure Cognitive Services scope, `https://cognitiveservices.azure.com/.default`, for them.{{< /version >}}{{< version exclude-if="1.5.x" >}} To authenticate to Microsoft Graph or another Microsoft Entra-protected backend, configure the token scopes.{{< /version >}}
 
 The method has three forms.
 
 * **`implicit`** detects the credential from the environment, through the full `DefaultAzureCredential` chain. Use this form in production when the host supplies the identity, such as a virtual machine with a managed identity.
 * **`developerImplicit`** uses the Azure CLI login only. Use this form on a workstation, where it fails fast instead of trying the production sources first.
 * **`explicitConfig`** names one credential source: a service principal, a managed identity, or a workload identity.
+
+{{< version exclude-if="1.5.x,1.6.x" >}}
+When you configure a [callout proxy]({{< link-hextra path="/documentation/configuration/callout-proxy/" >}}), agentgateway sends the Microsoft Entra ID token requests that it makes itself, such as for a client secret or workload identity, through the forward proxy. Token requests to loopback and link-local endpoints, such as the instance metadata endpoint at `169.254.169.254`, [bypass the proxy]({{< link-hextra path="/documentation/configuration/callout-proxy/#destinations-that-bypass-the-proxy" >}}). The Azure CLI and Azure Developer CLI request their own tokens, so `config.callouts.tunnel` does not apply to them.
+{{< /version >}}
 
 > [!NOTE]
 > This page covers `azure` as a general backend authentication method, which works for any Azure service. To route requests to Azure OpenAI or Azure AI Foundry as an LLM provider, see [Azure]({{< link-hextra path="/integrations/llm/providers/azure/" >}}), which covers the same authentication methods alongside the provider settings.
