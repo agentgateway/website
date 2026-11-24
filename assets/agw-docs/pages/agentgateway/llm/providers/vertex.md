@@ -282,6 +282,54 @@ Use the following request body with the route that you created.
 {{% /version %}}
 
 {{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
+## Use structured outputs {#structured-outputs}
+
+For OpenAI-compatible Chat Completions requests, set `response_format.type` to `json_schema` to request structured JSON from Gemini models on Vertex AI. The provider request uses Gemini `responseJsonSchema`. Standard JSON Schema keywords, such as `$defs`, `$ref`, `anyOf`, and `additionalProperties`, pass through unchanged. No `propertyOrdering` field is injected.
+
+Use the following request body with the route that you created.
+
+```json
+{
+  "model": "",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Return one calendar event for tomorrow."
+    }
+  ],
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "calendar_event",
+      "strict": true,
+      "schema": {
+        "$defs": {
+          "CalendarEvent": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "date": { "type": "string" }
+            },
+            "required": ["name", "date"]
+          }
+        },
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "event": { "$ref": "#/$defs/CalendarEvent" }
+        },
+        "required": ["event"]
+      }
+    }
+  }
+}
+```
+
+Tool definitions use a different schema path. Schemas in `tools[].function.parameters` are normalized for Gemini tool parameters. `$defs` and `$ref` are inlined. Unsupported fields such as `additionalProperties` are removed. A caller-provided `propertyOrdering` is preserved.
+{{% /version %}}
+
+{{% version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x,1.4.x,1.5.x,1.6.x,1.7.x,2.2.x" %}}
 {{< reuse "agw-docs/snippets/gemini-reasoning-effort.md" >}}
 {{% /version %}}
 
