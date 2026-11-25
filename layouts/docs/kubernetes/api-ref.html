@@ -12,6 +12,7 @@
   <div class="w-full z-10 pt-10 lg:pt-20">
     {{ partial "announcement.html" .}}
   </div>
+  {{ partial "docs/deployment-link.html" . }}
   {{/*
     Must run BEFORE sidebar.html: docs-tabs.html writes the `docTabs` page-store
     entry that the sidebar reads to root its tree at the active tab. Without it
