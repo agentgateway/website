@@ -83,7 +83,7 @@ Complete the [inference routing quickstart]({{< link-hextra path="/documentation
 Set the same variables that the quickstart uses.
 
 ```bash
-export ROUTER_CHART_VERSION=v0.9.0
+export ROUTER_CHART_VERSION=v1.0.0
 ```
 
 ## Deploy a second model server
@@ -113,7 +113,7 @@ spec:
     spec:
       containers:
       - name: vllm-sim
-        image: "ghcr.io/llm-d/llm-d-inference-sim:v0.8.2"
+        image: "ghcr.io/llm-d/llm-d-inference-sim:v1.2.0"
         imagePullPolicy: Always
         args:
         - "--model"

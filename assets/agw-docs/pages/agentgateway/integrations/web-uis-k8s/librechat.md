@@ -129,7 +129,7 @@ LibreChat requires MongoDB. Deploy both with a ConfigMap that points LibreChat a
        spec:
          containers:
          - name: mongodb
-           image: mongo:8.0.20
+           image: mongo:9.0.8
            ports:
            - containerPort: 27017
    ---

@@ -186,7 +186,7 @@ Collector objects created.
 | `ConfigMap.data.collector.yaml.service.pipelines.traces` | Connects the OTLP receiver to the memory and batch processors, then to the Azure Monitor exporter. There are no metric or log pipelines. |
 | `Deployment.spec.template.metadata.labels.azure.workload.identity/use` | Activates the AKS Workload Identity mutating webhook for the Collector pod. |
 | `Deployment.spec.template.spec.serviceAccountName` | Runs the pod as `OTEL_SERVICE_ACCOUNT`, which the federated credential trusts. |
-| `Deployment.spec.template.spec.containers[].image` | Uses `OTEL_COLLECTOR_IMAGE`, defaulting to `otel/opentelemetry-collector-contrib:0.148.0`. Changing the version requires a separate compatibility check; pin an immutable digest in production. |
+| `Deployment.spec.template.spec.containers[].image` | Uses `OTEL_COLLECTOR_IMAGE`, defaulting to `otel/opentelemetry-collector-contrib:0.165.0`. Changing the version requires a separate compatibility check; pin an immutable digest in production. |
 | `Deployment.spec.template.spec.containers[].env` | Supplies the native OTLP traces endpoint. The webhook adds the three Workload Identity environment variables. |
 | `Deployment.spec.template.spec.containers[].readinessProbe` and `livenessProbe` | Check the Collector health extension on port 13133. |
 | `Deployment.spec.template.spec.securityContext` | Runs the pod as non-root with the runtime default seccomp profile. |

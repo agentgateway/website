@@ -415,7 +415,7 @@ The following steps reuse the root certificate, the `https` Secret, and the http
        spec:
          containers:
          - name: nginx
-           image: nginx:1.27
+           image: nginx:1.31
            ports:
            - containerPort: 8443
            volumeMounts:

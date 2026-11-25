@@ -43,14 +43,14 @@ You need a Kubernetes cluster, Helm, and `kubectl`.
 
    ```shell
    kubectl apply --server-side -f \
-     https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.0/standard-install.yaml
+     https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.3/standard-install.yaml
    ```
 
 2. Install cert-manager, which KServe uses for webhook certificates.
 
    ```shell
    kubectl apply -f \
-     https://github.com/cert-manager/cert-manager/releases/download/v1.20.2/cert-manager.yaml
+     https://github.com/cert-manager/cert-manager/releases/download/v1.21.3/cert-manager.yaml
 
    kubectl wait --for=condition=available deployment --all \
      --namespace cert-manager \
@@ -66,12 +66,12 @@ You need a Kubernetes cluster, Helm, and `kubectl`.
 
    helm upgrade -i kserve-llmisvc-crd \
      oci://ghcr.io/kserve/charts/kserve-llmisvc-crd \
-     --version v0.20.0-rc0 \
+     --version v0.21.0 \
      --namespace kserve
 
    helm upgrade -i kserve-llmisvc-resources \
      oci://ghcr.io/kserve/charts/kserve-llmisvc-resources \
-     --version v0.20.0-rc0 \
+     --version v0.21.0 \
      --namespace kserve \
      --set kserve.controller.deploymentMode=Standard \
      --set kserve.controller.gateway.ingressGateway.enableGatewayApi=true \
@@ -90,7 +90,7 @@ You need a Kubernetes cluster, Helm, and `kubectl`.
 
    helm upgrade -i kserve-runtime-configs \
      oci://ghcr.io/kserve/charts/kserve-runtime-configs \
-     --version v0.20.0-rc0 \
+     --version v0.21.0 \
      --namespace kserve \
      --set kserve.llmisvcConfigs.enabled=true
    ```
@@ -101,7 +101,7 @@ You need a Kubernetes cluster, Helm, and `kubectl`.
 
    ```shell
    kubectl apply --server-side -f \
-     https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/download/v1.5.0/manifests.yaml
+     https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/download/v1.6.2/manifests.yaml
    ```
 
 5. Install agentgateway with Inference Extension support. Installing it after
@@ -188,7 +188,7 @@ You need a Kubernetes cluster, Helm, and `kubectl`.
      template:
        containers:
          - name: main
-           image: ghcr.io/llm-d/llm-d-inference-sim:v0.9.0-rc3
+           image: ghcr.io/llm-d/llm-d-inference-sim:v1.2.0
            command:
              - /app/llm-d-inference-sim
            args:

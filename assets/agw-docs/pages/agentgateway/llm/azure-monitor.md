@@ -51,7 +51,7 @@ export OTEL_COLLECTOR_NAME=otel-collector
 export OTEL_SERVICE_ACCOUNT=otel-collector
 export OTEL_NETWORK_POLICY=otel-collector-ingress
 export OTEL_REFERENCE_GRANT=agentgateway-to-otel-collector
-export OTEL_COLLECTOR_IMAGE=otel/opentelemetry-collector-contrib:0.148.0
+export OTEL_COLLECTOR_IMAGE=otel/opentelemetry-collector-contrib:0.165.0
 export TRACE_POLICY_NAME=azure-monitor-tracing
 export FEDERATED_CREDENTIAL_NAME=agentgateway-otel-collector
 unset AZURE_NAME_PREFLIGHT_PASSED
