@@ -157,6 +157,8 @@ Send a request through the gateway as the demo user and confirm that the downstr
    bad token  -> 401
    ```
 
+   The exchange fails closed. If agentgateway cannot reach a token endpoint or the endpoint does not answer within 10 seconds, the request fails with {{< version include-if="1.5.x" >}}`500 Internal Server Error`{{< /version >}}{{< version exclude-if="1.5.x" >}}`502 Bad Gateway`{{< /version >}} and the downstream API is not called.
+
 4. Clean up the demo when you are done. The `lsof` command stops the echo backend that runs in the background on port `9000` and the gateway on port `3030`.
 
    ```sh
