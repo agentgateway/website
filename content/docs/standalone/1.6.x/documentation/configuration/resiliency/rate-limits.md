@@ -564,7 +564,7 @@ mcp:
           value: 'request.headers["x-organization"]'
         - key: authenticated
           value: 'has(jwt.sub)'
-        type: tokens # or 'requests'
+        type: requests
   targets:
   - name: everything
     stdio:
@@ -594,7 +594,7 @@ routes:
           value: 'request.headers["x-organization"]'
         - key: authenticated
           value: 'has(jwt.sub)'
-        type: tokens # or 'requests'
+        type: requests
   backends:
   - host: localhost:8080
 ```
@@ -632,7 +632,7 @@ routes:
           value: 'request.headers["x-organization"]'
         - key: authenticated
           value: 'has(jwt.sub)'
-        type: tokens # or 'requests'
+        type: requests
   backends:
   - host: localhost:8080
 EOF
@@ -684,7 +684,7 @@ mcp:
           value: 'request.headers["x-organization"]'
         - key: authenticated
           value: 'has(jwt.sub)'
-        type: tokens # or 'requests'
+        type: requests
   targets:
   - name: everything
     stdio:
@@ -695,6 +695,8 @@ agentgateway -f config3-mcp.yaml --validate-only
 {{< /doc-test >}}
 
 Each descriptor value is a [CEL expression]({{< link-hextra path="/documentation/configuration/traffic-management/transformations" >}}).
+
+A `tokens` descriptor counts LLM tokens, so it applies only to routes whose backend is an LLM provider. On other routes, such as a route to an HTTP or MCP backend, a `tokens` descriptor is never sent to the rate limit server. As a result, the route is not limited. Use `type: requests` for those routes.
 
 For a complete runnable setup, including the Envoy rate limit service configuration and the Docker commands to run it with Redis, see the [`traffic-ratelimiting-global` example](https://github.com/agentgateway/agentgateway/tree/v1.6.0/examples/traffic-ratelimiting-global) in the agentgateway repository.
 

@@ -130,7 +130,10 @@ remoteRateLimit:
       - key: some-static-value
         value: '"something"'
       - key: organization
-        value: 'request.headers["x-organization"]'
+        # Without a fallback, a request without the header skips the whole descriptor.
+        value: '"x-organization" in request.headers ? request.headers["x-organization"] : "unknown"'
       - key: authenticated
         value: 'has(jwt.sub)'
 ```
+
+If any entry of a descriptor fails to evaluate, such as when the request does not have the header, the whole descriptor is skipped. If no descriptor is left, the request is not limited. For more information, see [Remote rate limits]({{< link-hextra path="/documentation/configuration/resiliency/rate-limits/#connect-agentgateway-to-the-rate-limit-server" >}}).
