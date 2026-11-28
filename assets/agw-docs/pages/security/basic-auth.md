@@ -209,7 +209,7 @@ EOF
 
 ### Custom realm
 
-Set a custom realm that appears in the [realm name](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Authentication#www-authenticate_and_proxy-authenticate_headers) in error responses.
+Set a custom realm that appears in the [realm name](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Authentication#www-authenticate_and_proxy-authenticate_headers) in error responses. Without a `realm`, the challenge names `Restricted`: `WWW-Authenticate: Basic realm="Restricted"`.
 
 ```yaml
 kubectl apply -f- <<EOF

@@ -407,7 +407,7 @@ traffic:
 
 By default, the JWT validation mode is set to `Strict` and allows connections to a backend destination only if a valid JWT was provided as part of the request. 
 
-To allow requests, even if no JWT was provided or if the JWT cannot be validated, use the `Permissive` or `Optional` modes. 
+To allow requests without a JWT, use the `Optional` or `Permissive` mode. The two modes differ for a JWT that cannot be validated: `Optional` still rejects the JWT with a `401` response, and `Permissive` lets the request continue without the token's claims. 
 
 **Optional**
 

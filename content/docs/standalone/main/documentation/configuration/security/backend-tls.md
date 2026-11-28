@@ -66,6 +66,8 @@ routes:
 > [!NOTE]
 > To use TLS for a custom prompt guard webhook, set `target.policies.backendTLS` on the webhook target instead. For more information, see [Configure webhook backend policies]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/#configure-webhook-backend-policies" >}}).
 
+By default, agentgateway verifies the backend certificate against the host that it connects to. Set `hostname` when the certificate is issued for a different name. Agentgateway sends the configured name as Server Name Indication (SNI) and verifies the certificate against it.
+
 ## Mutual TLS and certificate rotation {#mtls-files}
 
 To originate mutual TLS (mTLS) to a backend, set the `cert` and `key` fields of the `backendTLS` policy to the client certificate and private key files. Set `root` to the CA bundle that verifies the backend server certificate.
