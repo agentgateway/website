@@ -116,7 +116,7 @@ llm:
           body: '{"error":"Request contains sensitive information."}'
 ```
 
-The `rejection` settings apply only when the guard rejects content. They do not apply to a guard in `audit` mode or to a regex guard that masks content. This syntax applies to the standalone configuration; Kubernetes resources use `response.message` and `response.statusCode` instead.
+The `rejection` settings apply only when the guard rejects content. They do not apply to a guard in `audit` mode or to a regex guard that masks content. This syntax applies to the standalone configuration. Kubernetes resources use `response.message`, `response.statusCode`, and `response.headers`, which is a list of `name` and `value` entries that are added to the response. Kubernetes has no `set` or `remove`.
 
 ## Audit mode {#audit}
 

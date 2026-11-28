@@ -12,6 +12,8 @@ Request matching is a routing-based feature: routes and their match conditions a
 
 For routes configured with [HTTP or HTTPS listeners]({{< link-hextra path="/documentation/configuration/listeners/" >}}), you can configure the following matching conditions. These matching conditions do not apply to [TLS listeners]({{< link-hextra path="/documentation/configuration/listeners#tls-listeners" >}}), which use TCP routes and only support hostname-based matching.
 
+When a route sets `hostnames`, agentgateway compares the request host before any path, header, method, or query condition. Agentgateway checks exact hostnames first, then matching wildcard hostnames, and then routes without `hostnames`. Path specificity applies only among routes in the same hostname group.
+
 ### Path matching
 
 Match incoming requests based on their path using one of the following strategies.

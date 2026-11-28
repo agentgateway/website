@@ -118,7 +118,7 @@ llm:
           body: '{"error":"Request contains sensitive information."}'
 ```
 
-The `rejection` settings apply only when the guard rejects content. They do not apply to a guard in `audit` mode or to a regex guard that masks content. This syntax applies to the standalone configuration; Kubernetes resources use `response.message` and `response.statusCode` instead.
+The `rejection` settings apply only when the guard rejects content. They do not apply to a guard in `audit` mode or to a regex guard that masks content. This syntax applies to the standalone configuration. Kubernetes resources use `response.message`, `response.statusCode`, and `response.headers`, which is a list of `name` and `value` entries that are added to the response. Kubernetes has no `set` or `remove`.
 
 ## Audit mode {#audit}
 
@@ -214,6 +214,9 @@ For a worked example, see [Regex filters]({{< link-hextra path="/documentation/l
 ### Webhook scope {#webhook-scope}
 
 A webhook always receives the request messages or response choices. You cannot change this content with `scope`. See [Webhooks]({{< link-hextra path="/documentation/llm/prompt-guards/webhooks/" >}}).
+
+> [!NOTE]
+> For a buffered response, each choice that a webhook receives includes only the message text. Unlike the other response guards, a webhook does not receive the model's reasoning, such as `reasoning_content` or an Anthropic `thinking` block. When streaming guardrails are enabled, a webhook does receive the reasoning of a streamed response. To check reasoning in buffered responses, add a `regex` guard, or another guard that reads `messages`, next to the webhook.
 
 - **Request webhook:** Omit `scope`, or set it to exactly `[systemPrompt, messages]` or `[systemPrompt, messages, toolOutput]`. Either value is accepted, and the webhook receives the same content.
 - **Response webhook:** Omit `scope` or set only `[messages]`.

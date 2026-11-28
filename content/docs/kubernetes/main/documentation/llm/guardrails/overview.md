@@ -122,6 +122,8 @@ spec:
 
 The `response` settings apply only when the guard rejects content. They do not apply to a guard in `Audit` mode or to a regex guard that masks content.
 
+A rejection response includes no headers unless you set them, including `content-type`. Set `content-type` when the message is JSON. Each `headers` entry is added to the response, so listing the same name twice sends two values. Kubernetes has no option to set or remove a header on a rejection.
+
 ## Audit mode {#audit}
 
 By default, a guard enforces the verdict that it reaches. A regex guard masks the content that matches, and an external guard rejects the request that its provider flags. Set `action: Audit` to make a guard observe instead. The guard still runs, and it still records what it detected in metrics and in the structured access log, but the content always passes through unchanged.
